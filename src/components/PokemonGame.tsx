@@ -305,25 +305,6 @@ const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     }
   };
 
-  const fetchAllRankings = useCallback(async () => {
-    try {
-      const allRankings: { [key: string]: Player[] } = {};
-      for (const gen of GENERATIONS) {
-        const rankingsRef = collection(db, `rankings_gen${gen.startId}_${gen.endId}`);
-        const q = query(rankingsRef, orderBy('score', 'desc'), limit(5));
-        const querySnapshot = await getDocs(q);
-        const rankingsData: Player[] = [];
-        querySnapshot.forEach((doc) => {
-          rankingsData.push(doc.data() as Player);
-        });
-        allRankings[gen.name] = rankingsData;
-      }
-      setAllGenerationRankings(allRankings);
-    } catch (error) {
-      console.error('Error fetching all rankings:', error);
-    }
-  }, []);
-
 const fetchSelectedRankings = useCallback(async () => {
     try {
         const rankingsRef = collection(db, `rankings_gen${selectedGeneration.startId}_${selectedGeneration.endId}`);
@@ -342,32 +323,27 @@ const fetchSelectedRankings = useCallback(async () => {
     }
 }, [selectedGeneration]);
 
-  const loadAllRankings = useCallback(() => {
-    fetchAllRankings();
-  }, [fetchAllRankings]);
+const saveScore = useCallback(async () => {
+    if (!playerName || score === 0) return;
+
+    try {
+        const rankingsRef = collection(db, `rankings_gen${selectedGeneration.startId}_${selectedGeneration.endId}`);
+        await addDoc(rankingsRef, {
+            name: playerName,
+            score: score,
+            time: GAME_TIME - (timeLeft || 0),
+            timestamp: serverTimestamp() // Ensure timestamp is included
+        });
+        await fetchSelectedRankings(); // Fetch updated rankings after saving
+    } catch (error) {
+        console.error('Error saving score:', error); // Log any errors
+    }
+}, [playerName, score, timeLeft, selectedGeneration]);
 
   const loadSelectedRankings = useCallback(() => {
     fetchSelectedRankings();
   }, [fetchSelectedRankings]);
-
-  const saveScore = useCallback(async () => {
-    if (!playerName || score === 0) return;
-    
-    try {
-      const rankingsRef = collection(db, `rankings_gen${selectedGeneration.startId}_${selectedGeneration.endId}`);
-      await addDoc(rankingsRef, {
-        name: playerName,
-        score: score,
-        time: GAME_TIME - (timeLeft || 0),
-        timestamp: serverTimestamp()
-      });
-      await fetchSelectedRankings();
-      await fetchAllRankings();
-    } catch (error) {
-      console.error('Error saving score:', error);
-    }
-  }, [playerName, score, timeLeft, selectedGeneration]);
-
+  
   const startTimer = () => {
     setTimeLeft(120); // 2 minutes in seconds
     if (timerInterval.current) {
@@ -601,6 +577,7 @@ const fetchSelectedRankings = useCallback(async () => {
               )}
             </div>
           </div>
+
         </div>
       )}
       {gameOver && (
