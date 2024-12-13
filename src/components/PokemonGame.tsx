@@ -100,11 +100,6 @@ const PokemonGame = () => {
     };
 
     if (selectedGeneration) {
-      const filteredIds = Array.from(
-        { length: selectedGeneration.endId - selectedGeneration.startId + 1 },
-        (_, i) => selectedGeneration.startId + i
-      );
-      setRemainingPokemon(filteredIds);
       fetchAllPokemonNames();
     }
   }, [selectedGeneration]);
@@ -128,7 +123,22 @@ const PokemonGame = () => {
     if (value.length > 0) {
       const normalizedValue = normalizeText(value);
       const filteredSuggestions = allPokemonNames
-        .filter(name => normalizeText(name).startsWith(normalizedValue))
+        .filter(name => {
+          const normalizedName = normalizeText(name);
+          // Check if the name belongs to the selected generation
+          const pokemonId = allPokemonNames.indexOf(name) + 1; // Assuming names are in order starting from ID 1
+          const generation = GENERATIONS.find(gen =>
+            pokemonId >= gen.startId && pokemonId <= gen.endId
+          );
+          console.log('Filtering suggestions:', {
+            name,
+            normalizedName,
+            pokemonId,
+            generation,
+            startsWith: normalizedName.startsWith(normalizedValue)
+          });
+          return normalizedName.startsWith(normalizedValue) && generation;
+        })
         .map(name => capitalize(name))
         .slice(0, 5);
       setSuggestions(filteredSuggestions);
@@ -137,20 +147,13 @@ const PokemonGame = () => {
     }
   };
 
+  const correctSoundUrl = 'https://example.com/sounds/correct.mp3'; // Replace with actual sound URL
+
   const checkGuess = () => {
     if (!pokemon || !guess) return;
 
     const normalizedGuess = normalizeText(guess);
     const normalizedAnswer = normalizeText(pokemon.frenchName);
-
-    console.log('Checking guess:', {
-      guess,
-      pokemonName: pokemon.frenchName,
-      normalizedGuess,
-      normalizedAnswer,
-      guessLength: normalizedGuess.length,
-      answerLength: normalizedAnswer.length
-    });
 
     // Only validate if the guess length matches the answer length
     if (normalizedGuess.length !== normalizedAnswer.length) {
@@ -158,7 +161,9 @@ const PokemonGame = () => {
     }
 
     if (normalizedGuess === normalizedAnswer) {
-      console.log('Correct answer!');
+      // Play correct sound
+      const audio = new Audio(correctSoundUrl);
+      audio.play();
       setIsCorrect(true);
       setScore(prev => prev + 1);
       setTimeout(() => {
@@ -169,7 +174,6 @@ const PokemonGame = () => {
         fetchRandomPokemon();
       }, 1500);
     } else {
-      console.log('Wrong answer!');
       setIsCorrect(false);
       setTimeout(() => {
         setIsCorrect(null);
@@ -308,20 +312,21 @@ const PokemonGame = () => {
     }
   }, []);
 
-  const fetchSelectedRankings = useCallback(async () => {
+const fetchSelectedRankings = useCallback(async () => {
     try {
-      const rankingsRef = collection(db, `rankings_gen${selectedRankingGen.startId}_${selectedRankingGen.endId}`);
-      const q = query(rankingsRef, orderBy('score', 'desc'), limit(10));
-      const querySnapshot = await getDocs(q);
-      const rankingsData: Player[] = [];
-      querySnapshot.forEach((doc) => {
-        rankingsData.push(doc.data() as Player);
-      });
-      setRankings(rankingsData);
+        const rankingsRef = collection(db, `rankings_gen${selectedRankingGen.startId}_${selectedRankingGen.endId}`);
+        const q = query(rankingsRef, orderBy('score', 'desc'), limit(10));
+        const querySnapshot = await getDocs(q);
+        const rankingsData: Player[] = [];
+        querySnapshot.forEach((doc) => {
+            rankingsData.push(doc.data() as Player);
+        });
+        setRankings(rankingsData);
+        console.log('Fetched Rankings:', rankingsData); // Add this line for debugging
     } catch (error) {
-      console.error('Error fetching rankings:', error);
+        console.error('Error fetching rankings:', error);
     }
-  }, [selectedRankingGen]);
+}, [selectedRankingGen]);
 
   const loadAllRankings = useCallback(() => {
     fetchAllRankings();
@@ -396,7 +401,7 @@ const PokemonGame = () => {
     setSuggestions([]);
     setTimeLeft(120); // Reset timer to 2 minutes
     
-    // Initialize Pokemon list for selected generation
+    // Initialize Pokémon list for selected generation
     const filteredIds = Array.from(
       { length: selectedGeneration.endId - selectedGeneration.startId + 1 },
       (_, i) => selectedGeneration.startId + i
@@ -406,7 +411,7 @@ const PokemonGame = () => {
     // Start timer
     startTimer();
     
-    // Fetch first Pokemon
+    // Fetch first Pokémon
     fetchRandomPokemon();
   };
 
@@ -438,6 +443,10 @@ const PokemonGame = () => {
       setHintsLeft(prev => prev - 1);
     }
   };
+
+  useEffect(() => {
+      fetchSelectedRankings();
+  }, [selectedRankingGen]);
 
   return (
     <div className="pokemon-game">

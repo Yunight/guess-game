@@ -490,3 +490,32 @@ body {
   color: rgba(255, 255, 255, 0.7);
   font-style: italic;
 }
+
+.rankings-list {
+  background: rgba(255, 255, 255, 0.8);
+  border-radius: 10px;
+  padding: 1rem;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+.ranking-item {
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+  padding: 10px 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.ranking-item:last-child {
+  border-bottom: none;
+}
+
+.player-name {
+  color: #333;
+  font-weight: bold;
+}
+
+.player-score {
+  color: #FFCB05;
+  font-weight: bold;
+}
