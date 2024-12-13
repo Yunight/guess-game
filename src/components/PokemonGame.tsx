@@ -17,6 +17,7 @@ interface Player {
   name: string;
   score: number;
   time: number;
+  timestamp: any;
 }
 
 interface Generation {
@@ -59,6 +60,8 @@ const PokemonGame = () => {
   const [suggestions, setSuggestions] = useState<string[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [isSoundMuted, setIsSoundMuted] = useState(false);
+  const [highlightedIndex, setHighlightedIndex] = useState(-1);
+  const [userRanking, setUserRanking] = useState<number | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const suggestionsRef = useRef<HTMLDivElement>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
@@ -181,17 +184,26 @@ const PokemonGame = () => {
     }
   };
 
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter') {
-      const normalizedGuess = normalizeText(guess);
-      const normalizedAnswer = normalizeText(pokemon?.frenchName || '');
-      
-      // Only validate on Enter if lengths match
-      if (normalizedGuess.length === normalizedAnswer.length) {
-        checkGuess();
-      }
+const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'ArrowDown') {
+        setHighlightedIndex((prevIndex) => {
+            const newIndex = Math.min(prevIndex + 1, suggestions.length - 1);
+            console.log('Highlighted Index (Down):', newIndex);
+            return newIndex;
+        });
+    } else if (e.key === 'ArrowUp') {
+        setHighlightedIndex((prevIndex) => {
+            const newIndex = Math.max(prevIndex - 1, 0);
+            console.log('Highlighted Index (Up):', newIndex);
+            return newIndex;
+        });
+    } else if (e.key === 'Enter') {
+        if (highlightedIndex >= 0) {
+            console.log('Selected Suggestion:', suggestions[highlightedIndex]);
+            handleSuggestionClick(suggestions[highlightedIndex]);
+        }
     }
-  };
+};
 
   const handleSuggestionClick = (suggestion: string) => {
     setGuess(suggestion);
@@ -314,19 +326,21 @@ const PokemonGame = () => {
 
 const fetchSelectedRankings = useCallback(async () => {
     try {
-        const rankingsRef = collection(db, `rankings_gen${selectedRankingGen.startId}_${selectedRankingGen.endId}`);
-        const q = query(rankingsRef, orderBy('score', 'desc'), limit(10));
+        const rankingsRef = collection(db, `rankings_gen${selectedGeneration.startId}_${selectedGeneration.endId}`);
+        const q = query(rankingsRef, orderBy('score', 'desc'), limit(20)); // Fetch top 20 players
         const querySnapshot = await getDocs(q);
         const rankingsData: Player[] = [];
         querySnapshot.forEach((doc) => {
-            rankingsData.push(doc.data() as Player);
+            const data = doc.data() as Player;
+            data.timestamp = data.timestamp?.toDate(); // Convert Firestore timestamp to JavaScript Date
+            rankingsData.push(data);
         });
         setRankings(rankingsData);
-        console.log('Fetched Rankings:', rankingsData); // Add this line for debugging
+        console.log('Fetched Rankings:', rankingsData);
     } catch (error) {
         console.error('Error fetching rankings:', error);
     }
-}, [selectedRankingGen]);
+}, [selectedGeneration]);
 
   const loadAllRankings = useCallback(() => {
     fetchAllRankings();
@@ -386,31 +400,37 @@ const fetchSelectedRankings = useCallback(async () => {
     }
     setTimeLeft(0);
     await saveScore();
-    await loadSelectedRankings();
+    await loadSelectedRankings(); 
+    const userRanking = rankings.findIndex(player => player.name === playerName) + 1; 
+    setUserRanking(userRanking); 
+    setGameOver(true); 
   };
 
   const startGame = () => {
     if (!playerName) return;
     
     setScore(0);
-    setHintsLeft(10); // Reset hints to 10
+    setHintsLeft(10); 
     setIsGameActive(true);
     setShowHint(false);
     setIsCorrect(null);
     setGuess('');
     setSuggestions([]);
-    setTimeLeft(120); // Reset timer to 2 minutes
+    setTimeLeft(120); 
     
+    // Fetch rankings for the selected generation
+    fetchSelectedRankings();
+
     // Initialize Pokémon list for selected generation
     const filteredIds = Array.from(
       { length: selectedGeneration.endId - selectedGeneration.startId + 1 },
       (_, i) => selectedGeneration.startId + i
     );
     setRemainingPokemon(filteredIds);
-    
+
     // Start timer
     startTimer();
-    
+
     // Fetch first Pokémon
     fetchRandomPokemon();
   };
@@ -446,7 +466,15 @@ const fetchSelectedRankings = useCallback(async () => {
 
   useEffect(() => {
       fetchSelectedRankings();
-  }, [selectedRankingGen]);
+  }, [selectedGeneration]);
+
+  const formatDate = (timestamp: any): string => {
+    const date = new Date(timestamp);
+    const day = String(date.getDate()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, '0'); // Months are zero-based
+    const year = date.getFullYear();
+    return `${day} ${month} ${year}`;
+};
 
   return (
     <div className="pokemon-game">
@@ -475,7 +503,11 @@ const fetchSelectedRankings = useCallback(async () => {
             <select
               className="generation-select"
               value={JSON.stringify(selectedGeneration)}
-              onChange={(e) => setSelectedGeneration(JSON.parse(e.target.value))}
+              onChange={(e) => {
+                const selectedGen = JSON.parse(e.target.value);
+                setSelectedGeneration(selectedGen);
+                fetchSelectedRankings(); // Fetch rankings for the selected generation
+              }}
             >
               {GENERATIONS.map((gen, index) => (
                 <option key={index} value={JSON.stringify(gen)}>
@@ -492,24 +524,14 @@ const fetchSelectedRankings = useCallback(async () => {
             </button>
           </div>
           <div className="rankings">
-            <h2>Meilleurs Scores - {selectedRankingGen.name}</h2>
-            <select
-              className="generation-select"
-              value={JSON.stringify(selectedRankingGen)}
-              onChange={(e) => setSelectedRankingGen(JSON.parse(e.target.value))}
-            >
-              {GENERATIONS.map((gen, index) => (
-                <option key={index} value={JSON.stringify(gen)}>
-                  {gen.name}
-                </option>
-              ))}
-            </select>
+            <h2>Meilleurs Scores - {selectedGeneration.name}</h2>
             <div className="rankings-list">
               {rankings.map((player, index) => (
                 <div key={index} className="ranking-item">
                   <span className="rank">#{index + 1}</span>
                   <span className="player-name">{player.name}</span>
                   <span className="player-score">{player.score}</span>
+                  <span className="player-date">{formatDate(player.timestamp)}</span>
                 </div>
               ))}
             </div>
@@ -549,7 +571,7 @@ const fetchSelectedRankings = useCallback(async () => {
                       <li
                         key={index}
                         onClick={() => handleSuggestionClick(suggestion)}
-                        className="suggestion-item"
+                        className={`suggestion-item ${index === highlightedIndex ? 'highlighted' : ''}`}
                       >
                         {suggestion}
                       </li>
@@ -581,11 +603,13 @@ const fetchSelectedRankings = useCallback(async () => {
           </div>
         </div>
       )}
-      {gameOver && score > 0 && (
+      {gameOver && (
         <div className="game-over">
           <h2>Partie terminée!</h2>
+          <p>Nom: {playerName}</p>
           <p>Score final: {score}</p>
-          <p>Temps: {Math.floor((GAME_TIME - (timeLeft || 0)) / 60)}:{((GAME_TIME - (timeLeft || 0)) % 60).toString().padStart(2, '0')}</p>
+          <p>Classement: {userRanking !== null ? userRanking : 'Non classé'}</p>
+          <p>Temps restant: {timeLeft} secondes</p>
           <div className="game-over-buttons">
             <button onClick={() => {
               setGameOver(false);

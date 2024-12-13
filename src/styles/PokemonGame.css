@@ -401,13 +401,15 @@ body {
 }
 
 .game-over {
-  text-align: center;
-  padding: 30px;
-  background: rgba(255, 255, 255, 0.95);
-  border-radius: 12px;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-  max-width: 400px;
-  margin: 0 auto;
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background-color: rgba(255, 255, 255, 0.9);
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  z-index: 1000;
 }
 
 .game-over h2 {
@@ -446,11 +448,13 @@ body {
 }
 
 .rankings {
+  max-height: 400px;
+  overflow-y: auto;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  background-color: rgba(255, 255, 255, 0.95);
+  padding: 10px;
   margin-top: 30px;
-  padding: 20px;
-  background: rgba(255, 255, 255, 0.95);
-  border-radius: 12px;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
 }
 
 .rankings h2 {
@@ -499,23 +503,29 @@ body {
 }
 
 .ranking-item {
-  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
-  padding: 10px 0;
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  padding: 5px;
+  border-bottom: 1px solid #eee;
+  color: #333;
 }
 
-.ranking-item:last-child {
-  border-bottom: none;
+.rank {
+  color: #FFCB05;
+  font-weight: bold;
 }
 
 .player-name {
-  color: #333;
+  color: #000;
   font-weight: bold;
 }
 
 .player-score {
   color: #FFCB05;
   font-weight: bold;
+}
+
+.player-date {
+  color: #555;
+  font-size: 0.9em;
 }
