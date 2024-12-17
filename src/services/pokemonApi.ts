@@ -31,6 +31,25 @@ interface PokemonResponse {
   };
 }
 
+const POKEMON_CACHE_KEY = 'pokemonDetailsCache';
+const POKEMON_NAMES_CACHE_KEY = 'allPokemonNamesCache';
+const CACHE_DURATION = 24 * 60 * 60 * 1000; // 24 hours
+
+interface CachedPokemonData {
+  timestamp: number;
+  pokemons: Record<number, Pokemon>;
+}
+
+
+interface CachedNamesData {
+  timestamp: number;
+  names: Array<{
+    id: number;
+    name: string;
+    frenchName: string;
+  }>;
+}
+
 export const pokemonApi = createApi({
   reducerPath: 'pokemonApi',
   baseQuery: fetchBaseQuery({ baseUrl: 'https://pokeapi.co/api/v2/' }),
@@ -38,28 +57,71 @@ export const pokemonApi = createApi({
     getAllPokemonNames: builder.query<string[], void>({
       async queryFn(_arg, _queryApi, _extraOptions, fetchWithBQ) {
         try {
-          const response = await fetchWithBQ('pokemon-species?limit=1000');
+          // Check cache first
+          const cachedData = localStorage.getItem(POKEMON_NAMES_CACHE_KEY);
+          if (cachedData) {
+            const { timestamp, names } = JSON.parse(cachedData) as CachedNamesData;
+            if (Date.now() - timestamp < CACHE_DURATION) {
+              return { data: names.map(p => p.frenchName) };
+            }
+          }
+
+          // If no cache or expired, fetch all pokemon names at once
+          const response = await fetchWithBQ('pokemon-species?limit=1010'); // Fetch all Pokemon
           if (response.error) throw response.error;
 
-          const data = response.data as { results: Array<{ url: string }> };
-          const namesPromises = data.results.map(async (pokemon) => {
-            const speciesResponse = await fetchWithBQ(pokemon.url.replace('https://pokeapi.co/api/v2/', ''));
+          const data = response.data as { results: Array<{ name: string; url: string }> };
+          
+          // Fetch all species data in parallel
+          const namesPromises = data.results.map(async (pokemon, index) => {
+            const speciesResponse = await fetchWithBQ(`pokemon-species/${index + 1}`);
             const speciesData = speciesResponse.data as PokemonSpeciesResponse;
-            return speciesData.names.find(
-              (name) => name.language.name === 'fr'
-            )?.name || pokemon.name;
+            
+            return {
+              id: index + 1,
+              name: pokemon.name,
+              frenchName: speciesData.names.find(
+                (name) => name.language.name === 'fr'
+              )?.name || pokemon.name
+            };
           });
 
           const names = await Promise.all(namesPromises);
-          return { data: names };
+
+          // Store in localStorage
+          const cacheData: CachedNamesData = {
+            timestamp: Date.now(),
+            names
+          };
+          localStorage.setItem(POKEMON_NAMES_CACHE_KEY, JSON.stringify(cacheData));
+
+          return { data: names.map(p => p.frenchName) };
         } catch (error) {
+          // If error occurs but we have cached data, use it
+          const cachedData = localStorage.getItem(POKEMON_NAMES_CACHE_KEY);
+          if (cachedData) {
+            const { names } = JSON.parse(cachedData) as CachedNamesData;
+            return { data: names.map(p => p.frenchName) };
+          }
           return { error: error as { status: number; data: any } };
         }
-      }
+      },
+      keepUnusedDataFor: 3600, // Keep in RTK Query cache for 1 hour
     }),
+
     getPokemonById: builder.query<Pokemon, number>({
       async queryFn(pokemonId, _queryApi, _extraOptions, fetchWithBQ) {
         try {
+          // Check cache first
+          const cachedData = localStorage.getItem(POKEMON_CACHE_KEY);
+          if (cachedData) {
+            const { timestamp, pokemons } = JSON.parse(cachedData) as CachedPokemonData;
+            if (Date.now() - timestamp < CACHE_DURATION && pokemons[pokemonId]) {
+              return { data: pokemons[pokemonId] };
+            }
+          }
+
+          // If not in cache or expired, fetch from API
           const [pokemonResponse, speciesResponse] = await Promise.all([
             fetchWithBQ(`pokemon/${pokemonId}`),
             fetchWithBQ(`pokemon-species/${pokemonId}`)
@@ -82,16 +144,30 @@ export const pokemonApi = createApi({
 
           const cryUrl = `https://play.pokemonshowdown.com/audio/cries/${pokemonData.name.toLowerCase()}.mp3`;
 
-          return {
-            data: {
-              id: pokemonId,
-              name: pokemonData.name,
-              frenchName,
-              imageUrl: pokemonData.sprites.other['official-artwork'].front_default,
-              flavorText: frenchFlavorText,
-              cryUrl
-            }
+          const pokemon: Pokemon = {
+            id: pokemonId,
+            name: pokemonData.name,
+            frenchName,
+            imageUrl: pokemonData.sprites.other['official-artwork'].front_default,
+            flavorText: frenchFlavorText,
+            cryUrl
           };
+
+          // Update cache with new pokemon data
+          const existingCache = localStorage.getItem(POKEMON_CACHE_KEY);
+          const cache: CachedPokemonData = existingCache 
+            ? JSON.parse(existingCache)
+            : { timestamp: Date.now(), pokemons: {} };
+
+          if (Date.now() - cache.timestamp >= CACHE_DURATION) {
+            cache.timestamp = Date.now();
+            cache.pokemons = {};
+          }
+
+          cache.pokemons[pokemonId] = pokemon;
+          localStorage.setItem(POKEMON_CACHE_KEY, JSON.stringify(cache));
+
+          return { data: pokemon };
         } catch (error) {
           return { error: error as { status: number; data: any } };
         }

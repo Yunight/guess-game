@@ -9,14 +9,8 @@ import { skipToken } from '@reduxjs/toolkit/query';
 import { Card } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
-import { Clock, Star, Lightbulb, Volume2, VolumeX } from 'lucide-react'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
+import { Clock, Lightbulb, Volume2, VolumeX } from 'lucide-react'
+
 import {
   Dialog,
   DialogContent,
