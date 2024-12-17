@@ -81,6 +81,7 @@ const PokemonGame = () => {
     return savedMute ? JSON.parse(savedMute) : false;
   });
   const [showSuggestions, setShowSuggestions] = useState(false);
+  const canStartGame = Boolean(playerName && !nameError);
   
   // Use RTK Query hooks with proper typing
   const { data: allPokemonNames = [] } = useGetAllPokemonNamesQuery();
@@ -334,8 +335,70 @@ const PokemonGame = () => {
     return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
 
-  const startGame = () => {
+  // Update the checkNameAvailability function
+  const checkNameAvailability = async (name: string) => {
+    if (!name.trim()) {
+      setNameError(null);
+      localStorage.removeItem('pokemonGamePlayerName');
+      return false;
+    }
+
+    // If it's the user's saved name, allow it
+    const savedName = localStorage.getItem('pokemonGamePlayerName');
+    if (savedName === name) {
+      setNameError(null);
+      return true;
+    }
+
+    try {
+      // Check across all generations
+      for (const gen of GENERATIONS) {
+        const collectionName = `rankings_gen${gen.startId}_${gen.endId}`;
+        const rankingsRef = collection(db, collectionName);
+        const q = query(rankingsRef, where('name', '==', name));
+        const querySnapshot = await getDocs(q);
+        
+        if (!querySnapshot.empty) {
+          setNameError('Ce nom est déjà utilisé. Veuillez en choisir un autre.');
+          localStorage.removeItem('pokemonGamePlayerName');
+          return false;
+        }
+      }
+      
+      // Only set error to null, don't store in localStorage yet
+      setNameError(null);
+      return true;
+    } catch (error) {
+      console.error('Error checking name availability:', error);
+      setNameError('Erreur lors de la vérification du nom');
+      return false;
+    }
+  };
+
+  // Simplify handlePlayerNameChange since storage is handled in checkNameAvailability
+  const handlePlayerNameChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newName = e.target.value;
+    setPlayerName(newName);
+    
+    if (!newName.trim()) {
+      setNameError(null);
+      localStorage.removeItem('pokemonGamePlayerName');
+      return;
+    }
+    
+    await checkNameAvailability(newName);
+  };
+
+  // Update the startGame function to store the name when the game actually starts
+  const startGame = async () => {
     if (!playerName) return;
+    
+    // Verify name availability before starting
+    const isAvailable = await checkNameAvailability(playerName);
+    if (!isAvailable) return;
+    
+    // Store the name in localStorage only when starting the game
+    localStorage.setItem('pokemonGamePlayerName', playerName);
     
     // Reset all game states
     setScore(0);
@@ -437,65 +500,6 @@ const PokemonGame = () => {
     }
   }, [currentPokemon, isGameActive]);
 
-  // Add this useEffect to load username from localStorage on mount
-  useEffect(() => {
-    const savedName = localStorage.getItem('pokemonGamePlayerName');
-    if (savedName) {
-      setPlayerName(savedName);
-    }
-  }, []);
-
-  // Update the name validation and setting logic
-  const checkNameAvailability = async (name: string) => {
-    if (!name.trim()) {
-      setNameError(null);
-      return false;
-    }
-
-    try {
-      // Check across all generations
-      for (const gen of GENERATIONS) {
-        const collectionName = `rankings_gen${gen.startId}_${gen.endId}`;
-        const rankingsRef = collection(db, collectionName);
-        const q = query(rankingsRef, where('name', '==', name));
-        const querySnapshot = await getDocs(q);
-        
-        if (!querySnapshot.empty) {
-          setNameError('Ce nom est déjà utilisé. Veuillez en choisir un autre.');
-          return false;
-        }
-      }
-      
-      setNameError(null);
-      return true;
-    } catch (error) {
-      console.error('Error checking name availability:', error);
-      setNameError('Erreur lors de la vérification du nom');
-      return false;
-    }
-  };
-
-  const handlePlayerNameChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const newName = e.target.value;
-    setPlayerName(newName);
-    
-    // If there's a saved name in localStorage and it matches the new name, accept it
-    const savedName = localStorage.getItem('pokemonGamePlayerName');
-    if (savedName === newName) {
-      setNameError(null);
-      return;
-    }
-    
-    // Otherwise, check if the name is available
-    const isAvailable = await checkNameAvailability(newName);
-    if (isAvailable) {
-      localStorage.setItem('pokemonGamePlayerName', newName);
-    }
-  };
-
-  // Update the start game button to be disabled if there's a name error
-  const canStartGame = playerName && !nameError;
-
   // Add this helper function near your other utility functions
   const formatTimeForRanking = (seconds: number): string => {
     const minutes = Math.floor(seconds / 60);
@@ -507,6 +511,15 @@ const PokemonGame = () => {
   useEffect(() => {
     localStorage.setItem('pokemonGameMuted', JSON.stringify(isMuted));
   }, [isMuted]);
+
+  // Update the initial useEffect for loading the username
+  useEffect(() => {
+    const savedName = localStorage.getItem('pokemonGamePlayerName');
+    if (savedName) {
+      setPlayerName(savedName);
+      setNameError(null); // Clear any errors since this is a valid saved name
+    }
+  }, []); // Empty dependency array means this runs once on mount
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-blue-100 to-blue-50 p-4 flex items-center justify-center font-pokemon">
@@ -543,7 +556,10 @@ const PokemonGame = () => {
             {currentPokemon && (
               <>
                 {isPokemonLoading ? (
-                  <div className="text-6xl">?</div>
+                  <div className="pokeball-loading">
+                    <div className="outer-circle" />
+                    <div className="center-circle" />
+                  </div>
                 ) : (
                   <img
                     src={currentPokemon.imageUrl}
@@ -552,6 +568,13 @@ const PokemonGame = () => {
                       sm:max-w-[400px] sm:max-h-[400px] transition-all duration-300"
                     style={{ 
                       filter: isCorrect ? 'none' : 'brightness(0) saturate(100%)'
+                    }}
+                    onError={(e) => {
+                      // Fallback to alternative image source
+                      const target = e.target as HTMLImageElement;
+                      if (!target.src.includes('sprites.pokemon.com')) {
+                        target.src = `https://sprites.pokemon.com/artwork/detail/${currentPokemon.id.toString().padStart(3, '0')}.png`;
+                      }
                     }}
                   />
                 )}
