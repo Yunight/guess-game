@@ -522,41 +522,40 @@ const PokemonGame = () => {
   }, []); // Empty dependency array means this runs once on mount
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-blue-100 to-blue-50 p-4 flex items-center justify-center font-pokemon">
+    <div className="min-h-screen bg-gradient-to-b from-blue-100 to-blue-50 p-4 flex items-start sm:items-center justify-center font-pokemon">
       {isGameActive ? (
-        <Card className="w-full max-w-md p-6 space-y-6">
-          <div className="flex justify-between items-center">
-            <div className="flex items-center gap-2">
-              <Star className="w-5 h-5 text-yellow-500" />
-              <span className="text-lg font-pokemon">Score: {score}</span>
+        <Card className="w-full max-w-md p-1 sm:p-4 relative flex flex-col min-h-0 sm:min-h-0 bg-transparent">
+          {/* Game Stats Bar - Reduced padding and margins */}
+          <div className="sticky top-0 z-10 bg-white/95 mb-1 sm:mb-4 p-1 sm:p-2 rounded-lg shadow-md">
+            <div className="grid grid-cols-3 gap-1 sm:gap-2 text-center">
+              <div className="space-y-0 sm:space-y-1">
+                <p className="text-[10px] sm:text-xs text-gray-500 font-game">Score</p>
+                <p className="text-base sm:text-xl font-bold font-game">{score}</p>
+              </div>
+              <div className="space-y-0 sm:space-y-1">
+                <p className="text-[10px] sm:text-xs text-gray-500 font-game">Temps</p>
+                <p className="text-base sm:text-xl font-bold font-game flex items-center justify-center">
+                  <Clock className="w-3 h-3 sm:w-4 sm:h-4 mr-0.5 sm:mr-1" />
+                  {formatTime(guessTimeLeft)}
+                </p>
+              </div>
+              <div className="space-y-0 sm:space-y-1">
+                <p className="text-[10px] sm:text-xs text-gray-500 font-game">Indices</p>
+                <p className="text-base sm:text-xl font-bold font-game flex items-center justify-center">
+                  <Lightbulb className="w-3 h-3 sm:w-4 sm:h-4 mr-0.5 sm:mr-1" />
+                  {hintsLeft}
+                </p>
+              </div>
             </div>
-            <div className="flex items-center gap-2">
-              <Clock className="w-5 h-5 text-blue-500" />
-              <span className="text-lg font-pokemon">{guessTimeLeft}s</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <Lightbulb className="w-5 h-5 text-purple-500" />
-              <span className="text-lg font-pokemon">Indices: {hintsLeft}</span>
-            </div>
-            <Button
-              variant="outline"
-              size="icon"
-              onClick={() => setIsMuted(!isMuted)}
-              className="ml-2 bg-white/80 hover:bg-white/90 border-gray-200"
-            >
-              {isMuted ? (
-                <VolumeX className="h-5 w-5 text-gray-500" />
-              ) : (
-                <Volume2 className="h-5 w-5 text-blue-500" />
-              )}
-            </Button>
           </div>
 
-          <div className="relative aspect-square bg-gray-100 rounded-xl p-4 flex items-center justify-center">
+          {/* Pokemon Image - Adjusted margins */}
+          <div className="flex-grow flex items-center justify-center bg-gray-100 rounded-xl p-2 sm:p-4 mb-1 sm:mb-4
+            max-h-[45vh] sm:max-h-none">
             {currentPokemon && (
               <>
                 {isPokemonLoading ? (
-                  <div className="pokeball-loading">
+                  <div className="pokeball-loading scale-75 sm:scale-100">
                     <div className="outer-circle" />
                     <div className="center-circle" />
                   </div>
@@ -564,13 +563,12 @@ const PokemonGame = () => {
                   <img
                     src={currentPokemon.imageUrl}
                     alt="Pokémon mystère"
-                    className="w-full h-full object-contain max-w-[300px] max-h-[300px] 
-                      sm:max-w-[400px] sm:max-h-[400px] transition-all duration-300"
+                    className="w-full h-full object-contain max-w-[200px] max-h-[200px] 
+                      sm:max-w-[300px] sm:max-h-[300px] transition-all duration-300"
                     style={{ 
                       filter: isCorrect ? 'none' : 'brightness(0) saturate(100%)'
                     }}
                     onError={(e) => {
-                      // Fallback to alternative image source
                       const target = e.target as HTMLImageElement;
                       if (!target.src.includes('sprites.pokemon.com')) {
                         target.src = `https://sprites.pokemon.com/artwork/detail/${currentPokemon.id.toString().padStart(3, '0')}.png`;
@@ -582,81 +580,92 @@ const PokemonGame = () => {
             )}
           </div>
 
-          <div className="space-y-4">
-            <div className="relative" ref={suggestionsRef}>
-              <Input
-                type="text"
-                value={guess}
-                onChange={handleGuessChange}
-                onKeyDown={handleKeyDown}
-                placeholder="Qui est ce Pokémon?"
-                className="w-full text-center text-lg h-12 bg-white/90 border-2 
-                  border-yellow-400 rounded-xl shadow-lg placeholder:text-gray-400
-                  focus:border-blue-500 focus:ring-2 focus:ring-blue-500/50
-                  transition-all duration-300 font-pokemon
-                  disabled:bg-gray-100 disabled:border-gray-300"
-                ref={inputRef}
-                disabled={isCorrect === true}
-              />
-              {suggestions.length > 0 && !isCorrect && (
-                <ul className="absolute z-10 w-full bg-white/95 border-2 border-yellow-400 
-                  rounded-xl mt-2 shadow-xl max-h-48 overflow-y-auto divide-y 
-                  divide-gray-100">
-                  {suggestions.map((suggestion, index) => (
-                    <li
-                      key={index}
-                      onClick={() => handleSuggestionClick(suggestion)}
-                      className={`px-4 py-3 cursor-pointer transition-colors
-                        ${index === highlightedIndex 
-                          ? 'bg-blue-50 text-blue-700' 
-                          : 'hover:bg-yellow-50'
-                        }
-                        ${index === 0 ? 'rounded-t-lg' : ''}
-                        ${index === suggestions.length - 1 ? 'rounded-b-lg' : ''}
-                      `}
-                    >
-                      <div className="flex items-center gap-3">
-                        <div className="pokeball-mini w-4 h-4 relative">
-                          <div className="absolute inset-0 bg-red-500 rounded-t-full w-full h-[50%]" />
-                          <div className="absolute bottom-0 bg-white rounded-b-full w-full h-[50%]" />
-                          <div className="absolute inset-[25%] w-[50%] h-[50%] bg-white rounded-full border-2 border-gray-800 z-10" />
-                          <div className="absolute inset-0 border-2 border-gray-800 rounded-full" />
-                        </div>
-                        {suggestion}
-                      </div>
-                    </li>
-                  ))}
-                </ul>
+          {/* Input and Suggestions */}
+          <div className="fixed bottom-0 left-0 right-0 pb-safe z-50 sm:relative sm:pb-0">
+            <div className="bg-white shadow-lg border-t border-gray-200 
+              sm:bg-transparent sm:shadow-none sm:border-0">
+              {/* Input Field */}
+              <div className="px-2 pt-2 sm:p-4 sm:pt-0">
+                <div className="relative max-w-md mx-auto">
+                  <Input
+                    type="text"
+                    value={guess}
+                    onChange={handleGuessChange}
+                    onKeyDown={handleKeyDown}
+                    placeholder="Qui est ce Pokémon?"
+                    className="w-full text-center text-base sm:text-lg h-10 sm:h-12 
+                      bg-white border-2 border-yellow-400 rounded-xl shadow-lg 
+                      placeholder:text-gray-400 placeholder:opacity-100
+                      focus:border-blue-500 focus:ring-2 focus:ring-blue-500/50
+                      transition-all duration-300 font-pokemon
+                      disabled:bg-gray-100 disabled:border-gray-300
+                      flex items-center justify-center px-3"
+                    style={{
+                      lineHeight: '40px',
+                      paddingTop: '0px',
+                      paddingBottom: '0px'
+                    }}
+                    ref={inputRef}
+                    disabled={isCorrect === true}
+                  />
+                  
+                  {/* Suggestions Popup */}
+                  {suggestions.length > 0 && !isCorrect && (
+                    <div className="absolute bottom-full mb-2 left-0 right-0 max-h-[20vh] sm:max-h-40 overflow-y-auto 
+                      bg-white rounded-xl shadow-xl border-2 border-yellow-400">
+                      {suggestions.map((suggestion, index) => (
+                        <button
+                          key={index}
+                          onClick={() => handleSuggestionClick(suggestion)}
+                          className={`w-full px-4 py-3 text-left 
+                            ${index === highlightedIndex ? 'bg-blue-100 text-blue-700' : 'hover:bg-yellow-50'}
+                            ${index === 0 ? 'rounded-t-lg' : ''}
+                            ${index === suggestions.length - 1 ? 'rounded-b-lg' : ''}
+                            border-b last:border-b-0 border-gray-100
+                            transition-colors duration-150 ease-in-out
+                            font-game text-gray-800 bg-white`}
+                        >
+                          <div className="flex items-center gap-3">
+                            <div className="pokeball-mini w-4 h-4 relative">
+                              <div className="absolute inset-0 bg-red-500 rounded-t-full w-full h-[50%]" />
+                              <div className="absolute bottom-0 bg-white rounded-b-full w-full h-[50%]" />
+                              <div className="absolute inset-[25%] w-[50%] h-[50%] bg-white rounded-full border-2 border-gray-800 z-10" />
+                              <div className="absolute inset-0 border-2 border-gray-800 rounded-full" />
+                            </div>
+                            {suggestion}
+                          </div>
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Hint Button */}
+              {!isCorrect && (
+                <div className="p-2 sm:p-4 space-y-2">
+                  <Button 
+                    variant="default"
+                    className="w-full bg-gradient-to-r from-blue-500 to-blue-600 
+                      hover:from-blue-600 hover:to-blue-700 text-white py-1.5 sm:py-2 text-sm
+                      rounded-xl shadow-lg transform hover:scale-[1.02] 
+                      transition-all duration-300 font-medium font-game
+                      disabled:from-gray-300 disabled:to-gray-400"
+                    onClick={useHint}
+                    disabled={hintsLeft === 0 || showHint}
+                  >
+                    Indice ({hintsLeft})
+                  </Button>
+                  {showHint && currentPokemon?.flavorText && (
+                    <div className="p-2 bg-blue-50 border-2 border-blue-200 
+                      rounded-xl text-blue-800 text-xs sm:text-sm animate-fade-in
+                      shadow-inner font-game max-h-[8vh] sm:max-h-[10vh] overflow-y-auto">
+                      {currentPokemon.flavorText}
+                    </div>
+                  )}
+                </div>
               )}
             </div>
-            
-            {!isCorrect && (
-              <>
-                <Button 
-                  variant="default"
-                  className="w-full bg-gradient-to-r from-blue-500 to-blue-600 
-                    hover:from-blue-600 hover:to-blue-700 text-white py-6 text-lg
-                    rounded-xl shadow-lg transform hover:scale-[1.02] 
-                    transition-all duration-300 font-medium
-                    disabled:from-gray-300 disabled:to-gray-400"
-                  onClick={useHint}
-                  disabled={hintsLeft === 0 || showHint}
-                >
-                  Indice ({hintsLeft})
-                </Button>
-                {showHint && currentPokemon?.flavorText && (
-                  <div className="p-4 bg-blue-50 border-2 border-blue-200 
-                    rounded-xl text-blue-800 text-sm animate-fade-in
-                    shadow-inner">
-                    {currentPokemon.flavorText}
-                  </div>
-                )}
-              </>
-            )}
-          </div>
-
-          <div className="text-center text-sm text-muted-foreground font-pokemon">
-            Temps total: {formatTime(totalTimeElapsed)}
           </div>
         </Card>
       ) : (
