@@ -9,7 +9,7 @@ import { skipToken } from '@reduxjs/toolkit/query';
 import { Card } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
-import { Clock, Star, Lightbulb } from 'lucide-react'
+import { Clock, Star, Lightbulb, Volume2, VolumeX } from 'lucide-react'
 import {
   Select,
   SelectContent,
@@ -17,6 +17,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
+import { Trophy, RefreshCcw, Home } from 'lucide-react'
 
 interface Player {
   name: string;
@@ -384,9 +391,8 @@ const PokemonGame = () => {
   const formatDate = (timestamp: Date): string => {
     const date = new Date(timestamp);
     const day = String(date.getDate()).padStart(2, '0');
-    const month = String(date.getMonth() + 1).padStart(2, '0'); // Months are zero-based
-    const year = date.getFullYear();
-    return `${day} ${month} ${year}`;
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    return `${day}/${month}/${date.getFullYear()}`;
   };
 
   const startGuessTimer = () => {
@@ -503,22 +509,34 @@ const PokemonGame = () => {
   }, [isMuted]);
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-blue-100 to-blue-50 p-4 flex items-center justify-center">
+    <div className="min-h-screen bg-gradient-to-b from-blue-100 to-blue-50 p-4 flex items-center justify-center font-pokemon">
       {isGameActive ? (
         <Card className="w-full max-w-md p-6 space-y-6">
           <div className="flex justify-between items-center">
             <div className="flex items-center gap-2">
               <Star className="w-5 h-5 text-yellow-500" />
-              <span className="text-lg font-semibold">Score: {score}</span>
+              <span className="text-lg font-pokemon">Score: {score}</span>
             </div>
             <div className="flex items-center gap-2">
               <Clock className="w-5 h-5 text-blue-500" />
-              <span className="text-lg">{guessTimeLeft}s</span>
+              <span className="text-lg font-pokemon">{guessTimeLeft}s</span>
             </div>
             <div className="flex items-center gap-2">
               <Lightbulb className="w-5 h-5 text-purple-500" />
-              <span className="text-lg">Indices: {hintsLeft}</span>
+              <span className="text-lg font-pokemon">Indices: {hintsLeft}</span>
             </div>
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={() => setIsMuted(!isMuted)}
+              className="ml-2 bg-white/80 hover:bg-white/90 border-gray-200"
+            >
+              {isMuted ? (
+                <VolumeX className="h-5 w-5 text-gray-500" />
+              ) : (
+                <Volume2 className="h-5 w-5 text-blue-500" />
+              )}
+            </Button>
           </div>
 
           <div className="relative aspect-square bg-gray-100 rounded-xl p-4 flex items-center justify-center">
@@ -552,7 +570,7 @@ const PokemonGame = () => {
                 className="w-full text-center text-lg h-12 bg-white/90 border-2 
                   border-yellow-400 rounded-xl shadow-lg placeholder:text-gray-400
                   focus:border-blue-500 focus:ring-2 focus:ring-blue-500/50
-                  transition-all duration-300 font-medium
+                  transition-all duration-300 font-pokemon
                   disabled:bg-gray-100 disabled:border-gray-300"
                 ref={inputRef}
                 disabled={isCorrect === true}
@@ -614,15 +632,29 @@ const PokemonGame = () => {
             )}
           </div>
 
-          <div className="text-center text-sm text-muted-foreground">
+          <div className="text-center text-sm text-muted-foreground font-pokemon">
             Temps total: {formatTime(totalTimeElapsed)}
           </div>
         </Card>
       ) : (
         <div className="w-full max-w-md p-4">
-          <h1 className="text-3xl sm:text-5xl font-bold text-center text-gray-800 mb-8">
-            Qui est ce Pokémon?
-          </h1>
+          <div className="flex justify-between items-center mb-8">
+            <h1 className="text-3xl sm:text-5xl font-bold text-center text-gray-800">
+              Qui est ce Pokémon?
+            </h1>
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={() => setIsMuted(!isMuted)}
+              className="ml-2 bg-white/80 hover:bg-white/90 border-gray-200"
+            >
+              {isMuted ? (
+                <VolumeX className="h-5 w-5 text-gray-500" />
+              ) : (
+                <Volume2 className="h-5 w-5 text-blue-500" />
+              )}
+            </Button>
+          </div>
           
           <Card className="p-6 space-y-6 bg-white/80 backdrop-blur shadow-xl">
             <div className="space-y-4">
@@ -702,8 +734,8 @@ const PokemonGame = () => {
                 <div className="col-span-1 font-bold">#</div>
                 <div className="col-span-4 font-bold">Dresseur</div>
                 <div className="col-span-2 font-bold text-center">Score</div>
-                <div className="col-span-3 font-bold text-center">Temps</div>
-                <div className="col-span-2 font-bold text-center hidden sm:block">Date</div>
+                <div className="col-span-2 font-bold text-center">Temps</div>
+                <div className="col-span-3 font-bold text-center hidden sm:block">Date</div>
               </div>
               
               {/* Rankings list */}
@@ -739,10 +771,10 @@ const PokemonGame = () => {
                     <div className="col-span-2 text-center font-mono text-gray-800 font-semibold">
                       {player.score}
                     </div>
-                    <div className="col-span-3 text-center font-mono text-gray-700">
+                    <div className="col-span-2 text-center font-mono text-gray-700">
                       {formatTimeForRanking(player.time)}
                     </div>
-                    <div className="col-span-2 text-center text-sm text-gray-500 hidden sm:block">
+                    <div className="col-span-3 text-center text-xs text-gray-500 hidden sm:block">
                       {formatDate(player.timestamp)}
                     </div>
                   </div>
@@ -760,43 +792,72 @@ const PokemonGame = () => {
       )}
       
       {gameOver && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-lg p-6 max-w-sm w-full">
-            <h2 className="text-2xl font-bold mb-4 text-gray-800">Partie terminée!</h2>
-            <div className="space-y-2 mb-6 text-gray-700">
-              <p><span className="font-semibold">Nom:</span> {playerName}</p>
-              <p><span className="font-semibold">Score final:</span> {score}</p>
-              <p><span className="font-semibold">Classement:</span> {userRanking !== null ? `#${userRanking}` : 'Non classé'}</p>
-              <p><span className="font-semibold">Temps total:</span> {formatTimeForRanking(totalTimeElapsed)}</p>
+        <Dialog open={gameOver} onOpenChange={(open) => !open && setGameOver(false)}>
+          <DialogContent className="sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle className="text-center text-2xl font-bold flex items-center justify-center gap-2">
+                <Trophy className="h-6 w-6 text-yellow-500" />
+                Partie terminée!
+              </DialogTitle>
+            </DialogHeader>
+            
+            <div className="grid gap-6">
+              <div className="grid grid-cols-2 gap-4 p-4 bg-blue-50 rounded-xl">
+                <div className="space-y-2">
+                  <p className="text-sm text-blue-600 font-medium">Dresseur</p>
+                  <p className="font-semibold text-gray-900">{playerName}</p>
+                </div>
+                <div className="space-y-2">
+                  <p className="text-sm text-blue-600 font-medium">Score final</p>
+                  <p className="font-semibold text-gray-900">{score}</p>
+                </div>
+                <div className="space-y-2">
+                  <p className="text-sm text-blue-600 font-medium">Classement</p>
+                  <p className="font-semibold text-gray-900">
+                    {userRanking !== null ? `#${userRanking}` : 'Non classé'}
+                  </p>
+                </div>
+                <div className="space-y-2">
+                  <p className="text-sm text-blue-600 font-medium">Temps total</p>
+                  <p className="font-semibold text-gray-900">
+                    {formatTimeForRanking(totalTimeElapsed)}
+                  </p>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <Button
+                  onClick={() => {
+                    setGameOver(false);
+                    setIsGameActive(false);
+                    setScore(0);
+                    setTimeLeft(GAME_TIME);
+                    startGame();
+                  }}
+                  className="w-full"
+                  variant="default"
+                >
+                  <RefreshCcw className="mr-2 h-4 w-4" />
+                  Rejouer
+                </Button>
+                <Button
+                  onClick={() => {
+                    setGameOver(false);
+                    setIsGameActive(false);
+                    setScore(0);
+                    setTimeLeft(GAME_TIME);
+                    setCurrentPokemonId(null);
+                  }}
+                  className="w-full"
+                  variant="outline"
+                >
+                  <Home className="mr-2 h-4 w-4" />
+                  Menu
+                </Button>
+              </div>
             </div>
-            <div className="grid grid-cols-2 gap-4">
-              <button 
-                onClick={() => {
-                  setGameOver(false);
-                  setIsGameActive(false);
-                  setScore(0);
-                  setTimeLeft(GAME_TIME);
-                  startGame();
-                }}
-                className="p-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
-              >
-                Rejouer
-              </button>
-              <button 
-                onClick={() => {
-                  setGameOver(false);
-                  setIsGameActive(false);
-                  setScore(0);
-                  setTimeLeft(GAME_TIME);
-                  setCurrentPokemonId(null);
-                }}
-                className="p-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors"
-              >
-                Menu Principal
-              </button>
-            </div>
-          </div>
-        </div>
+          </DialogContent>
+        </Dialog>
       )}
     </div>
   );
