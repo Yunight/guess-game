@@ -60,7 +60,7 @@ body {
 
 .start-screen h1 {
   font-size: 2.5rem;
-  color: #FFCB05;
+  color: #ffcb05;
   text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
   margin: 0;
 }
@@ -93,7 +93,7 @@ body {
 
 .player-input:focus {
   outline: none;
-  border-color: #FFCB05;
+  border-color: #ffcb05;
   box-shadow: 0 0 10px rgba(255, 203, 5, 0.3);
 }
 
@@ -118,14 +118,14 @@ body {
 
 .generation-select:focus {
   outline: none;
-  border-color: #FFCB05;
+  border-color: #ffcb05;
   box-shadow: 0 0 10px rgba(255, 203, 5, 0.3);
 }
 
 .start-button {
   padding: 12px 40px;
   font-size: 1.2rem;
-  background: linear-gradient(45deg, #FFCB05, #FFD700);
+  background: linear-gradient(45deg, #ffcb05, #ffd700);
   color: #333;
   border: none;
   border-radius: 25px;
@@ -176,7 +176,11 @@ body {
   align-items: center;
   width: 100%;
   padding: 15px 20px;
-  background: linear-gradient(135deg, rgba(255, 203, 5, 0.8), rgba(255, 255, 255, 0.8));
+  background: linear-gradient(
+    135deg,
+    rgba(255, 203, 5, 0.8),
+    rgba(255, 255, 255, 0.8)
+  );
   border-radius: 12px;
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
   margin-bottom: 20px;
@@ -320,9 +324,16 @@ body {
 }
 
 @keyframes shake {
-  0%, 100% { transform: translateX(0); }
-  25% { transform: translateX(-5px); }
-  75% { transform: translateX(5px); }
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  25% {
+    transform: translateX(-5px);
+  }
+  75% {
+    transform: translateX(5px);
+  }
 }
 
 .suggestions-list {
@@ -438,7 +449,7 @@ body {
   border-radius: 8px;
   cursor: pointer;
   transition: all 0.3s ease;
-  background: #FFCB05;
+  background: #ffcb05;
   color: #333;
 }
 
@@ -458,7 +469,7 @@ body {
 }
 
 .rankings h2 {
-  color: #FFCB05;
+  color: #ffcb05;
   text-align: center;
   margin-bottom: 1rem;
 }
@@ -482,7 +493,7 @@ body {
 .rankings-table th {
   background: rgba(255, 203, 5, 0.2);
   font-weight: bold;
-  color: #FFCB05;
+  color: #ffcb05;
 }
 
 .rankings-table tr:hover {
@@ -511,7 +522,7 @@ body {
 }
 
 .rank {
-  color: #FFCB05;
+  color: #ffcb05;
   font-weight: bold;
 }
 
@@ -521,11 +532,42 @@ body {
 }
 
 .player-score {
-  color: #FFCB05;
+  color: #ffcb05;
   font-weight: bold;
 }
 
 .player-date {
   color: #555;
   font-size: 0.9em;
+}
+
+.shadow-text {
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+/* Add a scrollable container for small screens */
+@media (max-width: 640px) {
+  .rankings-container {
+    max-height: 50vh;
+    overflow-y: auto;
+  }
+}
+
+/* Custom scrollbar for the rankings table */
+.rankings-container::-webkit-scrollbar {
+  width: 8px;
+}
+
+.rankings-container::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 4px;
+}
+
+.rankings-container::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 4px;
+}
+
+.rankings-container::-webkit-scrollbar-thumb:hover {
+  background: #555;
 }
