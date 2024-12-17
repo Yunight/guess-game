@@ -54,7 +54,7 @@ module.exports = {
 			}
 		},
 		fontFamily: {
-			pokemon: ['Pokemon', 'sans-serif']
+			pokemon: ['Oswald', 'sans-serif']
 		}
 	},
 	plugins: [require("tailwindcss-animate")],
