@@ -121,20 +121,31 @@ const getEvolutionStage = async (pokemonName: string): Promise<number> => {
 
 // Move getCryUrl outside of transformPokemonData to make it accessible
 const getCryUrl = (name: string): string => {
-  // Special cases for Nidoran
-  if (name.toLowerCase() === 'nidoran♂' || name.toLowerCase() === 'nidoran-m') {
-    return 'https://play.pokemonshowdown.com/audio/cries/nidoranm.mp3|https://play.pokemonshowdown.com/audio/cries/nidoranm.ogg';
-  }
-  if (name.toLowerCase() === 'nidoran♀' || name.toLowerCase() === 'nidoran-f') {
-    return 'https://play.pokemonshowdown.com/audio/cries/nidoranf.mp3|https://play.pokemonshowdown.com/audio/cries/nidoranf.ogg';
-  }
+  // Handle special cases
+  const specialCases: { [key: string]: string } = {
+    'nidoran♂': 'nidoranm',
+    'nidoran♀': 'nidoranf',
+    'mr. mime': 'mrmime',
+    'mime jr.': 'mimejr',
+    'farfetch\u2019d': 'farfetchd',
+    'sirfetch\u2019d': 'sirfetchd',
+    'type: null': 'typenull',
+    'flabébé': 'flabebe',
+    'jangmo-o': 'jangmoo',
+    'hakamo-o': 'hakamoo',
+    'kommo-o': 'kommoo'
+  };
 
-  // Handle other Pokémon
-  const formattedName = name.toLowerCase()
-    .replace(/[^a-z0-9]/g, '')  // Remove special characters
-    .replace(/\s+/g, '');       // Remove spaces
+  // Normalize the name: lowercase and remove special characters
+  const normalizedName = name.toLowerCase();
   
-  return `https://play.pokemonshowdown.com/audio/cries/${formattedName}.mp3|https://play.pokemonshowdown.com/audio/cries/${formattedName}.ogg`;
+  // Check if it's a special case
+  const soundName = specialCases[normalizedName] || normalizedName
+    .replace(/[^a-z0-9]/g, '') // Remove any non-alphanumeric characters
+    .replace(/\s+/g, ''); // Remove spaces
+
+  // Return both URLs for fallback
+  return `https://play.pokemonshowdown.com/audio/cries/${soundName}.mp3|https://play.pokemonshowdown.com/audio/cries/${soundName}.ogg`;
 };
 
 export const transformPokemonData = async (data: PokemonResponse & { species: { url: string } }): Promise<Pokemon> => {
@@ -200,32 +211,20 @@ export const pokemonApi = createApi({
             const { timestamp, names } = JSON.parse(cachedData) as CachedNamesData;
             if (Date.now() - timestamp < CACHE_DURATION) {
               // Map cached data to Pokemon objects
-              const pokemonList = names.map(p => {
-                // Special cases for Nidoran in the cache
-                let cryUrl = '';
-                if (p.name.toLowerCase() === 'nidoran-m' || p.name.toLowerCase() === 'nidoran♂') {
-                  cryUrl = 'https://play.pokemonshowdown.com/audio/cries/nidoranm.mp3';
-                } else if (p.name.toLowerCase() === 'nidoran-f' || p.name.toLowerCase() === 'nidoran♀') {
-                  cryUrl = 'https://play.pokemonshowdown.com/audio/cries/nidoranf.mp3';
-                } else {
-                  cryUrl = `https://play.pokemonshowdown.com/audio/cries/${p.name.toLowerCase().replace(/[^a-z0-9]/g, '')}.mp3`;
-                }
-
-                return {
-                  id: p.id,
-                  name: p.name,
-                  frenchName: p.frenchName || p.name,
-                  frenchFlavorText: '',
-                  englishFlavorText: '',
-                  sprite: `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${p.id}.png`,
-                  evolvesFromSpecies: null,
-                  hasEvolution: false,
-                  evolutionStage: 1,
-                  isLegendary: false,
-                  isMythical: false,
-                  cryUrl
-                };
-              });
+              const pokemonList = names.map(p => ({
+                id: p.id,
+                name: p.name,
+                frenchName: p.frenchName || p.name,
+                frenchFlavorText: '',
+                englishFlavorText: '',
+                sprite: `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${p.id}.png`,
+                evolvesFromSpecies: null,
+                hasEvolution: false,
+                evolutionStage: 1,
+                isLegendary: false,
+                isMythical: false,
+                cryUrl: getCryUrl(p.name)
+              }));
               return { data: pokemonList };
             }
           }

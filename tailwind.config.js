@@ -111,8 +111,8 @@ export default {
 				},
 				'bounce-in': {
 					'0%': { transform: 'scale(0.3)', opacity: '0' },
-					'60%': { transform: 'scale(1.1)', opacity: '0.8' },
-					'80%': { transform: 'scale(0.95)', opacity: '0.9' },
+					'60%': { transform: 'scale(1.05)', opacity: '0.8' },
+					'80%': { transform: 'scale(0.98)', opacity: '0.9' },
 					'100%': { transform: 'scale(1)', opacity: '1' },
 				},
 				'flash-out': {

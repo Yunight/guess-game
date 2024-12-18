@@ -1,8 +1,9 @@
-import { FC } from 'react';
+import { FC, useState } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Volume2, VolumeX } from 'lucide-react';
+import { Volume2, VolumeX, HelpCircle } from 'lucide-react';
 import { Generation, Rankings } from '@/components/pokemon-game/types';
+import { HowToPlay } from './HowToPlay';
 
 interface MenuScreenProps {
   playerName: string;
@@ -38,6 +39,8 @@ export const MenuScreen: FC<MenuScreenProps> = ({
   formatTimeForRanking,
   formatDate,
 }) => {
+  const [showHowToPlay, setShowHowToPlay] = useState(false);
+
   return (
     <div className="w-full max-w-[1200px] px-4 sm:px-6 lg:px-8">
       <div className="flex flex-col lg:flex-row justify-between items-center gap-6">
@@ -53,8 +56,16 @@ export const MenuScreen: FC<MenuScreenProps> = ({
           {/* Blue circle light */}
           <div className="absolute top-2 left-24 w-10 h-10 rounded-full bg-blue-400 border-4 border-white"></div>
 
-          {/* Sound toggle */}
-          <div className="absolute top-4 right-4">
+          {/* Sound and Help buttons */}
+          <div className="absolute top-4 right-4 flex gap-2">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setShowHowToPlay(true)}
+              className="hover:bg-white/10"
+            >
+              <HelpCircle className="h-5 w-5 text-white" />
+            </Button>
             <Button
               variant="ghost"
               size="icon"
@@ -273,6 +284,8 @@ export const MenuScreen: FC<MenuScreenProps> = ({
         <p>© 2024 Pokémon. © 1995-2024 Nintendo/Creatures Inc./GAME FREAK inc.</p>
         <p>Developed by <a href="https://github.com/Yunight" target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:text-blue-600 transition-colors">Yunight</a></p>
       </div>
+
+      <HowToPlay isOpen={showHowToPlay} onClose={() => setShowHowToPlay(false)} />
     </div>
   );
 }; 
