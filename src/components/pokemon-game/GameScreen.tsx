@@ -95,76 +95,81 @@ export const GameScreen: FC<GameScreenProps> = ({
         </Button>
       </div>
 
-      <PokemonDisplay 
-        currentPokemon={currentPokemon}
-        isPokemonLoading={isPokemonLoading}
-        isCorrect={isCorrect}
-        isMuted={isMuted}
-        guessTimeLeft={guessTimeLeft}
-      />
+      <div className="flex flex-col flex-1 mt-16 mb-2">
+        <PokemonDisplay 
+          currentPokemon={currentPokemon}
+          isPokemonLoading={isPokemonLoading}
+          isCorrect={isCorrect}
+          isMuted={isMuted}
+          guessTimeLeft={guessTimeLeft}
+        />
 
-      <GameStats 
-        score={score}
-        bestScore={bestScore}
-        guessTimeLeft={guessTimeLeft}
-        hintsLeft={hintsLeft}
-        formatTime={formatTime}
-        bestTime={bestTime}
-      />
+        <GameStats 
+          score={score}
+          bestScore={bestScore}
+          guessTimeLeft={guessTimeLeft}
+          hintsLeft={hintsLeft}
+          formatTime={formatTime}
+          bestTime={bestTime}
+        />
 
-      {/* D-Pad and green screen area */}
-      <div className="flex items-center gap-4 mx-2 mt-6 mb-2">
-        {/* D-Pad */}
-        <div className="w-12 h-12 bg-gray-800 rounded-full relative shadow-inner">
-          {/* Vertical line */}
-          <div className="absolute left-1/2 top-0 -translate-x-1/2 h-full w-4 bg-gray-800">
-            {/* Up button */}
-            <div className="absolute top-0 left-0 right-0 h-4 bg-gray-800 rounded-sm 
-              shadow-[inset_1px_1px_1px_rgba(255,255,255,0.1),inset_-1px_-1px_1px_rgba(0,0,0,0.3)]
-              hover:brightness-110 active:brightness-90 transition-all"></div>
-            {/* Down button */}
-            <div className="absolute bottom-0 left-0 right-0 h-4 bg-gray-800 rounded-sm
-              shadow-[inset_1px_1px_1px_rgba(255,255,255,0.1),inset_-1px_-1px_1px_rgba(0,0,0,0.3)]
-              hover:brightness-110 active:brightness-90 transition-all"></div>
+        {/* D-Pad and green screen area */}
+        <div className="flex items-center gap-4 mx-2 mt-4">
+          {/* D-Pad */}
+          <div className="w-12 h-12 bg-gray-800 rounded-full relative shadow-inner">
+            {/* Vertical line */}
+            <div className="absolute left-1/2 top-0 -translate-x-1/2 h-full w-4 bg-gray-800">
+              {/* Up button */}
+              <div className="absolute top-0 left-0 right-0 h-4 bg-gray-800 rounded-sm 
+                shadow-[inset_1px_1px_1px_rgba(255,255,255,0.1),inset_-1px_-1px_1px_rgba(0,0,0,0.3)]
+                hover:brightness-110 active:brightness-90 transition-all"></div>
+              {/* Down button */}
+              <div className="absolute bottom-0 left-0 right-0 h-4 bg-gray-800 rounded-sm
+                shadow-[inset_1px_1px_1px_rgba(255,255,255,0.1),inset_-1px_-1px_1px_rgba(0,0,0,0.3)]
+                hover:brightness-110 active:brightness-90 transition-all"></div>
+            </div>
+            {/* Horizontal line */}
+            <div className="absolute top-1/2 left-0 -translate-y-1/2 w-full h-4 bg-gray-800">
+              {/* Left button */}
+              <div className="absolute left-0 top-0 bottom-0 w-4 bg-gray-800 rounded-sm
+                shadow-[inset_1px_1px_1px_rgba(255,255,255,0.1),inset_-1px_-1px_1px_rgba(0,0,0,0.3)]
+                hover:brightness-110 active:brightness-90 transition-all"></div>
+              {/* Right button */}
+              <div className="absolute right-0 top-0 bottom-0 w-4 bg-gray-800 rounded-sm
+                shadow-[inset_1px_1px_1px_rgba(255,255,255,0.1),inset_-1px_-1px_1px_rgba(0,0,0,0.3)]
+                hover:brightness-110 active:brightness-90 transition-all"></div>
+            </div>
+            {/* Center dot */}
+            <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-3 h-3 bg-gray-700 rounded-full"></div>
           </div>
-          {/* Horizontal line */}
-          <div className="absolute top-1/2 left-0 -translate-y-1/2 w-full h-4 bg-gray-800">
-            {/* Left button */}
-            <div className="absolute left-0 top-0 bottom-0 w-4 bg-gray-800 rounded-sm
-              shadow-[inset_1px_1px_1px_rgba(255,255,255,0.1),inset_-1px_-1px_1px_rgba(0,0,0,0.3)]
-              hover:brightness-110 active:brightness-90 transition-all"></div>
-            {/* Right button */}
-            <div className="absolute right-0 top-0 bottom-0 w-4 bg-gray-800 rounded-sm
-              shadow-[inset_1px_1px_1px_rgba(255,255,255,0.1),inset_-1px_-1px_1px_rgba(0,0,0,0.3)]
-              hover:brightness-110 active:brightness-90 transition-all"></div>
+
+          {/* Green screen area */}
+          <div className="flex-1 bg-gradient-to-br from-green-300 to-green-400 rounded-lg p-2 shadow-inner">
+            <GuessInput
+              guess={guess}
+              handleGuessChange={handleGuessChange}
+              handleKeyDown={handleKeyDown}
+              suggestions={suggestions}
+              handleSuggestionClick={handleSuggestionClick}
+              highlightedIndex={highlightedIndex}
+              inputRef={inputRef}
+              suggestionsRef={suggestionsRef}
+              isCorrect={isCorrect}
+              guessTimeLeft={guessTimeLeft}
+            />
           </div>
-          {/* Center dot */}
-          <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-3 h-3 bg-gray-700 rounded-full"></div>
         </div>
 
-        {/* Green screen area */}
-        <div className="flex-1 bg-gradient-to-br from-green-300 to-green-400 rounded-lg p-2 shadow-inner">
-          <GuessInput
-            guess={guess}
-            handleGuessChange={handleGuessChange}
-            handleKeyDown={handleKeyDown}
-            suggestions={suggestions}
-            handleSuggestionClick={handleSuggestionClick}
-            highlightedIndex={highlightedIndex}
-            inputRef={inputRef}
-            suggestionsRef={suggestionsRef}
-            isCorrect={isCorrect}
+        <div className="mt-2">
+          <HintButton 
+            showHint={showHint}
+            useHint={useHint}
+            hintsLeft={hintsLeft}
+            currentPokemon={currentPokemon}
+            isPokemonLoading={isPokemonLoading}
           />
         </div>
       </div>
-
-      <HintButton 
-        showHint={showHint}
-        useHint={useHint}
-        hintsLeft={hintsLeft}
-        currentPokemon={currentPokemon}
-        isPokemonLoading={isPokemonLoading}
-      />
     </Card>
   );
 }; 

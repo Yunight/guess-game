@@ -11,6 +11,7 @@ interface GuessInputProps {
   inputRef: RefObject<HTMLInputElement>;
   suggestionsRef: RefObject<HTMLDivElement>;
   isCorrect: boolean | null;
+  guessTimeLeft: number;
 }
 
 export const GuessInput: FC<GuessInputProps> = ({
@@ -23,6 +24,7 @@ export const GuessInput: FC<GuessInputProps> = ({
   inputRef,
   suggestionsRef,
   isCorrect,
+  guessTimeLeft,
 }) => {
   return (
     <div className="relative w-full">
@@ -34,6 +36,7 @@ export const GuessInput: FC<GuessInputProps> = ({
           onChange={handleGuessChange}
           onKeyDown={handleKeyDown}
           placeholder="Qui est ce Pokémon ?"
+          disabled={guessTimeLeft <= 0}
           style={{ fontSize: '1.1rem', lineHeight: '1.75rem' }}
           className={`w-full h-14 px-6 font-medium bg-green-100/80 border-2 text-center
             focus:ring-2 focus:ring-white/50 placeholder:text-gray-500/50 placeholder:text-xl rounded-xl
@@ -41,7 +44,8 @@ export const GuessInput: FC<GuessInputProps> = ({
               ? 'border-green-500 text-green-700' 
               : isCorrect === false 
                 ? 'border-red-500 text-red-700 animate-pulse' 
-                : 'border-transparent text-gray-700'}`}
+                : 'border-transparent text-gray-700'}
+            ${guessTimeLeft <= 0 ? 'opacity-50 cursor-not-allowed' : ''}`}
         />
         {/* Wrong answer effect */}
         {isCorrect === false && (
@@ -49,7 +53,7 @@ export const GuessInput: FC<GuessInputProps> = ({
         )}
       </div>
       
-      {suggestions.length > 0 && (
+      {suggestions.length > 0 && guessTimeLeft > 0 && (
         <div
           ref={suggestionsRef}
           className="absolute bottom-full left-0 right-0 mb-1 bg-white rounded-lg shadow-lg overflow-hidden z-50 border-2 border-gray-200"

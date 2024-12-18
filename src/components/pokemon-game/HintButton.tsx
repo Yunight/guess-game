@@ -21,6 +21,9 @@ export const HintButton: FC<HintButtonProps> = ({
   const hintText = currentPokemon?.frenchFlavorText || 
     (currentPokemon?.englishFlavorText ? 'Français non disponible - ' + currentPokemon.englishFlavorText : '');
 
+  // Get first letter of Pokemon name
+  const firstLetter = currentPokemon?.frenchName.charAt(0);
+
   return (
     <div className="mx-2 mt-2">
       <div className="relative">
@@ -45,15 +48,20 @@ export const HintButton: FC<HintButtonProps> = ({
           </div>
         </Button>
         
-        <div className="relative h-20 mt-2 mb-4 overflow-hidden">
+        <div className="relative h-24 mt-2 mb-1 overflow-hidden">
           <div className={`absolute inset-x-0 transition-all duration-300 transform ${showHint ? 'translate-y-0 opacity-100' : '-translate-y-full opacity-0'}`}>
-            {hintText && (
-              <div className="p-3 bg-gray-100 border-2 border-gray-300
+            {showHint && (
+              <div className="p-2 bg-gray-100 border-2 border-gray-300
                 rounded-xl text-gray-700 text-sm
                 shadow-inner font-oswald relative">
                 <div className="absolute left-2 top-2 w-1.5 h-1.5 rounded-full bg-red-500"></div>
                 <div className="absolute right-2 top-2 w-1.5 h-1.5 rounded-full bg-red-500"></div>
-                <p className="text-center px-4 line-clamp-2">{hintText}</p>
+                <div className="flex flex-col gap-1 items-center">
+                  <div className="text-base font-bold">
+                    Première lettre : {firstLetter}
+                  </div>
+                  <p className="text-center px-4 text-sm">{hintText}</p>
+                </div>
               </div>
             )}
           </div>

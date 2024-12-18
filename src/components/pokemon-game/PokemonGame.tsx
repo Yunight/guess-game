@@ -280,7 +280,37 @@ const PokemonGame = () => {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
+  const handleSuggestionClick = async (suggestion: string) => {
+    if (guessTimeLeft <= 0) return;
+    
+    setGuess(suggestion);
+    setSuggestions([]);
+    
+    const normalizedSuggestion = normalizeText(suggestion);
+    const normalizedAnswer = normalizeText(currentPokemon?.frenchName || '');
+    
+    if (normalizedSuggestion === normalizedAnswer) {
+      handleCorrectAnswer();
+    } else {
+      console.log('❌ Handling wrong answer');
+      setIsCorrect(false);
+      if (!isMuted) {
+        console.log('🎵 About to play wrong answer sound');
+        cleanupAllAudio();
+        wrongAudioRef.current = new Audio(WRONG_SOUND_URL);
+        try {
+          await wrongAudioRef.current.play();
+          console.log('✅ Wrong answer sound played successfully');
+        } catch (error) {
+          console.error('❌ Error playing wrong sound:', error);
+        }
+      }
+    }
+  };
+
   const handleGuessChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (guessTimeLeft <= 0) return;
+    
     const value = e.target.value;
     setGuess(capitalize(value));
     setHighlightedIndex(0);
@@ -383,32 +413,6 @@ const PokemonGame = () => {
       e.preventDefault();
       if (highlightedIndex >= 0) {
         handleSuggestionClick(suggestions[highlightedIndex]);
-      }
-    }
-  };
-
-  const handleSuggestionClick = async (suggestion: string) => {
-    setGuess(suggestion);
-    setSuggestions([]);
-    
-    const normalizedSuggestion = normalizeText(suggestion);
-    const normalizedAnswer = normalizeText(currentPokemon?.frenchName || '');
-    
-    if (normalizedSuggestion === normalizedAnswer) {
-      handleCorrectAnswer();
-    } else {
-      console.log('❌ Handling wrong answer');
-      setIsCorrect(false);
-      if (!isMuted) {
-        console.log('🎵 About to play wrong answer sound');
-        cleanupAllAudio();
-        wrongAudioRef.current = new Audio(WRONG_SOUND_URL);
-        try {
-          await wrongAudioRef.current.play();
-          console.log('✅ Wrong answer sound played successfully');
-        } catch (error) {
-          console.error('❌ Error playing wrong sound:', error);
-        }
       }
     }
   };
