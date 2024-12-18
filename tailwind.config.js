@@ -1,61 +1,57 @@
-module.exports = {
+/** @type {import('tailwindcss').Config} */
+export default {
 	darkMode: ["class"],
 	content: [
-		"./src/**/*.{js,jsx,ts,tsx}", // Adjust this path according to your project structure
+		'./pages/**/*.{ts,tsx}',
+		'./components/**/*.{ts,tsx}',
+		'./app/**/*.{ts,tsx}',
+		'./src/**/*.{ts,tsx}',
 	],
 	theme: {
 		extend: {
-			borderRadius: {
-				lg: 'var(--radius)',
-				md: 'calc(var(--radius) - 2px)',
-				sm: 'calc(var(--radius) - 4px)'
+			fontFamily: {
+				oswald: ['Oswald', 'sans-serif'],
 			},
-			colors: {
-				background: 'hsl(var(--background))',
-				foreground: 'hsl(var(--foreground))',
-				card: {
-					DEFAULT: 'hsl(var(--card))',
-					foreground: 'hsl(var(--card-foreground))'
+			animation: {
+				'grid-shine': 'grid-shine 2s linear infinite',
+				'screen-glare': 'screen-glare 3s ease-in-out infinite',
+				'corner-pulse': 'corner-pulse 2s ease-in-out infinite',
+				'corner-pulse-delay-1': 'corner-pulse 2s ease-in-out 0.5s infinite',
+				'corner-pulse-delay-2': 'corner-pulse 2s ease-in-out 1s infinite',
+				'corner-pulse-delay-3': 'corner-pulse 2s ease-in-out 1.5s infinite',
+				'float': 'float 3s ease-in-out infinite',
+				'blink': 'blink 1s ease-in-out infinite',
+				'blink-delay': 'blink 1s ease-in-out 0.5s infinite',
+				'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+				'spin-slow': 'spin 3s linear infinite',
+				'shine': 'shine 2s linear infinite',
+			},
+			keyframes: {
+				'grid-shine': {
+					'0%, 100%': { opacity: '0.4' },
+					'50%': { opacity: '0.8' },
 				},
-				popover: {
-					DEFAULT: 'hsl(var(--popover))',
-					foreground: 'hsl(var(--popover-foreground))'
+				'screen-glare': {
+					'0%, 100%': { opacity: '0.4' },
+					'50%': { opacity: '0.8' },
 				},
-				primary: {
-					DEFAULT: 'hsl(var(--primary))',
-					foreground: 'hsl(var(--primary-foreground))'
+				'corner-pulse': {
+					'0%, 100%': { opacity: '0.4' },
+					'50%': { opacity: '1' },
 				},
-				secondary: {
-					DEFAULT: 'hsl(var(--secondary))',
-					foreground: 'hsl(var(--secondary-foreground))'
+				'float': {
+					'0%, 100%': { transform: 'translateY(0)' },
+					'50%': { transform: 'translateY(-10px)' },
 				},
-				muted: {
-					DEFAULT: 'hsl(var(--muted))',
-					foreground: 'hsl(var(--muted-foreground))'
+				'blink': {
+					'0%, 100%': { opacity: '1' },
+					'50%': { opacity: '0.5' },
 				},
-				accent: {
-					DEFAULT: 'hsl(var(--accent))',
-					foreground: 'hsl(var(--accent-foreground))'
+				'shine': {
+					'100%': { transform: 'translateX(100%)' },
 				},
-				destructive: {
-					DEFAULT: 'hsl(var(--destructive))',
-					foreground: 'hsl(var(--destructive-foreground))'
-				},
-				border: 'hsl(var(--border))',
-				input: 'hsl(var(--input))',
-				ring: 'hsl(var(--ring))',
-				chart: {
-					'1': 'hsl(var(--chart-1))',
-					'2': 'hsl(var(--chart-2))',
-					'3': 'hsl(var(--chart-3))',
-					'4': 'hsl(var(--chart-4))',
-					'5': 'hsl(var(--chart-5))'
-				}
-			}
+			},
 		},
-		fontFamily: {
-			pokemon: ['Oswald', 'sans-serif']
-		}
 	},
-	plugins: [require("tailwindcss-animate")],
+	plugins: [],
 }
