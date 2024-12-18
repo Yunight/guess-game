@@ -14,6 +14,8 @@ interface GameOverDialogProps {
   setGameOver: (value: boolean) => void;
   playerName: string;
   score: number;
+  bestScore: number;
+  bestTime: number;
   userRanking: number | null;
   totalTimeElapsed: number;
   formatTimeForRanking: (seconds: number) => string;
@@ -26,6 +28,8 @@ export const GameOverDialog: FC<GameOverDialogProps> = ({
   setGameOver,
   playerName,
   score,
+  bestScore,
+  bestTime,
   userRanking,
   totalTimeElapsed,
   formatTimeForRanking,
@@ -68,7 +72,16 @@ export const GameOverDialog: FC<GameOverDialogProps> = ({
                   <Trophy className="h-5 w-5" />
                   <p className="text-sm font-medium">Score</p>
                 </div>
-                <p className="text-lg font-bold">{score}</p>
+                <div className="space-y-1">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-gray-200">Actuel:</span>
+                    <p className="text-lg font-bold">{score}</p>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-gray-200">Meilleur:</span>
+                    <p className="text-lg font-bold text-yellow-300">{bestScore}</p>
+                  </div>
+                </div>
               </div>
               
               <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 space-y-2">
@@ -86,7 +99,16 @@ export const GameOverDialog: FC<GameOverDialogProps> = ({
                   <Clock className="h-5 w-5" />
                   <p className="text-sm font-medium">Temps</p>
                 </div>
-                <p className="text-lg font-bold">{formatTimeForRanking(totalTimeElapsed)}</p>
+                <div className="space-y-1">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-gray-200">Actuel:</span>
+                    <p className="text-lg font-bold">{formatTimeForRanking(totalTimeElapsed)}</p>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-gray-200">Meilleur:</span>
+                    <p className="text-lg font-bold text-yellow-300">{formatTimeForRanking(bestTime)}</p>
+                  </div>
+                </div>
               </div>
             </div>
 

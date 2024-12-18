@@ -1,4 +1,4 @@
-import { FC } from 'react';
+import { FC, RefObject } from 'react';
 import { Input } from '@/components/ui/input';
 
 interface GuessInputProps {
@@ -8,9 +8,9 @@ interface GuessInputProps {
   suggestions: string[];
   handleSuggestionClick: (suggestion: string) => void;
   highlightedIndex: number;
+  inputRef: RefObject<HTMLInputElement>;
+  suggestionsRef: RefObject<HTMLDivElement>;
   isCorrect: boolean | null;
-  inputRef: React.RefObject<HTMLInputElement>;
-  suggestionsRef: React.RefObject<HTMLDivElement>;
 }
 
 export const GuessInput: FC<GuessInputProps> = ({
@@ -20,78 +20,74 @@ export const GuessInput: FC<GuessInputProps> = ({
   suggestions,
   handleSuggestionClick,
   highlightedIndex,
-  isCorrect,
   inputRef,
   suggestionsRef,
+  isCorrect,
 }) => {
   return (
-    <div className="mx-2 mt-2">
-      <div className="relative">
-        {/* Input field with Pokédex styling */}
-        <div className="relative">
-          <Input
-            type="text"
-            value={guess}
-            onChange={handleGuessChange}
-            onKeyDown={handleKeyDown}
-            placeholder="Qui est ce Pokémon?"
-            className="w-full text-center text-base h-12
-              bg-gray-100 border-2 border-gray-300 rounded-xl
-              placeholder:text-gray-500 placeholder:opacity-70
-              focus:border-blue-500 focus:ring-2 focus:ring-blue-500/50
-              transition-all duration-300 font-oswald
-              disabled:bg-gray-100 disabled:border-gray-300
-              shadow-inner"
-            style={{
-              lineHeight: '48px',
-              paddingTop: '0px',
-              paddingBottom: '0px'
-            }}
-            ref={inputRef}
-            disabled={isCorrect === true}
-          />
-          {/* Decorative dots */}
-          <div className="absolute left-3 top-1/2 -translate-y-1/2 flex gap-1.5">
-            <div className="w-2 h-2 rounded-full bg-red-500"></div>
-            <div className="w-2 h-2 rounded-full bg-yellow-500"></div>
-            <div className="w-2 h-2 rounded-full bg-green-500"></div>
-          </div>
-        </div>
-
-        {/* Suggestions Popup with matching style */}
-        {suggestions.length > 0 && !isCorrect && (
-          <div 
-            ref={suggestionsRef}
-            className="absolute bottom-full left-0 right-0 mb-1 
-              bg-gray-100 rounded-xl shadow-lg border-2 border-gray-300
-              max-h-[30vh] overflow-y-auto z-50"
-          >
-            {suggestions.map((suggestion, index) => (
-              <div
-                key={suggestion}
-                className={`px-4 py-2 cursor-pointer flex items-center gap-3
-                  ${index === highlightedIndex 
-                    ? 'bg-blue-500 text-white shadow-inner' 
-                    : 'hover:bg-gray-50'}
-                  ${index !== suggestions.length - 1 ? 'border-b border-gray-200' : ''}
-                  transition-colors duration-150`}
-                onClick={() => handleSuggestionClick(suggestion)}
-              >
-                <div className={`w-5 h-5 relative flex-shrink-0 ${index === highlightedIndex ? 'opacity-90' : ''}`}>
-                  <div className={`absolute inset-0 rounded-full overflow-hidden ${index === highlightedIndex ? 'bg-white' : 'bg-red-500'}`}>
-                    <div className="absolute bottom-1/2 inset-x-0 h-[1px] bg-black"></div>
-                  </div>
-                  <div className="absolute top-1/2 inset-x-0 bottom-0 bg-white rounded-b-full border-t border-black"></div>
-                  <div className="absolute inset-[30%] bg-white rounded-full border-2 border-black"></div>
-                </div>
-                <span className={`flex-grow text-left font-medium ${index === highlightedIndex ? 'text-white' : 'text-gray-700'}`}>
-                  {suggestion}
-                </span>
-              </div>
-            ))}
-          </div>
+    <div className="relative w-full">
+      <div className={`relative ${isCorrect === false ? 'animate-shake' : ''}`}>
+        <Input
+          ref={inputRef}
+          type="text"
+          value={guess}
+          onChange={handleGuessChange}
+          onKeyDown={handleKeyDown}
+          placeholder="Qui est ce Pokémon ?"
+          style={{ fontSize: '1.1rem', lineHeight: '1.75rem' }}
+          className={`w-full h-14 px-6 font-medium bg-green-100/80 border-2 text-center
+            focus:ring-2 focus:ring-white/50 placeholder:text-gray-500/50 placeholder:text-xl rounded-xl
+            ${isCorrect === true 
+              ? 'border-green-500 text-green-700' 
+              : isCorrect === false 
+                ? 'border-red-500 text-red-700 animate-pulse' 
+                : 'border-transparent text-gray-700'}`}
+        />
+        {/* Wrong answer effect */}
+        {isCorrect === false && (
+          <div className="absolute inset-0 rounded-xl bg-red-500/10 animate-pulse pointer-events-none"></div>
         )}
       </div>
+      
+      {suggestions.length > 0 && (
+        <div
+          ref={suggestionsRef}
+          className="absolute top-full left-0 right-0 mt-1 bg-white rounded-lg shadow-lg overflow-hidden z-50 border-2 border-gray-200"
+        >
+          {suggestions.map((suggestion, index) => (
+            <div
+              key={suggestion}
+              onClick={() => handleSuggestionClick(suggestion)}
+              style={{ fontSize: '1.1rem', lineHeight: '1.75rem' }}
+              className={`px-4 py-2.5 cursor-pointer flex items-center gap-3 hover:bg-gray-100 text-gray-700
+                ${index === highlightedIndex ? 'bg-gray-100 font-medium' : ''}`}
+            >
+              {/* Pokeball icon */}
+              <div className="w-6 h-6 relative">
+                {index === highlightedIndex ? (
+                  // Classic pokeball design for highlighted item
+                  <div className="w-full h-full relative">
+                    <div className="absolute inset-0 rounded-full overflow-hidden border-2 border-black">
+                      <div className="absolute top-0 inset-x-0 h-[50%] bg-red-500"></div>
+                      <div className="absolute bottom-0 inset-x-0 h-[50%] bg-white"></div>
+                      <div className="absolute inset-y-[45%] inset-x-0 h-[10%] bg-black"></div>
+                      <div className="absolute inset-[30%] rounded-full bg-white border-2 border-black"></div>
+                    </div>
+                  </div>
+                ) : (
+                  // Gray and white pokeball for non-highlighted items
+                  <div className="w-full h-full relative">
+                    <div className="absolute inset-0 rounded-full bg-white border-2 border-gray-300"></div>
+                    <div className="absolute inset-y-[45%] inset-x-0 h-[10%] bg-gray-300"></div>
+                    <div className="absolute inset-[30%] rounded-full bg-gray-300 border-2 border-white"></div>
+                  </div>
+                )}
+              </div>
+              {suggestion}
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }; 

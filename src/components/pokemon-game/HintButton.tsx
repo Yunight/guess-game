@@ -17,6 +17,10 @@ export const HintButton: FC<HintButtonProps> = ({
   isPokemonLoading,
   currentPokemon,
 }) => {
+  // Get the appropriate hint text, using English as fallback
+  const hintText = currentPokemon?.flavorText || 
+    (currentPokemon?.englishFlavorText ? 'Français non disponible - ' + currentPokemon.englishFlavorText : '');
+
   return (
     <div className="mx-2 mt-2">
       <div className="relative">
@@ -43,13 +47,13 @@ export const HintButton: FC<HintButtonProps> = ({
         
         <div className="relative h-20 mt-2 mb-4 overflow-hidden">
           <div className={`absolute inset-x-0 transition-all duration-300 transform ${showHint ? 'translate-y-0 opacity-100' : '-translate-y-full opacity-0'}`}>
-            {currentPokemon?.flavorText && (
+            {hintText && (
               <div className="p-3 bg-gray-100 border-2 border-gray-300
                 rounded-xl text-gray-700 text-sm
                 shadow-inner font-oswald relative">
                 <div className="absolute left-2 top-2 w-1.5 h-1.5 rounded-full bg-red-500"></div>
                 <div className="absolute right-2 top-2 w-1.5 h-1.5 rounded-full bg-red-500"></div>
-                <p className="text-center px-4 line-clamp-2">{currentPokemon.flavorText}</p>
+                <p className="text-center px-4 line-clamp-2">{hintText}</p>
               </div>
             )}
           </div>

@@ -6,6 +6,7 @@ interface Pokemon {
   frenchName: string;
   imageUrl: string;
   flavorText?: string;
+  englishFlavorText?: string;
   cryUrl?: string;
 }
 
@@ -142,6 +143,11 @@ export const pokemonApi = createApi({
             ?.flavor_text.replace(/\\n|\\f/g, ' ')
             .replace(new RegExp(frenchName, 'gi'), '_____') || '';
 
+          const englishFlavorText = speciesData.flavor_text_entries
+            .find((entry) => entry.language.name === 'en')
+            ?.flavor_text.replace(/\\n|\\f/g, ' ')
+            .replace(new RegExp(pokemonData.name, 'gi'), '_____') || '';
+
           const cryUrl = `https://play.pokemonshowdown.com/audio/cries/${pokemonData.name.toLowerCase()}.mp3`;
 
           const pokemon: Pokemon = {
@@ -150,6 +156,7 @@ export const pokemonApi = createApi({
             frenchName,
             imageUrl: pokemonData.sprites.other['official-artwork'].front_default,
             flavorText: frenchFlavorText,
+            englishFlavorText,
             cryUrl
           };
 

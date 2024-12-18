@@ -1,14 +1,14 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { collection, getDocs, addDoc, query, orderBy, limit, serverTimestamp, where, updateDoc, Timestamp, DocumentData } from 'firebase/firestore';
-import { db } from '../firebase';
-import '../styles/PokemonGame.css';
-import { useGetAllPokemonNamesQuery, useGetPokemonByIdQuery } from '../services/pokemonApi';
+import { db } from '../../firebase';
+import '../../styles/PokemonGame.css';
+import { useGetAllPokemonNamesQuery, useGetPokemonByIdQuery } from '../../services/pokemonApi';
 import { skipToken } from '@reduxjs/toolkit/query';
-import { GameScreen } from './pokemon-game/GameScreen';
-import { MenuScreen } from './pokemon-game/MenuScreen';
-import { GameOverDialog } from './pokemon-game/GameOverDialog';
+import { GameScreen } from './GameScreen';
+import { MenuScreen } from './MenuScreen';
+import { GameOverDialog } from './GameOverDialog';
 import { Generation, Rankings } from '@/components/pokemon-game/types';
-
+import { useLocalStorage } from '@/hooks/useLocalStorage';
 
 const GENERATIONS: Generation[] = [
   { name: '1ère Génération', startId: 1, endId: 151 },
@@ -18,12 +18,14 @@ const GENERATIONS: Generation[] = [
   { name: '5ème Génération', startId: 494, endId: 649 },
   { name: '6ème Génération', startId: 650, endId: 721 },
   { name: '7ème Génération', startId: 722, endId: 809 },
-  { name: '8ème Gén��ration', startId: 810, endId: 905 },
+  { name: '8ème Génération', startId: 810, endId: 905 },
   { name: '9ème Génération', startId: 906, endId: 1010 },
 ];
 const MAX_HINTS = 10;
 
 const PokemonGame = () => {
+  const [bestScore, setBestScore] = useLocalStorage<number>('bestScore', 0);
+  const [bestTime, setBestTime] = useLocalStorage<number>('bestTime', 0);
   const [guess, setGuess] = useState('');
   const [isCorrect, setIsCorrect] = useState<boolean | null>(null);
   const [score, setScore] = useState(0);
@@ -40,7 +42,7 @@ const PokemonGame = () => {
   const [userRanking, setUserRanking] = useState<number | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const suggestionsRef = useRef<HTMLDivElement>(null);
-  const audioRef = useRef<HTMLAudioElement | null>(null);
+
   const timerInterval = useRef<NodeJS.Timeout | null>(null);
   const totalTimeInterval = useRef<NodeJS.Timeout | null>(null);
   const [guessTimeLeft, setGuessTimeLeft] = useState<number>(15);
@@ -100,10 +102,9 @@ const PokemonGame = () => {
         .filter(name => {
           const normalizedName = normalizeText(name);
           const pokemonId = allPokemonNames.indexOf(name) + 1;
-          const generation = GENERATIONS.find(gen =>
-            pokemonId >= gen.startId && pokemonId <= gen.endId
-          );
-          return normalizedName.startsWith(normalizedValue) && generation;
+          return normalizedName.startsWith(normalizedValue) && 
+                 pokemonId >= selectedGeneration.startId && 
+                 pokemonId <= selectedGeneration.endId;
         })
         .map(name => capitalize(name))
         .sort((a, b) => {
@@ -126,15 +127,17 @@ const PokemonGame = () => {
     }
   };
 
-  const correctSoundUrl = 'https://www.myinstants.com/media/sounds/pokemon-red_blue_yellow-item-found-sound-effect.mp3';
+  // Add sound URLs as constants at the top of the component
+  const CORRECT_SOUND_URL = '/sounds/pkm_level_up.mp3';
+  const WRONG_SOUND_URL = '/sounds/bump_wall.mp3';
+  const VICTORY_SOUND_URL = '/sounds/battle_win.mp3';
 
-  // Add this new function to handle correct answers
   const handleCorrectAnswer = () => {
     setIsCorrect(true);
     setScore(prev => prev + 1);
     
     if (!isMuted) {
-      const audio = new Audio(correctSoundUrl);
+      const audio = new Audio(CORRECT_SOUND_URL);
       audio.play().catch(console.error);
     }
     
@@ -172,7 +175,6 @@ const PokemonGame = () => {
     }
   };
 
-  // Update handleSuggestionClick to use handleCorrectAnswer
   const handleSuggestionClick = (suggestion: string) => {
     setGuess(suggestion);
     setSuggestions([]);
@@ -184,6 +186,10 @@ const PokemonGame = () => {
       handleCorrectAnswer();
     } else {
       setIsCorrect(false);
+      if (!isMuted) {
+        const audio = new Audio(WRONG_SOUND_URL);
+        audio.play().catch(console.error);
+      }
     }
   };
 
@@ -209,17 +215,6 @@ const PokemonGame = () => {
     setRemainingPokemon(prev => prev.filter(id => id !== pokemonId));
   }, [remainingPokemon, isGameActive]);
 
-  // Update the useEffect to handle pokemon state updates
-  useEffect(() => {
-    if (currentPokemon && !isPokemonLoading && !isMuted) {
-      if (currentPokemon.cryUrl) {
-        const audio = new Audio(currentPokemon.cryUrl);
-        audioRef.current = audio;
-        audio.play().catch(console.error);
-      }
-    }
-  }, [currentPokemon, isPokemonLoading, isMuted]);
-
   const fetchSelectedRankings = useCallback(async () => {
     try {
       const rankingsRef = collection(db, `rankings_gen${selectedGeneration.startId}_${selectedGeneration.endId}`);
@@ -232,17 +227,31 @@ const PokemonGame = () => {
         rankingsData.push(data as Rankings);
       });
       setRankings(rankingsData);
+
+      // Find user's best record and update best time
+      const userBestRecord = rankingsData.find(record => record.name === playerName);
+      if (userBestRecord) {
+        setBestTime(userBestRecord.time);
+      }
     } catch (error) {
       console.error('Error fetching rankings:', error);
     }
-  }, [selectedGeneration]);
+  }, [selectedGeneration, playerName, setBestTime]);
 
   const handleGameOver = useCallback(async () => {
-    // Prevent multiple executions
     if (gameOver) return;
     
     setIsGameActive(false);
     setGameOver(true);
+    
+    if (!isMuted) {
+      const audio = new Audio(VICTORY_SOUND_URL);
+      audio.play().catch(console.error);
+    }
+    
+    if (score > bestScore) {
+      setBestScore(score);
+    }
     
     if (timerInterval.current) {
       clearInterval(timerInterval.current);
@@ -268,12 +277,17 @@ const PokemonGame = () => {
         if (!querySnapshot.empty) {
           const existingDoc = querySnapshot.docs[0];
           const existingScore = existingDoc.data().score;
+          const existingTime = existingDoc.data().time;
           
-          if (score > existingScore) {
+          if (score > existingScore || (score === existingScore && totalTimeElapsed < existingTime)) {
             await updateDoc(existingDoc.ref, playerData);
+            if (totalTimeElapsed < existingTime) {
+              setBestTime(totalTimeElapsed);
+            }
           }
         } else {
           await addDoc(rankingsRef, playerData);
+          setBestTime(totalTimeElapsed);
         }
         
         // Add delay before fetching rankings
@@ -287,7 +301,7 @@ const PokemonGame = () => {
         console.error('Error saving score:', error);
       }
     }
-  }, [score, playerName, selectedGeneration, totalTimeElapsed, gameOver, rankings, fetchSelectedRankings]);
+  }, [score, playerName, selectedGeneration, totalTimeElapsed, gameOver, rankings, fetchSelectedRankings, bestScore, setBestScore, setBestTime, isMuted]);
 
   // Update the effect to use both functions
   useEffect(() => {
@@ -367,6 +381,16 @@ const PokemonGame = () => {
     // Store the name in localStorage only when starting the game
     localStorage.setItem('pokemonGamePlayerName', playerName);
     
+    // Stop any existing timers
+    if (timerInterval.current) {
+      clearInterval(timerInterval.current);
+      timerInterval.current = null;
+    }
+    if (totalTimeInterval.current) {
+      clearInterval(totalTimeInterval.current);
+      totalTimeInterval.current = null;
+    }
+    
     // Reset all game states
     setScore(0);
     setHintsLeft(10);
@@ -377,11 +401,10 @@ const PokemonGame = () => {
     setSuggestions([]);
     setGuessTimeLeft(15);
     setTotalTimeElapsed(0);
-    setGameOver(false); // Make sure gameOver is set to false when starting
-    
-    // Start both timers
-    startGuessTimer();
-    startTotalTimer();
+    setGameOver(false);
+    setUserRanking(null);
+    setCurrentPokemonId(null);
+    setHighlightedIndex(-1);
     
     // Initialize Pokémon list for selected generation
     const filteredIds = Array.from(
@@ -390,11 +413,12 @@ const PokemonGame = () => {
     );
     setRemainingPokemon(filteredIds);
     
-    // Fetch first Pokémon
-    fetchRandomPokemon();
-    
-    // Focus input after a short delay to ensure DOM is ready
+    // Start both timers after a short delay to ensure clean state
     setTimeout(() => {
+      startGuessTimer();
+      startTotalTimer();
+      fetchRandomPokemon();
+      // Focus input after timers are started
       inputRef.current?.focus();
     }, 100);
   };
@@ -506,6 +530,8 @@ const PokemonGame = () => {
           isPokemonLoading={isPokemonLoading}
           isCorrect={isCorrect}
           score={score}
+          bestScore={bestScore}
+          bestTime={bestTime}
           guessTimeLeft={guessTimeLeft}
           hintsLeft={hintsLeft}
           guess={guess}
@@ -521,6 +547,7 @@ const PokemonGame = () => {
           formatTime={formatTime}
           isMuted={isMuted}
           setIsMuted={setIsMuted}
+          totalTimeElapsed={totalTimeElapsed}
         />
       ) : (
         <MenuScreen
@@ -533,6 +560,7 @@ const PokemonGame = () => {
           canStartGame={canStartGame}
           startGame={startGame}
           score={score}
+          bestScore={bestScore}
           isMuted={isMuted}
           setIsMuted={setIsMuted}
           rankings={rankings}
@@ -546,6 +574,8 @@ const PokemonGame = () => {
         setGameOver={setGameOver}
         playerName={playerName}
         score={score}
+        bestScore={bestScore}
+        bestTime={bestTime}
         userRanking={userRanking}
         totalTimeElapsed={totalTimeElapsed}
         formatTimeForRanking={formatTimeForRanking}

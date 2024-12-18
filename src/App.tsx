@@ -1,6 +1,6 @@
 import { Provider } from 'react-redux';
 import { store } from './store/store';
-import PokemonGame from './components/PokemonGame'
+import PokemonGame from './components/pokemon-game/PokemonGame'
 import './App.css'
 
 function App() {

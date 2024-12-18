@@ -2,16 +2,20 @@ import { FC } from 'react';
 
 interface GameStatsProps {
   score: number;
+  bestScore: number;
   guessTimeLeft: number;
   hintsLeft: number;
   formatTime: (seconds: number) => string;
+  bestTime: number;
 }
 
 export const GameStats: FC<GameStatsProps> = ({
   score,
+  bestScore,
   guessTimeLeft,
   hintsLeft,
   formatTime,
+  bestTime,
 }) => {
   return (
     <div className="mx-2 bg-gradient-to-b from-gray-900 to-gray-800 rounded-b-lg p-4 shadow-lg border-t-2 border-blue-500/30">
@@ -21,7 +25,12 @@ export const GameStats: FC<GameStatsProps> = ({
           <div className="absolute inset-0 bg-blue-400/5"></div>
           <div className="relative z-10">
             <div className="text-xs text-blue-200 mb-1 font-medium">Score</div>
-            <div className="text-2xl font-bold text-white font-mono">{score}</div>
+            <div className="space-y-1">
+              <div className="text-2xl font-bold text-white font-mono">{score}</div>
+              <div className="text-sm text-yellow-300 font-mono">
+                Best: {bestScore}
+              </div>
+            </div>
           </div>
         </div>
 
@@ -30,9 +39,14 @@ export const GameStats: FC<GameStatsProps> = ({
           <div className="absolute inset-0 bg-blue-400/5"></div>
           <div className="relative z-10">
             <div className="text-xs text-blue-200 mb-1 font-medium">Temps</div>
-            <div className={`text-2xl font-bold font-mono transition-colors duration-300
-              ${guessTimeLeft <= 5 ? 'text-red-400' : 'text-white'}`}>
-              {formatTime(guessTimeLeft)}
+            <div className="space-y-1">
+              <div className={`text-2xl font-bold font-mono transition-colors duration-300
+                ${guessTimeLeft <= 5 ? 'text-red-400' : 'text-white'}`}>
+                {formatTime(guessTimeLeft)}
+              </div>
+              <div className="text-sm text-yellow-300 font-mono">
+                Best: {formatTime(bestTime)}
+              </div>
             </div>
           </div>
         </div>

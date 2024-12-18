@@ -19,6 +19,7 @@ interface MenuScreenProps {
   rankings: Rankings[];
   formatTimeForRanking: (seconds: number) => string;
   formatDate: (timestamp: Date) => string;
+  bestScore: number;
 }
 
 export const MenuScreen: FC<MenuScreenProps> = ({
@@ -50,7 +51,7 @@ export const MenuScreen: FC<MenuScreenProps> = ({
           </div>
 
           {/* Blue circle light */}
-          <div className="absolute top-2 left-12 w-10 h-10 rounded-full bg-blue-400 border-4 border-white"></div>
+          <div className="absolute top-2 left-24 w-10 h-10 rounded-full bg-blue-400 border-4 border-white"></div>
 
           {/* Sound toggle */}
           <div className="absolute top-4 right-4">
@@ -69,8 +70,8 @@ export const MenuScreen: FC<MenuScreenProps> = ({
           </div>
 
           {/* Main content area */}
-          <div className="mt-16 space-y-6 h-[550px] flex flex-col">
-            <div className="bg-white rounded-xl p-6 shadow-inner space-y-6 flex-1">
+          <div className="mt-16 space-y-3 h-[calc(100%-5rem)] flex flex-col">
+            <div className="bg-white rounded-xl p-3 sm:p-4 shadow-inner space-y-3 flex-1">
               <div className="space-y-2">
                 <label htmlFor="playerName" className="text-sm font-medium text-gray-700">
                   Nom du dresseur
@@ -79,7 +80,7 @@ export const MenuScreen: FC<MenuScreenProps> = ({
                   id="playerName"
                   type="text"
                   placeholder="Entrez votre nom"
-                  className={`w-full h-12 px-4 text-lg transition-colors
+                  className={`w-full h-10 px-4 text-lg transition-colors
                     ${nameError ? 'border-red-500 focus:ring-red-500' : 'border-gray-300'}
                   `}
                   value={playerName}
@@ -90,17 +91,17 @@ export const MenuScreen: FC<MenuScreenProps> = ({
                 )}
               </div>
 
-              <div className="space-y-3 mt-auto">
+              <div className="space-y-2">
                 <h2 className="text-lg font-semibold text-gray-800 flex items-center gap-2">
                   <div className="w-6 h-6 bg-red-500 rounded-full border-4 border-white shadow-md"></div>
                   Génération Pokémon
                 </h2>
-                <div className="grid grid-cols-2 gap-2">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
                   {GENERATIONS.map((gen) => (
                     <Button
                       key={gen.name}
                       onClick={() => handleGenerationSelect(gen)}
-                      className={`px-3 py-2 text-sm font-medium transition-all relative overflow-hidden
+                      className={`px-2 py-1.5 text-sm font-medium transition-all relative overflow-hidden
                         ${selectedGeneration.name === gen.name
                           ? 'bg-gradient-to-br from-red-500 to-red-600 text-white shadow-lg scale-[1.02] border-2 border-white'
                           : 'bg-gray-100 text-gray-600 hover:bg-gray-200 hover:scale-[1.01]'
@@ -124,37 +125,37 @@ export const MenuScreen: FC<MenuScreenProps> = ({
             <Button
               onClick={startGame}
               disabled={!canStartGame}
-              className={`w-full h-48 text-4xl font-bold transition-all duration-300 relative mt-6 overflow-hidden rounded-xl
+              className={`w-full h-14 sm:h-20 text-lg sm:text-xl font-bold transition-all duration-300 relative overflow-hidden rounded-xl
                 ${canStartGame 
-                  ? 'bg-gradient-to-br from-blue-500 to-blue-600 text-white shadow-xl hover:shadow-2xl transform hover:scale-[1.02] border-[8px] border-white' 
+                  ? 'bg-gradient-to-br from-blue-500 to-blue-600 text-white shadow-xl hover:shadow-2xl transform hover:scale-[1.02] border-4 border-white' 
                   : 'bg-gray-200 text-gray-500'
                 }
                 before:content-[""] before:absolute before:inset-0 before:bg-gradient-to-r before:from-white/20 before:via-transparent before:to-transparent
                 ${canStartGame ? 'before:animate-shine' : ''}
               `}
             >
-              <div className="absolute left-10 top-1/2 -translate-y-1/2">
-                <div className="w-20 h-20 bg-white/20 rounded-full relative backdrop-blur-sm border-4 border-white/40">
+              <div className="absolute left-10 top-1/2 -translate-y-1/2 hidden sm:block">
+                <div className="w-16 h-16 bg-white/20 rounded-full relative backdrop-blur-sm border-4 border-white/40">
                   {/* Vertical line */}
-                  <div className="absolute left-1/2 top-0 -translate-x-1/2 h-full w-5 flex flex-col justify-between">
-                    <div className="h-5 bg-white/60 rounded-t-sm"></div>
-                    <div className="h-5 bg-white/60 rounded-b-sm"></div>
+                  <div className="absolute left-1/2 top-0 -translate-x-1/2 h-full w-4 flex flex-col justify-between">
+                    <div className="h-4 bg-white/60 rounded-t-sm"></div>
+                    <div className="h-4 bg-white/60 rounded-b-sm"></div>
                   </div>
                   {/* Horizontal line */}
-                  <div className="absolute top-1/2 left-0 -translate-y-1/2 w-full h-5 flex justify-between">
-                    <div className="w-5 bg-white/60 rounded-l-sm"></div>
-                    <div className="w-5 bg-white/60 rounded-r-sm"></div>
+                  <div className="absolute top-1/2 left-0 -translate-y-1/2 w-full h-4 flex justify-between">
+                    <div className="w-4 bg-white/60 rounded-l-sm"></div>
+                    <div className="w-4 bg-white/60 rounded-r-sm"></div>
                   </div>
                   {/* Center circle */}
-                  <div className="absolute inset-1/2 -translate-x-1/2 -translate-y-1/2 w-5 h-5 bg-white rounded-full shadow-glow"></div>
+                  <div className="absolute inset-1/2 -translate-x-1/2 -translate-y-1/2 w-4 h-4 bg-white rounded-full shadow-glow"></div>
                 </div>
               </div>
               <div className="flex items-center justify-center gap-4">
-                <span className="ml-16">
-                  {score > 0 ? 'Rejouer!' : 'Commencer!'}
+                <span className="sm:ml-16">
+                  {score > 0 ? 'Rejouer !' : 'Commencer !'}
                 </span>
                 {canStartGame && (
-                  <div className="w-5 h-5 bg-white rounded-full animate-pulse"></div>
+                  <div className="w-4 h-4 bg-white rounded-full animate-pulse"></div>
                 )}
               </div>
             </Button>

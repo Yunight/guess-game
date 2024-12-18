@@ -16,6 +16,7 @@ export interface Pokemon {
   frenchName: string;
   imageUrl: string;
   flavorText?: string;
+  englishFlavorText?: string;
   cryUrl?: string;
 }
 

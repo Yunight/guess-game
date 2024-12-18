@@ -1,12 +1,12 @@
-import { FC } from 'react';
+import { FC, RefObject } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Volume2, VolumeX } from 'lucide-react';
-import { PokemonDisplay } from '@/components/pokemon-game/PokemonDisplay';
-import { GameStats } from '@/components/pokemon-game/GameStats';
-import { GuessInput } from '@/components/pokemon-game/GuessInput';
-import { HintButton } from '@/components/pokemon-game/HintButton';
-import { Pokemon } from '@/components/pokemon-game/types';
+import { Pokemon } from './types';
+import { PokemonDisplay } from './PokemonDisplay';
+import { GameStats } from './GameStats';
+import { GuessInput } from './GuessInput';
+import { HintButton } from './HintButton';
 
 interface GameScreenProps {
   currentPokemon: Pokemon | undefined;
@@ -23,11 +23,14 @@ interface GameScreenProps {
   highlightedIndex: number;
   showHint: boolean;
   useHint: () => void;
-  inputRef: React.RefObject<HTMLInputElement>;
-  suggestionsRef: React.RefObject<HTMLDivElement>;
+  inputRef: RefObject<HTMLInputElement>;
+  suggestionsRef: RefObject<HTMLDivElement>;
   formatTime: (seconds: number) => string;
   isMuted: boolean;
-  setIsMuted: (muted: boolean) => void;
+  setIsMuted: (value: boolean) => void;
+  totalTimeElapsed: number;
+  bestScore: number;
+  bestTime: number;
 }
 
 export const GameScreen: FC<GameScreenProps> = ({
@@ -50,6 +53,9 @@ export const GameScreen: FC<GameScreenProps> = ({
   formatTime,
   isMuted,
   setIsMuted,
+  totalTimeElapsed,
+  bestScore,
+  bestTime,
 }) => {
   return (
     <Card className="w-full max-w-md p-1 sm:p-4 relative flex flex-col min-h-0 sm:min-h-0 bg-red-500 rounded-3xl">
@@ -61,10 +67,20 @@ export const GameScreen: FC<GameScreenProps> = ({
       </div>
 
       {/* Blue circle light */}
-      <div className="absolute top-2 left-12 w-10 h-10 rounded-full bg-blue-400 border-4 border-white"></div>
+      <div className="absolute top-2 left-24 w-10 h-10 rounded-full bg-blue-400 border-4 border-white"></div>
+
+      {/* Global Timer */}
+      <div className="absolute top-4 left-1/2 -translate-x-1/2 font-mono text-lg font-bold text-white h-9 flex items-center bg-black/20 px-4 rounded-full backdrop-blur-sm">
+        {formatTime(totalTimeElapsed)}
+      </div>
+
+      {/* Pokemon Number */}
+      <div className="absolute top-4 right-16 font-mono text-lg font-bold text-gray-700 h-9 flex items-center">
+        #{currentPokemon?.id.toString().padStart(3, '0') || '???'}
+      </div>
 
       {/* Sound toggle */}
-      <div className="absolute top-4 right-16">
+      <div className="absolute top-4 right-4">
         <Button
           variant="ghost"
           size="icon"
@@ -79,22 +95,20 @@ export const GameScreen: FC<GameScreenProps> = ({
         </Button>
       </div>
 
-      {/* Pokemon Number */}
-      <div className="absolute top-4 right-4 font-mono text-lg font-bold text-gray-700">
-        #{currentPokemon?.id.toString().padStart(3, '0') || '???'}
-      </div>
-
       <PokemonDisplay 
         currentPokemon={currentPokemon}
         isPokemonLoading={isPokemonLoading}
         isCorrect={isCorrect}
+        isMuted={isMuted}
       />
 
       <GameStats 
         score={score}
+        bestScore={bestScore}
         guessTimeLeft={guessTimeLeft}
         hintsLeft={hintsLeft}
         formatTime={formatTime}
+        bestTime={bestTime}
       />
 
       {/* D-Pad and green screen area */}
@@ -123,78 +137,32 @@ export const GameScreen: FC<GameScreenProps> = ({
               shadow-[inset_1px_1px_1px_rgba(255,255,255,0.1),inset_-1px_-1px_1px_rgba(0,0,0,0.3)]
               hover:brightness-110 active:brightness-90 transition-all"></div>
           </div>
-          {/* Center circle */}
-          <div className="absolute inset-1/2 -translate-x-1/2 -translate-y-1/2 w-3 h-3 
-            bg-gray-700 rounded-full
-            shadow-[inset_1px_1px_1px_rgba(0,0,0,0.3)]"></div>
+          {/* Center dot */}
+          <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-3 h-3 bg-gray-700 rounded-full"></div>
         </div>
-        
-        {/* Pokéball types display */}
-        <div className="flex-grow flex justify-around items-center">
-          {/* Regular Pokéball */}
-          <div className="w-8 h-8 relative ring-2 ring-white rounded-full">
-            <div className="absolute inset-0 bg-red-500 rounded-full overflow-hidden">
-              <div className="absolute bottom-1/2 inset-x-0 h-[1px] bg-black"></div>
-            </div>
-            <div className="absolute top-1/2 inset-x-0 bottom-0 bg-white rounded-b-full border-t border-black"></div>
-            <div className="absolute inset-[30%] bg-white rounded-full border-2 border-black"></div>
-          </div>
 
-          {/* Great Ball */}
-          <div className="w-8 h-8 relative ring-2 ring-white rounded-full">
-            <div className="absolute inset-0 bg-blue-500 rounded-full overflow-hidden">
-              <div className="absolute bottom-1/2 inset-x-0 h-[1px] bg-black"></div>
-            </div>
-            <div className="absolute top-1/2 inset-x-0 bottom-0 bg-white rounded-b-full border-t border-black"></div>
-            <div className="absolute inset-[30%] bg-white rounded-full border-2 border-black">
-              <div className="absolute inset-1 bg-blue-500 rounded-full"></div>
-            </div>
-          </div>
-
-          {/* Ultra Ball */}
-          <div className="w-8 h-8 relative ring-2 ring-white rounded-full">
-            <div className="absolute inset-0 bg-black rounded-full overflow-hidden">
-              <div className="absolute top-0 inset-x-0 h-1/2 bg-yellow-400"></div>
-              <div className="absolute bottom-1/2 inset-x-0 h-[1px] bg-black"></div>
-            </div>
-            <div className="absolute top-1/2 inset-x-0 bottom-0 bg-white rounded-b-full border-t border-black"></div>
-            <div className="absolute inset-[30%] bg-white rounded-full border-2 border-black">
-              <div className="absolute inset-1 bg-gray-800 rounded-full"></div>
-            </div>
-          </div>
-
-          {/* Master Ball */}
-          <div className="w-8 h-8 relative ring-2 ring-white rounded-full">
-            <div className="absolute inset-0 bg-purple-600 rounded-full overflow-hidden">
-              <div className="absolute top-[15%] inset-x-[15%] h-[20%] bg-pink-400 rounded-full"></div>
-              <div className="absolute bottom-1/2 inset-x-0 h-[1px] bg-black"></div>
-            </div>
-            <div className="absolute top-1/2 inset-x-0 bottom-0 bg-white rounded-b-full border-t border-black"></div>
-            <div className="absolute inset-[30%] bg-white rounded-full border-2 border-black">
-              <div className="absolute inset-1 bg-purple-500 rounded-full"></div>
-            </div>
-          </div>
+        {/* Green screen area */}
+        <div className="flex-1 bg-gradient-to-br from-green-300 to-green-400 rounded-lg p-2 shadow-inner">
+          <GuessInput
+            guess={guess}
+            handleGuessChange={handleGuessChange}
+            handleKeyDown={handleKeyDown}
+            suggestions={suggestions}
+            handleSuggestionClick={handleSuggestionClick}
+            highlightedIndex={highlightedIndex}
+            inputRef={inputRef}
+            suggestionsRef={suggestionsRef}
+            isCorrect={isCorrect}
+          />
         </div>
       </div>
 
-      <GuessInput 
-        guess={guess}
-        handleGuessChange={handleGuessChange}
-        handleKeyDown={handleKeyDown}
-        suggestions={suggestions}
-        handleSuggestionClick={handleSuggestionClick}
-        highlightedIndex={highlightedIndex}
-        isCorrect={isCorrect}
-        inputRef={inputRef}
-        suggestionsRef={suggestionsRef}
-      />
-
       <HintButton 
-        hintsLeft={hintsLeft}
         showHint={showHint}
         useHint={useHint}
-        isPokemonLoading={isPokemonLoading}
+        hintsLeft={hintsLeft}
         currentPokemon={currentPokemon}
+        isPokemonLoading={isPokemonLoading}
       />
     </Card>
   );
