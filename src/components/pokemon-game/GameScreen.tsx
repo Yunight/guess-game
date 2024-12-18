@@ -1,5 +1,7 @@
 import { FC } from 'react';
 import { Card } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Volume2, VolumeX } from 'lucide-react';
 import { PokemonDisplay } from '@/components/pokemon-game/PokemonDisplay';
 import { GameStats } from '@/components/pokemon-game/GameStats';
 import { GuessInput } from '@/components/pokemon-game/GuessInput';
@@ -24,6 +26,8 @@ interface GameScreenProps {
   inputRef: React.RefObject<HTMLInputElement>;
   suggestionsRef: React.RefObject<HTMLDivElement>;
   formatTime: (seconds: number) => string;
+  isMuted: boolean;
+  setIsMuted: (muted: boolean) => void;
 }
 
 export const GameScreen: FC<GameScreenProps> = ({
@@ -44,6 +48,8 @@ export const GameScreen: FC<GameScreenProps> = ({
   inputRef,
   suggestionsRef,
   formatTime,
+  isMuted,
+  setIsMuted,
 }) => {
   return (
     <Card className="w-full max-w-md p-1 sm:p-4 relative flex flex-col min-h-0 sm:min-h-0 bg-red-500 rounded-3xl">
@@ -56,6 +62,22 @@ export const GameScreen: FC<GameScreenProps> = ({
 
       {/* Blue circle light */}
       <div className="absolute top-2 left-12 w-10 h-10 rounded-full bg-blue-400 border-4 border-white"></div>
+
+      {/* Sound toggle */}
+      <div className="absolute top-4 right-16">
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={() => setIsMuted(!isMuted)}
+          className="hover:bg-white/10"
+        >
+          {isMuted ? (
+            <VolumeX className="h-5 w-5 text-white" />
+          ) : (
+            <Volume2 className="h-5 w-5 text-white" />
+          )}
+        </Button>
+      </div>
 
       {/* Pokemon Number */}
       <div className="absolute top-4 right-4 font-mono text-lg font-bold text-gray-700">
@@ -76,7 +98,7 @@ export const GameScreen: FC<GameScreenProps> = ({
       />
 
       {/* D-Pad and green screen area */}
-      <div className="flex items-center gap-4 mx-2 mb-2">
+      <div className="flex items-center gap-4 mx-2 mt-6 mb-2">
         {/* D-Pad */}
         <div className="w-12 h-12 bg-gray-800 rounded-full relative shadow-inner">
           {/* Vertical line */}

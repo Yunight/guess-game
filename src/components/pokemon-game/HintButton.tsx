@@ -41,7 +41,7 @@ export const HintButton: FC<HintButtonProps> = ({
           </div>
         </Button>
         
-        <div className="relative h-16 mt-2 overflow-hidden">
+        <div className="relative h-20 mt-2 mb-4 overflow-hidden">
           <div className={`absolute inset-x-0 transition-all duration-300 transform ${showHint ? 'translate-y-0 opacity-100' : '-translate-y-full opacity-0'}`}>
             {currentPokemon?.flavorText && (
               <div className="p-3 bg-gray-100 border-2 border-gray-300

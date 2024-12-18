@@ -18,7 +18,7 @@ const GENERATIONS: Generation[] = [
   { name: '5ème Génération', startId: 494, endId: 649 },
   { name: '6ème Génération', startId: 650, endId: 721 },
   { name: '7ème Génération', startId: 722, endId: 809 },
-  { name: '8ème Génération', startId: 810, endId: 905 },
+  { name: '8ème Gén��ration', startId: 810, endId: 905 },
   { name: '9ème Génération', startId: 906, endId: 1010 },
 ];
 const MAX_HINTS = 10;
@@ -519,6 +519,8 @@ const PokemonGame = () => {
           inputRef={inputRef}
           suggestionsRef={suggestionsRef}
           formatTime={formatTime}
+          isMuted={isMuted}
+          setIsMuted={setIsMuted}
         />
       ) : (
         <MenuScreen
