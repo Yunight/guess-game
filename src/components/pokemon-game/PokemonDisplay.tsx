@@ -1,6 +1,19 @@
 import { FC, useEffect, useState, useRef } from 'react';
 import { Pokemon } from './types';
 
+// Add custom logger that only logs in development
+const devLog = (message: string) => {
+  if (process.env.NODE_ENV === 'development') {
+    console.log(message);
+  }
+};
+
+const devError = (message: string, error?: unknown) => {
+  if (process.env.NODE_ENV === 'development') {
+    console.error(message, error);
+  }
+};
+
 interface PokemonDisplayProps {
   currentPokemon: Pokemon | undefined;
   isPokemonLoading: boolean;
@@ -24,7 +37,7 @@ export const PokemonDisplay: FC<PokemonDisplayProps> = ({
   // Reset state when Pokemon changes
   useEffect(() => {
     const newPokemonId = currentPokemon?.id;
-    console.log('🔄 Pokemon changed, resetting display state');
+    devLog('🔄 Pokemon changed, resetting display state');
     
     // Update our reference first
     currentPokemonIdRef.current = newPokemonId || null;
@@ -36,7 +49,7 @@ export const PokemonDisplay: FC<PokemonDisplayProps> = ({
 
     // Clean up previous audio immediately
     if (audioRef.current) {
-      console.log('🧹 Cleaning up previous Pokemon audio');
+      devLog('🧹 Cleaning up previous Pokemon audio');
       audioRef.current.pause();
       audioRef.current.currentTime = 0;
       audioRef.current.remove();
@@ -45,7 +58,7 @@ export const PokemonDisplay: FC<PokemonDisplayProps> = ({
 
     return () => {
       if (audioRef.current) {
-        console.log('🧹 Cleaning up audio on unmount');
+        devLog('🧹 Cleaning up audio on unmount');
         audioRef.current.pause();
         audioRef.current.currentTime = 0;
         audioRef.current.remove();
@@ -57,40 +70,40 @@ export const PokemonDisplay: FC<PokemonDisplayProps> = ({
   // Handle image loading and display state
   useEffect(() => {
     if (!currentPokemon || isPokemonLoading || !loadingRef.current) {
-      console.log('⏳ Waiting for Pokemon data...');
+      devLog('⏳ Waiting for Pokemon data...');
       return;
     }
 
     const initialPokemonId = currentPokemon.id;
     if (initialPokemonId !== currentPokemonIdRef.current) {
-      console.log('❌ Pokemon ID mismatch at start of effect, aborting');
+      devLog('❌ Pokemon ID mismatch at start of effect, aborting');
       return;
     }
     
-    console.log('🎯 Starting to load Pokemon:', initialPokemonId);
+    devLog(`🎯 Starting to load Pokemon: ${initialPokemonId}`);
 
     const loadImage = async () => {
       try {
         // Check if we're still loading the same Pokemon
         if (initialPokemonId !== currentPokemonIdRef.current) {
-          console.log('❌ Pokemon changed during loading, aborting');
+          devLog('❌ Pokemon changed during loading, aborting');
           return;
         }
 
         // Only attempt to load if we have a valid sprite URL
         if (!currentPokemon.sprite) {
-          console.error('❌ No sprite URL available');
+          devError('❌ No sprite URL available');
           setDisplayState('ready');
           return;
         }
 
-        console.log('🖼️ Loading Pokemon sprite for:', currentPokemon.frenchName, 'ID:', currentPokemon.id);
+        devLog(`🖼️ Loading Pokemon sprite for: ${currentPokemon.frenchName} ID: ${currentPokemon.id}`);
         // Preload the image
         await new Promise((resolve, reject) => {
           const img = new Image();
           img.onload = resolve;
           img.onerror = (error) => {
-            console.error('❌ Error loading Pokemon sprite:', error);
+            devError('❌ Error loading Pokemon sprite:', error);
             reject(error);
           };
           img.src = currentPokemon.sprite;
@@ -98,7 +111,7 @@ export const PokemonDisplay: FC<PokemonDisplayProps> = ({
 
         // Check again if we're still loading the same Pokemon
         if (initialPokemonId !== currentPokemonIdRef.current) {
-          console.log('❌ Pokemon changed after loading sprite, aborting');
+          devLog('❌ Pokemon changed after loading sprite, aborting');
           return;
         }
 
@@ -110,7 +123,7 @@ export const PokemonDisplay: FC<PokemonDisplayProps> = ({
         
         // Check one final time before playing sound
         if (initialPokemonId !== currentPokemonIdRef.current) {
-          console.log('❌ Pokemon changed before playing sound, aborting');
+          devLog('❌ Pokemon changed before playing sound, aborting');
           return;
         }
 
@@ -119,11 +132,11 @@ export const PokemonDisplay: FC<PokemonDisplayProps> = ({
         
         // Play sound only after display is ready, if not muted, and if we haven't played it yet
         if (!isMuted && currentPokemon.cryUrl && !soundPlayedRef.current && !isCorrect) {
-          console.log(`🔊 About to play Pokemon cry sound for: ${currentPokemon.frenchName} ID: ${initialPokemonId}`);
+          devLog(`🔊 About to play Pokemon cry sound for: ${currentPokemon.frenchName} ID: ${initialPokemonId}`);
           
           // Double check we're still on the same Pokemon
           if (initialPokemonId !== currentPokemonIdRef.current) {
-            console.log('❌ Pokemon ID mismatch, aborting sound play');
+            devLog('❌ Pokemon ID mismatch, aborting sound play');
             return;
           }
 
@@ -149,7 +162,7 @@ export const PokemonDisplay: FC<PokemonDisplayProps> = ({
             
             // Final check before playing
             if (initialPokemonId !== currentPokemonIdRef.current) {
-              console.log('❌ Pokemon changed during audio load, aborting');
+              devLog('❌ Pokemon changed during audio load, aborting');
               audio.remove();
               audioRef.current = null;
               return;
@@ -160,16 +173,16 @@ export const PokemonDisplay: FC<PokemonDisplayProps> = ({
             // Verify the sound being played matches the current Pokemon
             if (audioRef.current?.dataset.pokemonId === initialPokemonId.toString() &&
                 initialPokemonId === currentPokemonIdRef.current) {
-              console.log(`✅ Pokemon cry sound played successfully for: ${currentPokemon.frenchName} ID: ${initialPokemonId}`);
+              devLog(`✅ Pokemon cry sound played successfully for: ${currentPokemon.frenchName} ID: ${initialPokemonId}`);
             } else {
-              console.log('❌ Sound mismatch detected, stopping audio');
+              devLog('❌ Sound mismatch detected, stopping audio');
               audio.pause();
               audio.currentTime = 0;
               audio.remove();
               audioRef.current = null;
             }
           } catch (error) {
-            console.error('❌ Error playing Pokemon cry:', error);
+            devError('❌ Error playing Pokemon cry:', error);
             if (audioRef.current) {
               audioRef.current.remove();
               audioRef.current = null;
@@ -177,7 +190,7 @@ export const PokemonDisplay: FC<PokemonDisplayProps> = ({
           }
         }
       } catch (error) {
-        console.error('Error loading resources:', error);
+        devError('Error loading resources:', error);
         // Only set Pokemon data if we're still on the same Pokemon
         if (initialPokemonId === currentPokemonIdRef.current) {
           setDisplayedPokemon(currentPokemon);
