@@ -80,10 +80,16 @@ const PokemonGame = () => {
 
   const { data: allPokemonData = [] } = useGetAllPokemonNamesQuery();
 
-  const getRewardPokemon = useCallback((score: number) => {
-    // Return loading state if data is not yet available
+  const [rewardPokemon, setRewardPokemon] = useState<{ pokemon: Pokemon | undefined; isLoading: boolean }>({
+    pokemon: undefined,
+    isLoading: true
+  });
+
+  const calculateRewardPokemon = useCallback(async (score: number) => {
+    setRewardPokemon({ pokemon: undefined, isLoading: true });
+
     if (!allPokemonData || allPokemonData.length === 0) {
-      return { id: 25, name: '', isLoading: true };
+      return;
     }
 
     try {
@@ -99,19 +105,19 @@ const PokemonGame = () => {
         );
         
         if (basicPokemon.length === 0) {
-          return { 
-            id: 25, // Default to Pikachu
-            name: '', 
-            isLoading: false 
-          }; 
+          setRewardPokemon({
+            pokemon: undefined,
+            isLoading: false
+          });
+          return;
         }
         
         const randomBasic = basicPokemon[Math.floor(Math.random() * basicPokemon.length)];
-        return {
-          id: randomBasic.id,
-          name: randomBasic.frenchName,
+        setRewardPokemon({
+          pokemon: randomBasic,
           isLoading: false
-        };
+        });
+        return;
       }
 
       // Filter Pokémon based on the tier condition and selected generation
@@ -133,11 +139,11 @@ const PokemonGame = () => {
           
           if (lowerTierPokemon.length > 0) {
             const randomPokemon = lowerTierPokemon[Math.floor(Math.random() * lowerTierPokemon.length)];
-            return {
-              id: randomPokemon.id,
-              name: randomPokemon.frenchName,
+            setRewardPokemon({
+              pokemon: randomPokemon,
               isLoading: false
-            };
+            });
+            return;
           }
         }
         
@@ -148,23 +154,25 @@ const PokemonGame = () => {
         );
         
         const randomPokemon = generationPokemon[Math.floor(Math.random() * generationPokemon.length)];
-        return {
-          id: randomPokemon.id,
-          name: randomPokemon.frenchName,
+        setRewardPokemon({
+          pokemon: randomPokemon,
           isLoading: false
-        };
+        });
+        return;
       }
 
       // Pick a random Pokémon from the eligible ones
       const randomPokemon = eligiblePokemon[Math.floor(Math.random() * eligiblePokemon.length)];
-      return {
-        id: randomPokemon.id,
-        name: randomPokemon.frenchName,
+      setRewardPokemon({
+        pokemon: randomPokemon,
         isLoading: false
-      };
+      });
     } catch (error) {
       console.error('Error getting reward pokemon:', error);
-      return { id: 25, name: '', isLoading: true };
+      setRewardPokemon({
+        pokemon: undefined,
+        isLoading: false
+      });
     }
   }, [allPokemonData, selectedGeneration]);
 
@@ -397,9 +405,18 @@ const PokemonGame = () => {
       totalTimeInterval.current = null;
     }
 
-    // Update states first
+    // Show the correct Pokemon first
+    setIsCorrect(true);
+    
+    // Wait for the reveal animation
+    await new Promise(resolve => setTimeout(resolve, 2000));
+
+    // Update states
     setIsGameActive(false);
     setGameOver(true);
+    
+    // Calculate reward Pokemon
+    await calculateRewardPokemon(score);
     
     // Small delay to ensure state updates are processed
     await new Promise(resolve => setTimeout(resolve, 50));
@@ -463,7 +480,7 @@ const PokemonGame = () => {
         console.error('Error saving score:', error);
       }
     }
-  }, [score, playerName, selectedGeneration, totalTimeElapsed, gameOver, fetchSelectedRankings, bestScore, setBestScore, setBestTime, isMuted]);
+  }, [score, playerName, selectedGeneration, totalTimeElapsed, gameOver, fetchSelectedRankings, bestScore, setBestScore, setBestTime, isMuted, calculateRewardPokemon]);
 
   // Update the effect to use both functions
   useEffect(() => {
@@ -767,7 +784,7 @@ const PokemonGame = () => {
         userRanking={userRanking}
         totalTimeElapsed={totalTimeElapsed}
         formatTimeForRanking={formatTimeForRanking}
-        rewardPokemon={getRewardPokemon(score)}
+        rewardPokemon={rewardPokemon}
         totalPokemonCount={selectedGeneration.endId - selectedGeneration.startId + 1}
         handleRestart={() => {
           console.log('Restarting game, cleaning up victory sound');

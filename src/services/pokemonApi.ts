@@ -133,6 +133,27 @@ export const transformPokemonData = async (data: PokemonResponse & { species: { 
 
   const evolutionStage = await getEvolutionStage(data.name);
 
+  const getCryUrl = (pokemonName: string): string => {
+    // Special case for Nidoran
+    if (pokemonName === 'nidoran-f') return 'https://play.pokemonshowdown.com/audio/cries/nidoranf.mp3';
+    if (pokemonName === 'nidoran-m') return 'https://play.pokemonshowdown.com/audio/cries/nidoranm.mp3';
+
+    // Special case for Mr. Mime and similar
+    if (pokemonName.includes('.')) {
+      return `https://play.pokemonshowdown.com/audio/cries/${pokemonName.replace('.', '')}.mp3`;
+    }
+
+    // Try the regular name first
+    const baseUrl = 'https://play.pokemonshowdown.com/audio/cries/';
+    const regularUrl = `${baseUrl}${pokemonName.toLowerCase()}.mp3`;
+
+    // Create an alternative URL without hyphens for cases like machoke
+    const alternativeUrl = `${baseUrl}${pokemonName.toLowerCase().replace(/-/g, '')}.mp3`;
+
+    // Return both URLs in an array to try them sequentially
+    return regularUrl + '|' + alternativeUrl;
+  };
+
   return {
     id: data.id,
     name: data.name,
@@ -145,7 +166,7 @@ export const transformPokemonData = async (data: PokemonResponse & { species: { 
     evolutionStage,
     isLegendary: speciesData.is_legendary,
     isMythical: speciesData.is_mythical,
-    cryUrl: `https://play.pokemonshowdown.com/audio/cries/${data.name.toLowerCase()}.mp3`
+    cryUrl: getCryUrl(data.name)
   };
 };
 

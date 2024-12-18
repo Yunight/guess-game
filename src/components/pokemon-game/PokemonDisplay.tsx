@@ -19,6 +19,7 @@ interface PokemonDisplayProps {
   isPokemonLoading: boolean;
   isCorrect: boolean | null;
   isMuted: boolean;
+  guessTimeLeft: number;
 }
 
 export const PokemonDisplay: FC<PokemonDisplayProps> = ({
@@ -26,6 +27,7 @@ export const PokemonDisplay: FC<PokemonDisplayProps> = ({
   isPokemonLoading,
   isCorrect,
   isMuted,
+  guessTimeLeft,
 }) => {
   const [displayState, setDisplayState] = useState<'loading' | 'ready'>('loading');
   const [displayedPokemon, setDisplayedPokemon] = useState<Pokemon | undefined>(undefined);
@@ -93,7 +95,7 @@ export const PokemonDisplay: FC<PokemonDisplayProps> = ({
         // Only attempt to load if we have a valid sprite URL
         if (!currentPokemon.sprite) {
           devError('❌ No sprite URL available');
-          setDisplayState('ready');
+          // Don't set display state to ready if we don't have a sprite
           return;
         }
 
@@ -115,8 +117,11 @@ export const PokemonDisplay: FC<PokemonDisplayProps> = ({
           return;
         }
 
-        // Set the Pokemon data
-        setDisplayedPokemon(currentPokemon);
+        // Only set Pokemon data and display state if we have a valid sprite
+        if (currentPokemon.sprite) {
+          setDisplayedPokemon(currentPokemon);
+          setDisplayState('ready');
+        }
         
         // Add a small delay for animation
         await new Promise(resolve => setTimeout(resolve, 300));
@@ -149,37 +154,40 @@ export const PokemonDisplay: FC<PokemonDisplayProps> = ({
           }
 
           // Create and configure new audio
-          const audio = new Audio(currentPokemon.cryUrl);
-          audio.dataset.pokemonId = initialPokemonId.toString();
-          
+          const tryPlayAudio = async (url: string): Promise<HTMLAudioElement | null> => {
+            const audio = new Audio(url);
+            audio.dataset.pokemonId = initialPokemonId.toString();
+            
+            try {
+              await audio.load();
+              await audio.play();
+              return audio;
+            } catch (error) {
+              devError(`❌ Error playing audio from URL: ${url}`, error);
+              audio.remove();
+              return null;
+            }
+          };
+
           try {
             // Set flag before starting audio operations
             soundPlayedRef.current = true;
-            audioRef.current = audio;
-            
-            // Preload the audio
-            await audio.load();
-            
-            // Final check before playing
-            if (initialPokemonId !== currentPokemonIdRef.current) {
-              devLog('❌ Pokemon changed during audio load, aborting');
-              audio.remove();
-              audioRef.current = null;
-              return;
+
+            // Try each URL in sequence until one works
+            const urls = currentPokemon.cryUrl.split('|');
+            let audio: HTMLAudioElement | null = null;
+
+            for (const url of urls) {
+              audio = await tryPlayAudio(url);
+              if (audio) {
+                audioRef.current = audio;
+                devLog(`✅ Pokemon cry sound played successfully for: ${currentPokemon.frenchName} ID: ${initialPokemonId}`);
+                break;
+              }
             }
-            
-            await audio.play();
-            
-            // Verify the sound being played matches the current Pokemon
-            if (audioRef.current?.dataset.pokemonId === initialPokemonId.toString() &&
-                initialPokemonId === currentPokemonIdRef.current) {
-              devLog(`✅ Pokemon cry sound played successfully for: ${currentPokemon.frenchName} ID: ${initialPokemonId}`);
-            } else {
-              devLog('❌ Sound mismatch detected, stopping audio');
-              audio.pause();
-              audio.currentTime = 0;
-              audio.remove();
-              audioRef.current = null;
+
+            if (!audio) {
+              devLog('❌ No audio URL worked for this Pokemon');
             }
           } catch (error) {
             devError('❌ Error playing Pokemon cry:', error);
@@ -225,20 +233,36 @@ export const PokemonDisplay: FC<PokemonDisplayProps> = ({
         <div className="absolute bottom-2 left-2 w-4 h-4 border-b-2 border-l-2 border-blue-400 rounded-bl-lg animate-corner-pulse-delay-2"></div>
         <div className="absolute bottom-2 right-2 w-4 h-4 border-b-2 border-r-2 border-blue-400 rounded-br-lg animate-corner-pulse-delay-3"></div>
         
+        {/* Add sparkle effects */}
+        <div className="absolute inset-0 pointer-events-none">
+          <div className="absolute w-2 h-2 bg-yellow-300 rounded-full animate-sparkle-1" style={{ top: '20%', left: '30%' }}></div>
+          <div className="absolute w-2 h-2 bg-yellow-300 rounded-full animate-sparkle-2" style={{ top: '70%', left: '80%' }}></div>
+          <div className="absolute w-2 h-2 bg-yellow-300 rounded-full animate-sparkle-3" style={{ top: '40%', left: '60%' }}></div>
+        </div>
+        
         <div className="relative z-10 w-full h-full flex items-center justify-center">
-          {displayState === 'loading' || !displayedPokemon ? (
+          {(displayState === 'loading' || !displayedPokemon || !displayedPokemon.sprite) ? (
             <div className="pokeball-loading">
               <div className="outer-circle" />
               <div className="center-circle" />
             </div>
           ) : (
-            <img
-              src={displayedPokemon.sprite}
-              alt={displayedPokemon.frenchName}
-              className={`w-full h-full object-contain transition-all duration-300 ${
-                isCorrect === false ? 'brightness-0' : ''
-              }`}
-            />
+            <>
+              <img
+                src={displayedPokemon.sprite}
+                alt={displayedPokemon.frenchName}
+                className={`w-full h-full object-contain transition-all duration-500 ${
+                  isCorrect === false ? 'brightness-0' : ''
+                }`}
+              />
+              {isCorrect === true && guessTimeLeft === 0 && (
+                <div className="absolute bottom-4 left-0 right-0 text-center">
+                  <div className="bg-black/70 text-white px-4 py-2 rounded-full mx-auto inline-block backdrop-blur-sm font-bold text-xl">
+                    {displayedPokemon.frenchName}
+                  </div>
+                </div>
+              )}
+            </>
           )}
         </div>
       </div>

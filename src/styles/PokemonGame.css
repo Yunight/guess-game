@@ -230,3 +230,91 @@
 .shadow-text {
   text-shadow: 2px 2px 0 rgba(0, 0, 0, 0.1);
 }
+
+@keyframes sparkle {
+  0%,
+  100% {
+    transform: scale(0) rotate(0deg);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1) rotate(180deg);
+    opacity: 1;
+  }
+}
+
+.animate-sparkle-1 {
+  animation: sparkle 2s ease-in-out infinite;
+}
+
+.animate-sparkle-2 {
+  animation: sparkle 2s ease-in-out infinite 0.7s;
+}
+
+.animate-sparkle-3 {
+  animation: sparkle 2s ease-in-out infinite 1.4s;
+}
+
+@keyframes flash-out {
+  0% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+.animate-flash-out {
+  animation: flash-out 0.5s ease-out forwards;
+}
+
+@keyframes bounce-in {
+  0% {
+    transform: scale(0.3);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+  75% {
+    transform: scale(0.95);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.animate-bounce-in {
+  animation: bounce-in 0.8s cubic-bezier(0.36, 0, 0.66, 1) forwards;
+}
+
+@keyframes ring-expand {
+  0% {
+    transform: scale(0.5);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(2);
+    opacity: 0;
+  }
+}
+
+.animate-ring-expand {
+  animation: ring-expand 1s ease-out forwards;
+}
+
+.animate-ring-expand-delayed {
+  animation: ring-expand 1s ease-out 0.3s forwards;
+}
+
+@keyframes reveal-pokemon {
+  0% {
+    filter: brightness(0);
+  }
+  100% {
+    filter: brightness(1);
+  }
+}
+
+.animate-reveal-pokemon {
+  animation: reveal-pokemon 0.8s ease-out forwards;
+}

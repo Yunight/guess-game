@@ -100,6 +100,7 @@ export const GameScreen: FC<GameScreenProps> = ({
         isPokemonLoading={isPokemonLoading}
         isCorrect={isCorrect}
         isMuted={isMuted}
+        guessTimeLeft={guessTimeLeft}
       />
 
       <GameStats 

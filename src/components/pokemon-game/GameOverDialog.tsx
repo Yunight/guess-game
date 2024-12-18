@@ -4,14 +4,15 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogDescription,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { Trophy, RefreshCcw, Home, Star, Clock, Crown } from 'lucide-react';
+import { RewardPokemonDisplay } from './RewardPokemonDisplay';
+import { Pokemon } from './types';
+import { Trophy, Clock, Crown, RefreshCcw, Home } from 'lucide-react';
 
 interface GameOverDialogProps {
   gameOver: boolean;
-  setGameOver: (value: boolean) => void;
+  setGameOver: (open: boolean) => void;
   playerName: string;
   score: number;
   bestScore: number;
@@ -19,10 +20,10 @@ interface GameOverDialogProps {
   userRanking: number | null;
   totalTimeElapsed: number;
   formatTimeForRanking: (seconds: number) => string;
-  rewardPokemon: { id: number; name: string; isLoading: boolean };
+  rewardPokemon: { pokemon: Pokemon | undefined; isLoading: boolean };
+  totalPokemonCount: number;
   handleRestart: () => void;
   handleBackToMenu: () => void;
-  totalPokemonCount: number;
 }
 
 export const GameOverDialog: FC<GameOverDialogProps> = ({
@@ -36,15 +37,14 @@ export const GameOverDialog: FC<GameOverDialogProps> = ({
   totalTimeElapsed,
   formatTimeForRanking,
   rewardPokemon,
+  totalPokemonCount,
   handleRestart,
   handleBackToMenu,
-  totalPokemonCount,
 }) => {
   return (
-    <Dialog open={gameOver} onOpenChange={(open) => !open && setGameOver(false)}>
+    <Dialog open={gameOver} onOpenChange={setGameOver}>
       <DialogContent className="sm:max-w-md bg-gradient-to-b from-red-500 to-red-600 border-none text-white">
         <div className="absolute inset-0 bg-[url('/pokeball-pattern.png')] opacity-5 bg-repeat"></div>
-        
         <div className="relative">
           <DialogHeader className="space-y-4">
             <div className="flex justify-center -mt-8">
@@ -54,123 +54,87 @@ export const GameOverDialog: FC<GameOverDialogProps> = ({
             </div>
             <DialogTitle className="text-center text-3xl font-bold text-white">
               {score === bestScore && score === totalPokemonCount ? (
-                'Félicitations vous avez deviné tous les pokémons, vous êtes un vrai maitre pokémon!'
+                `Félicitations ${playerName}, vous avez deviné tous les pokémons, vous êtes un vrai maitre pokémon!`
               ) : (
-                'Partie terminée!'
+                `Bravo ${playerName}!`
               )}
             </DialogTitle>
-            <DialogDescription className="text-center text-gray-100 font-medium">
-              {score === bestScore && score === totalPokemonCount ? (
-                'Une performance légendaire!'
-              ) : (
-                'Félicitations, dresseur! Voici vos résultats'
-              )}
-            </DialogDescription>
           </DialogHeader>
-          
-          {/* Reward Pokemon */}
-          <div className="mt-4 flex justify-center">
-            <div className="relative">
-              <div className='relative z-10 w-full h-full flex items-center justify-center'>
-                {rewardPokemon.isLoading ? (
-                  <div className='absolute inset-0 flex items-center justify-center'>
-                    <div className='pokeball-loading scale-75'>
-                      <div className='outer-circle' />
-                      <div className='center-circle' />
-                    </div>
-                  </div>
-                ) : (
-                  <img
-                    src={`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${rewardPokemon.id}.png`}
-                    alt={rewardPokemon.name}
-                    className='w-32 h-32 object-contain filter drop-shadow-[0_0_8px_rgba(255,255,255,0.5)]'
-                  />
-                )}
+
+          <RewardPokemonDisplay
+            pokemon={rewardPokemon.pokemon}
+            isLoading={rewardPokemon.isLoading}
+          />
+
+          <div className="mt-6 grid grid-cols-2 gap-4">
+            <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 space-y-2">
+              <div className="flex items-center gap-2 text-yellow-300">
+                <Trophy className="h-5 w-5" />
+                <p className="text-sm font-medium">Score</p>
               </div>
-              <div className='absolute inset-0 bg-white/10 rounded-full animate-pulse-slow'></div>
-            </div>
-          </div>
-          <p className="text-center text-white font-medium mt-2">
-            {rewardPokemon.isLoading ? 'Chargement...' : `${rewardPokemon.name} vous félicite pour votre score !`}
-          </p>
-          
-          <div className="mt-6 space-y-6">
-            {/* Stats Grid */}
-            <div className="grid grid-cols-2 gap-4">
-              <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 space-y-2">
-                <div className="flex items-center gap-2 text-yellow-300">
-                  <Star className="h-5 w-5" />
-                  <p className="text-sm font-medium">Dresseur</p>
+              <div className="space-y-1">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-gray-200">Actuel:</span>
+                  <p className="text-lg font-bold">{score}</p>
                 </div>
-                <p className="text-lg font-bold">{playerName}</p>
-              </div>
-              
-              <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 space-y-2">
-                <div className="flex items-center gap-2 text-yellow-300">
-                  <Trophy className="h-5 w-5" />
-                  <p className="text-sm font-medium">Score</p>
-                </div>
-                <div className="space-y-1">
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-gray-200">Actuel:</span>
-                    <p className="text-lg font-bold">{score}</p>
-                  </div>
+                {bestScore > 0 && (
                   <div className="flex items-center justify-between">
                     <span className="text-sm text-gray-200">Meilleur:</span>
                     <p className="text-lg font-bold text-yellow-300">{bestScore}</p>
                   </div>
-                </div>
+                )}
               </div>
-              
-              <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 space-y-2">
-                <div className="flex items-center gap-2 text-yellow-300">
-                  <Crown className="h-5 w-5" />
-                  <p className="text-sm font-medium">Rang</p>
-                </div>
-                <p className="text-lg font-bold">
-                  {userRanking !== null ? `#${userRanking}` : 'Non classé'}
-                </p>
+            </div>
+
+            <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 space-y-2">
+              <div className="flex items-center gap-2 text-yellow-300">
+                <Clock className="h-5 w-5" />
+                <p className="text-sm font-medium">Temps</p>
               </div>
-              
-              <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 space-y-2">
-                <div className="flex items-center gap-2 text-yellow-300">
-                  <Clock className="h-5 w-5" />
-                  <p className="text-sm font-medium">Temps</p>
+              <div className="space-y-1">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-gray-200">Actuel:</span>
+                  <p className="text-lg font-bold">{formatTimeForRanking(totalTimeElapsed)}</p>
                 </div>
-                <div className="space-y-1">
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-gray-200">Actuel:</span>
-                    <p className="text-lg font-bold">{formatTimeForRanking(totalTimeElapsed)}</p>
-                  </div>
+                {bestTime > 0 && (
                   <div className="flex items-center justify-between">
                     <span className="text-sm text-gray-200">Meilleur:</span>
                     <p className="text-lg font-bold text-yellow-300">{formatTimeForRanking(bestTime)}</p>
                   </div>
-                </div>
+                )}
               </div>
             </div>
 
-            {/* Action Buttons */}
-            <div className="grid grid-cols-2 gap-3 pt-2">
-              <Button
-                onClick={handleRestart}
-                className="bg-yellow-400 hover:bg-yellow-500 text-gray-900 border-none
-                  shadow-lg hover:shadow-xl transition-all duration-300"
-                size="lg"
-              >
-                <RefreshCcw className="mr-2 h-4 w-4" />
-                Rejouer
-              </Button>
-              <Button
-                onClick={handleBackToMenu}
-                className="bg-white/10 hover:bg-white/20 text-white border-2 border-white/20
-                  shadow-lg hover:shadow-xl transition-all duration-300"
-                size="lg"
-              >
-                <Home className="mr-2 h-4 w-4" />
-                Menu
-              </Button>
-            </div>
+            {userRanking && (
+              <div className="col-span-2 bg-white/10 backdrop-blur-sm rounded-xl p-4 space-y-2">
+                <div className="flex items-center gap-2 text-yellow-300">
+                  <Crown className="h-5 w-5" />
+                  <p className="text-sm font-medium">Classement</p>
+                </div>
+                <p className="text-2xl font-bold text-center">#{userRanking}</p>
+              </div>
+            )}
+          </div>
+
+          <div className="grid grid-cols-2 gap-3 mt-6">
+            <Button
+              onClick={handleRestart}
+              className="bg-yellow-400 hover:bg-yellow-500 text-gray-900 border-none
+                shadow-lg hover:shadow-xl transition-all duration-300"
+              size="lg"
+            >
+              <RefreshCcw className="mr-2 h-4 w-4" />
+              Rejouer
+            </Button>
+            <Button
+              onClick={handleBackToMenu}
+              className="bg-white/10 hover:bg-white/20 text-white border-2 border-white/20
+                shadow-lg hover:shadow-xl transition-all duration-300"
+              size="lg"
+            >
+              <Home className="mr-2 h-4 w-4" />
+              Menu
+            </Button>
           </div>
         </div>
       </DialogContent>
