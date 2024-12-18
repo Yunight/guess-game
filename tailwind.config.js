@@ -58,6 +58,7 @@ export default {
 				'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
 				'spin-slow': 'spin 3s linear infinite',
 				'shine': 'shine 2s linear infinite',
+				'shine-slow': 'shine 4s ease-in-out infinite',
 			},
 			keyframes: {
 				'grid-shine': {

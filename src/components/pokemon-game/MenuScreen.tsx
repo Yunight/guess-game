@@ -101,18 +101,18 @@ export const MenuScreen: FC<MenuScreenProps> = ({
                     <Button
                       key={gen.name}
                       onClick={() => handleGenerationSelect(gen)}
-                      className={`px-2 py-1.5 text-sm font-medium transition-all relative overflow-hidden
+                      className={`px-2 py-1.5 text-sm font-medium transition-all duration-500 ease-out relative overflow-hidden
                         ${selectedGeneration.name === gen.name
                           ? 'bg-gradient-to-br from-red-500 to-red-600 text-white shadow-lg scale-[1.02] border-2 border-white'
                           : 'bg-gray-100 text-gray-600 hover:bg-gray-200 hover:scale-[1.01]'
                         }
                         before:content-[""] before:absolute before:inset-0 before:bg-gradient-to-r before:from-white/20 before:via-transparent before:to-transparent
-                        ${selectedGeneration.name === gen.name ? 'before:animate-shine' : ''}
+                        ${selectedGeneration.name === gen.name ? 'before:animate-shine-slow' : ''}
                       `}
                     >
                       <div className="flex items-center justify-center gap-1">
                         {selectedGeneration.name === gen.name && (
-                          <div className="w-2 h-2 bg-white rounded-full animate-pulse"></div>
+                          <div className="w-2 h-2 bg-white rounded-full animate-pulse-slow"></div>
                         )}
                         {gen.name}
                       </div>
@@ -125,13 +125,13 @@ export const MenuScreen: FC<MenuScreenProps> = ({
             <Button
               onClick={startGame}
               disabled={!canStartGame}
-              className={`w-full h-14 sm:h-20 text-lg sm:text-xl font-bold transition-all duration-300 relative overflow-hidden rounded-xl
+              className={`w-full h-14 sm:h-20 text-lg sm:text-xl font-bold transition-all duration-500 ease-out relative overflow-hidden rounded-xl
                 ${canStartGame 
                   ? 'bg-gradient-to-br from-blue-500 to-blue-600 text-white shadow-xl hover:shadow-2xl transform hover:scale-[1.02] border-4 border-white' 
                   : 'bg-gray-200 text-gray-500'
                 }
                 before:content-[""] before:absolute before:inset-0 before:bg-gradient-to-r before:from-white/20 before:via-transparent before:to-transparent
-                ${canStartGame ? 'before:animate-shine' : ''}
+                ${canStartGame ? 'before:animate-shine-slow' : ''}
               `}
             >
               <div className="absolute left-10 top-1/2 -translate-y-1/2 hidden sm:block">
@@ -266,6 +266,12 @@ export const MenuScreen: FC<MenuScreenProps> = ({
             <div className="w-12 h-6 bg-gray-800 rounded-lg"></div>
           </div>
         </div>
+      </div>
+      
+      {/* Copyright and GitHub link */}
+      <div className="mt-6 text-center text-sm text-gray-500 space-y-1">
+        <p>© 2024 Pokémon. © 1995-2024 Nintendo/Creatures Inc./GAME FREAK inc.</p>
+        <p>Developed by <a href="https://github.com/Yunight" target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:text-blue-600 transition-colors">Yunight</a></p>
       </div>
     </div>
   );

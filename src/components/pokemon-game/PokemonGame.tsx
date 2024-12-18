@@ -10,6 +10,7 @@ import { GameOverDialog } from './GameOverDialog';
 import { Generation, Pokemon, Rankings } from '@/components/pokemon-game/types';
 import { useLocalStorage } from '@/hooks/useLocalStorage';
 
+
 const GENERATIONS: Generation[] = [
   { name: '1ère Génération', startId: 1, endId: 151 },
   { name: '2ème Génération', startId: 152, endId: 251 },
@@ -69,8 +70,32 @@ const PokemonGame = () => {
   const wrongAudioRef = useRef<HTMLAudioElement | null>(null);
   const canStartGame = Boolean(playerName && !nameError);
   
+  // Add loading progress state
+  const [loadingProgress, setLoadingProgress] = useState(0);
+  
   // Use RTK Query hooks with proper typing
-  const { data: allPokemonNames = [] } = useGetAllPokemonNamesQuery();
+  const { 
+    data: allPokemonNames = [],
+    isLoading: isNamesLoading
+  } = useGetAllPokemonNamesQuery();
+
+  // Add loading progress effect
+  useEffect(() => {
+    if (isNamesLoading) {
+      let progress = 0;
+      const interval = setInterval(() => {
+        progress += 5;
+        if (progress > 90) {
+          clearInterval(interval);
+          return;
+        }
+        setLoadingProgress(progress);
+      }, 100);
+
+      return () => clearInterval(interval);
+    }
+  }, [isNamesLoading]);
+
   const { 
     data: currentPokemon,
     isLoading: isPokemonLoading 
@@ -769,6 +794,48 @@ const PokemonGame = () => {
     setIsCorrect(null);
     setShowHint(false);
   };
+
+  // Add loading state
+  const [isInitialLoading, setIsInitialLoading] = useState(true);
+
+  // Update effect to handle initial loading and set final progress
+  useEffect(() => {
+    if (!isNamesLoading && allPokemonNames.length > 0) {
+      setLoadingProgress(100);
+      // Add a small delay before hiding the loading screen
+      setTimeout(() => {
+        setIsInitialLoading(false);
+      }, 500);
+    }
+  }, [isNamesLoading, allPokemonNames]);
+
+  // Update loading screen component
+  if (isInitialLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-blue-100 to-blue-50 flex items-center justify-center">
+        <div className="text-center space-y-4">
+          <div className="relative w-24 h-24 mx-auto">
+            <div className="pokeball-loading scale-150">
+              <div className="outer-circle" />
+              <div className="center-circle" />
+            </div>
+          </div>
+          <div className="text-xl font-medium text-gray-700">
+            Chargement des Pokémons...
+          </div>
+          <div className="text-sm text-gray-500">
+            {loadingProgress}%
+          </div>
+          <div className="w-64 h-2 bg-gray-200 rounded-full overflow-hidden">
+            <div 
+              className="h-full bg-blue-500 transition-all duration-300 ease-out"
+              style={{ width: `${loadingProgress}%` }}
+            />
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-blue-100 to-blue-50 p-4 flex items-start sm:items-center justify-center font-oswald">
