@@ -29,7 +29,7 @@ export const PokemonDisplay: FC<PokemonDisplayProps> = ({
   isMuted,
   guessTimeLeft,
 }) => {
-  const [displayState, setDisplayState] = useState<'loading' | 'ready'>('loading');
+  const [displayState, setDisplayState] = useState<'loading' | 'ready' | 'revealed'>('loading');
   const [displayedPokemon, setDisplayedPokemon] = useState<Pokemon | undefined>(undefined);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const loadingRef = useRef(false);
@@ -68,6 +68,13 @@ export const PokemonDisplay: FC<PokemonDisplayProps> = ({
       }
     };
   }, [currentPokemon?.id]);
+
+  // Update display state when isCorrect changes
+  useEffect(() => {
+    if (isCorrect === true) {
+      setDisplayState('revealed');
+    }
+  }, [isCorrect]);
 
   // Handle image loading and display state
   useEffect(() => {
@@ -247,22 +254,38 @@ export const PokemonDisplay: FC<PokemonDisplayProps> = ({
               <div className="center-circle" />
             </div>
           ) : (
-            <>
+            <div className={`relative w-full h-full flex items-center justify-center ${
+              displayState === 'revealed' ? 'animate-reveal-pokemon' : ''
+            }`}>
+              <div className={`absolute inset-0 bg-white/50 backdrop-blur-sm rounded-lg transition-opacity duration-700 ${
+                displayState === 'revealed' ? 'animate-flash-out' : 'opacity-0'
+              }`}></div>
               <img
                 src={displayedPokemon.sprite}
                 alt={displayedPokemon.frenchName}
-                className={`w-full h-full object-contain transition-all duration-500 ${
-                  isCorrect === false ? 'brightness-0' : ''
+                className={`w-full h-full object-contain transition-all duration-1000 animate-float-gentle ${
+                  displayState === 'revealed' ? 'animate-bounce-in scale-100' : 
+                  displayState === 'ready' ? 'brightness-0 scale-[0.85]' : 'scale-100'
                 }`}
               />
-              {isCorrect === true && guessTimeLeft === 0 && (
+              {displayState === 'revealed' && guessTimeLeft === 0 && (
                 <div className="absolute bottom-4 left-0 right-0 text-center">
                   <div className="bg-black/70 text-white px-4 py-2 rounded-full mx-auto inline-block backdrop-blur-sm font-bold text-xl">
                     {displayedPokemon.frenchName}
                   </div>
                 </div>
               )}
-            </>
+              {displayState === 'revealed' && (
+                <div className="absolute inset-0 pointer-events-none">
+                  <div className="absolute inset-0 animate-ring-expand">
+                    <div className="absolute inset-0 border-4 border-yellow-400/30 rounded-full"></div>
+                  </div>
+                  <div className="absolute inset-0 animate-ring-expand-delayed">
+                    <div className="absolute inset-0 border-4 border-yellow-400/20 rounded-full"></div>
+                  </div>
+                </div>
+              )}
+            </div>
           )}
         </div>
       </div>

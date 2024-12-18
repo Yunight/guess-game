@@ -24,6 +24,7 @@ interface GameOverDialogProps {
   totalPokemonCount: number;
   handleRestart: () => void;
   handleBackToMenu: () => void;
+  isMuted: boolean;
 }
 
 export const GameOverDialog: FC<GameOverDialogProps> = ({
@@ -40,6 +41,7 @@ export const GameOverDialog: FC<GameOverDialogProps> = ({
   totalPokemonCount,
   handleRestart,
   handleBackToMenu,
+  isMuted,
 }) => {
   return (
     <Dialog open={gameOver} onOpenChange={setGameOver}>
@@ -64,6 +66,7 @@ export const GameOverDialog: FC<GameOverDialogProps> = ({
           <RewardPokemonDisplay
             pokemon={rewardPokemon.pokemon}
             isLoading={rewardPokemon.isLoading}
+            isMuted={isMuted}
           />
 
           <div className="mt-6 grid grid-cols-2 gap-4">

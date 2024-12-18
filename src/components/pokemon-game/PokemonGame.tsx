@@ -86,16 +86,24 @@ const PokemonGame = () => {
   });
 
   const calculateRewardPokemon = useCallback(async (score: number) => {
+    console.log('🎮 Starting reward calculation with score:', score);
     setRewardPokemon({ pokemon: undefined, isLoading: true });
 
     if (!allPokemonData || allPokemonData.length === 0) {
+      console.log('❌ No Pokémon data available');
       return;
     }
+
+    console.log(`📊 Total Pokémon in data: ${allPokemonData.length}`);
+    console.log(`🎯 Selected generation range: ${selectedGeneration.startId} - ${selectedGeneration.endId}`);
 
     try {
       // Find the appropriate tier based on score
       const tier = POKEMON_REWARDS.find(tier => score >= tier.minScore);
+      console.log('🏆 Selected tier:', tier ? `Score ${tier.minScore}+` : 'No tier found');
+
       if (!tier) {
+        console.log('⚠️ No tier found, selecting random basic Pokémon');
         // If no tier found, return a random basic Pokémon
         const basicPokemon = allPokemonData.filter(pokemon => 
           pokemon.id >= selectedGeneration.startId && 
@@ -104,7 +112,10 @@ const PokemonGame = () => {
           pokemon.hasEvolution
         );
         
+        console.log(`📝 Found ${basicPokemon.length} basic Pokémon in generation`);
+        
         if (basicPokemon.length === 0) {
+          console.log('❌ No basic Pokémon found in generation');
           setRewardPokemon({
             pokemon: undefined,
             isLoading: false
@@ -113,6 +124,14 @@ const PokemonGame = () => {
         }
         
         const randomBasic = basicPokemon[Math.floor(Math.random() * basicPokemon.length)];
+        console.log('✨ Selected basic Pokémon:', {
+          id: randomBasic.id,
+          name: randomBasic.frenchName,
+          isLegendary: randomBasic.isLegendary,
+          isMythical: randomBasic.isMythical,
+          evolutionStage: randomBasic.evolutionStage
+        });
+        
         setRewardPokemon({
           pokemon: randomBasic,
           isLoading: false
@@ -127,18 +146,32 @@ const PokemonGame = () => {
         pokemon.id <= selectedGeneration.endId
       );
 
+      console.log(`📝 Found ${eligiblePokemon.length} eligible Pokémon in tier`);
+      
       // If no eligible Pokémon found in the current tier, try the next lower tier
       if (eligiblePokemon.length === 0) {
+        console.log('⚠️ No eligible Pokémon in current tier, trying lower tiers');
         const lowerTiers = POKEMON_REWARDS.slice(POKEMON_REWARDS.indexOf(tier) + 1);
         for (const lowerTier of lowerTiers) {
+          console.log(`🔍 Checking lower tier with minScore: ${lowerTier.minScore}`);
           const lowerTierPokemon = allPokemonData.filter(pokemon => 
             lowerTier.condition(pokemon) && 
             pokemon.id >= selectedGeneration.startId && 
             pokemon.id <= selectedGeneration.endId
           );
           
+          console.log(`📝 Found ${lowerTierPokemon.length} Pokémon in lower tier`);
+          
           if (lowerTierPokemon.length > 0) {
             const randomPokemon = lowerTierPokemon[Math.floor(Math.random() * lowerTierPokemon.length)];
+            console.log('✨ Selected Pokémon from lower tier:', {
+              id: randomPokemon.id,
+              name: randomPokemon.frenchName,
+              isLegendary: randomPokemon.isLegendary,
+              isMythical: randomPokemon.isMythical,
+              evolutionStage: randomPokemon.evolutionStage
+            });
+            
             setRewardPokemon({
               pokemon: randomPokemon,
               isLoading: false
@@ -147,28 +180,47 @@ const PokemonGame = () => {
           }
         }
         
+        console.log('⚠️ No Pokémon found in any tier, selecting random from generation');
         // If still no Pokémon found, return a random Pokémon from the generation
         const generationPokemon = allPokemonData.filter(pokemon => 
           pokemon.id >= selectedGeneration.startId && 
           pokemon.id <= selectedGeneration.endId
         );
         
+        console.log(`📝 Found ${generationPokemon.length} Pokémon in generation`);
+        
         const randomPokemon = generationPokemon[Math.floor(Math.random() * generationPokemon.length)];
+        console.log('✨ Selected random Pokémon from generation:', {
+          id: randomPokemon.id,
+          name: randomPokemon.frenchName,
+          isLegendary: randomPokemon.isLegendary,
+          isMythical: randomPokemon.isMythical,
+          evolutionStage: randomPokemon.evolutionStage
+        });
+        
         setRewardPokemon({
           pokemon: randomPokemon,
           isLoading: false
         });
         return;
       }
-
+      
       // Pick a random Pokémon from the eligible ones
       const randomPokemon = eligiblePokemon[Math.floor(Math.random() * eligiblePokemon.length)];
+      console.log('✨ Selected Pokémon from eligible tier:', {
+        id: randomPokemon.id,
+        name: randomPokemon.frenchName,
+        isLegendary: randomPokemon.isLegendary,
+        isMythical: randomPokemon.isMythical,
+        evolutionStage: randomPokemon.evolutionStage
+      });
+      
       setRewardPokemon({
         pokemon: randomPokemon,
         isLoading: false
       });
     } catch (error) {
-      console.error('Error getting reward pokemon:', error);
+      console.error('❌ Error getting reward pokemon:', error);
       setRewardPokemon({
         pokemon: undefined,
         isLoading: false
@@ -808,6 +860,7 @@ const PokemonGame = () => {
           setScore(0);
           setCurrentPokemonId(null);
         }}
+        isMuted={isMuted}
       />
     </div>
   );

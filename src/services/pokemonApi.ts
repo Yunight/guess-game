@@ -133,25 +133,29 @@ export const transformPokemonData = async (data: PokemonResponse & { species: { 
 
   const evolutionStage = await getEvolutionStage(data.name);
 
-  const getCryUrl = (pokemonName: string): string => {
-    // Special case for Nidoran
-    if (pokemonName === 'nidoran-f') return 'https://play.pokemonshowdown.com/audio/cries/nidoranf.mp3';
-    if (pokemonName === 'nidoran-m') return 'https://play.pokemonshowdown.com/audio/cries/nidoranm.mp3';
+  const getCryUrl = (name: string): string => {
+    // Handle special cases
+    const specialCases: { [key: string]: string } = {
+      'nidoran-f': 'nidoranf',
+      'nidoran-m': 'nidoranm',
+      'mr-mime': 'mrmime',
+      'mime-jr': 'mimejr',
+      'type-null': 'typenull',
+      'tapu-koko': 'tapukoko',
+      'tapu-lele': 'tapulele',
+      'tapu-bulu': 'tapubulu',
+      'tapu-fini': 'tapufini',
+      'ho-oh': 'hooh',
+      'porygon-z': 'porygonz',
+      'jangmo-o': 'jangmoo',
+      'hakamo-o': 'hakamoo',
+      'kommo-o': 'kommoo'
+    };
 
-    // Special case for Mr. Mime and similar
-    if (pokemonName.includes('.')) {
-      return `https://play.pokemonshowdown.com/audio/cries/${pokemonName.replace('.', '')}.mp3`;
-    }
-
-    // Try the regular name first
-    const baseUrl = 'https://play.pokemonshowdown.com/audio/cries/';
-    const regularUrl = `${baseUrl}${pokemonName.toLowerCase()}.mp3`;
-
-    // Create an alternative URL without hyphens for cases like machoke
-    const alternativeUrl = `${baseUrl}${pokemonName.toLowerCase().replace(/-/g, '')}.mp3`;
-
-    // Return both URLs in an array to try them sequentially
-    return regularUrl + '|' + alternativeUrl;
+    const baseName = name.toLowerCase();
+    const processedName = specialCases[baseName] || baseName.replace(/[^a-z0-9]/g, '');
+    
+    return `https://play.pokemonshowdown.com/audio/cries/${processedName}.mp3`;
   };
 
   return {
