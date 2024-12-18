@@ -187,7 +187,7 @@ export const pokemonApi = createApi({
           const data = response.data as { results: Array<{ name: string; url: string }> };
           
           // Fetch all species data and evolution chains in parallel
-          const speciesPromises = data.results.map((pokemon, index) => 
+          const speciesPromises = data.results.map((_pokemon, index) => 
             fetchWithBQ(`pokemon-species/${index + 1}`)
           );
           
