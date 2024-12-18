@@ -167,12 +167,17 @@ export const MenuScreen: FC<MenuScreenProps> = ({
           <div className="bg-gray-800 rounded-xl p-4 mb-4 relative overflow-hidden">
             <div className="absolute inset-0 bg-gradient-to-r from-blue-600/20 to-purple-600/20"></div>
             <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-400 to-purple-400"></div>
-            <div className="relative flex items-center justify-center gap-3">
-              <div className="w-6 h-6 bg-yellow-400 rounded-full border-2 border-white animate-spin-slow"></div>
-              <h2 className="text-2xl font-bold text-center text-white">
-                Meilleurs Scores - {selectedGeneration.name}
-              </h2>
-              <div className="w-6 h-6 bg-yellow-400 rounded-full border-2 border-white animate-spin-slow"></div>
+            <div className="relative flex flex-col items-center justify-center gap-1">
+              <div className="flex items-center gap-3">
+                <div className="w-6 h-6 bg-yellow-400 rounded-full border-2 border-white animate-spin-slow"></div>
+                <h2 className="text-2xl font-bold text-center text-white">
+                  Meilleurs Scores
+                </h2>
+                <div className="w-6 h-6 bg-yellow-400 rounded-full border-2 border-white animate-spin-slow"></div>
+              </div>
+              <h3 className="text-xl font-bold text-center text-white/80">
+                {selectedGeneration.name}
+              </h3>
             </div>
           </div>
 
