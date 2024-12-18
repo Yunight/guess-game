@@ -81,82 +81,91 @@ const PokemonGame = () => {
   const { data: allPokemonData = [] } = useGetAllPokemonNamesQuery();
 
   const getRewardPokemon = useCallback((score: number) => {
-    // Return loading state immediately if no data
+    // Return loading state if data is not yet available
     if (!allPokemonData || allPokemonData.length === 0) {
-      return { id: 25, name: 'pikachu', isLoading: true };
+      return { id: 25, name: '', isLoading: true };
     }
 
-    // Find the appropriate tier based on score
-    const tier = POKEMON_REWARDS.find(tier => score >= tier.minScore);
-    if (!tier) {
-      // If no tier found, return a random basic Pokémon
-      const basicPokemon = allPokemonData.filter(pokemon => 
-        pokemon.id >= selectedGeneration.startId && 
-        pokemon.id <= selectedGeneration.endId &&
-        pokemon.evolvesFromSpecies === null && 
-        pokemon.hasEvolution
-      );
-      
-      if (basicPokemon.length === 0) {
-        return { id: 25, name: 'pikachu', isLoading: false }; // Fallback only if no basic Pokémon found
+    try {
+      // Find the appropriate tier based on score
+      const tier = POKEMON_REWARDS.find(tier => score >= tier.minScore);
+      if (!tier) {
+        // If no tier found, return a random basic Pokémon
+        const basicPokemon = allPokemonData.filter(pokemon => 
+          pokemon.id >= selectedGeneration.startId && 
+          pokemon.id <= selectedGeneration.endId &&
+          pokemon.evolvesFromSpecies === null && 
+          pokemon.hasEvolution
+        );
+        
+        if (basicPokemon.length === 0) {
+          return { 
+            id: 25, // Default to Pikachu
+            name: '', 
+            isLoading: false 
+          }; 
+        }
+        
+        const randomBasic = basicPokemon[Math.floor(Math.random() * basicPokemon.length)];
+        return {
+          id: randomBasic.id,
+          name: randomBasic.frenchName,
+          isLoading: false
+        };
       }
-      
-      const randomBasic = basicPokemon[Math.floor(Math.random() * basicPokemon.length)];
-      return {
-        id: randomBasic.id,
-        name: randomBasic.frenchName,
-        isLoading: false
-      };
-    }
 
-    // Filter Pokémon based on the tier condition and selected generation
-    const eligiblePokemon = allPokemonData.filter(pokemon => 
-      tier.condition(pokemon) && 
-      pokemon.id >= selectedGeneration.startId && 
-      pokemon.id <= selectedGeneration.endId
-    );
+      // Filter Pokémon based on the tier condition and selected generation
+      const eligiblePokemon = allPokemonData.filter(pokemon => 
+        tier.condition(pokemon) && 
+        pokemon.id >= selectedGeneration.startId && 
+        pokemon.id <= selectedGeneration.endId
+      );
 
-    // If no eligible Pokémon found in the current tier, try the next lower tier
-    if (eligiblePokemon.length === 0) {
-      const lowerTiers = POKEMON_REWARDS.slice(POKEMON_REWARDS.indexOf(tier) + 1);
-      for (const lowerTier of lowerTiers) {
-        const lowerTierPokemon = allPokemonData.filter(pokemon => 
-          lowerTier.condition(pokemon) && 
+      // If no eligible Pokémon found in the current tier, try the next lower tier
+      if (eligiblePokemon.length === 0) {
+        const lowerTiers = POKEMON_REWARDS.slice(POKEMON_REWARDS.indexOf(tier) + 1);
+        for (const lowerTier of lowerTiers) {
+          const lowerTierPokemon = allPokemonData.filter(pokemon => 
+            lowerTier.condition(pokemon) && 
+            pokemon.id >= selectedGeneration.startId && 
+            pokemon.id <= selectedGeneration.endId
+          );
+          
+          if (lowerTierPokemon.length > 0) {
+            const randomPokemon = lowerTierPokemon[Math.floor(Math.random() * lowerTierPokemon.length)];
+            return {
+              id: randomPokemon.id,
+              name: randomPokemon.frenchName,
+              isLoading: false
+            };
+          }
+        }
+        
+        // If still no Pokémon found, return a random Pokémon from the generation
+        const generationPokemon = allPokemonData.filter(pokemon => 
           pokemon.id >= selectedGeneration.startId && 
           pokemon.id <= selectedGeneration.endId
         );
         
-        if (lowerTierPokemon.length > 0) {
-          const randomPokemon = lowerTierPokemon[Math.floor(Math.random() * lowerTierPokemon.length)];
-          return {
-            id: randomPokemon.id,
-            name: randomPokemon.frenchName,
-            isLoading: false
-          };
-        }
+        const randomPokemon = generationPokemon[Math.floor(Math.random() * generationPokemon.length)];
+        return {
+          id: randomPokemon.id,
+          name: randomPokemon.frenchName,
+          isLoading: false
+        };
       }
-      
-      // If still no Pokémon found, return a random Pokémon from the generation
-      const generationPokemon = allPokemonData.filter(pokemon => 
-        pokemon.id >= selectedGeneration.startId && 
-        pokemon.id <= selectedGeneration.endId
-      );
-      
-      const randomPokemon = generationPokemon[Math.floor(Math.random() * generationPokemon.length)];
+
+      // Pick a random Pokémon from the eligible ones
+      const randomPokemon = eligiblePokemon[Math.floor(Math.random() * eligiblePokemon.length)];
       return {
         id: randomPokemon.id,
         name: randomPokemon.frenchName,
         isLoading: false
       };
+    } catch (error) {
+      console.error('Error getting reward pokemon:', error);
+      return { id: 25, name: '', isLoading: true };
     }
-
-    // Pick a random Pokémon from the eligible ones
-    const randomPokemon = eligiblePokemon[Math.floor(Math.random() * eligiblePokemon.length)];
-    return {
-      id: randomPokemon.id,
-      name: randomPokemon.frenchName,
-      isLoading: false
-    };
   }, [allPokemonData, selectedGeneration]);
 
   // Capitalize first letter of a string
@@ -226,6 +235,7 @@ const PokemonGame = () => {
 
   // Add a function to clean up all audio instances
   const cleanupAllAudio = () => {
+    console.log('🧹 Cleaning up all audio');
     if (victoryAudioRef.current) {
       victoryAudioRef.current.pause();
       victoryAudioRef.current = null;
@@ -240,17 +250,25 @@ const PokemonGame = () => {
     }
   };
 
-  const handleCorrectAnswer = () => {
+  const handleCorrectAnswer = async () => {
+    console.log('✅ Handling correct answer');
     setIsCorrect(true);
     setScore(prev => prev + 1);
     
     if (!isMuted) {
+      console.log('🎵 About to play correct answer sound');
       cleanupAllAudio();
       correctAudioRef.current = new Audio(CORRECT_SOUND_URL);
-      correctAudioRef.current.play().catch(console.error);
+      try {
+        await correctAudioRef.current.play();
+        console.log('✅ Correct answer sound played successfully');
+      } catch (error) {
+        console.error('❌ Error playing correct sound:', error);
+      }
     }
     
     setTimeout(() => {
+      console.log('⏲️ Correct answer timeout - fetching new Pokemon');
       setIsCorrect(null);
       setGuess('');
       setSuggestions([]);
@@ -284,7 +302,7 @@ const PokemonGame = () => {
     }
   };
 
-  const handleSuggestionClick = (suggestion: string) => {
+  const handleSuggestionClick = async (suggestion: string) => {
     setGuess(suggestion);
     setSuggestions([]);
     
@@ -294,11 +312,18 @@ const PokemonGame = () => {
     if (normalizedSuggestion === normalizedAnswer) {
       handleCorrectAnswer();
     } else {
+      console.log('❌ Handling wrong answer');
       setIsCorrect(false);
       if (!isMuted) {
+        console.log('🎵 About to play wrong answer sound');
         cleanupAllAudio();
         wrongAudioRef.current = new Audio(WRONG_SOUND_URL);
-        wrongAudioRef.current.play().catch(console.error);
+        try {
+          await wrongAudioRef.current.play();
+          console.log('✅ Wrong answer sound played successfully');
+        } catch (error) {
+          console.error('❌ Error playing wrong sound:', error);
+        }
       }
     }
   };
@@ -312,15 +337,25 @@ const PokemonGame = () => {
 
   // Move fetchRandomPokemon declaration before handleGameOver
   const fetchRandomPokemon = useCallback(() => {
-    if (remainingPokemon.length === 0 && isGameActive) {
-      setIsGameActive(false);
-      setGameOver(true);
+    console.log('🎯 Starting fetchRandomPokemon');
+    if (remainingPokemon.length === 0) {
+      console.log('No remaining Pokemon, ending game');
+      if (isGameActive) {
+        setIsGameActive(false);
+        setGameOver(true);
+      }
       return;
     }
 
     const randomIndex = Math.floor(Math.random() * remainingPokemon.length);
     const pokemonId = remainingPokemon[randomIndex];
     
+    if (!pokemonId) {
+      console.error('Invalid Pokemon ID generated');
+      return;
+    }
+
+    console.log('🎵 Setting currentPokemonId to:', pokemonId);
     setCurrentPokemonId(pokemonId);
     setRemainingPokemon(prev => prev.filter(id => id !== pokemonId));
   }, [remainingPokemon, isGameActive]);
@@ -351,24 +386,39 @@ const PokemonGame = () => {
   const handleGameOver = useCallback(async () => {
     if (gameOver) return;
     
+    console.log('🏁 Starting game over sequence');
+    // Stop timers first
+    if (timerInterval.current) {
+      clearInterval(timerInterval.current);
+      timerInterval.current = null;
+    }
+    if (totalTimeInterval.current) {
+      clearInterval(totalTimeInterval.current);
+      totalTimeInterval.current = null;
+    }
+
+    // Update states first
     setIsGameActive(false);
     setGameOver(true);
     
+    // Small delay to ensure state updates are processed
+    await new Promise(resolve => setTimeout(resolve, 50));
+    
+    // Then handle audio
     if (!isMuted) {
+      console.log('🎵 About to play victory sound');
       cleanupAllAudio();
       victoryAudioRef.current = new Audio(VICTORY_SOUND_URL);
-      victoryAudioRef.current.play().catch(console.error);
+      try {
+        await victoryAudioRef.current.play();
+        console.log('✅ Victory sound played successfully');
+      } catch (error) {
+        console.error('❌ Error playing victory sound:', error);
+      }
     }
     
     if (score > bestScore) {
       setBestScore(score);
-    }
-    
-    if (timerInterval.current) {
-      clearInterval(timerInterval.current);
-    }
-    if (totalTimeInterval.current) {
-      clearInterval(totalTimeInterval.current);
     }
     
     if (score > 0 && playerName) {
@@ -401,8 +451,6 @@ const PokemonGame = () => {
           setBestTime(totalTimeElapsed);
         }
         
-        // Add delay before fetching rankings
-        await new Promise(resolve => setTimeout(resolve, 500));
         await fetchSelectedRankings();
         
         // Get updated ranking position
@@ -484,26 +532,29 @@ const PokemonGame = () => {
     await checkNameAvailability(newName);
   };
 
-  // Update the startGame function to store the name when the game actually starts
+  // Add isRestarting state
+  const [isRestarting, setIsRestarting] = useState(false);
+
+  // Update the startGame function
   const startGame = async () => {
+    console.log('🎮 Starting new game');
     if (!playerName) return;
     
-    // Verify name availability before starting
     const isAvailable = await checkNameAvailability(playerName);
     if (!isAvailable) return;
     
-    // Clean up all audio instances
+    setIsRestarting(true);
+    
+    // Clean up all audio
     cleanupAllAudio();
+    
+    console.log('🔄 Resetting current Pokemon');
+    setCurrentPokemonId(null);
     
     // If it's a new user (different from saved name), clean up localStorage
     const savedName = localStorage.getItem('pokemonGamePlayerName');
     if (savedName !== playerName) {
-      // Clear all game-related data except best score and time
-      const currentBestScore = localStorage.getItem('bestScore');
-      const currentBestTime = localStorage.getItem('bestTime');
       localStorage.clear();
-      if (currentBestScore) localStorage.setItem('bestScore', currentBestScore);
-      if (currentBestTime) localStorage.setItem('bestTime', currentBestTime);
       localStorage.setItem('pokemonGamePlayerName', playerName);
     }
     
@@ -520,7 +571,6 @@ const PokemonGame = () => {
     // Reset all game states
     setScore(0);
     setHintsLeft(10);
-    setIsGameActive(true);
     setShowHint(false);
     setIsCorrect(null);
     setGuess('');
@@ -529,24 +579,27 @@ const PokemonGame = () => {
     setTotalTimeElapsed(0);
     setGameOver(false);
     setUserRanking(null);
-    setCurrentPokemonId(null);
     setHighlightedIndex(-1);
     
-    // Initialize Pok��mon list for selected generation
+    // Initialize Pokémon list for selected generation
     const filteredIds = Array.from(
       { length: selectedGeneration.endId - selectedGeneration.startId + 1 },
       (_, i) => selectedGeneration.startId + i
     );
     setRemainingPokemon(filteredIds);
     
-    // Start both timers after a short delay to ensure clean state
-    setTimeout(() => {
-      startGuessTimer();
-      startTotalTimer();
-      fetchRandomPokemon();
-      // Focus input after timers are started
-      inputRef.current?.focus();
-    }, 100);
+    // Add a small delay to ensure state is reset before fetching new Pokemon
+    await new Promise(resolve => setTimeout(resolve, 100));
+    
+    // Set game active and clear restarting state
+    setIsGameActive(true);
+    setIsRestarting(false);
+    
+    // Start both timers and fetch new Pokemon
+    startGuessTimer();
+    startTotalTimer();
+    fetchRandomPokemon();
+    inputRef.current?.focus();
   };
 
   useEffect(() => {
@@ -652,8 +705,8 @@ const PokemonGame = () => {
     <div className="min-h-screen bg-gradient-to-b from-blue-100 to-blue-50 p-4 flex items-start sm:items-center justify-center font-oswald">
       {isGameActive ? (
         <GameScreen
-          currentPokemon={currentPokemon}
-          isPokemonLoading={isPokemonLoading}
+          currentPokemon={isRestarting ? undefined : currentPokemon}
+          isPokemonLoading={isRestarting || isPokemonLoading}
           isCorrect={isCorrect}
           score={score}
           bestScore={bestScore}
@@ -699,9 +752,12 @@ const PokemonGame = () => {
         gameOver={gameOver}
         setGameOver={(open) => {
           setGameOver(open);
-          if (!open && victoryAudioRef.current) {
-            victoryAudioRef.current.pause();
-            victoryAudioRef.current = null;
+          if (!open) {
+            console.log('Closing GameOverDialog, cleaning up victory sound');
+            if (victoryAudioRef.current) {
+              victoryAudioRef.current.pause();
+              victoryAudioRef.current = null;
+            }
           }
         }}
         playerName={playerName}
@@ -714,6 +770,7 @@ const PokemonGame = () => {
         rewardPokemon={getRewardPokemon(score)}
         totalPokemonCount={selectedGeneration.endId - selectedGeneration.startId + 1}
         handleRestart={() => {
+          console.log('Restarting game, cleaning up victory sound');
           if (victoryAudioRef.current) {
             victoryAudioRef.current.pause();
             victoryAudioRef.current = null;
@@ -724,6 +781,7 @@ const PokemonGame = () => {
           startGame();
         }}
         handleBackToMenu={() => {
+          console.log('Going back to menu, cleaning up victory sound');
           if (victoryAudioRef.current) {
             victoryAudioRef.current.pause();
             victoryAudioRef.current = null;

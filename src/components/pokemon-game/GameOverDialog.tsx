@@ -71,21 +71,23 @@ export const GameOverDialog: FC<GameOverDialogProps> = ({
           {/* Reward Pokemon */}
           <div className="mt-4 flex justify-center">
             <div className="relative">
-              {rewardPokemon.isLoading ? (
-                <div className="w-32 h-32 flex items-center justify-center">
-                  <div className="pokeball-loading scale-75">
-                    <div className="outer-circle" />
-                    <div className="center-circle" />
+              <div className='relative z-10 w-full h-full flex items-center justify-center'>
+                {rewardPokemon.isLoading ? (
+                  <div className='absolute inset-0 flex items-center justify-center'>
+                    <div className='pokeball-loading scale-75'>
+                      <div className='outer-circle' />
+                      <div className='center-circle' />
+                    </div>
                   </div>
-                </div>
-              ) : (
-                <img
-                  src={`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${rewardPokemon.id}.png`}
-                  alt={rewardPokemon.name}
-                  className="w-32 h-32 object-contain filter drop-shadow-[0_0_8px_rgba(255,255,255,0.5)]"
-                />
-              )}
-              <div className="absolute inset-0 bg-white/10 rounded-full animate-pulse-slow"></div>
+                ) : (
+                  <img
+                    src={`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${rewardPokemon.id}.png`}
+                    alt={rewardPokemon.name}
+                    className='w-32 h-32 object-contain filter drop-shadow-[0_0_8px_rgba(255,255,255,0.5)]'
+                  />
+                )}
+              </div>
+              <div className='absolute inset-0 bg-white/10 rounded-full animate-pulse-slow'></div>
             </div>
           </div>
           <p className="text-center text-white font-medium mt-2">
