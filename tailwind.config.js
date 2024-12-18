@@ -59,6 +59,15 @@ export default {
 				'spin-slow': 'spin 3s linear infinite',
 				'shine': 'shine 2s linear infinite',
 				'shine-slow': 'shine 4s ease-in-out infinite',
+				'fade-out': 'fade-out 0.5s ease-out forwards',
+				'fade-in': 'fade-in 0.5s ease-in forwards',
+				'scale-up': 'scale-up 0.5s ease-out forwards',
+				'float-gentle': 'float-gentle 6s ease-in-out infinite',
+				'bounce-in': 'bounce-in 0.6s cubic-bezier(0.36, 0, 0.66, 1.3) forwards',
+				'flash-out': 'flash-out 0.8s ease-out forwards',
+				'reveal-pokemon': 'reveal-pokemon 0.8s ease-out forwards',
+				'ring-expand': 'ring-expand 1s ease-out forwards',
+				'ring-expand-delayed': 'ring-expand 1s ease-out 0.2s forwards',
 			},
 			keyframes: {
 				'grid-shine': {
@@ -77,12 +86,47 @@ export default {
 					'0%, 100%': { transform: 'translateY(0)' },
 					'50%': { transform: 'translateY(-10px)' },
 				},
+				'float-gentle': {
+					'0%, 100%': { transform: 'translateY(0)' },
+					'50%': { transform: 'translateY(-5px)' },
+				},
 				'blink': {
 					'0%, 100%': { opacity: '1' },
 					'50%': { opacity: '0.5' },
 				},
 				'shine': {
 					'100%': { transform: 'translateX(100%)' },
+				},
+				'fade-out': {
+					'0%': { opacity: '1' },
+					'100%': { opacity: '0' },
+				},
+				'fade-in': {
+					'0%': { opacity: '0' },
+					'100%': { opacity: '1' },
+				},
+				'scale-up': {
+					'0%': { transform: 'scale(0.8)' },
+					'100%': { transform: 'scale(1)' },
+				},
+				'bounce-in': {
+					'0%': { transform: 'scale(0.3)', opacity: '0' },
+					'60%': { transform: 'scale(1.1)', opacity: '0.8' },
+					'80%': { transform: 'scale(0.95)', opacity: '0.9' },
+					'100%': { transform: 'scale(1)', opacity: '1' },
+				},
+				'flash-out': {
+					'0%': { opacity: '1' },
+					'100%': { opacity: '0' },
+				},
+				'reveal-pokemon': {
+					'0%': { filter: 'brightness(0)', transform: 'scale(0.85)' },
+					'50%': { filter: 'brightness(0.5)', transform: 'scale(0.9)' },
+					'100%': { filter: 'brightness(1)', transform: 'scale(1)' },
+				},
+				'ring-expand': {
+					'0%': { transform: 'scale(0.5)', opacity: '1' },
+					'100%': { transform: 'scale(2)', opacity: '0' },
 				},
 			},
 			borderRadius: {

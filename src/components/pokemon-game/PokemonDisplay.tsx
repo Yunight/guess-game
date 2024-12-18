@@ -254,35 +254,52 @@ export const PokemonDisplay: FC<PokemonDisplayProps> = ({
               <div className="center-circle" />
             </div>
           ) : (
-            <div className={`relative w-full h-full flex items-center justify-center ${
+            <div className={`relative w-full h-full flex items-center justify-center transition-all duration-700 ease-out ${
               displayState === 'revealed' ? 'animate-reveal-pokemon' : ''
             }`}>
-              <div className={`absolute inset-0 bg-white/50 backdrop-blur-sm rounded-lg transition-opacity duration-700 ${
-                displayState === 'revealed' ? 'animate-flash-out' : 'opacity-0'
-              }`}></div>
+              {/* Pokemon image with animations */}
               <img
                 src={displayedPokemon.sprite}
                 alt={displayedPokemon.frenchName}
-                className={`w-full h-full object-contain transition-all duration-1000 animate-float-gentle ${
-                  displayState === 'revealed' ? 'animate-bounce-in scale-100' : 
-                  displayState === 'ready' ? 'brightness-0 scale-[0.85]' : 'scale-100'
+                className={`w-full h-full object-contain transition-all duration-700 ease-out ${
+                  displayState === 'revealed' 
+                    ? 'animate-bounce-in filter brightness-100' 
+                    : displayState === 'ready' 
+                      ? 'filter brightness-0 scale-[0.85]'
+                      : 'opacity-0 scale-[0.3]'
                 }`}
+                style={{
+                  willChange: 'transform, opacity, filter'
+                }}
               />
+
+              {/* Pokemon name reveal */}
               {displayState === 'revealed' && guessTimeLeft === 0 && (
                 <div className="absolute bottom-4 left-0 right-0 text-center">
-                  <div className="bg-black/70 text-white px-4 py-2 rounded-full mx-auto inline-block backdrop-blur-sm font-bold text-xl">
+                  <div className="bg-black/70 text-white px-4 py-2 rounded-full mx-auto inline-block backdrop-blur-sm font-bold text-xl animate-fade-in">
                     {displayedPokemon.frenchName}
                   </div>
                 </div>
               )}
+
+              {/* Reveal effects */}
               {displayState === 'revealed' && (
                 <div className="absolute inset-0 pointer-events-none">
+                  {/* Inner expanding ring */}
                   <div className="absolute inset-0 animate-ring-expand">
                     <div className="absolute inset-0 border-4 border-yellow-400/30 rounded-full"></div>
                   </div>
+                  {/* Outer expanding ring (delayed) */}
                   <div className="absolute inset-0 animate-ring-expand-delayed">
                     <div className="absolute inset-0 border-4 border-yellow-400/20 rounded-full"></div>
                   </div>
+                  {/* Sparkles */}
+                  <div className="absolute w-2 h-2 bg-yellow-300 rounded-full animate-ping" 
+                       style={{ top: '20%', left: '30%', animationDuration: '1s' }}></div>
+                  <div className="absolute w-2 h-2 bg-yellow-300 rounded-full animate-ping" 
+                       style={{ top: '70%', left: '80%', animationDuration: '1.2s' }}></div>
+                  <div className="absolute w-2 h-2 bg-yellow-300 rounded-full animate-ping" 
+                       style={{ top: '40%', left: '60%', animationDuration: '0.8s' }}></div>
                 </div>
               )}
             </div>
