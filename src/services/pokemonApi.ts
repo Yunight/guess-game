@@ -119,6 +119,24 @@ const getEvolutionStage = async (pokemonName: string): Promise<number> => {
   }
 };
 
+// Move getCryUrl outside of transformPokemonData to make it accessible
+const getCryUrl = (name: string): string => {
+  // Special cases for Nidoran
+  if (name.toLowerCase() === 'nidoran♂' || name.toLowerCase() === 'nidoran-m') {
+    return 'https://play.pokemonshowdown.com/audio/cries/nidoranm.mp3|https://play.pokemonshowdown.com/audio/cries/nidoranm.ogg';
+  }
+  if (name.toLowerCase() === 'nidoran♀' || name.toLowerCase() === 'nidoran-f') {
+    return 'https://play.pokemonshowdown.com/audio/cries/nidoranf.mp3|https://play.pokemonshowdown.com/audio/cries/nidoranf.ogg';
+  }
+
+  // Handle other Pokémon
+  const formattedName = name.toLowerCase()
+    .replace(/[^a-z0-9]/g, '')  // Remove special characters
+    .replace(/\s+/g, '');       // Remove spaces
+  
+  return `https://play.pokemonshowdown.com/audio/cries/${formattedName}.mp3|https://play.pokemonshowdown.com/audio/cries/${formattedName}.ogg`;
+};
+
 export const transformPokemonData = async (data: PokemonResponse & { species: { url: string } }): Promise<Pokemon> => {
   const speciesResponse = await fetch(data.species.url);
   const speciesData = await speciesResponse.json() as PokemonSpeciesResponse;
@@ -132,31 +150,6 @@ export const transformPokemonData = async (data: PokemonResponse & { species: { 
   )?.flavor_text || '';
 
   const evolutionStage = await getEvolutionStage(data.name);
-
-  const getCryUrl = (name: string): string => {
-    // Handle special cases
-    const specialCases: { [key: string]: string } = {
-      'nidoran-f': 'nidoranf',
-      'nidoran-m': 'nidoranm',
-      'mr-mime': 'mrmime',
-      'mime-jr': 'mimejr',
-      'type-null': 'typenull',
-      'tapu-koko': 'tapukoko',
-      'tapu-lele': 'tapulele',
-      'tapu-bulu': 'tapubulu',
-      'tapu-fini': 'tapufini',
-      'ho-oh': 'hooh',
-      'porygon-z': 'porygonz',
-      'jangmo-o': 'jangmoo',
-      'hakamo-o': 'hakamoo',
-      'kommo-o': 'kommoo'
-    };
-
-    const baseName = name.toLowerCase();
-    const processedName = specialCases[baseName] || baseName.replace(/[^a-z0-9]/g, '');
-    
-    return `https://play.pokemonshowdown.com/audio/cries/${processedName}.mp3`;
-  };
 
   return {
     id: data.id,
@@ -207,20 +200,32 @@ export const pokemonApi = createApi({
             const { timestamp, names } = JSON.parse(cachedData) as CachedNamesData;
             if (Date.now() - timestamp < CACHE_DURATION) {
               // Map cached data to Pokemon objects
-              const pokemonList = names.map(p => ({
-                id: p.id,
-                name: p.name,
-                frenchName: p.frenchName || p.name, // Ensure we have a French name
-                frenchFlavorText: '',
-                englishFlavorText: '',
-                sprite: `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${p.id}.png`,
-                evolvesFromSpecies: null,
-                hasEvolution: false,
-                evolutionStage: 1,
-                isLegendary: false,
-                isMythical: false,
-                cryUrl: `https://play.pokemonshowdown.com/audio/cries/${p.name.toLowerCase()}.mp3`
-              }));
+              const pokemonList = names.map(p => {
+                // Special cases for Nidoran in the cache
+                let cryUrl = '';
+                if (p.name.toLowerCase() === 'nidoran-m' || p.name.toLowerCase() === 'nidoran♂') {
+                  cryUrl = 'https://play.pokemonshowdown.com/audio/cries/nidoranm.mp3';
+                } else if (p.name.toLowerCase() === 'nidoran-f' || p.name.toLowerCase() === 'nidoran♀') {
+                  cryUrl = 'https://play.pokemonshowdown.com/audio/cries/nidoranf.mp3';
+                } else {
+                  cryUrl = `https://play.pokemonshowdown.com/audio/cries/${p.name.toLowerCase().replace(/[^a-z0-9]/g, '')}.mp3`;
+                }
+
+                return {
+                  id: p.id,
+                  name: p.name,
+                  frenchName: p.frenchName || p.name,
+                  frenchFlavorText: '',
+                  englishFlavorText: '',
+                  sprite: `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${p.id}.png`,
+                  evolvesFromSpecies: null,
+                  hasEvolution: false,
+                  evolutionStage: 1,
+                  isLegendary: false,
+                  isMythical: false,
+                  cryUrl
+                };
+              });
               return { data: pokemonList };
             }
           }
@@ -351,7 +356,7 @@ export const pokemonApi = createApi({
             evolutionStage: await getEvolutionStage(pokemonData.name),
             isLegendary: speciesData.is_legendary,
             isMythical: speciesData.is_mythical,
-            cryUrl: `https://play.pokemonshowdown.com/audio/cries/${pokemonData.name.toLowerCase()}.mp3`
+            cryUrl: getCryUrl(pokemonData.name)
           };
 
           // Update cache with new pokemon data

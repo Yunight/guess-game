@@ -2,6 +2,7 @@ import { FC } from 'react';
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
@@ -61,6 +62,9 @@ export const GameOverDialog: FC<GameOverDialogProps> = ({
                 `Bravo ${playerName}!`
               )}
             </DialogTitle>
+            <DialogDescription className="text-center text-white/80">
+              Voici vos résultats pour cette partie.
+            </DialogDescription>
           </DialogHeader>
 
           <RewardPokemonDisplay
