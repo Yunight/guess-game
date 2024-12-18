@@ -52,7 +52,7 @@ export const GuessInput: FC<GuessInputProps> = ({
       {suggestions.length > 0 && (
         <div
           ref={suggestionsRef}
-          className="absolute top-full left-0 right-0 mt-1 bg-white rounded-lg shadow-lg overflow-hidden z-50 border-2 border-gray-200"
+          className="absolute bottom-full left-0 right-0 mb-1 bg-white rounded-lg shadow-lg overflow-hidden z-50 border-2 border-gray-200"
         >
           {suggestions.map((suggestion, index) => (
             <div
