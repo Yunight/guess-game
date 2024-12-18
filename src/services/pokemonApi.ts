@@ -149,6 +149,26 @@ export const transformPokemonData = async (data: PokemonResponse & { species: { 
   };
 };
 
+// Update localStorage handling to be safe for SSR
+const getFromStorage = (key: string) => {
+  if (typeof window === 'undefined') return null;
+  try {
+    return localStorage.getItem(key);
+  } catch (error) {
+    console.error('Error accessing localStorage:', error);
+    return null;
+  }
+};
+
+const setToStorage = (key: string, value: string) => {
+  if (typeof window === 'undefined') return;
+  try {
+    localStorage.setItem(key, value);
+  } catch (error) {
+    console.error('Error writing to localStorage:', error);
+  }
+};
+
 export const pokemonApi = createApi({
   reducerPath: 'pokemonApi',
   baseQuery: fetchBaseQuery({ baseUrl: 'https://pokeapi.co/api/v2/' }),
@@ -157,7 +177,7 @@ export const pokemonApi = createApi({
       async queryFn(_arg, _queryApi, _extraOptions, fetchWithBQ) {
         try {
           // Check cache first
-          const cachedData = localStorage.getItem(POKEMON_NAMES_CACHE_KEY);
+          const cachedData = getFromStorage(POKEMON_NAMES_CACHE_KEY);
           if (cachedData) {
             const { timestamp, names } = JSON.parse(cachedData) as CachedNamesData;
             if (Date.now() - timestamp < CACHE_DURATION) {
@@ -246,7 +266,7 @@ export const pokemonApi = createApi({
               frenchName: p.frenchName
             }))
           };
-          localStorage.setItem(POKEMON_NAMES_CACHE_KEY, JSON.stringify(cacheData));
+          setToStorage(POKEMON_NAMES_CACHE_KEY, JSON.stringify(cacheData));
 
           return { data: pokemonData };
         } catch (error) {
@@ -260,7 +280,7 @@ export const pokemonApi = createApi({
       async queryFn(pokemonId, _queryApi, _extraOptions, fetchWithBQ) {
         try {
           // Check cache first
-          const cachedData = localStorage.getItem(POKEMON_CACHE_KEY);
+          const cachedData = getFromStorage(POKEMON_CACHE_KEY);
           if (cachedData) {
             const { timestamp, pokemons } = JSON.parse(cachedData) as CachedPokemonData;
             if (Date.now() - timestamp < CACHE_DURATION && pokemons[pokemonId]) {
@@ -310,7 +330,7 @@ export const pokemonApi = createApi({
           };
 
           // Update cache with new pokemon data
-          const existingCache = localStorage.getItem(POKEMON_CACHE_KEY);
+          const existingCache = getFromStorage(POKEMON_CACHE_KEY);
           const cache: CachedPokemonData = existingCache 
             ? JSON.parse(existingCache)
             : { timestamp: Date.now(), pokemons: {} };
@@ -321,7 +341,7 @@ export const pokemonApi = createApi({
           }
 
           cache.pokemons[pokemonId] = pokemon;
-          localStorage.setItem(POKEMON_CACHE_KEY, JSON.stringify(cache));
+          setToStorage(POKEMON_CACHE_KEY, JSON.stringify(cache));
 
           return { data: pokemon };
         } catch (error) {
