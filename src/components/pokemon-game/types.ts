@@ -13,11 +13,16 @@ export interface Generation {
 
 export interface Pokemon {
   id: number;
+  name: string;
   frenchName: string;
   imageUrl: string;
   flavorText?: string;
   englishFlavorText?: string;
   cryUrl?: string;
+  isLegendary?: boolean;
+  isMythical?: boolean;
+  evolvesFromSpecies: string | null;
+  hasEvolution?: boolean;
 }
 
 export interface Rankings {

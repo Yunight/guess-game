@@ -19,6 +19,7 @@ interface GameOverDialogProps {
   userRanking: number | null;
   totalTimeElapsed: number;
   formatTimeForRanking: (seconds: number) => string;
+  rewardPokemon: { id: number; name: string; isLoading: boolean };
   handleRestart: () => void;
   handleBackToMenu: () => void;
 }
@@ -33,6 +34,7 @@ export const GameOverDialog: FC<GameOverDialogProps> = ({
   userRanking,
   totalTimeElapsed,
   formatTimeForRanking,
+  rewardPokemon,
   handleRestart,
   handleBackToMenu,
 }) => {
@@ -55,6 +57,30 @@ export const GameOverDialog: FC<GameOverDialogProps> = ({
               Félicitations, dresseur! Voici vos résultats
             </DialogDescription>
           </DialogHeader>
+          
+          {/* Reward Pokemon */}
+          <div className="mt-4 flex justify-center">
+            <div className="relative">
+              {rewardPokemon.isLoading ? (
+                <div className="w-32 h-32 flex items-center justify-center">
+                  <div className="pokeball-loading scale-75">
+                    <div className="outer-circle" />
+                    <div className="center-circle" />
+                  </div>
+                </div>
+              ) : (
+                <img
+                  src={`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${rewardPokemon.id}.png`}
+                  alt={rewardPokemon.name}
+                  className="w-32 h-32 object-contain filter drop-shadow-[0_0_8px_rgba(255,255,255,0.5)]"
+                />
+              )}
+              <div className="absolute inset-0 bg-white/10 rounded-full animate-pulse-slow"></div>
+            </div>
+          </div>
+          <p className="text-center text-white font-medium mt-2">
+            {rewardPokemon.isLoading ? 'Chargement...' : `${rewardPokemon.name} vous félicite pour votre score !`}
+          </p>
           
           <div className="mt-6 space-y-6">
             {/* Stats Grid */}

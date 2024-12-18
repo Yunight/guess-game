@@ -7,7 +7,7 @@ import { skipToken } from '@reduxjs/toolkit/query';
 import { GameScreen } from './GameScreen';
 import { MenuScreen } from './MenuScreen';
 import { GameOverDialog } from './GameOverDialog';
-import { Generation, Rankings } from '@/components/pokemon-game/types';
+import { Generation, Pokemon, Rankings } from '@/components/pokemon-game/types';
 import { useLocalStorage } from '@/hooks/useLocalStorage';
 
 const GENERATIONS: Generation[] = [
@@ -22,6 +22,17 @@ const GENERATIONS: Generation[] = [
   { name: '9ème Génération', startId: 906, endId: 1010 },
 ];
 const MAX_HINTS = 10;
+
+// Add rarity tiers for Pokémon rewards
+const POKEMON_REWARDS = [
+  { minScore: 150, condition: (pokemon: Pokemon) => pokemon.isMythical && pokemon.name === 'mew' }, // Mew only
+  { minScore: 100, condition: (pokemon: Pokemon) => pokemon.isMythical }, // Other Mythical
+  { minScore: 80, condition: (pokemon: Pokemon) => pokemon.isLegendary }, // Legendary
+  { minScore: 60, condition: (pokemon: Pokemon) => pokemon.evolvesFromSpecies !== null && !pokemon.hasEvolution }, // Final evolution (like Venusaur)
+  { minScore: 40, condition: (pokemon: Pokemon) => pokemon.evolvesFromSpecies !== null && pokemon.hasEvolution }, // Middle evolution (like Ivysaur)
+  { minScore: 20, condition: (pokemon: Pokemon) => pokemon.evolvesFromSpecies === null && !pokemon.hasEvolution }, // No evolution (like Tauros)
+  { minScore: 0, condition: (pokemon: Pokemon) => pokemon.evolvesFromSpecies === null && pokemon.hasEvolution }, // Base form (like Bulbasaur)
+];
 
 const PokemonGame = () => {
   const [bestScore, setBestScore] = useLocalStorage<number>('bestScore', 0);
@@ -53,6 +64,9 @@ const PokemonGame = () => {
     const savedMute = localStorage.getItem('pokemonGameMuted');
     return savedMute ? JSON.parse(savedMute) : false;
   });
+  const victoryAudioRef = useRef<HTMLAudioElement | null>(null);
+  const correctAudioRef = useRef<HTMLAudioElement | null>(null);
+  const wrongAudioRef = useRef<HTMLAudioElement | null>(null);
   const canStartGame = Boolean(playerName && !nameError);
   
   // Use RTK Query hooks with proper typing
@@ -63,6 +77,38 @@ const PokemonGame = () => {
   } = useGetPokemonByIdQuery(currentPokemonId ?? skipToken, {
     skip: !currentPokemonId || !isGameActive,
   });
+
+  const { data: allPokemonData = [] } = useGetAllPokemonNamesQuery();
+
+  const getRewardPokemon = useCallback((score: number) => {
+    const tier = POKEMON_REWARDS.find(tier => score >= tier.minScore);
+    
+    if (!tier || !allPokemonData) {
+      return { id: 25, name: 'Pikachu', isLoading: true }; // Default fallback with loading state
+    }
+  
+    // Filter Pokémon based on the tier condition and selected generation
+    const eligiblePokemon = allPokemonData.filter(pokemon => 
+      tier.condition(pokemon) && 
+      pokemon.id >= selectedGeneration.startId && 
+      pokemon.id <= selectedGeneration.endId
+    );
+    
+    // If no eligible Pokémon found, return a default
+    if (eligiblePokemon.length === 0) {
+      return { id: 25, name: 'Pikachu', isLoading: false };
+    }
+  
+    // Pick a random Pokémon from the eligible ones
+    const randomIndex = Math.floor(Math.random() * eligiblePokemon.length);
+    const selectedPokemon = eligiblePokemon[randomIndex];
+    
+    return {
+      id: selectedPokemon.id,
+      name: selectedPokemon.frenchName,
+      isLoading: false
+    };
+  }, [allPokemonData, selectedGeneration]);
 
   // Capitalize first letter of a string
   const capitalize = (str: string): string => {
@@ -94,21 +140,19 @@ const PokemonGame = () => {
   const handleGuessChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setGuess(capitalize(value));
-    setHighlightedIndex(0); // Reset highlight to first item when typing
+    setHighlightedIndex(0);
     
     if (value.length > 0) {
       const normalizedValue = normalizeText(value);
       const filteredSuggestions = allPokemonNames
-        .filter(name => {
-          const normalizedName = normalizeText(name);
-          const pokemonId = allPokemonNames.indexOf(name) + 1;
+        .filter(pokemon => {
+          const normalizedName = normalizeText(pokemon.frenchName);
           return normalizedName.startsWith(normalizedValue) && 
-                 pokemonId >= selectedGeneration.startId && 
-                 pokemonId <= selectedGeneration.endId;
+                 pokemon.id >= selectedGeneration.startId && 
+                 pokemon.id <= selectedGeneration.endId;
         })
-        .map(name => capitalize(name))
+        .map(pokemon => capitalize(pokemon.frenchName))
         .sort((a, b) => {
-          // First, prioritize exact matches
           const normalizedA = normalizeText(a);
           const normalizedB = normalizeText(b);
           const normalizedValue = normalizeText(value);
@@ -116,7 +160,6 @@ const PokemonGame = () => {
           if (normalizedA === normalizedValue && normalizedB !== normalizedValue) return -1;
           if (normalizedB === normalizedValue && normalizedA !== normalizedValue) return 1;
           
-          // Then sort by length (shorter names first)
           return normalizedA.length - normalizedB.length;
         })
         .slice(0, 5);
@@ -132,13 +175,30 @@ const PokemonGame = () => {
   const WRONG_SOUND_URL = '/sounds/bump_wall.mp3';
   const VICTORY_SOUND_URL = '/sounds/battle_win.mp3';
 
+  // Add a function to clean up all audio instances
+  const cleanupAllAudio = () => {
+    if (victoryAudioRef.current) {
+      victoryAudioRef.current.pause();
+      victoryAudioRef.current = null;
+    }
+    if (correctAudioRef.current) {
+      correctAudioRef.current.pause();
+      correctAudioRef.current = null;
+    }
+    if (wrongAudioRef.current) {
+      wrongAudioRef.current.pause();
+      wrongAudioRef.current = null;
+    }
+  };
+
   const handleCorrectAnswer = () => {
     setIsCorrect(true);
     setScore(prev => prev + 1);
     
     if (!isMuted) {
-      const audio = new Audio(CORRECT_SOUND_URL);
-      audio.play().catch(console.error);
+      cleanupAllAudio();
+      correctAudioRef.current = new Audio(CORRECT_SOUND_URL);
+      correctAudioRef.current.play().catch(console.error);
     }
     
     setTimeout(() => {
@@ -187,8 +247,9 @@ const PokemonGame = () => {
     } else {
       setIsCorrect(false);
       if (!isMuted) {
-        const audio = new Audio(WRONG_SOUND_URL);
-        audio.play().catch(console.error);
+        cleanupAllAudio();
+        wrongAudioRef.current = new Audio(WRONG_SOUND_URL);
+        wrongAudioRef.current.play().catch(console.error);
       }
     }
   };
@@ -245,8 +306,9 @@ const PokemonGame = () => {
     setGameOver(true);
     
     if (!isMuted) {
-      const audio = new Audio(VICTORY_SOUND_URL);
-      audio.play().catch(console.error);
+      cleanupAllAudio();
+      victoryAudioRef.current = new Audio(VICTORY_SOUND_URL);
+      victoryAudioRef.current.play().catch(console.error);
     }
     
     if (score > bestScore) {
@@ -294,14 +356,17 @@ const PokemonGame = () => {
         await new Promise(resolve => setTimeout(resolve, 500));
         await fetchSelectedRankings();
         
-        const userRanking = rankings.findIndex(player => player.name === playerName) + 1;
-        setUserRanking(userRanking);
+        // Get updated ranking position
+        const rankingsQuery = query(rankingsRef, orderBy('score', 'desc'));
+        const allRankings = await getDocs(rankingsQuery);
+        const userRankingPosition = allRankings.docs.findIndex(doc => doc.data().name === playerName) + 1;
+        setUserRanking(userRankingPosition);
         
       } catch (error) {
         console.error('Error saving score:', error);
       }
     }
-  }, [score, playerName, selectedGeneration, totalTimeElapsed, gameOver, rankings, fetchSelectedRankings, bestScore, setBestScore, setBestTime, isMuted]);
+  }, [score, playerName, selectedGeneration, totalTimeElapsed, gameOver, fetchSelectedRankings, bestScore, setBestScore, setBestTime, isMuted]);
 
   // Update the effect to use both functions
   useEffect(() => {
@@ -378,8 +443,20 @@ const PokemonGame = () => {
     const isAvailable = await checkNameAvailability(playerName);
     if (!isAvailable) return;
     
-    // Store the name in localStorage only when starting the game
-    localStorage.setItem('pokemonGamePlayerName', playerName);
+    // Clean up all audio instances
+    cleanupAllAudio();
+    
+    // If it's a new user (different from saved name), clean up localStorage
+    const savedName = localStorage.getItem('pokemonGamePlayerName');
+    if (savedName !== playerName) {
+      // Clear all game-related data except best score and time
+      const currentBestScore = localStorage.getItem('bestScore');
+      const currentBestTime = localStorage.getItem('bestTime');
+      localStorage.clear();
+      if (currentBestScore) localStorage.setItem('bestScore', currentBestScore);
+      if (currentBestTime) localStorage.setItem('bestTime', currentBestTime);
+      localStorage.setItem('pokemonGamePlayerName', playerName);
+    }
     
     // Stop any existing timers
     if (timerInterval.current) {
@@ -571,7 +648,13 @@ const PokemonGame = () => {
 
       <GameOverDialog
         gameOver={gameOver}
-        setGameOver={setGameOver}
+        setGameOver={(open) => {
+          setGameOver(open);
+          if (!open && victoryAudioRef.current) {
+            victoryAudioRef.current.pause();
+            victoryAudioRef.current = null;
+          }
+        }}
         playerName={playerName}
         score={score}
         bestScore={bestScore}
@@ -579,13 +662,22 @@ const PokemonGame = () => {
         userRanking={userRanking}
         totalTimeElapsed={totalTimeElapsed}
         formatTimeForRanking={formatTimeForRanking}
+        rewardPokemon={getRewardPokemon(score)}
         handleRestart={() => {
+          if (victoryAudioRef.current) {
+            victoryAudioRef.current.pause();
+            victoryAudioRef.current = null;
+          }
           setGameOver(false);
           setIsGameActive(false);
           setScore(0);
           startGame();
         }}
         handleBackToMenu={() => {
+          if (victoryAudioRef.current) {
+            victoryAudioRef.current.pause();
+            victoryAudioRef.current = null;
+          }
           setGameOver(false);
           setIsGameActive(false);
           setScore(0);

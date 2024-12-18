@@ -39,10 +39,10 @@ export const MenuScreen: FC<MenuScreenProps> = ({
   formatDate,
 }) => {
   return (
-    <div className="w-full max-w-5xl px-4 sm:px-0">
+    <div className="w-full max-w-[1200px] px-4 sm:px-6 lg:px-8">
       <div className="flex flex-col lg:flex-row justify-between items-center gap-6">
         {/* Left Panel - Pokédex Main Screen */}
-        <div className="w-full lg:w-[500px] bg-red-500 rounded-3xl p-6 relative min-h-[600px]">
+        <div className="w-full lg:w-[550px] bg-red-500 rounded-3xl p-6 relative min-h-[600px]">
           {/* Top dots */}
           <div className="absolute top-4 left-4 flex gap-2">
             <div className="w-3 h-3 rounded-full bg-gray-700"></div>
@@ -163,7 +163,7 @@ export const MenuScreen: FC<MenuScreenProps> = ({
         </div>
 
         {/* Right Panel - Rankings Display */}
-        <div className="w-full lg:w-[500px] bg-red-500 rounded-3xl p-6 relative min-h-[600px]">
+        <div className="w-full lg:w-[550px] bg-red-500 rounded-3xl p-6 relative min-h-[600px]">
           <div className="bg-gray-800 rounded-xl p-4 mb-4 relative overflow-hidden">
             <div className="absolute inset-0 bg-gradient-to-r from-blue-600/20 to-purple-600/20"></div>
             <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-400 to-purple-400"></div>
@@ -211,17 +211,17 @@ export const MenuScreen: FC<MenuScreenProps> = ({
                     ${player.name === playerName ? 'bg-yellow-50/90 hover:bg-yellow-100/90' : ''}
                     ${index < 3 ? 'font-semibold' : ''}`}
                 >
-                  <div className="col-span-1 text-gray-800 relative z-10">
+                  <div className="col-span-2 sm:col-span-1 text-gray-800 relative z-10 flex justify-center">
                     {index < 3 ? (
                       <div className={`
-                        relative w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center
+                        relative w-8 h-8 rounded-full flex items-center justify-center
                         ${index === 0 ? 'bg-gradient-to-br from-yellow-300 to-yellow-500' : ''}
                         ${index === 1 ? 'bg-gradient-to-br from-gray-300 to-gray-500' : ''}
                         ${index === 2 ? 'bg-gradient-to-br from-orange-300 to-orange-700' : ''}
                         shadow-lg transform hover:scale-110 transition-transform duration-200
                       `}>
                         <div className="absolute inset-0 rounded-full bg-white/20 animate-pulse-slow"></div>
-                        <span className="relative text-white font-bold text-sm sm:text-base z-10">
+                        <span className="relative text-white font-bold text-base z-10">
                           {index + 1}
                         </span>
                       </div>
@@ -229,7 +229,7 @@ export const MenuScreen: FC<MenuScreenProps> = ({
                       <span className="text-gray-600 text-sm font-medium">#{index + 1}</span>
                     )}
                   </div>
-                  <div className="col-span-4 truncate text-gray-800 text-sm sm:text-base">
+                  <div className="col-span-3 sm:col-span-4 truncate text-gray-800 text-sm sm:text-base pl-1 sm:pl-0">
                     {player.name === playerName ? (
                       <div className="flex items-center gap-2">
                         <span className="text-blue-600 font-bold truncate">★ {player.name}</span>
