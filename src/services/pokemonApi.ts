@@ -1,18 +1,5 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
-
-interface Pokemon {
-  id: number;
-  name: string;
-  frenchName: string;
-  imageUrl: string;
-  flavorText?: string;
-  englishFlavorText?: string;
-  cryUrl?: string;
-  isLegendary?: boolean;
-  isMythical?: boolean;
-  evolvesFromSpecies: string | null;
-  hasEvolution: boolean;
-}
+import { Pokemon } from '@/components/pokemon-game/types';
 
 interface PokemonSpeciesResponse {
   name: string;
@@ -23,14 +10,36 @@ interface PokemonSpeciesResponse {
   flavor_text_entries: Array<{
     flavor_text: string;
     language: { name: string };
+    version: { name: string; url: string };
   }>;
   is_legendary: boolean;
   is_mythical: boolean;
   evolves_from_species: { name: string } | null;
   evolution_chain: { url: string };
+  forms_switchable: boolean;
+  gender_rate: number;
+  has_gender_differences: boolean;
+  id: number;
+  is_baby: boolean;
+  varieties: Array<{
+    is_default: boolean;
+    pokemon: {
+      name: string;
+      url: string;
+    };
+  }>;
+  genera: Array<{
+    genus: string;
+    language: { name: string };
+  }>;
+  generation: {
+    name: string;
+    url: string;
+  };
 }
 
 interface PokemonResponse {
+  id: number;
   name: string;
   sprites: {
     other: {
@@ -41,17 +50,16 @@ interface PokemonResponse {
   };
 }
 
-interface EvolutionChain {
-  species: {
-    name: string;
-    url: string;
-  };
-  evolves_to: EvolutionChain[];
+interface EvolutionChainNode {
+  species: { name: string };
+  evolves_to: EvolutionChainNode[];
 }
 
-interface EvolutionChainResponse {
-  chain: EvolutionChain;
+interface EvolutionChain {
+  chain: EvolutionChainNode;
 }
+
+type EvolutionChainResponse = EvolutionChain;
 
 const POKEMON_CACHE_KEY = 'pokemonDetailsCache';
 const POKEMON_NAMES_CACHE_KEY = 'allPokemonNamesCache';
@@ -61,7 +69,6 @@ interface CachedPokemonData {
   timestamp: number;
   pokemons: Record<number, Pokemon>;
 }
-
 
 interface CachedNamesData {
   timestamp: number;
@@ -77,25 +84,69 @@ interface ApiError {
   data: unknown;
 }
 
-// Add this function to count previous evolutions
-const countPreviousEvolutions = (speciesData: PokemonSpeciesResponse): number => {
-  let count = 0;
-  let currentSpecies = speciesData;
-  
-  while (currentSpecies.evolves_from_species) {
-    count++;
-    currentSpecies = { 
-      ...currentSpecies, 
-      evolves_from_species: null,
-      names: [],
-      flavor_text_entries: [],
-      is_legendary: false,
-      is_mythical: false,
-      evolution_chain: { url: '' }
-    };
+const getEvolutionStage = async (pokemonName: string): Promise<number> => {
+  try {
+    const speciesResponse = await fetch(`https://pokeapi.co/api/v2/pokemon-species/${pokemonName}`);
+    const speciesData = await speciesResponse.json();
+    const evolutionChainUrl = speciesData.evolution_chain.url;
+    
+    const evolutionResponse = await fetch(evolutionChainUrl);
+    const evolutionData: EvolutionChain = await evolutionResponse.json();
+    
+    // Check first stage
+    if (evolutionData.chain.species.name === pokemonName) {
+      return 1;
+    }
+    
+    // Check second stage
+    for (const firstEvo of evolutionData.chain.evolves_to) {
+      if (firstEvo.species.name === pokemonName) {
+        return 2;
+      }
+      
+      // Check third stage
+      for (const secondEvo of firstEvo.evolves_to) {
+        if (secondEvo.species.name === pokemonName) {
+          return 3;
+        }
+      }
+    }
+    
+    return 1;
+  } catch (error) {
+    console.error('Error fetching evolution stage:', error);
+    return 1;
   }
-  
-  return count;
+};
+
+export const transformPokemonData = async (data: PokemonResponse & { species: { url: string } }): Promise<Pokemon> => {
+  const speciesResponse = await fetch(data.species.url);
+  const speciesData = await speciesResponse.json() as PokemonSpeciesResponse;
+
+  const frenchName = speciesData.names.find((name) => name.language.name === 'fr')?.name || data.name;
+  const frenchFlavorText = speciesData.flavor_text_entries.find(
+    (entry) => entry.language.name === 'fr'
+  )?.flavor_text || '';
+  const englishFlavorText = speciesData.flavor_text_entries.find(
+    (entry) => entry.language.name === 'en'
+  )?.flavor_text || '';
+
+  const evolutionStage = await getEvolutionStage(data.name);
+
+  return {
+    id: data.id,
+    name: data.name,
+    frenchName,
+    frenchFlavorText: frenchFlavorText.replace(/\n/g, ' ').replace(/\f/g, ' '),
+    englishFlavorText: englishFlavorText.replace(/\n/g, ' ').replace(/\f/g, ' '),
+    sprite: data.sprites.other['official-artwork'].front_default,
+    evolvesFromSpecies: speciesData.evolves_from_species?.name || null,
+    hasEvolution: evolutionStage < 3,
+    evolutionStage,
+    isLegendary: speciesData.is_legendary,
+    isMythical: speciesData.is_mythical,
+    cryUrl: `https://play.pokemonshowdown.com/audio/cries/${data.name.toLowerCase()}.mp3`
+  };
 };
 
 export const pokemonApi = createApi({
@@ -110,16 +161,22 @@ export const pokemonApi = createApi({
           if (cachedData) {
             const { timestamp, names } = JSON.parse(cachedData) as CachedNamesData;
             if (Date.now() - timestamp < CACHE_DURATION) {
-              return { data: names.map(p => ({
+              // Map cached data to Pokemon objects
+              const pokemonList = names.map(p => ({
                 id: p.id,
                 name: p.name,
-                frenchName: p.frenchName,
-                imageUrl: '',
+                frenchName: p.frenchName || p.name, // Ensure we have a French name
+                frenchFlavorText: '',
+                englishFlavorText: '',
+                sprite: `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${p.id}.png`,
                 evolvesFromSpecies: null,
+                hasEvolution: false,
+                evolutionStage: 1,
                 isLegendary: false,
                 isMythical: false,
-                hasEvolution: false
-              })) };
+                cryUrl: `https://play.pokemonshowdown.com/audio/cries/${p.name.toLowerCase()}.mp3`
+              }));
+              return { data: pokemonList };
             }
           }
 
@@ -142,34 +199,43 @@ export const pokemonApi = createApi({
           
           const evolutionChainResponses = await Promise.all(evolutionChainPromises);
           
-          const pokemonData: Pokemon[] = speciesResponses.map((response, index) => {
+          const pokemonPromises = speciesResponses.map(async (response, index) => {
             const speciesData = response.data as PokemonSpeciesResponse;
             const evolutionChainData = evolutionChainResponses[index].data as EvolutionChainResponse;
             
-            // Check if this Pokémon has any evolution
             let hasEvolution = false;
-            const checkEvolutions = (chain: EvolutionChain) => {
-              if (chain.species.name === speciesData.name) {
-                hasEvolution = chain.evolves_to.length > 0;
+            const checkEvolutions = (node: EvolutionChainNode) => {
+              if (node.species.name === speciesData.name) {
+                hasEvolution = node.evolves_to.length > 0;
               } else {
-                chain.evolves_to.forEach((evolution) => {
+                node.evolves_to.forEach((evolution) => {
                   checkEvolutions(evolution);
                 });
               }
             };
             checkEvolutions(evolutionChainData.chain);
 
+            const evolutionStage = await getEvolutionStage(speciesData.name);
+            const frenchNameData = speciesData.names.find(n => n.language.name === 'fr');
+            const frenchName = frenchNameData ? frenchNameData.name : speciesData.name;
+
             return {
               id: index + 1,
               name: speciesData.name,
-              frenchName: speciesData.names.find(n => n.language.name === 'fr')?.name || speciesData.name,
-              imageUrl: '',
+              frenchName,
+              frenchFlavorText: speciesData.flavor_text_entries.find(entry => entry.language.name === 'fr')?.flavor_text || '',
+              englishFlavorText: speciesData.flavor_text_entries.find(entry => entry.language.name === 'en')?.flavor_text || '',
+              sprite: `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${index + 1}.png`,
               isLegendary: speciesData.is_legendary,
               isMythical: speciesData.is_mythical,
               evolvesFromSpecies: speciesData.evolves_from_species?.name || null,
-              hasEvolution
+              hasEvolution,
+              evolutionStage,
+              cryUrl: `https://play.pokemonshowdown.com/audio/cries/${speciesData.name.toLowerCase()}.mp3`
             };
           });
+
+          const pokemonData = await Promise.all(pokemonPromises);
 
           // Cache the data
           const cacheData: CachedNamesData = {
@@ -228,20 +294,19 @@ export const pokemonApi = createApi({
             ?.flavor_text.replace(/\\n|\\f/g, ' ')
             .replace(new RegExp(pokemonData.name, 'gi'), '_____') || '';
 
-          const cryUrl = `https://play.pokemonshowdown.com/audio/cries/${pokemonData.name.toLowerCase()}.mp3`;
-
           const pokemon: Pokemon = {
             id: pokemonId,
             name: pokemonData.name,
             frenchName,
-            imageUrl: pokemonData.sprites.other['official-artwork'].front_default,
-            flavorText: frenchFlavorText,
+            frenchFlavorText,
             englishFlavorText,
-            cryUrl,
+            sprite: pokemonData.sprites.other['official-artwork'].front_default,
+            evolvesFromSpecies: speciesData.evolves_from_species?.name || null,
+            hasEvolution: false,
+            evolutionStage: await getEvolutionStage(pokemonData.name),
             isLegendary: speciesData.is_legendary,
             isMythical: speciesData.is_mythical,
-            evolvesFromSpecies: speciesData.evolves_from_species?.name || null,
-            hasEvolution: false
+            cryUrl: `https://play.pokemonshowdown.com/audio/cries/${pokemonData.name.toLowerCase()}.mp3`
           };
 
           // Update cache with new pokemon data

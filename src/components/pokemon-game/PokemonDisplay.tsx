@@ -46,7 +46,7 @@ export const PokemonDisplay: FC<PokemonDisplayProps> = ({
           const img = new Image();
           img.onload = resolve;
           img.onerror = reject;
-          img.src = currentPokemon.imageUrl;
+          img.src = currentPokemon.sprite;
         });
 
         // Set the Pokemon data
@@ -122,7 +122,7 @@ export const PokemonDisplay: FC<PokemonDisplayProps> = ({
 
           {displayedPokemon && (
             <img
-              src={displayedPokemon.imageUrl}
+              src={displayedPokemon.sprite}
               alt="Pokémon mystère"
               className={`w-auto h-[250px] object-contain transition-opacity duration-300 drop-shadow-lg animate-float
                 ${displayState === 'ready' ? 'opacity-100' : 'opacity-0'}`}

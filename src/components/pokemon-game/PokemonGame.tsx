@@ -28,10 +28,10 @@ const POKEMON_REWARDS = [
   { minScore: 150, condition: (pokemon: Pokemon) => pokemon.isMythical && pokemon.name === 'mew' }, // Mew only
   { minScore: 100, condition: (pokemon: Pokemon) => pokemon.isMythical }, // Other Mythical
   { minScore: 80, condition: (pokemon: Pokemon) => pokemon.isLegendary }, // Legendary
-  { minScore: 60, condition: (pokemon: Pokemon) => pokemon.evolvesFromSpecies !== null && !pokemon.hasEvolution }, // Final evolution (like Venusaur)
-  { minScore: 40, condition: (pokemon: Pokemon) => pokemon.evolvesFromSpecies !== null && pokemon.hasEvolution }, // Middle evolution (like Ivysaur)
-  { minScore: 20, condition: (pokemon: Pokemon) => pokemon.evolvesFromSpecies === null && !pokemon.hasEvolution }, // No evolution (like Tauros)
-  { minScore: 0, condition: (pokemon: Pokemon) => pokemon.evolvesFromSpecies === null && pokemon.hasEvolution }, // Base form (like Bulbasaur)
+  { minScore: 60, condition: (pokemon: Pokemon) => pokemon.evolutionStage === 3 && !pokemon.isLegendary && !pokemon.isMythical }, // Final evolution (like Venusaur)
+  { minScore: 40, condition: (pokemon: Pokemon) => pokemon.evolutionStage === 2 && !pokemon.isLegendary && !pokemon.isMythical }, // Middle evolution (like Ivysaur)
+  { minScore: 20, condition: (pokemon: Pokemon) => pokemon.evolutionStage === 1 && !pokemon.hasEvolution && !pokemon.isLegendary && !pokemon.isMythical }, // No evolution (like Tauros)
+  { minScore: 0, condition: (pokemon: Pokemon) => pokemon.evolutionStage === 1 && pokemon.hasEvolution && !pokemon.isLegendary && !pokemon.isMythical }, // Base form (like Bulbasaur)
 ];
 
 const PokemonGame = () => {
@@ -81,31 +81,80 @@ const PokemonGame = () => {
   const { data: allPokemonData = [] } = useGetAllPokemonNamesQuery();
 
   const getRewardPokemon = useCallback((score: number) => {
-    const tier = POKEMON_REWARDS.find(tier => score >= tier.minScore);
-    
-    if (!tier || !allPokemonData) {
-      return { id: 25, name: 'Pikachu', isLoading: true }; // Default fallback with loading state
+    // Return loading state immediately if no data
+    if (!allPokemonData || allPokemonData.length === 0) {
+      return { id: 25, name: 'pikachu', isLoading: true };
     }
-  
+
+    // Find the appropriate tier based on score
+    const tier = POKEMON_REWARDS.find(tier => score >= tier.minScore);
+    if (!tier) {
+      // If no tier found, return a random basic Pokémon
+      const basicPokemon = allPokemonData.filter(pokemon => 
+        pokemon.id >= selectedGeneration.startId && 
+        pokemon.id <= selectedGeneration.endId &&
+        pokemon.evolvesFromSpecies === null && 
+        pokemon.hasEvolution
+      );
+      
+      if (basicPokemon.length === 0) {
+        return { id: 25, name: 'pikachu', isLoading: false }; // Fallback only if no basic Pokémon found
+      }
+      
+      const randomBasic = basicPokemon[Math.floor(Math.random() * basicPokemon.length)];
+      return {
+        id: randomBasic.id,
+        name: randomBasic.frenchName,
+        isLoading: false
+      };
+    }
+
     // Filter Pokémon based on the tier condition and selected generation
     const eligiblePokemon = allPokemonData.filter(pokemon => 
       tier.condition(pokemon) && 
       pokemon.id >= selectedGeneration.startId && 
       pokemon.id <= selectedGeneration.endId
     );
-    
-    // If no eligible Pokémon found, return a default
+
+    // If no eligible Pokémon found in the current tier, try the next lower tier
     if (eligiblePokemon.length === 0) {
-      return { id: 25, name: 'Pikachu', isLoading: false };
+      const lowerTiers = POKEMON_REWARDS.slice(POKEMON_REWARDS.indexOf(tier) + 1);
+      for (const lowerTier of lowerTiers) {
+        const lowerTierPokemon = allPokemonData.filter(pokemon => 
+          lowerTier.condition(pokemon) && 
+          pokemon.id >= selectedGeneration.startId && 
+          pokemon.id <= selectedGeneration.endId
+        );
+        
+        if (lowerTierPokemon.length > 0) {
+          const randomPokemon = lowerTierPokemon[Math.floor(Math.random() * lowerTierPokemon.length)];
+          return {
+            id: randomPokemon.id,
+            name: randomPokemon.frenchName,
+            isLoading: false
+          };
+        }
+      }
+      
+      // If still no Pokémon found, return a random Pokémon from the generation
+      const generationPokemon = allPokemonData.filter(pokemon => 
+        pokemon.id >= selectedGeneration.startId && 
+        pokemon.id <= selectedGeneration.endId
+      );
+      
+      const randomPokemon = generationPokemon[Math.floor(Math.random() * generationPokemon.length)];
+      return {
+        id: randomPokemon.id,
+        name: randomPokemon.frenchName,
+        isLoading: false
+      };
     }
-  
+
     // Pick a random Pokémon from the eligible ones
-    const randomIndex = Math.floor(Math.random() * eligiblePokemon.length);
-    const selectedPokemon = eligiblePokemon[randomIndex];
-    
+    const randomPokemon = eligiblePokemon[Math.floor(Math.random() * eligiblePokemon.length)];
     return {
-      id: selectedPokemon.id,
-      name: selectedPokemon.frenchName,
+      id: randomPokemon.id,
+      name: randomPokemon.frenchName,
       isLoading: false
     };
   }, [allPokemonData, selectedGeneration]);

@@ -15,14 +15,15 @@ export interface Pokemon {
   id: number;
   name: string;
   frenchName: string;
-  imageUrl: string;
-  flavorText?: string;
-  englishFlavorText?: string;
-  cryUrl?: string;
-  isLegendary?: boolean;
-  isMythical?: boolean;
+  frenchFlavorText: string;
+  englishFlavorText: string;
+  sprite: string;
   evolvesFromSpecies: string | null;
-  hasEvolution?: boolean;
+  hasEvolution: boolean;
+  evolutionStage: number;
+  isLegendary: boolean;
+  isMythical: boolean;
+  cryUrl: string;
 }
 
 export interface Rankings {
