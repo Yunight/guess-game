@@ -22,6 +22,7 @@ interface GameOverDialogProps {
   rewardPokemon: { id: number; name: string; isLoading: boolean };
   handleRestart: () => void;
   handleBackToMenu: () => void;
+  totalPokemonCount: number;
 }
 
 export const GameOverDialog: FC<GameOverDialogProps> = ({
@@ -37,6 +38,7 @@ export const GameOverDialog: FC<GameOverDialogProps> = ({
   rewardPokemon,
   handleRestart,
   handleBackToMenu,
+  totalPokemonCount,
 }) => {
   return (
     <Dialog open={gameOver} onOpenChange={(open) => !open && setGameOver(false)}>
@@ -51,10 +53,18 @@ export const GameOverDialog: FC<GameOverDialogProps> = ({
               </div>
             </div>
             <DialogTitle className="text-center text-3xl font-bold text-white">
-              Partie terminée!
+              {score === bestScore && score === totalPokemonCount ? (
+                'Félicitations vous avez deviné tous les pokémons, vous êtes un vrai maitre pokémon!'
+              ) : (
+                'Partie terminée!'
+              )}
             </DialogTitle>
             <DialogDescription className="text-center text-gray-100 font-medium">
-              Félicitations, dresseur! Voici vos résultats
+              {score === bestScore && score === totalPokemonCount ? (
+                'Une performance légendaire!'
+              ) : (
+                'Félicitations, dresseur! Voici vos résultats'
+              )}
             </DialogDescription>
           </DialogHeader>
           

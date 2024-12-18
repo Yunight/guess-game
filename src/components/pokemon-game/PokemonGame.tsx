@@ -25,7 +25,7 @@ const MAX_HINTS = 10;
 
 // Add rarity tiers for Pokémon rewards
 const POKEMON_REWARDS = [
-  { minScore: 150, condition: (pokemon: Pokemon) => pokemon.isMythical && pokemon.name === 'mew' }, // Mew only
+  { minScore: 151, condition: (pokemon: Pokemon) => pokemon.isMythical && pokemon.name === 'mew' }, // Mew only
   { minScore: 100, condition: (pokemon: Pokemon) => pokemon.isMythical }, // Other Mythical
   { minScore: 80, condition: (pokemon: Pokemon) => pokemon.isLegendary }, // Legendary
   { minScore: 60, condition: (pokemon: Pokemon) => pokemon.evolutionStage === 3 && !pokemon.isLegendary && !pokemon.isMythical }, // Final evolution (like Venusaur)
@@ -532,7 +532,7 @@ const PokemonGame = () => {
     setCurrentPokemonId(null);
     setHighlightedIndex(-1);
     
-    // Initialize Pokémon list for selected generation
+    // Initialize Pok��mon list for selected generation
     const filteredIds = Array.from(
       { length: selectedGeneration.endId - selectedGeneration.startId + 1 },
       (_, i) => selectedGeneration.startId + i
@@ -712,6 +712,7 @@ const PokemonGame = () => {
         totalTimeElapsed={totalTimeElapsed}
         formatTimeForRanking={formatTimeForRanking}
         rewardPokemon={getRewardPokemon(score)}
+        totalPokemonCount={selectedGeneration.endId - selectedGeneration.startId + 1}
         handleRestart={() => {
           if (victoryAudioRef.current) {
             victoryAudioRef.current.pause();

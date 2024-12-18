@@ -201,7 +201,7 @@ export const pokemonApi = createApi({
           }
 
           // If no cache or expired, fetch all pokemon species at once
-          const response = await fetchWithBQ('pokemon-species?limit=1010');
+          const response = await fetchWithBQ('pokemon-species?limit=1025');
           if (response.error) throw response.error;
 
           const data = response.data as { results: Array<{ name: string; url: string }> };
