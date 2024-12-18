@@ -265,11 +265,12 @@ export const PokemonDisplay: FC<PokemonDisplayProps> = ({
                   displayState === 'revealed' 
                     ? 'animate-bounce-in filter brightness-100' 
                     : displayState === 'ready' 
-                      ? 'filter brightness-0 scale-[0.85]'
-                      : 'opacity-0 scale-[0.3]'
+                      ? 'filter brightness-0 scale-[0.85] transform-none'
+                      : 'opacity-0 scale-[0.3] transform-none'
                 }`}
                 style={{
-                  willChange: 'transform, opacity, filter'
+                  willChange: 'transform, opacity, filter',
+                  transform: 'rotate(0deg)'
                 }}
               />
 

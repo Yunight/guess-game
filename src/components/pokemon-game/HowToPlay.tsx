@@ -1,5 +1,5 @@
 import { FC } from 'react';
-import { Dialog, DialogContent } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
@@ -51,6 +51,9 @@ export const HowToPlay: FC<HowToPlayProps> = ({ isOpen, onClose }) => {
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-4xl bg-gradient-to-br from-blue-500 to-blue-600 border-4 border-white p-0 shadow-2xl sm:max-h-[90vh] max-h-[95vh] overflow-y-auto">
+        <DialogTitle className="sr-only">Comment jouer ?</DialogTitle>
+        <DialogDescription className="sr-only">Guide d'utilisation du jeu Pokémon</DialogDescription>
+        
         <div className="p-6 text-white relative">
           <div className="fixed inset-0 bg-[radial-gradient(circle,_transparent_20%,_rgba(255,255,255,0.1)_20%)] bg-[length:20px_20px] opacity-50 pointer-events-none"></div>
           <div className="fixed inset-0 bg-gradient-to-br from-white/5 to-transparent pointer-events-none"></div>

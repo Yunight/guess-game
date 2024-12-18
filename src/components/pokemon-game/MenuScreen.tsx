@@ -43,6 +43,43 @@ export const MenuScreen: FC<MenuScreenProps> = ({
 
   return (
     <div className="w-full max-w-[1200px] px-4 sm:px-6 lg:px-8">
+      {/* Title Section */}
+      <div className="text-center mb-8 relative pt-4">
+        <h1 className="text-4xl sm:text-5xl md:text-6xl font-pokemon text-center relative">
+          <span className="relative bg-gradient-to-br from-red-400 via-red-500 to-purple-600 text-transparent bg-clip-text drop-shadow-lg transform hover:scale-105 transition-transform duration-300">
+            Pokémon Guesser
+          </span>
+        </h1>
+        <div className="flex justify-center gap-4 mt-6">
+          {/* Pokéball */}
+          <div className="w-8 h-8 rounded-full relative shadow-md">
+            <div className="absolute inset-0 bg-gradient-to-b from-red-600 to-red-500 rounded-t-full h-[50%]"></div>
+            <div className="absolute inset-0 bg-white rounded-b-full top-[50%]"></div>
+            <div className="absolute inset-x-0 top-[46%] h-[3px] bg-gray-800"></div>
+            <div className="absolute inset-[25%] bg-white rounded-full border-[3px] border-gray-800"></div>
+            <div className="absolute inset-[35%] bg-white rounded-full border-2 border-gray-800"></div>
+          </div>
+          {/* Great Ball */}
+          <div className="w-8 h-8 rounded-full relative shadow-md">
+            <div className="absolute inset-0 bg-gradient-to-b from-blue-600 to-blue-500 rounded-t-full h-[50%]"></div>
+            <div className="absolute inset-0 bg-white rounded-b-full top-[50%]"></div>
+            <div className="absolute inset-x-0 top-[46%] h-[3px] bg-gray-800"></div>
+            <div className="absolute inset-[25%] bg-white rounded-full border-[3px] border-gray-800"></div>
+            <div className="absolute inset-[35%] bg-white rounded-full border-2 border-gray-800"></div>
+          </div>
+          {/* Ultra Ball */}
+          <div className="w-8 h-8 rounded-full relative shadow-md">
+            <div className="absolute inset-0 bg-gradient-to-b from-yellow-500 to-yellow-400 rounded-t-full h-[50%]"></div>
+            <div className="absolute inset-0 bg-white rounded-b-full top-[50%]"></div>
+            <div className="absolute inset-x-0 top-[46%] h-[3px] bg-gray-800"></div>
+            <div className="absolute inset-[25%] bg-white rounded-full border-[3px] border-gray-800"></div>
+            <div className="absolute inset-[35%] bg-white rounded-full border-2 border-gray-800"></div>
+          </div>
+        </div>
+        <div className="absolute -top-4 -right-4 w-24 h-24 bg-yellow-400/20 rounded-full blur-2xl animate-pulse-slow pointer-events-none"></div>
+        <div className="absolute -top-4 -left-4 w-24 h-24 bg-blue-400/20 rounded-full blur-2xl animate-pulse-slow delay-500 pointer-events-none"></div>
+      </div>
+
       <div className="flex flex-col lg:flex-row justify-between items-center gap-6">
         {/* Left Panel - Pokédex Main Screen */}
         <div className="w-full lg:w-[550px] bg-red-500 rounded-3xl p-6 relative min-h-[600px]">
