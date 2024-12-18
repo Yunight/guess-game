@@ -18,7 +18,7 @@ export const HintButton: FC<HintButtonProps> = ({
   currentPokemon,
 }) => {
   // Get the appropriate hint text, using English as fallback
-  const hintText = currentPokemon?.flavorText || 
+  const hintText = currentPokemon?.frenchFlavorText || 
     (currentPokemon?.englishFlavorText ? 'Français non disponible - ' + currentPokemon.englishFlavorText : '');
 
   return (
