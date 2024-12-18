@@ -2,23 +2,14 @@ import { initializeApp } from 'firebase/app';
 import { getFirestore } from 'firebase/firestore';
 
 const firebaseConfig = {
-
-  apiKey: "AIzaSyAsW-4kVd13ZW_ty-Jr34HC65t4l3edgPU",
-
-  authDomain: "whoisthispokemon-1f13f.firebaseapp.com",
-
-  projectId: "whoisthispokemon-1f13f",
-
-  storageBucket: "whoisthispokemon-1f13f.firebasestorage.app",
-
-  messagingSenderId: "841384576640",
-
-  appId: "1:841384576640:web:de6231db2f172000b4c865",
-
-  measurementId: "G-6Q6WDYZBRV"
-
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+  appId: import.meta.env.VITE_FIREBASE_APP_ID,
+  measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID
 };
-
 
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
