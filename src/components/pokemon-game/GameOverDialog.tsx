@@ -1,11 +1,11 @@
 import { FC } from 'react';
 import {
   Dialog,
-  DialogContent,
   DialogDescription,
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import { ScrollableDialog } from '@/components/ui/scrollable-dialog';
 import { Button } from '@/components/ui/button';
 import { RewardPokemonDisplay } from './RewardPokemonDisplay';
 import { Pokemon } from './types';
@@ -26,6 +26,10 @@ interface GameOverDialogProps {
   handleRestart: () => void;
   handleBackToMenu: () => void;
   isMuted: boolean;
+  criticalHitCount: number;
+  criticalSuccessCount: number;
+  hyperTrainCount: number;
+  maxHypeChain: number;
 }
 
 export const GameOverDialog: FC<GameOverDialogProps> = ({
@@ -43,10 +47,14 @@ export const GameOverDialog: FC<GameOverDialogProps> = ({
   handleRestart,
   handleBackToMenu,
   isMuted,
+  criticalHitCount,
+  criticalSuccessCount,
+  hyperTrainCount,
+  maxHypeChain,
 }) => {
   return (
     <Dialog open={gameOver} onOpenChange={setGameOver}>
-      <DialogContent className="sm:max-w-md bg-gradient-to-b from-red-500 to-red-600 border-none text-white">
+      <ScrollableDialog className="sm:max-w-md bg-gradient-to-b from-red-500 to-red-600 border-none text-white">
         <div className="absolute inset-0 bg-[url('/pokeball-pattern.png')] opacity-5 bg-repeat"></div>
         <div className="relative">
           <DialogHeader className="space-y-4">
@@ -67,60 +75,92 @@ export const GameOverDialog: FC<GameOverDialogProps> = ({
             </DialogDescription>
           </DialogHeader>
 
-          <RewardPokemonDisplay
-            pokemon={rewardPokemon.pokemon}
-            isLoading={rewardPokemon.isLoading}
-            isMuted={isMuted}
-          />
+          <div className="mt-6 space-y-6">
+            <RewardPokemonDisplay
+              pokemon={rewardPokemon.pokemon}
+              isLoading={rewardPokemon.isLoading}
+              isMuted={isMuted}
+            />
 
-          <div className="mt-6 grid grid-cols-2 gap-4">
-            <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 space-y-2">
-              <div className="flex items-center gap-2 text-yellow-300">
-                <Trophy className="h-5 w-5" />
-                <p className="text-sm font-medium">Score</p>
-              </div>
-              <div className="space-y-1">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-200">Actuel:</span>
-                  <p className="text-lg font-bold">{score}</p>
-                </div>
-                {bestScore > 0 && (
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-gray-200">Meilleur:</span>
-                    <p className="text-lg font-bold text-yellow-300">{bestScore}</p>
-                  </div>
-                )}
-              </div>
-            </div>
-
-            <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 space-y-2">
-              <div className="flex items-center gap-2 text-yellow-300">
-                <Clock className="h-5 w-5" />
-                <p className="text-sm font-medium">Temps</p>
-              </div>
-              <div className="space-y-1">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-200">Actuel:</span>
-                  <p className="text-lg font-bold">{formatTimeForRanking(totalTimeElapsed)}</p>
-                </div>
-                {bestTime > 0 && (
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-gray-200">Meilleur:</span>
-                    <p className="text-lg font-bold text-yellow-300">{formatTimeForRanking(bestTime)}</p>
-                  </div>
-                )}
-              </div>
-            </div>
-
-            {userRanking && (
-              <div className="col-span-2 bg-white/10 backdrop-blur-sm rounded-xl p-4 space-y-2">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 space-y-2">
                 <div className="flex items-center gap-2 text-yellow-300">
-                  <Crown className="h-5 w-5" />
-                  <p className="text-sm font-medium">Classement</p>
+                  <Trophy className="h-5 w-5" />
+                  <p className="text-sm font-medium">Score</p>
                 </div>
-                <p className="text-2xl font-bold text-center">#{userRanking}</p>
+                <div className="space-y-1">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-gray-200">Actuel:</span>
+                    <p className="text-lg font-bold">{score}</p>
+                  </div>
+                  {bestScore > 0 && (
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-gray-200">Meilleur:</span>
+                      <p className="text-lg font-bold text-yellow-300">{bestScore}</p>
+                    </div>
+                  )}
+                </div>
               </div>
-            )}
+
+              <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 space-y-2">
+                <div className="flex items-center gap-2 text-yellow-300">
+                  <Clock className="h-5 w-5" />
+                  <p className="text-sm font-medium">Temps</p>
+                </div>
+                <div className="space-y-1">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-gray-200">Actuel:</span>
+                    <p className="text-lg font-bold">{formatTimeForRanking(totalTimeElapsed)}</p>
+                  </div>
+                  {bestTime > 0 && (
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-gray-200">Meilleur:</span>
+                      <p className="text-lg font-bold text-yellow-300">{formatTimeForRanking(bestTime)}</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {userRanking && (
+                <div className="col-span-2 bg-white/10 backdrop-blur-sm rounded-xl p-4 space-y-2">
+                  <div className="flex items-center gap-2 text-yellow-300">
+                    <Crown className="h-5 w-5" />
+                    <p className="text-sm font-medium">Classement</p>
+                  </div>
+                  <p className="text-2xl font-bold text-center">#{userRanking}</p>
+                </div>
+              )}
+
+              {/* Game Stats */}
+              <div className="col-span-2 bg-white/10 backdrop-blur-sm rounded-xl p-4 space-y-3">
+                <div className="flex items-center gap-2 text-yellow-300">
+                  <Trophy className="h-5 w-5" />
+                  <p className="text-sm font-medium">Statistiques</p>
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="space-y-1">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-gray-200">Coup Critique:</span>
+                      <p className="text-lg font-bold text-yellow-300">{criticalHitCount}</p>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-gray-200">Succès Critique:</span>
+                      <p className="text-lg font-bold text-yellow-300">{criticalSuccessCount}</p>
+                    </div>
+                  </div>
+                  <div className="space-y-1">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-gray-200">Hype Train :</span>
+                      <p className="text-lg font-bold text-yellow-300">{hyperTrainCount}</p>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-gray-200">Max Hype :</span>
+                      <p className="text-lg font-bold text-yellow-300">{maxHypeChain}</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
 
           <div className="grid grid-cols-2 gap-3 mt-6">
@@ -144,7 +184,7 @@ export const GameOverDialog: FC<GameOverDialogProps> = ({
             </Button>
           </div>
         </div>
-      </DialogContent>
+      </ScrollableDialog>
     </Dialog>
   );
 }; 

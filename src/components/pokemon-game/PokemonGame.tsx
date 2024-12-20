@@ -26,13 +26,13 @@ const MAX_HINTS = 10;
 
 // Add rarity tiers for Pokémon rewards
 const POKEMON_REWARDS = [
-  { minScore: 450, condition: (pokemon: Pokemon) => pokemon.isMythical && pokemon.name === 'mew' }, // Mew only (150 perfect answers)
-  { minScore: 300, condition: (pokemon: Pokemon) => pokemon.isMythical }, // Other Mythical (100 perfect answers)
-  { minScore: 240, condition: (pokemon: Pokemon) => pokemon.isLegendary }, // Legendary (80 perfect answers)
-  { minScore: 180, condition: (pokemon: Pokemon) => pokemon.evolutionStage === 3 && !pokemon.isLegendary && !pokemon.isMythical }, // Final evolution (60 perfect answers)
-  { minScore: 120, condition: (pokemon: Pokemon) => pokemon.evolutionStage === 2 && !pokemon.isLegendary && !pokemon.isMythical }, // Middle evolution (40 perfect answers)
-  { minScore: 60, condition: (pokemon: Pokemon) => pokemon.evolutionStage === 1 && !pokemon.hasEvolution && !pokemon.isLegendary && !pokemon.isMythical }, // No evolution (20 perfect answers)
-  { minScore: 0, condition: (pokemon: Pokemon) => pokemon.evolutionStage === 1 && pokemon.hasEvolution && !pokemon.isLegendary && !pokemon.isMythical }, // Base form (any score)
+  { minScore: 2000, condition: (pokemon: Pokemon) => pokemon.isMythical && pokemon.name === 'mew' },
+  { minScore: 1500, condition: (pokemon: Pokemon) => pokemon.isMythical },
+  { minScore: 1000, condition: (pokemon: Pokemon) => pokemon.isLegendary },
+  { minScore: 750, condition: (pokemon: Pokemon) => pokemon.evolutionStage === 3 && !pokemon.isLegendary && !pokemon.isMythical },
+  { minScore: 500, condition: (pokemon: Pokemon) => pokemon.evolutionStage === 2 && !pokemon.isLegendary && !pokemon.isMythical },
+  { minScore: 300, condition: (pokemon: Pokemon) => pokemon.evolutionStage === 1 && !pokemon.hasEvolution && !pokemon.isLegendary && !pokemon.isMythical },
+  { minScore: 0, condition: (pokemon: Pokemon) => pokemon.evolutionStage === 1 && pokemon.hasEvolution && !pokemon.isLegendary && !pokemon.isMythical },
 ];
 
 const PokemonGame = () => {
@@ -58,6 +58,10 @@ const PokemonGame = () => {
   const [showHypeTrain, setShowHypeTrain] = useState(false);
   const [consecutiveFastAnswers, setConsecutiveFastAnswers] = useState(0);
   const [pointsEarned, setPointsEarned] = useState(0);
+  const [criticalHitCount, setCriticalHitCount] = useState(0);
+  const [criticalSuccessCount, setCriticalSuccessCount] = useState(0);
+  const [hyperTrainCount, setHyperTrainCount] = useState(0);
+  const [maxHypeChain, setMaxHypeChain] = useState(0);
   const inputRef = useRef<HTMLInputElement>(null);
   const suggestionsRef = useRef<HTMLDivElement>(null);
 
@@ -136,7 +140,7 @@ const PokemonGame = () => {
       console.log('🏆 Selected tier:', tier ? `Score ${tier.minScore}+` : 'No tier found');
 
       if (!tier) {
-        console.log('⚠️ No tier found, selecting random basic Pokémon');
+        console.log('⚠ No tier found, selecting random basic Pokémon');
         // If no tier found, return a random basic Pokémon
         const basicPokemon = allPokemonData.filter(pokemon => 
           pokemon.id >= selectedGeneration.startId && 
@@ -408,6 +412,8 @@ const PokemonGame = () => {
         setTimeout(() => {
           setPointsEarned(0);
         }, 1000);
+        // Increment hype train count when it ends
+        setHyperTrainCount(prev => prev + 1);
       }
       setConsecutiveFastAnswers(0);
       setShowHypeTrain(false);
@@ -446,7 +452,7 @@ const PokemonGame = () => {
     if (showHypeTrain && !isMuted && !trainHornRef.current) {
       console.log('🔊 Starting train horn sound');
       const trainHorn = new Audio(TRAIN_HORN_URL);
-      trainHorn.volume = 0.3;
+      trainHorn.volume = 0.05;
       trainHorn.loop = true;
       trainHornRef.current = trainHorn;
       trainHorn.play().catch(error => {
@@ -509,10 +515,16 @@ const PokemonGame = () => {
     };
   }, []);
 
-  // Update handleCorrectAnswer to handle points display
+  // Update handleCorrectAnswer to track max chain
   const handleCorrectAnswer = async () => {
     console.log('✅ Handling correct answer');
     setIsCorrect(true);
+    
+    // Stop the timer immediately to preserve the current time for points calculation
+    if (timerInterval.current) {
+      clearInterval(timerInterval.current);
+      timerInterval.current = null;
+    }
     
     // Handle Hype Train logic first, independently of other messages
     if (guessTimeLeft >= 10) { // Within 5 seconds (15-10 = 5)
@@ -524,6 +536,7 @@ const PokemonGame = () => {
         if (newCount >= 3) {
           console.log('🚂 Starting Hype Train!');
           setShowHypeTrain(true);
+          setMaxHypeChain(prev => Math.max(prev, newCount));
         }
         return newCount;
       });
@@ -535,21 +548,22 @@ const PokemonGame = () => {
 
     let earnedPoints = 0;
 
-    // Handle other messages only if Hype Train is not active
-    if (!showHypeTrain) {
-      // Calculate points based on remaining time in Hard mode
-      if (isHardMode) {
-        if (guessTimeLeft >= 10 && guessTimeLeft <= 15) {
-          earnedPoints = 3;
-        } else if (guessTimeLeft >= 5 && guessTimeLeft <= 9) {
-          earnedPoints = 2;
-        } else if (guessTimeLeft >= 0 && guessTimeLeft <= 4) {
-          earnedPoints = 1;
-        }
+    // Calculate points based on remaining time in Hard mode
+    if (isHardMode) {
+      if (guessTimeLeft >= 10 && guessTimeLeft <= 15) {
+        earnedPoints = 3;
+      } else if (guessTimeLeft >= 5 && guessTimeLeft <= 9) {
+        earnedPoints = 2;
+      } else if (guessTimeLeft >= 0 && guessTimeLeft <= 4) {
+        earnedPoints = 1;
+      }
 
+      // Show special effects only if not in Hype Train
+      if (!showHypeTrain) {
         // Show Succès Critique only at 0 seconds
         if (guessTimeLeft === 0) {
           setShowCriticalSuccess(true);
+          setCriticalSuccessCount(prev => prev + 1);
           setTimeout(() => {
             setShowCriticalSuccess(false);
           }, 2000);
@@ -557,35 +571,21 @@ const PokemonGame = () => {
         // Show Coup Critique with 20% chance
         else if (Math.random() < 0.2) {
           setShowCriticalHit(true);
+          setCriticalHitCount(prev => prev + 1);
           setTimeout(() => {
             setShowCriticalHit(false);
           }, 2000);
         }
-      } else {
-        earnedPoints = 1;
       }
     } else {
-      // Still add points even if messages are suppressed
-      if (isHardMode) {
-        if (guessTimeLeft >= 10 && guessTimeLeft <= 15) {
-          earnedPoints = 3;
-        } else if (guessTimeLeft >= 5 && guessTimeLeft <= 9) {
-          earnedPoints = 2;
-        } else if (guessTimeLeft >= 0 && guessTimeLeft <= 4) {
-          earnedPoints = 1;
-        }
-      } else {
-        earnedPoints = 1;
-      }
+      earnedPoints = 1;
     }
-
-    // Only show points earned animation if not in Hype Train mode
-    if (!showHypeTrain) {
-      setPointsEarned(earnedPoints);
-      setTimeout(() => {
-        setPointsEarned(0);
-      }, 1000);
-    }
+    
+    // Always show points earned animation
+    setPointsEarned(earnedPoints);
+    setTimeout(() => {
+      setPointsEarned(0);
+    }, 1000);
     
     setScore(prev => prev + earnedPoints);
     
@@ -1061,6 +1061,54 @@ const PokemonGame = () => {
     handleGameOver();
   }, [handleGameOver]);
 
+  const handleRestart = () => {
+    setGameOver(false);
+    setScore(0);
+    setHintsLeft(MAX_HINTS);
+    setIsCorrect(null);
+    setGuess('');
+    setSuggestions([]);
+    setShowHint(false);
+    setConsecutiveFastAnswers(0);
+    setShowHypeTrain(false);
+    setCriticalHitCount(0);
+    setCriticalSuccessCount(0);
+    setHyperTrainCount(0);
+    setMaxHypeChain(0);
+    setTotalTimeElapsed(0);
+    fetchRandomPokemon();
+    startGuessTimer();
+  };
+
+  const handleBackToMenu = () => {
+    // Stop any ongoing timers
+    if (timerInterval.current) {
+      clearInterval(timerInterval.current);
+      timerInterval.current = null;
+    }
+    if (totalTimeInterval.current) {
+      clearInterval(totalTimeInterval.current);
+      totalTimeInterval.current = null;
+    }
+    
+    // Reset game state
+    setIsGameActive(false);
+    setGameOver(false);
+    setScore(0);
+    setHintsLeft(MAX_HINTS);
+    setIsCorrect(null);
+    setGuess('');
+    setSuggestions([]);
+    setShowHint(false);
+    setConsecutiveFastAnswers(0);
+    setShowHypeTrain(false);
+    setCriticalHitCount(0);
+    setCriticalSuccessCount(0);
+    setHyperTrainCount(0);
+    setMaxHypeChain(0);
+    setTotalTimeElapsed(0);
+  };
+
   // Update loading screen component
   if (isInitialLoading) {
     return (
@@ -1145,16 +1193,7 @@ const PokemonGame = () => {
 
       <GameOverDialog
         gameOver={gameOver}
-        setGameOver={(open) => {
-          setGameOver(open);
-          if (!open) {
-            console.log('Closing GameOverDialog, cleaning up victory sound');
-            if (victoryAudioRef.current) {
-              victoryAudioRef.current.pause();
-              victoryAudioRef.current = null;
-            }
-          }
-        }}
+        setGameOver={setGameOver}
         playerName={playerName}
         score={score}
         bestScore={bestScore}
@@ -1163,30 +1202,14 @@ const PokemonGame = () => {
         totalTimeElapsed={totalTimeElapsed}
         formatTimeForRanking={formatTimeForRanking}
         rewardPokemon={rewardPokemon}
-        totalPokemonCount={selectedGeneration.endId - selectedGeneration.startId + 1}
-        handleRestart={() => {
-          console.log('Restarting game, cleaning up victory sound');
-          if (victoryAudioRef.current) {
-            victoryAudioRef.current.pause();
-            victoryAudioRef.current = null;
-          }
-          setGameOver(false);
-          setIsGameActive(false);
-          setScore(0);
-          startGame(isHardMode);
-        }}
-        handleBackToMenu={() => {
-          console.log('Going back to menu, cleaning up victory sound');
-          if (victoryAudioRef.current) {
-            victoryAudioRef.current.pause();
-            victoryAudioRef.current = null;
-          }
-          setGameOver(false);
-          setIsGameActive(false);
-          setScore(0);
-          setCurrentPokemonId(null);
-        }}
+        totalPokemonCount={remainingPokemon.length}
+        handleRestart={handleRestart}
+        handleBackToMenu={handleBackToMenu}
         isMuted={isMuted}
+        criticalHitCount={criticalHitCount}
+        criticalSuccessCount={criticalSuccessCount}
+        hyperTrainCount={hyperTrainCount}
+        maxHypeChain={maxHypeChain}
       />
     </div>
   );

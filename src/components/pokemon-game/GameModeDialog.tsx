@@ -22,7 +22,7 @@ export const GameModeDialog: FC<GameModeDialogProps> = ({
 }) => {
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className='sm:max-w-[600px] bg-white/95 backdrop-blur-sm border-4 border-blue-500 rounded-xl shadow-2xl'>
+      <DialogContent className='sm:max-w-[600px] bg-white/95 backdrop-blur-sm border-4 border-blue-500 rounded-xl shadow-2xl max-h-[90vh] overflow-y-auto scrollbar-thin scrollbar-thumb-blue-500 scrollbar-track-transparent'>
         <DialogHeader className='relative'>
           <div className='absolute -top-2 -left-2 w-24 h-24 bg-blue-400/20 rounded-full blur-2xl animate-pulse-slow pointer-events-none'></div>
           <div className='absolute -top-2 -right-2 w-24 h-24 bg-red-400/20 rounded-full blur-2xl animate-pulse-slow delay-500 pointer-events-none'></div>
@@ -34,7 +34,7 @@ export const GameModeDialog: FC<GameModeDialogProps> = ({
           </DialogDescription>
         </DialogHeader>
         
-        <div className='flex flex-col gap-4'>
+        <div className='flex flex-col gap-4 overflow-y-auto max-h-[60vh] scrollbar-thin scrollbar-thumb-blue-500 scrollbar-track-transparent p-1'>
           {/* Pro Tips Section */}
           <div className='bg-yellow-50/90 p-4 rounded-xl border-2 border-yellow-400'>
             <div className='flex items-center gap-2 mb-3'>
@@ -79,7 +79,7 @@ export const GameModeDialog: FC<GameModeDialogProps> = ({
           </div>
 
           {/* Game Mode Buttons */}
-          <div className='flex flex-col sm:flex-row gap-4'>
+          <div className='flex flex-col sm:flex-row gap-2'>
             <Button
               onClick={() => onSelectMode(false)}
               className='group relative h-auto p-6 bg-gradient-to-br from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white border-4 border-white hover:border-blue-300 transition-all duration-300 flex-1'
@@ -134,12 +134,12 @@ export const GameModeDialog: FC<GameModeDialogProps> = ({
               </div>
             </Button>
           </div>
+        </div>
 
-          <div className='flex justify-center'>
-            <p className='text-sm text-gray-500 italic'>
-              Choisissez votre mode de jeu pour commencer
-            </p>
-          </div>
+        <div className='flex justify-center mt-4'>
+          <p className='text-sm text-gray-500 italic'>
+            Choisissez votre mode de jeu pour commencer
+          </p>
         </div>
       </DialogContent>
     </Dialog>

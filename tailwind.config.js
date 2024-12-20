@@ -173,6 +173,7 @@ export default {
 				'.animate-accordion-up': { animation: 'accordion-up 0.2s ease-out' },
 				// ... other animations from tailwindcss-animate
 			});
-		}
+		},
+		require('tailwind-scrollbar')({ nocompatible: true })
 	],
 };
