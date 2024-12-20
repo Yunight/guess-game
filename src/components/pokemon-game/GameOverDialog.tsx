@@ -109,10 +109,28 @@ export const GameOverDialog: FC<GameOverDialogProps> = ({
       `🌍 ${selectedGeneration.name}\n` +
       `${userRanking ? `👑 #${userRanking} au classement!\n` : ''}` +
       `${rewardPokemon.pokemon ? `✨ ${rewardPokemon.pokemon.frenchName} capturé!\n` : ''}\n` +
-      `#PokemonGuesserGame #Pokemon #PokemonGuesserByYunight #Gaming\n`;
+      `https://pokemon-guesser-game.vercel.app/\n\n` +
+      `#PokemonGuesserGame #Pokemon #PokemonGuesserByYunight #Gaming`;
 
-    const twitterUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent('https://pokemon-guesser-game.vercel.app/')}`;
-    window.open(twitterUrl, '_blank');
+    try {
+      if (navigator.share) {
+        await navigator.share({
+          text: shareText,
+          url: 'https://pokemon-guesser-game.vercel.app/'
+        });
+      } else {
+        // Fallback to Twitter
+        const twitterText = encodeURIComponent(shareText);
+        const twitterUrl = `https://twitter.com/intent/tweet?text=${twitterText}`;
+        window.open(twitterUrl, '_blank');
+      }
+    } catch (error) {
+      console.error('Error sharing:', error);
+      // Fallback to Twitter if share fails
+      const twitterText = encodeURIComponent(shareText);
+      const twitterUrl = `https://twitter.com/intent/tweet?text=${twitterText}`;
+      window.open(twitterUrl, '_blank');
+    }
   };
 
   return (
@@ -128,7 +146,7 @@ export const GameOverDialog: FC<GameOverDialogProps> = ({
             </div>
             <DialogTitle className="text-center text-3xl font-bold text-white">
               {score === bestScore && score === totalPokemonCount ? (
-                `Félicitations ${playerName}, vous avez devin�� tous les pokémons, vous êtes un vrai maitre pokémon!`
+                `Félicitations ${playerName}, vous avez deviné tous les pokémons, vous êtes un vrai maitre pokémon!`
               ) : (
                 `Bravo ${playerName}!`
               )}

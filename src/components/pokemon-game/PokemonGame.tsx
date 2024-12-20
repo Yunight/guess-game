@@ -1256,6 +1256,7 @@ const PokemonGame = () => {
         criticalSuccessCount={criticalSuccessCount}
         hyperTrainCount={hyperTrainCount}
         maxHypeChain={maxHypeChain}
+        selectedGeneration={selectedGeneration}
       />
     </div>
   );
