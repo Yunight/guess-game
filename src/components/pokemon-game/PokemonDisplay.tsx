@@ -1,5 +1,6 @@
 import { FC, useEffect, useState, useRef } from 'react';
 import { Pokemon } from './types';
+import { useTranslation } from 'react-i18next';
 
 // Add custom logger that only logs in development
 const devLog = (message: string) => {
@@ -29,6 +30,7 @@ export const PokemonDisplay: FC<PokemonDisplayProps> = ({
   isMuted,
   guessTimeLeft,
 }) => {
+  const { i18n } = useTranslation();
   const [displayState, setDisplayState] = useState<'loading' | 'ready' | 'revealed'>('loading');
   const [displayedPokemon, setDisplayedPokemon] = useState<Pokemon | undefined>(undefined);
   const audioRef = useRef<HTMLAudioElement | null>(null);
@@ -69,14 +71,7 @@ export const PokemonDisplay: FC<PokemonDisplayProps> = ({
     };
   }, [currentPokemon?.id]);
 
-  // Update display state when isCorrect changes
-  useEffect(() => {
-    if (isCorrect === true) {
-      setDisplayState('revealed');
-    }
-  }, [isCorrect]);
-
-  // Handle image loading and display state
+  // Handle Pokemon loading and display
   useEffect(() => {
     if (!currentPokemon || isPokemonLoading || !loadingRef.current) {
       devLog('⏳ Waiting for Pokemon data...');
@@ -106,7 +101,14 @@ export const PokemonDisplay: FC<PokemonDisplayProps> = ({
           return;
         }
 
-        devLog(`🖼️ Loading Pokemon sprite for: ${currentPokemon.frenchName} ID: ${currentPokemon.id}`);
+        // Only log the name if we have valid data
+        if (currentPokemon.frenchName && currentPokemon.englishName) {
+          const pokemonName = i18n.language === 'fr' ? currentPokemon.frenchName : currentPokemon.englishName;
+          devLog(`🖼️ Loading Pokemon sprite for: ${pokemonName} ID: ${currentPokemon.id}`);
+        } else {
+          devLog(`🖼️ Loading Pokemon sprite for ID: ${currentPokemon.id}`);
+        }
+
         // Preload the image
         await new Promise((resolve, reject) => {
           const img = new Image();
@@ -129,105 +131,78 @@ export const PokemonDisplay: FC<PokemonDisplayProps> = ({
           setDisplayedPokemon(currentPokemon);
           setDisplayState('ready');
         }
-        
-        // Add a small delay for animation
-        await new Promise(resolve => setTimeout(resolve, 300));
-        
-        // Check one final time before playing sound
-        if (initialPokemonId !== currentPokemonIdRef.current) {
-          devLog('❌ Pokemon changed before playing sound, aborting');
-          return;
-        }
-
-        // Mark as ready to display
-        setDisplayState('ready');
-        
-        // Play sound only after display is ready, if not muted, and if we haven't played it yet
-        if (!isMuted && currentPokemon.cryUrl && !soundPlayedRef.current && !isCorrect) {
-          devLog(`🔊 About to play Pokemon cry sound for: ${currentPokemon.frenchName} ID: ${initialPokemonId}`);
-          
-          // Double check we're still on the same Pokemon
-          if (initialPokemonId !== currentPokemonIdRef.current) {
-            devLog('❌ Pokemon ID mismatch, aborting sound play');
-            return;
-          }
-
-          // Clean up any existing audio before creating new one
-          if (audioRef.current) {
-            audioRef.current.pause();
-            audioRef.current.currentTime = 0;
-            audioRef.current.remove();
-            audioRef.current = null;
-          }
-
-          // Create and configure new audio
-          const tryPlayAudio = async (url: string): Promise<HTMLAudioElement | null> => {
-            const audio = new Audio(url);
-            audio.dataset.pokemonId = initialPokemonId.toString();
-            
-            try {
-              await audio.load();
-              await audio.play();
-              return audio;
-            } catch (error) {
-              devError(`❌ Error playing audio from URL: ${url}`, error);
-              audio.remove();
-              return null;
-            }
-          };
-
-          try {
-            // Set flag before starting audio operations
-            soundPlayedRef.current = true;
-
-            // Try each URL in sequence until one works
-            const urls = currentPokemon.cryUrl.split('|');
-            let audio: HTMLAudioElement | null = null;
-
-            for (const url of urls) {
-              audio = await tryPlayAudio(url);
-              if (audio) {
-                audioRef.current = audio;
-                devLog(`✅ Pokemon cry sound played successfully for: ${currentPokemon.frenchName} ID: ${initialPokemonId}`);
-                break;
-              }
-            }
-
-            if (!audio) {
-              devLog('❌ No audio URL worked for this Pokemon');
-            }
-          } catch (error) {
-            devError('❌ Error playing Pokemon cry:', error);
-            if (audioRef.current) {
-              audioRef.current.remove();
-              audioRef.current = null;
-            }
-          }
-        }
       } catch (error) {
-        devError('Error loading resources:', error);
-        // Only set Pokemon data if we're still on the same Pokemon
-        if (initialPokemonId === currentPokemonIdRef.current) {
-          setDisplayedPokemon(currentPokemon);
-          setDisplayState('ready');
-        }
-      } finally {
-        loadingRef.current = false;
+        devError('❌ Error in loadImage:', error);
       }
     };
 
     loadImage();
+  }, [currentPokemon, isPokemonLoading, i18n.language]);
 
-    return () => {
-      loadingRef.current = false;
+  // Handle Pokemon reveal
+  useEffect(() => {
+    if (isCorrect === true || guessTimeLeft === 0) {
+      setDisplayState('revealed');
+    }
+  }, [isCorrect, guessTimeLeft]);
+
+  // Handle Pokemon cry sound
+  useEffect(() => {
+    if (!displayedPokemon || !displayedPokemon.cryUrl || isMuted || soundPlayedRef.current) {
+      return;
+    }
+
+    const initialPokemonId = displayedPokemon.id;
+    if (initialPokemonId !== currentPokemonIdRef.current) {
+      return;
+    }
+
+    const playPokemonCry = async () => {
       if (audioRef.current) {
         audioRef.current.pause();
         audioRef.current.currentTime = 0;
         audioRef.current.remove();
         audioRef.current = null;
       }
+
+      const tryPlayAudio = async (url: string): Promise<HTMLAudioElement | null> => {
+        const audio = new Audio(url);
+        try {
+          await audio.load();
+          await audio.play();
+          return audio;
+        } catch (error) {
+          console.error(`Error playing audio from URL: ${url}`, error);
+          audio.remove();
+          return null;
+        }
+      };
+
+      try {
+        soundPlayedRef.current = true;
+        const urls = displayedPokemon.cryUrl.split('|');
+        let audio: HTMLAudioElement | null = null;
+
+        for (const url of urls) {
+          audio = await tryPlayAudio(url);
+          if (audio) {
+            audioRef.current = audio;
+            break;
+          }
+        }
+      } catch (error) {
+        devError('❌ Error playing Pokemon cry:', error);
+        if (audioRef.current) {
+          audioRef.current.remove();
+          audioRef.current = null;
+        }
+      }
     };
-  }, [currentPokemon?.id, isPokemonLoading, isMuted, isCorrect]);
+
+    if (displayState === 'ready') {
+      playPokemonCry();
+    }
+  }, [displayState, displayedPokemon, isMuted]);
 
   return (
     <div className="mt-12 mx-2 bg-gradient-to-b from-gray-800 to-gray-900 rounded-t-lg p-2 shadow-lg">
@@ -260,7 +235,7 @@ export const PokemonDisplay: FC<PokemonDisplayProps> = ({
               {/* Pokemon image with animations */}
               <img
                 src={displayedPokemon.sprite}
-                alt={displayedPokemon.frenchName}
+                alt={i18n.language === 'fr' ? displayedPokemon.frenchName : displayedPokemon.englishName}
                 className={`w-full h-full object-contain transition-all duration-700 ease-out ${
                   displayState === 'revealed' 
                     ? 'animate-bounce-in filter brightness-100' 
@@ -277,7 +252,7 @@ export const PokemonDisplay: FC<PokemonDisplayProps> = ({
               {displayState === 'revealed' && guessTimeLeft === 0 && (
                 <div className="absolute bottom-4 left-0 right-0 text-center">
                   <div className="bg-black/70 text-white px-4 py-2 rounded-full mx-auto inline-block backdrop-blur-sm font-bold text-xl animate-fade-in">
-                    {displayedPokemon.frenchName}
+                    {i18n.language === 'fr' ? displayedPokemon.frenchName : displayedPokemon.englishName}
                   </div>
                 </div>
               )}

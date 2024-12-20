@@ -9,7 +9,8 @@ import { ScrollableDialog } from '@/components/ui/scrollable-dialog';
 import { Button } from '@/components/ui/button';
 import { RewardPokemonDisplay } from './RewardPokemonDisplay';
 import { Pokemon } from './types';
-import { Trophy, Clock, Crown, RefreshCcw, Home, Share2, Github, Twitter } from 'lucide-react';
+import { Trophy, Clock, Crown, RefreshCcw, Home, Share2 } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 interface GameOverDialogProps {
   gameOver: boolean;
@@ -47,68 +48,69 @@ export const GameOverDialog: FC<GameOverDialogProps> = ({
   totalPokemonCount,
   handleRestart,
   handleBackToMenu,
-  isMuted,
   criticalHitCount,
   criticalSuccessCount,
   hyperTrainCount,
   maxHypeChain,
   selectedGeneration,
 }) => {
+  const { t } = useTranslation();
+
   const handleShare = async () => {
     const getClickbaitMessage = () => {
       if (score >= 50) {
-        return `🌟 INCROYABLE! Plus de 50 Pokémon devinés en ${selectedGeneration.name}! Un vrai Maître Pokémon! 🏆`;
+        return t('shareMsg50', { gen: selectedGeneration.name });
       }
       if (score >= 30) {
-        return `🔥 30+ Pokémon devinés d'affilée en ${selectedGeneration.name}! Qui peut faire mieux? 💪`;
+        return t('shareMsg30', { gen: selectedGeneration.name });
       }
       if (score >= 20) {
-        return `⭐ 20+ Pokémon devinés en ${selectedGeneration.name}! En route vers la ligue Pokémon! 🎯`;
+        return t('shareMsg20', { gen: selectedGeneration.name });
       }
       if (score >= 10) {
-        return `✨ 10+ Pokémon devinés en ${selectedGeneration.name}! Le début d'une grande aventure! 🌟`;
+        return t('shareMsg10', { gen: selectedGeneration.name });
       }
       if (userRanking === 1) {
-        return `👑 CHAMPION! Nouveau record sur Pokemon Guesser en ${selectedGeneration.name}! Qui osera me défier? 🏆`;
+        return t('shareMsgChampion', { gen: selectedGeneration.name });
       }
       if (userRanking && userRanking <= 3) {
-        return `🥇 Top 3 mondial sur Pokemon Guesser en ${selectedGeneration.name}! Viens essayer de me battre! 🔥`;
+        return t('shareMsgTop3', { gen: selectedGeneration.name });
       }
       if (userRanking && userRanking <= 10) {
-        return `🎖️ Top 10 sur Pokemon Guesser en ${selectedGeneration.name}! La compétition est rude! 💪`;
+        return t('shareMsgTop10', { gen: selectedGeneration.name });
       }
       if (maxHypeChain >= 10) {
-        return `🚂 LÉGENDAIRE! ${maxHypeChain} réponses ultra rapides d'affilée en ${selectedGeneration.name}! Un vrai speedrunner! ⚡`;
+        return t('shareMsgHypeLegend', { gen: selectedGeneration.name, count: maxHypeChain });
       }
       if (maxHypeChain >= 5) {
-        return `🚂 HOT STREAK! ${maxHypeChain} réponses rapides d'affilée en ${selectedGeneration.name}! 🔥`;
+        return t('shareMsgHype', { gen: selectedGeneration.name, count: maxHypeChain });
       }
       if (criticalHitCount >= 3) {
-        return `⚡ Expert des coups critiques en ${selectedGeneration.name}! La chance ou le talent? Viens tester! 🎯`;
+        return t('shareMsgCriticalHit', { gen: selectedGeneration.name });
       }
       if (criticalSuccessCount >= 2) {
-        return `⏱️ Maître du timing en ${selectedGeneration.name}! Des réponses à la dernière seconde! 🎭`;
+        return t('shareMsgCriticalSuccess', { gen: selectedGeneration.name });
       }
       if (hyperTrainCount >= 3) {
-        return `🚄 Le Hype Train était incontrôlable en ${selectedGeneration.name}! Quelle performance! 🔥`;
+        return t('shareMsgHypeTrain', { gen: selectedGeneration.name });
       }
       if (rewardPokemon.pokemon?.isLegendary) {
-        return `✨ J'ai capturé un Pokémon LÉGENDAIRE en ${selectedGeneration.name}: ${rewardPokemon.pokemon.frenchName}! 🌟`;
+        return t('shareMsgLegendary', { gen: selectedGeneration.name, pokemon: rewardPokemon.pokemon.frenchName });
       }
       if (rewardPokemon.pokemon?.isMythical) {
-        return `🌈 Un Pokémon MYTHIQUE capturé en ${selectedGeneration.name}: ${rewardPokemon.pokemon.frenchName}! ✨`;
+        return t('shareMsgMythical', { gen: selectedGeneration.name, pokemon: rewardPokemon.pokemon.frenchName });
       }
-      return `🎮 Nouveau challenge sur Pokemon Guesser en ${selectedGeneration.name}! Viens tester tes connaissances! ✨`;
+      return t('shareMsgDefault', { gen: selectedGeneration.name });
     };
 
     const clickbaitMsg = getClickbaitMessage();
     const shareText = `${clickbaitMsg}\n\n` +
       `👤 ${playerName}\n` +
-      `🎯 Score: ${score}\n` +
-      `⏱️ Temps: ${formatTimeForRanking(totalTimeElapsed)}\n` +
+      `🎯 ${t('score')}: ${score}\n` +
+      `⏱️ ${t('time')}: ${formatTimeForRanking(totalTimeElapsed)}\n` +
       `🌍 ${selectedGeneration.name}\n` +
-      `${userRanking ? `👑 #${userRanking} au classement!\n` : ''}` +
-      `${rewardPokemon.pokemon ? `✨ ${rewardPokemon.pokemon.frenchName} capturé!\n` : ''}\n` +
+      `${userRanking ? `👑 #${userRanking} ${t('ranking')}!\n` : ''}` +
+      `${rewardPokemon.pokemon ? `✨ ${rewardPokemon.pokemon.frenchName} ${t('caught')}!\n` : ''}\n` +
       `https://pokemon-guesser-game.vercel.app/\n\n` +
       `#PokemonGuesserGame #Pokemon #PokemonGuesserByYunight #Gaming`;
 
@@ -146,13 +148,13 @@ export const GameOverDialog: FC<GameOverDialogProps> = ({
             </div>
             <DialogTitle className="text-center text-3xl font-bold text-white">
               {score === bestScore && score === totalPokemonCount ? (
-                `Félicitations ${playerName}, vous avez deviné tous les pokémons, vous êtes un vrai maitre pokémon!`
+                t('congratulations', { name: playerName })
               ) : (
-                `Bravo ${playerName}!`
+                t('congrats', { name: playerName })
               )}
             </DialogTitle>
             <DialogDescription className="text-center text-white/80">
-              Voici vos résultats pour cette partie.
+              {t('results')}
             </DialogDescription>
           </DialogHeader>
 
@@ -160,23 +162,22 @@ export const GameOverDialog: FC<GameOverDialogProps> = ({
             <RewardPokemonDisplay
               pokemon={rewardPokemon.pokemon}
               isLoading={rewardPokemon.isLoading}
-              isMuted={isMuted}
             />
 
             <div className="grid grid-cols-2 gap-4">
               <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 space-y-2">
                 <div className="flex items-center gap-2 text-yellow-300">
                   <Trophy className="h-5 w-5" />
-                  <p className="text-sm font-medium">Score</p>
+                  <p className="text-sm font-medium">{t('score')}</p>
                 </div>
                 <div className="space-y-1">
                   <div className="flex items-center justify-between">
-                    <span className="text-sm text-gray-200">Actuel:</span>
+                    <span className="text-sm text-gray-200">{t('current')}:</span>
                     <p className="text-lg font-bold">{score}</p>
                   </div>
                   {bestScore > 0 && (
                     <div className="flex items-center justify-between">
-                      <span className="text-sm text-gray-200">Meilleur:</span>
+                      <span className="text-sm text-gray-200">{t('best')}:</span>
                       <p className="text-lg font-bold text-yellow-300">{bestScore}</p>
                     </div>
                   )}
@@ -186,16 +187,16 @@ export const GameOverDialog: FC<GameOverDialogProps> = ({
               <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 space-y-2">
                 <div className="flex items-center gap-2 text-yellow-300">
                   <Clock className="h-5 w-5" />
-                  <p className="text-sm font-medium">Temps</p>
+                  <p className="text-sm font-medium">{t('time')}</p>
                 </div>
                 <div className="space-y-1">
                   <div className="flex items-center justify-between">
-                    <span className="text-sm text-gray-200">Actuel:</span>
+                    <span className="text-sm text-gray-200">{t('current')}:</span>
                     <p className="text-lg font-bold">{formatTimeForRanking(totalTimeElapsed)}</p>
                   </div>
                   {bestTime > 0 && (
                     <div className="flex items-center justify-between">
-                      <span className="text-sm text-gray-200">Meilleur:</span>
+                      <span className="text-sm text-gray-200">{t('best')}:</span>
                       <p className="text-lg font-bold text-yellow-300">{formatTimeForRanking(bestTime)}</p>
                     </div>
                   )}
@@ -206,7 +207,7 @@ export const GameOverDialog: FC<GameOverDialogProps> = ({
                 <div className="col-span-2 bg-white/10 backdrop-blur-sm rounded-xl p-4 space-y-2">
                   <div className="flex items-center gap-2 text-yellow-300">
                     <Crown className="h-5 w-5" />
-                    <p className="text-sm font-medium">Classement</p>
+                    <p className="text-sm font-medium">{t('ranking')}</p>
                   </div>
                   <p className="text-2xl font-bold text-center">#{userRanking}</p>
                 </div>
@@ -216,26 +217,26 @@ export const GameOverDialog: FC<GameOverDialogProps> = ({
               <div className="col-span-2 bg-white/10 backdrop-blur-sm rounded-xl p-4 space-y-3">
                 <div className="flex items-center gap-2 text-yellow-300">
                   <Trophy className="h-5 w-5" />
-                  <p className="text-sm font-medium">Statistiques</p>
+                  <p className="text-sm font-medium">{t('statistics')}</p>
                 </div>
                 <div className="grid grid-cols-2 gap-3">
                   <div className="space-y-1">
                     <div className="flex items-center justify-between">
-                      <span className="text-sm text-gray-200">Coup Critique:</span>
+                      <span className="text-sm text-gray-200">{t('criticalHits')}:</span>
                       <p className="text-lg font-bold text-yellow-300">{criticalHitCount}</p>
                     </div>
                     <div className="flex items-center justify-between">
-                      <span className="text-sm text-gray-200">Succès Critique:</span>
+                      <span className="text-sm text-gray-200">{t('criticalSuccesses')}:</span>
                       <p className="text-lg font-bold text-yellow-300">{criticalSuccessCount}</p>
                     </div>
                   </div>
                   <div className="space-y-1">
                     <div className="flex items-center justify-between">
-                      <span className="text-sm text-gray-200">Hype Train :</span>
+                      <span className="text-sm text-gray-200">{t('hypeTrain_stat')}:</span>
                       <p className="text-lg font-bold text-yellow-300">{hyperTrainCount}</p>
                     </div>
                     <div className="flex items-center justify-between">
-                      <span className="text-sm text-gray-200">Max Hype :</span>
+                      <span className="text-sm text-gray-200">{t('maxHype')}:</span>
                       <p className="text-lg font-bold text-yellow-300">{maxHypeChain}</p>
                     </div>
                   </div>
@@ -252,7 +253,7 @@ export const GameOverDialog: FC<GameOverDialogProps> = ({
               size="lg"
             >
               <RefreshCcw className="mr-2 h-4 w-4" />
-              Rejouer
+              {t('replay_button')}
             </Button>
             <Button
               onClick={handleShare}
@@ -261,7 +262,7 @@ export const GameOverDialog: FC<GameOverDialogProps> = ({
               size="lg"
             >
               <Share2 className="mr-2 h-4 w-4" />
-              Partager
+              {t('share')}
             </Button>
             <Button
               onClick={handleBackToMenu}
@@ -270,28 +271,11 @@ export const GameOverDialog: FC<GameOverDialogProps> = ({
               size="lg"
             >
               <Home className="mr-2 h-4 w-4" />
-              Menu
+              {t('menu')}
             </Button>
           </div>
 
-          <div className="flex justify-center items-center gap-4 mt-6 pb-2">
-            <a
-              href="https://github.com/Yunight"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-white/80 hover:text-white transition-colors"
-            >
-              <Github className="h-5 w-5" />
-            </a>
-            <a
-              href="https://x.com/NightOfLunaTV"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-white/80 hover:text-white transition-colors"
-            >
-              <Twitter className="h-5 w-5" />
-            </a>
-          </div>
+
         </div>
       </ScrollableDialog>
     </Dialog>

@@ -9,7 +9,7 @@ import { MenuScreen } from './MenuScreen';
 import { GameOverDialog } from './GameOverDialog';
 import { Generation, Pokemon, Rankings } from '@/components/pokemon-game/types';
 import { useLocalStorage } from '@/hooks/useLocalStorage';
-
+import { useTranslation } from 'react-i18next';
 
 const GENERATIONS: Generation[] = [
   { name: '1ère Génération', startId: 1, endId: 151 },
@@ -55,6 +55,7 @@ const debounce = <T extends (...args: Parameters<T>) => ReturnType<T>>(
 };
 
 const PokemonGame = () => {
+  const { i18n } = useTranslation();
   const [bestScore, setBestScore] = useLocalStorage<number>('bestScore', 0);
   const [bestTime, setBestTime] = useLocalStorage<number>('bestTime', 0);
   const [guess, setGuess] = useState('');
@@ -297,7 +298,9 @@ const PokemonGame = () => {
   };
 
   // Normalize text to handle special characters
-  const normalizeText = (text: string): string => {
+  const normalizeText = (text: string | undefined | null): string => {
+    if (!text) return '';
+    
     return text
       .toLowerCase()
       .trim()
@@ -325,9 +328,22 @@ const PokemonGame = () => {
     setSuggestions([]);
     
     const normalizedSuggestion = normalizeText(suggestion);
-    const normalizedAnswer = normalizeText(currentPokemon?.frenchName || '');
+    const pokemonNameFr = currentPokemon?.frenchName;
+    const pokemonNameEn = currentPokemon?.englishName;
     
-    if (normalizedSuggestion === normalizedAnswer) {
+    if (!pokemonNameFr || !pokemonNameEn) return;
+    
+    const normalizedAnswerFr = normalizeText(pokemonNameFr);
+    const normalizedAnswerEn = normalizeText(pokemonNameEn);
+    
+    console.log('Checking answer:', {
+      suggestion: normalizedSuggestion,
+      answerFr: normalizedAnswerFr,
+      answerEn: normalizedAnswerEn
+    });
+    
+    if (normalizedSuggestion === normalizedAnswerFr || 
+        normalizedSuggestion === normalizedAnswerEn) {
       handleCorrectAnswer();
     } else {
       console.log('❌ Handling wrong answer');
@@ -355,25 +371,38 @@ const PokemonGame = () => {
     
     if (value.length > 0) {
       const normalizedValue = normalizeText(value);
+      console.log('Input value:', value);
+      console.log('Normalized value:', normalizedValue);
+      console.log('Available Pokemon:', allPokemonNames);
+      
       const filteredSuggestions = allPokemonNames
         .filter(pokemon => {
-          const normalizedName = normalizeText(pokemon.frenchName);
-          return normalizedName.startsWith(normalizedValue) && 
+          if (!pokemon) return false;
+          const pokemonNameFr = pokemon.frenchName;
+          const pokemonNameEn = pokemon.englishName;
+          if (!pokemonNameFr || !pokemonNameEn) return false;
+          
+          const normalizedNameFr = normalizeText(pokemonNameFr);
+          const normalizedNameEn = normalizeText(pokemonNameEn);
+          
+          console.log('Checking Pokemon:', {
+            fr: pokemonNameFr,
+            en: pokemonNameEn,
+            normalizedFr: normalizedNameFr,
+            normalizedEn: normalizedNameEn,
+            input: normalizedValue
+          });
+          
+          return (normalizedNameFr.startsWith(normalizedValue) || 
+                 normalizedNameEn.startsWith(normalizedValue)) && 
                  pokemon.id >= selectedGeneration.startId && 
                  pokemon.id <= selectedGeneration.endId;
         })
-        .map(pokemon => capitalize(pokemon.frenchName))
-        .sort((a, b) => {
-          const normalizedA = normalizeText(a);
-          const normalizedB = normalizeText(b);
-          const normalizedValue = normalizeText(value);
-          
-          if (normalizedA === normalizedValue && normalizedB !== normalizedValue) return -1;
-          if (normalizedB === normalizedValue && normalizedA !== normalizedValue) return 1;
-          
-          return normalizedA.length - normalizedB.length;
-        })
+        .map(pokemon => capitalize(i18n.language === 'fr' ? pokemon.frenchName : pokemon.englishName))
+        .filter(Boolean)
         .slice(0, 5);
+
+      console.log('Filtered suggestions:', filteredSuggestions);
       setSuggestions(filteredSuggestions);
     } else {
       setSuggestions([]);
@@ -540,7 +569,43 @@ const PokemonGame = () => {
     };
   }, []);
 
-  // Update handleCorrectAnswer to track max chain
+  // Add effect to handle timer
+  useEffect(() => {
+    if (!isHardMode || !isGameActive) {
+      if (timerInterval.current) {
+        clearInterval(timerInterval.current);
+        timerInterval.current = null;
+      }
+      return;
+    }
+
+    // Start or restart timer
+    if (!timerInterval.current) {
+      setGuessTimeLeft(15);
+      timerInterval.current = setInterval(() => {
+        setGuessTimeLeft((prev) => {
+          if (prev <= 1) {
+            if (timerInterval.current) {
+              clearInterval(timerInterval.current);
+              timerInterval.current = null;
+            }
+            setIsCorrect(false);
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+    }
+
+    // Cleanup on unmount or when game mode changes
+    return () => {
+      if (timerInterval.current) {
+        clearInterval(timerInterval.current);
+        timerInterval.current = null;
+      }
+    };
+  }, [isHardMode, isGameActive, currentPokemonId]);
+
   const handleCorrectAnswer = async () => {
     console.log('✅ Handling correct answer');
     setIsCorrect(true);
@@ -643,7 +708,6 @@ const PokemonGame = () => {
         setSuggestions([]);
         setShowHint(false);
         fetchRandomPokemon();
-        startGuessTimer();
         inputRef.current?.focus();
       }, 1500);
     }
@@ -691,11 +755,8 @@ const PokemonGame = () => {
     }
   };
 
-  // Move fetchRandomPokemon declaration before handleGameOver
   const fetchRandomPokemon = useCallback(() => {
-    console.log('🎯 Starting fetchRandomPokemon');
     if (remainingPokemon.length === 0) {
-      console.log('No remaining Pokemon, ending game');
       if (isGameActive) {
         setIsGameActive(false);
         setGameOver(true);
@@ -711,7 +772,6 @@ const PokemonGame = () => {
       return;
     }
 
-    console.log('🎵 Setting currentPokemonId to:', pokemonId);
     setCurrentPokemonId(pokemonId);
     setRemainingPokemon(prev => prev.filter(id => id !== pokemonId));
   }, [remainingPokemon, isGameActive]);
@@ -742,7 +802,7 @@ const PokemonGame = () => {
   const handleGameOver = useCallback(async () => {
     if (gameOver) return;
     
-    console.log('🏁 Starting game over sequence');
+    console.log(' Starting game over sequence');
     // Stop timers first
     if (timerInterval.current) {
       clearInterval(timerInterval.current);
@@ -1036,7 +1096,6 @@ const PokemonGame = () => {
             clearInterval(timerInterval.current);
             timerInterval.current = null;
           }
-          // Just set isCorrect to false and don't fetch next Pokémon
           setIsCorrect(false);
           return 0;
         }
@@ -1058,8 +1117,14 @@ const PokemonGame = () => {
 
   useEffect(() => {
     return () => {
-      if (timerInterval.current) clearInterval(timerInterval.current);
-      if (totalTimeInterval.current) clearInterval(totalTimeInterval.current);
+      if (timerInterval.current) {
+        clearInterval(timerInterval.current);
+        timerInterval.current = null;
+      }
+      if (totalTimeInterval.current) {
+        clearInterval(totalTimeInterval.current);
+        totalTimeInterval.current = null;
+      }
     };
   }, []);
 

@@ -1,5 +1,6 @@
 import { FC, RefObject } from 'react';
 import { Input } from '@/components/ui/input';
+import { useTranslation } from 'react-i18next';
 
 interface GuessInputProps {
   guess: string;
@@ -26,6 +27,8 @@ export const GuessInput: FC<GuessInputProps> = ({
   isCorrect,
   guessTimeLeft,
 }) => {
+  const { t } = useTranslation();
+
   return (
     <div className="relative w-full">
       <div className={`relative ${isCorrect === false ? 'animate-shake' : ''}`}>
@@ -35,7 +38,7 @@ export const GuessInput: FC<GuessInputProps> = ({
           value={guess}
           onChange={handleGuessChange}
           onKeyDown={handleKeyDown}
-          placeholder="Qui est ce Pokémon ?"
+          placeholder={t('guessInputPlaceholder')}
           disabled={guessTimeLeft <= 0}
           style={{ fontSize: '1.1rem', lineHeight: '1.75rem' }}
           className={`w-full h-14 px-6 font-medium bg-green-100/80 border-2 text-center

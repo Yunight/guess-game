@@ -14,6 +14,7 @@ export interface Generation {
 export interface Pokemon {
   id: number;
   name: string;
+  englishName: string;
   frenchName: string;
   frenchFlavorText: string;
   englishFlavorText: string;

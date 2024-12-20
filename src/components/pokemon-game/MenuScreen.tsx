@@ -5,6 +5,8 @@ import { Volume2, VolumeX, HelpCircle, Github, Twitter } from 'lucide-react';
 import { Generation, Rankings } from '@/components/pokemon-game/types';
 import { HowToPlay } from './HowToPlay';
 import { GameModeDialog } from '@/components/pokemon-game/GameModeDialog';
+import { useTranslation } from 'react-i18next';
+import { LanguageToggle } from '@/components/ui/language-toggle';
 
 interface MenuScreenProps {
   playerName: string;
@@ -40,6 +42,7 @@ export const MenuScreen: FC<MenuScreenProps> = ({
   formatTimeForRanking,
   formatDate,
 }) => {
+  const { t } = useTranslation();
   const [showHowToPlay, setShowHowToPlay] = useState(false);
   const [showGameModeDialog, setShowGameModeDialog] = useState(false);
 
@@ -58,7 +61,7 @@ export const MenuScreen: FC<MenuScreenProps> = ({
       <div className="text-center mb-8 relative pt-4">
         <h1 className="text-4xl sm:text-5xl md:text-6xl font-pokemon text-center relative">
           <span className="relative bg-gradient-to-br from-red-400 via-red-500 to-purple-600 text-transparent bg-clip-text drop-shadow-lg transform hover:scale-105 transition-transform duration-300">
-            Pokémon Guesser
+            {t('title')}
           </span>
         </h1>
         <div className="flex justify-center gap-4 mt-6">
@@ -104,7 +107,7 @@ export const MenuScreen: FC<MenuScreenProps> = ({
           {/* Blue circle light */}
           <div className="absolute top-2 left-24 w-10 h-10 rounded-full bg-blue-400 border-4 border-white"></div>
 
-          {/* Sound and Help buttons */}
+          {/* Sound, Help, and Language buttons */}
           <div className="absolute top-4 right-4 flex gap-2">
             <Button
               variant="ghost"
@@ -114,6 +117,7 @@ export const MenuScreen: FC<MenuScreenProps> = ({
             >
               <HelpCircle className="h-5 w-5" />
             </Button>
+            <LanguageToggle />
             <Button
               variant="ghost"
               size="icon"
@@ -133,12 +137,12 @@ export const MenuScreen: FC<MenuScreenProps> = ({
             <div className="bg-white rounded-xl p-3 sm:p-4 shadow-inner space-y-3 flex-1">
               <div className="space-y-2">
                 <label htmlFor="playerName" className="text-sm font-medium text-gray-700">
-                  Nom du dresseur
+                  {t('trainerName')}
                 </label>
                 <Input
                   id="playerName"
                   type="text"
-                  placeholder="Entrez votre nom"
+                  placeholder={t('enterName')}
                   className={`w-full h-10 px-4 text-lg transition-colors
                     ${nameError ? 'border-red-500 focus:ring-red-500' : 'border-gray-300'}
                   `}
@@ -153,7 +157,7 @@ export const MenuScreen: FC<MenuScreenProps> = ({
               <div className="space-y-2">
                 <h2 className="text-lg font-semibold text-gray-800 flex items-center gap-2">
                   <div className="w-6 h-6 bg-red-500 rounded-full border-4 border-white shadow-md"></div>
-                  Génération Pokémon
+                  {t('pokemonGeneration')}
                 </h2>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
                   {GENERATIONS.map((gen) => (
@@ -173,7 +177,14 @@ export const MenuScreen: FC<MenuScreenProps> = ({
                         {selectedGeneration.name === gen.name && (
                           <div className="w-2 h-2 bg-white rounded-full animate-pulse-slow"></div>
                         )}
-                        {gen.name}
+                        {t(`gen${gen.startId === 1 ? '1' : 
+                              gen.startId === 152 ? '2' : 
+                              gen.startId === 252 ? '3' : 
+                              gen.startId === 387 ? '4' : 
+                              gen.startId === 494 ? '5' : 
+                              gen.startId === 650 ? '6' : 
+                              gen.startId === 722 ? '7' : 
+                              gen.startId === 810 ? '8' : '9'}`)}
                       </div>
                     </Button>
                   ))}
@@ -181,9 +192,9 @@ export const MenuScreen: FC<MenuScreenProps> = ({
               </div>
             </div>
 
-              <Button
-                onClick={() => handleStartGameClick()}
-                disabled={!canStartGame}
+            <Button
+              onClick={() => handleStartGameClick()}
+              disabled={!canStartGame}
               className={`w-full h-14 sm:h-20 text-lg sm:text-xl font-bold transition-all duration-500 ease-out relative overflow-hidden rounded-xl
                 ${canStartGame 
                   ? 'bg-gradient-to-br from-blue-500 to-blue-600 text-white shadow-xl hover:shadow-2xl transform hover:scale-[1.02] border-4 border-white' 
@@ -211,14 +222,13 @@ export const MenuScreen: FC<MenuScreenProps> = ({
               </div>
               <div className="flex items-center justify-center gap-4">
                 <span className="sm:ml-16 text-3xl sm:text-4xl md:text-5xl font-bold">
-                  {score > 0 ? 'Rejouer !' : 'PLAY !'}
+                  {score > 0 ? t('replay') : t('play')}
                 </span>
                 {canStartGame && (
                   <div className="w-4 h-4 bg-white rounded-full animate-pulse"></div>
                 )}
               </div>
             </Button>
-
           </div>
         </div>
 
@@ -231,12 +241,19 @@ export const MenuScreen: FC<MenuScreenProps> = ({
               <div className="flex items-center gap-3">
                 <div className="w-6 h-6 bg-yellow-400 rounded-full border-2 border-white animate-spin-slow"></div>
                 <h2 className="text-2xl font-bold text-center text-white">
-                  Meilleurs Scores
+                  {t('bestScores')}
                 </h2>
                 <div className="w-6 h-6 bg-yellow-400 rounded-full border-2 border-white animate-spin-slow"></div>
               </div>
               <h3 className="text-xl font-bold text-center text-white/80">
-                {selectedGeneration.name}
+                {t(`gen${selectedGeneration.startId === 1 ? '1' : 
+                        selectedGeneration.startId === 152 ? '2' : 
+                        selectedGeneration.startId === 252 ? '3' : 
+                        selectedGeneration.startId === 387 ? '4' : 
+                        selectedGeneration.startId === 494 ? '5' : 
+                        selectedGeneration.startId === 650 ? '6' : 
+                        selectedGeneration.startId === 722 ? '7' : 
+                        selectedGeneration.startId === 810 ? '8' : '9'}`)}
               </h3>
             </div>
           </div>
@@ -249,16 +266,16 @@ export const MenuScreen: FC<MenuScreenProps> = ({
                 <span className="relative z-10">#</span>
               </div>
               <div className="col-span-4 font-bold relative">
-                <span className="relative z-10">Dresseur</span>
+                <span className="relative z-10">{t('trainer')}</span>
               </div>
               <div className="col-span-2 font-bold text-center relative">
-                <span className="relative z-10">Score</span>
+                <span className="relative z-10">{t('score')}</span>
               </div>
               <div className="col-span-2 font-bold text-center relative">
-                <span className="relative z-10">Temps</span>
+                <span className="relative z-10">{t('time')}</span>
               </div>
               <div className="col-span-3 font-bold text-center hidden sm:block relative">
-                <span className="relative z-10">Date</span>
+                <span className="relative z-10">{t('date')}</span>
               </div>
             </div>
             
@@ -314,7 +331,7 @@ export const MenuScreen: FC<MenuScreenProps> = ({
               {rankings.length === 0 && (
                 <div className="p-8 text-center text-gray-500 flex flex-col items-center gap-4">
                   <div className="w-16 h-16 bg-gray-200 rounded-full animate-bounce"></div>
-                  <p className="text-lg">Aucun score enregistré pour cette génération</p>
+                  <p className="text-lg">{t('noScores')}</p>
                 </div>
               )}
             </div>

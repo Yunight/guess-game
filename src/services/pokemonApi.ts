@@ -75,6 +75,7 @@ interface CachedNamesData {
   names: Array<{
     id: number;
     name: string;
+    englishName: string;
     frenchName: string;
   }>;
 }
@@ -175,6 +176,7 @@ export const transformPokemonData = async (data: PokemonResponse & { species: { 
   return {
     id: data.id,
     name: data.name,
+    englishName: data.name,
     frenchName,
     frenchFlavorText: frenchFlavorText.replace(/\n/g, ' ').replace(/\f/g, ' '),
     englishFlavorText: englishFlavorText.replace(/\n/g, ' ').replace(/\f/g, ' '),
@@ -224,6 +226,7 @@ export const pokemonApi = createApi({
               const pokemonList = names.map(p => ({
                 id: p.id,
                 name: p.name,
+                englishName: p.name,
                 frenchName: p.frenchName || p.name,
                 frenchFlavorText: '',
                 englishFlavorText: '',
@@ -277,10 +280,13 @@ export const pokemonApi = createApi({
             const evolutionStage = await getEvolutionStage(speciesData.name);
             const frenchNameData = speciesData.names.find(n => n.language.name === 'fr');
             const frenchName = frenchNameData ? frenchNameData.name : speciesData.name;
+            const englishNameData = speciesData.names.find(n => n.language.name === 'en');
+            const englishName = englishNameData ? englishNameData.name : speciesData.name;
 
             return {
               id: index + 1,
               name: speciesData.name,
+              englishName,
               frenchName,
               frenchFlavorText: speciesData.flavor_text_entries.find(entry => entry.language.name === 'fr')?.flavor_text || '',
               englishFlavorText: speciesData.flavor_text_entries.find(entry => entry.language.name === 'en')?.flavor_text || '',
@@ -302,6 +308,7 @@ export const pokemonApi = createApi({
             names: pokemonData.map(p => ({
               id: p.id,
               name: p.name,
+              englishName: p.englishName,
               frenchName: p.frenchName
             }))
           };
@@ -356,6 +363,7 @@ export const pokemonApi = createApi({
           const pokemon: Pokemon = {
             id: pokemonId,
             name: pokemonData.name,
+            englishName: speciesData.names.find(name => name.language.name === 'en')?.name || pokemonData.name,
             frenchName,
             frenchFlavorText,
             englishFlavorText,

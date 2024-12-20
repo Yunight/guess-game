@@ -1,6 +1,7 @@
 import { FC } from 'react';
 import { Button } from '@/components/ui/button';
 import { Pokemon } from './types';
+import { useTranslation } from 'react-i18next';
 
 interface HintButtonProps {
   hintsLeft: number;
@@ -17,12 +18,17 @@ export const HintButton: FC<HintButtonProps> = ({
   isPokemonLoading,
   currentPokemon,
 }) => {
-  // Get the appropriate hint text, using English as fallback
-  const hintText = currentPokemon?.frenchFlavorText || 
-    (currentPokemon?.englishFlavorText ? 'Français non disponible - ' + currentPokemon.englishFlavorText : '');
+  const { t, i18n } = useTranslation();
 
-  // Get first letter of Pokemon name
-  const firstLetter = currentPokemon?.frenchName.charAt(0);
+  // Get the appropriate hint text based on current language
+  const hintText = i18n.language === 'fr' 
+    ? currentPokemon?.frenchFlavorText 
+    : currentPokemon?.englishFlavorText;
+
+  // Get first letter of Pokemon name based on current language
+  const firstLetter = i18n.language === 'fr'
+    ? currentPokemon?.frenchName?.charAt(0)
+    : currentPokemon?.englishName?.charAt(0);
 
   return (
     <div className="mx-2 mt-2">
@@ -41,7 +47,7 @@ export const HintButton: FC<HintButtonProps> = ({
             <div className="w-1.5 h-1.5 rounded-full bg-yellow-300 animate-pulse"></div>
             <div className="w-1.5 h-1.5 rounded-full bg-yellow-300 animate-pulse delay-75"></div>
           </div>
-          Indice ({hintsLeft === Infinity ? '∞' : hintsLeft})
+          {t('hint')} ({hintsLeft === Infinity ? '∞' : hintsLeft})
           <div className="absolute right-3 top-1/2 -translate-y-1/2 flex gap-1.5">
             <div className="w-1.5 h-1.5 rounded-full bg-yellow-300 animate-pulse"></div>
             <div className="w-1.5 h-1.5 rounded-full bg-yellow-300 animate-pulse delay-75"></div>
@@ -58,7 +64,7 @@ export const HintButton: FC<HintButtonProps> = ({
                 <div className="absolute right-2 top-2 w-1.5 h-1.5 rounded-full bg-red-500"></div>
                 <div className="flex flex-col gap-1 items-center">
                   <div className="text-base font-bold">
-                    Première lettre : {firstLetter}
+                    {t('firstLetter')} : {firstLetter}
                   </div>
                   <p className="text-center px-4 text-sm">{hintText}</p>
                 </div>
