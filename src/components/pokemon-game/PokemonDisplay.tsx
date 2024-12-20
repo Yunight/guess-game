@@ -229,23 +229,24 @@ export const PokemonDisplay: FC<PokemonDisplayProps> = ({
               <div className="center-circle" />
             </div>
           ) : (
-            <div className={`relative w-full h-full flex items-center justify-center transition-all duration-700 ease-out ${
+            <div className={`relative w-full h-full flex items-center justify-center ${
               displayState === 'revealed' ? 'animate-reveal-pokemon' : ''
             }`}>
-              {/* Pokemon image with animations */}
               <img
                 src={displayedPokemon.sprite}
                 alt={i18n.language === 'fr' ? displayedPokemon.frenchName : displayedPokemon.englishName}
-                className={`w-full h-full object-contain transition-all duration-700 ease-out ${
+                className={`w-auto h-[90%] max-w-full object-contain ${
                   displayState === 'revealed' 
-                    ? 'animate-bounce-in filter brightness-100' 
+                    ? 'animate-reveal-pokemon' 
                     : displayState === 'ready' 
-                      ? 'filter brightness-0 animate-appear-shake'
+                      ? 'animate-appear-pokemon'
                       : 'opacity-0'
                 }`}
                 style={{
-                  willChange: 'transform, opacity, filter'
-                }}
+                  willChange: 'transform, filter',
+                  transformOrigin: 'center bottom',
+                  '--float-y': '-5px'
+                } as React.CSSProperties}
               />
 
               {/* Pokemon name reveal */}

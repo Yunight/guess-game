@@ -22,6 +22,20 @@ interface PokemonCries {
   legacy: string;
 }
 
+interface FlavorTextEntry {
+  flavor_text: string;
+  language: {
+    name: string;
+  };
+  version: {
+    name: string;
+  };
+}
+
+interface PokemonSpecies {
+  flavor_text_entries: FlavorTextEntry[];
+}
+
 const TYRADEX_CACHE_KEY = 'tyradexCache';
 const CACHE_DURATION = 24 * 60 * 60 * 1000; // 24 hours
 
@@ -47,6 +61,35 @@ const getCryUrl = async (id: number): Promise<string> => {
     return `${cries.latest}|${cries.legacy}`;
   } catch (error) {
     console.error('Error fetching Pokemon cry:', error);
+    return '';
+  }
+};
+
+// Get Pokemon flavor text from PokeAPI
+const getFlavorText = async (id: number, language: string = 'fr'): Promise<string> => {
+  try {
+    const response = await fetch(`https://pokeapi.co/api/v2/pokemon-species/${id}`);
+    if (!response.ok) throw new Error('Failed to fetch Pokemon flavor text');
+    
+    const data = await response.json() as PokemonSpecies;
+    const flavorEntries = data.flavor_text_entries.filter(entry => 
+      entry.language.name === language
+    );
+    
+    // Get a random flavor text entry for variety
+    if (flavorEntries.length > 0) {
+      const randomEntry = flavorEntries[Math.floor(Math.random() * flavorEntries.length)];
+      return randomEntry.flavor_text.replace(/\f/g, ' ').replace(/\n/g, ' ');
+    }
+    
+    // Fallback to English if no French entries found
+    if (language === 'fr') {
+      return getFlavorText(id, 'en');
+    }
+    
+    return '';
+  } catch (error) {
+    console.error('Error fetching Pokemon flavor text:', error);
     return '';
   }
 };
@@ -169,15 +212,20 @@ export const pokemonApi = createApi({
             throw new Error(`Failed to get Pokemon data for ID: ${pokemonId}`);
           }
 
-          // Fetch cry URL (not cached)
-          console.log('🎵 Fetching cry from PokeAPI for Pokemon:', pokemonId);
-          const cryUrl = await getCryUrl(pokemonId);
+          // Fetch cry URL and flavor text in parallel
+          const [cryUrl, frenchFlavorText, englishFlavorText] = await Promise.all([
+            getCryUrl(pokemonId),
+            getFlavorText(pokemonId, 'fr'),
+            getFlavorText(pokemonId, 'en')
+          ]);
 
           // Return complete Pokemon data
           return { 
             data: {
               ...convertToPokemon(tyradexPokemon),
-              cryUrl
+              cryUrl,
+              frenchFlavorText,
+              englishFlavorText
             }
           };
         } catch (error) {

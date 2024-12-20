@@ -34,7 +34,6 @@ export const RewardPokemonDisplay: FC<RewardPokemonDisplayProps> = ({
             <>
               <img
                 src={pokemon.sprite}
-                alt={i18n.language === 'fr' ? pokemon.frenchName : pokemon.englishName}
                 className="w-full h-full object-contain animate-bounce-in"
               />
               <div className="absolute bottom-0 left-0 right-0 text-center bg-black/50 backdrop-blur-sm py-3 text-white font-bold text-xl">

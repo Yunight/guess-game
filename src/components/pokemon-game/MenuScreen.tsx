@@ -133,7 +133,7 @@ export const MenuScreen: FC<MenuScreenProps> = ({
           </div>
 
           {/* Main content area */}
-          <div className="mt-16 space-y-3 h-[calc(100%-5rem)] flex flex-col">
+          <div className="mt-16 space-y-8 h-[calc(100%-5rem)] flex flex-col">
             <div className="bg-white rounded-xl p-3 sm:p-4 shadow-inner space-y-3 flex-1">
               <div className="space-y-2">
                 <label htmlFor="playerName" className="text-sm font-medium text-gray-700">
@@ -160,7 +160,7 @@ export const MenuScreen: FC<MenuScreenProps> = ({
                   {t('pokemonGeneration')}
                 </h2>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
-                  {GENERATIONS.map((gen) => (
+                  {GENERATIONS.sort((a, b) => a.startId - b.startId).map((gen) => (
                     <Button
                       key={gen.name}
                       onClick={() => handleGenerationSelect(gen)}
@@ -195,7 +195,7 @@ export const MenuScreen: FC<MenuScreenProps> = ({
             <Button
               onClick={() => handleStartGameClick()}
               disabled={!canStartGame}
-              className={`w-full h-14 sm:h-20 text-lg sm:text-xl font-bold transition-all duration-500 ease-out relative overflow-hidden rounded-xl
+              className={`w-full h-16 sm:h-24 text-lg sm:text-xl font-bold transition-all duration-500 ease-out relative overflow-hidden rounded-xl mb-10
                 ${canStartGame 
                   ? 'bg-gradient-to-br from-blue-500 to-blue-600 text-white shadow-xl hover:shadow-2xl transform hover:scale-[1.02] border-4 border-white' 
                   : 'bg-gray-200 text-gray-500'
@@ -220,8 +220,8 @@ export const MenuScreen: FC<MenuScreenProps> = ({
                   <div className="absolute inset-1/2 -translate-x-1/2 -translate-y-1/2 w-4 h-4 bg-white rounded-full shadow-glow"></div>
                 </div>
               </div>
-              <div className="flex items-center justify-center gap-4">
-                <span className="sm:ml-16 text-3xl sm:text-4xl md:text-5xl font-bold">
+              <div className="flex items-center justify-center gap-4 py-2">
+                <span className="sm:ml-16 text-3xl sm:text-4xl md:text-5xl font-pokemon">
                   {score > 0 ? t('replay') : t('play')}
                 </span>
                 {canStartGame && (
