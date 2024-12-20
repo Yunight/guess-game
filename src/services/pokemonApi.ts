@@ -115,28 +115,37 @@ const setToStorage = (key: string, value: string) => {
 };
 
 // Convert Tyradex data to Pokemon format
-const convertToPokemon = (tyradexPokemon: TyradexPokemon): Omit<Pokemon, 'cryUrl'> => ({
-  id: tyradexPokemon.pokedex_id,
-  name: tyradexPokemon.name.en.toLowerCase(),
-  englishName: tyradexPokemon.name.en,
-  frenchName: tyradexPokemon.name.fr,
-  frenchFlavorText: '',
-  englishFlavorText: '',
-  sprite: tyradexPokemon.sprites.regular,
-  evolvesFromSpecies: null,
-  hasEvolution: false,
-  evolutionStage: 1,
-  isLegendary: false,
-  isMythical: false
-});
+const convertToPokemon = (tyradexPokemon: TyradexPokemon, maxHypeChain: number = 0): Omit<Pokemon, 'cryUrl'> => {
+  // Base 5% chance + 1% per max hype chain, capped at 10%
+  const shinyChance = Math.min(0.05 + (maxHypeChain * 0.01), 0.1);
+  const isShiny = Math.random() < shinyChance;
+  
+  return {
+    id: tyradexPokemon.pokedex_id,
+    name: tyradexPokemon.name.en.toLowerCase(),
+    englishName: tyradexPokemon.name.en,
+    frenchName: tyradexPokemon.name.fr,
+    frenchFlavorText: '',
+    englishFlavorText: '',
+    sprite: isShiny && tyradexPokemon.sprites.shiny ? tyradexPokemon.sprites.shiny : tyradexPokemon.sprites.regular,
+    shinySprite: tyradexPokemon.sprites.shiny,
+    isShiny,
+    evolvesFromSpecies: null,
+    hasEvolution: false,
+    evolutionStage: 1,
+    isLegendary: false,
+    isMythical: false
+  };
+};
 
 export const pokemonApi = createApi({
   reducerPath: 'pokemonApi',
   baseQuery: fetchBaseQuery({ baseUrl: 'https://tyradex.vercel.app/api/v1/' }),
   endpoints: (builder) => ({
-    getAllPokemonNames: builder.query<Pokemon[], void>({
-      async queryFn() {
+    getAllPokemonNames: builder.query<Pokemon[], { maxHypeChain?: number }>({
+      async queryFn(arg) {
         try {
+          const maxHypeChain = arg?.maxHypeChain || 0;
           // Check cache first
           const cachedData = getFromStorage(TYRADEX_CACHE_KEY);
           if (cachedData) {
@@ -146,7 +155,7 @@ export const pokemonApi = createApi({
               console.log('📦 Using cached Tyradex data');
               return { 
                 data: tyradexData.map(pokemon => ({
-                  ...convertToPokemon(pokemon),
+                  ...convertToPokemon(pokemon, maxHypeChain),
                   cryUrl: ''
                 }))
               };
@@ -170,7 +179,7 @@ export const pokemonApi = createApi({
           // Convert and return Pokemon data
           return { 
             data: tyradexData.map(pokemon => ({
-              ...convertToPokemon(pokemon),
+              ...convertToPokemon(pokemon, maxHypeChain),
               cryUrl: ''
             }))
           };
@@ -182,9 +191,10 @@ export const pokemonApi = createApi({
       keepUnusedDataFor: 3600,
     }),
 
-    getPokemonById: builder.query<Pokemon, number>({
-      async queryFn(pokemonId) {
+    getPokemonById: builder.query<Pokemon, { id: number; maxHypeChain?: number }>({
+      async queryFn(arg) {
         try {
+          const { id: pokemonId, maxHypeChain = 0 } = arg;
           let tyradexPokemon: TyradexPokemon | undefined;
 
           // Try to get Pokemon data from cache first
@@ -212,6 +222,9 @@ export const pokemonApi = createApi({
             throw new Error(`Failed to get Pokemon data for ID: ${pokemonId}`);
           }
 
+          // Convert Pokemon data first to check if it's shiny
+          const convertedPokemon = convertToPokemon(tyradexPokemon, maxHypeChain);
+
           // Fetch cry URL and flavor text in parallel
           const [cryUrl, frenchFlavorText, englishFlavorText] = await Promise.all([
             getCryUrl(pokemonId),
@@ -222,7 +235,7 @@ export const pokemonApi = createApi({
           // Return complete Pokemon data
           return { 
             data: {
-              ...convertToPokemon(tyradexPokemon),
+              ...convertedPokemon,
               cryUrl,
               frenchFlavorText,
               englishFlavorText

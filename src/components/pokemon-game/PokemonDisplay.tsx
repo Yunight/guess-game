@@ -23,6 +23,20 @@ interface PokemonDisplayProps {
   guessTimeLeft: number;
 }
 
+// Play shiny effect sound
+const playShinyEffect = async () => {
+  try {
+    const shinyAudio = new Audio('/sounds/shiny_effect.mp3');
+    await shinyAudio.play();
+    // Wait for shiny effect to finish before resolving
+    await new Promise(resolve => {
+      shinyAudio.onended = resolve;
+    });
+  } catch (error) {
+    console.error('Error playing shiny effect:', error);
+  }
+};
+
 export const PokemonDisplay: FC<PokemonDisplayProps> = ({
   currentPokemon,
   isPokemonLoading,
@@ -165,6 +179,11 @@ export const PokemonDisplay: FC<PokemonDisplayProps> = ({
         audioRef.current = null;
       }
 
+      // Play shiny effect first if it's a shiny Pokemon
+      if (displayedPokemon.isShiny) {
+        await playShinyEffect();
+      }
+
       const tryPlayAudio = async (url: string): Promise<HTMLAudioElement | null> => {
         const audio = new Audio(url);
         try {
@@ -232,52 +251,74 @@ export const PokemonDisplay: FC<PokemonDisplayProps> = ({
             <div className={`relative w-full h-full flex items-center justify-center ${
               displayState === 'revealed' ? 'animate-reveal-pokemon' : ''
             }`}>
-              <img
-                src={displayedPokemon.sprite}
-                alt={i18n.language === 'fr' ? displayedPokemon.frenchName : displayedPokemon.englishName}
-                className={`w-auto h-[90%] max-w-full object-contain ${
-                  displayState === 'revealed' 
-                    ? 'animate-reveal-pokemon' 
-                    : displayState === 'ready' 
-                      ? 'animate-appear-pokemon'
-                      : 'opacity-0'
-                }`}
-                style={{
-                  willChange: 'transform, filter',
-                  transformOrigin: 'center bottom',
-                  '--float-y': '-5px'
-                } as React.CSSProperties}
-              />
-
-              {/* Pokemon name reveal */}
-              {displayState === 'revealed' && guessTimeLeft === 0 && (
-                <div className="absolute bottom-4 left-0 right-0 text-center">
-                  <div className="bg-black/70 text-white px-4 py-2 rounded-full mx-auto inline-block backdrop-blur-sm font-bold text-xl animate-fade-in">
-                    {i18n.language === 'fr' ? displayedPokemon.frenchName : displayedPokemon.englishName}
+              {/* Show shiny message even during silhouette */}
+              {displayedPokemon.isShiny && (
+                <div className="absolute top-4 left-0 right-0 flex justify-center z-20">
+                  <div className="bg-yellow-400/90 text-black px-4 py-1 rounded-full font-bold text-sm">
+                    {i18n.language === 'fr' ? '✨ CHROMATIQUE ✨' : '✨ SHINY ✨'}
                   </div>
                 </div>
               )}
+              <div className="relative w-full h-full flex items-center justify-center">
+                <img
+                  src={displayedPokemon.sprite}
+                  alt={i18n.language === 'fr' ? displayedPokemon.frenchName : displayedPokemon.englishName}
+                  className={`w-auto h-[80%] max-w-full object-contain ${
+                    displayState === 'revealed' 
+                      ? 'animate-reveal-pokemon' 
+                      : displayState === 'ready' 
+                        ? 'animate-appear-pokemon'
+                        : 'opacity-0'
+                  } ${displayState !== 'revealed' ? 'brightness-0' : ''}`}
+                  style={{
+                    willChange: 'transform, filter',
+                    transformOrigin: 'center bottom',
+                    '--float-y': '-5px'
+                  } as React.CSSProperties}
+                />
 
-              {/* Reveal effects */}
-              {displayState === 'revealed' && (
-                <div className="absolute inset-0 pointer-events-none">
-                  {/* Inner expanding ring */}
-                  <div className="absolute inset-0 animate-ring-expand">
-                    <div className="absolute inset-0 border-4 border-yellow-400/30 rounded-full"></div>
+                {/* Pokemon name reveal */}
+                {displayState === 'revealed' && guessTimeLeft === 0 && (
+                  <div className="absolute bottom-4 left-0 right-0 text-center">
+                    <div className="bg-black/70 text-white px-4 py-2 rounded-full mx-auto inline-block backdrop-blur-sm font-bold text-xl animate-fade-in">
+                      {i18n.language === 'fr' ? displayedPokemon.frenchName : displayedPokemon.englishName}
+                    </div>
                   </div>
-                  {/* Outer expanding ring (delayed) */}
-                  <div className="absolute inset-0 animate-ring-expand-delayed">
-                    <div className="absolute inset-0 border-4 border-yellow-400/20 rounded-full"></div>
+                )}
+
+                {/* Reveal effects */}
+                {displayState === 'revealed' && (
+                  <div className="absolute inset-0 pointer-events-none">
+                    {/* Inner expanding ring */}
+                    <div className="absolute inset-0 animate-ring-expand">
+                      <div className={`absolute inset-0 border-4 ${displayedPokemon.isShiny ? 'border-yellow-400/50' : 'border-yellow-400/30'} rounded-full`}></div>
+                    </div>
+                    {/* Outer expanding ring (delayed) */}
+                    <div className="absolute inset-0 animate-ring-expand-delayed">
+                      <div className={`absolute inset-0 border-4 ${displayedPokemon.isShiny ? 'border-yellow-400/40' : 'border-yellow-400/20'} rounded-full`}></div>
+                    </div>
+                    {/* Sparkles */}
+                    <div className="absolute w-2 h-2 bg-yellow-300 rounded-full animate-ping" 
+                         style={{ top: '20%', left: '30%', animationDuration: '1s' }}></div>
+                    <div className="absolute w-2 h-2 bg-yellow-300 rounded-full animate-ping" 
+                         style={{ top: '70%', left: '80%', animationDuration: '1.2s' }}></div>
+                    <div className="absolute w-2 h-2 bg-yellow-300 rounded-full animate-ping" 
+                         style={{ top: '40%', left: '60%', animationDuration: '0.8s' }}></div>
+                    
+                    {/* Extra sparkles for shiny Pokemon */}
+                    {displayedPokemon.isShiny && (
+                      <>
+                        <div className="absolute w-3 h-3 bg-yellow-300 rounded-full animate-ping" 
+                             style={{ top: '30%', left: '20%', animationDuration: '1.3s' }}></div>
+                        <div className="absolute w-3 h-3 bg-yellow-300 rounded-full animate-ping" 
+                             style={{ top: '60%', left: '70%', animationDuration: '0.9s' }}></div>
+                        <div className="absolute w-3 h-3 bg-yellow-300 rounded-full animate-ping" 
+                             style={{ top: '45%', left: '40%', animationDuration: '1.1s' }}></div>
+                      </>
+                    )}
                   </div>
-                  {/* Sparkles */}
-                  <div className="absolute w-2 h-2 bg-yellow-300 rounded-full animate-ping" 
-                       style={{ top: '20%', left: '30%', animationDuration: '1s' }}></div>
-                  <div className="absolute w-2 h-2 bg-yellow-300 rounded-full animate-ping" 
-                       style={{ top: '70%', left: '80%', animationDuration: '1.2s' }}></div>
-                  <div className="absolute w-2 h-2 bg-yellow-300 rounded-full animate-ping" 
-                       style={{ top: '40%', left: '60%', animationDuration: '0.8s' }}></div>
-                </div>
-              )}
+                )}
+              </div>
             </div>
           )}
         </div>

@@ -304,13 +304,18 @@ export const GameOverDialog: FC<GameOverDialogProps> = ({
       ? `${genNumber}ère Génération`
       : `Generation ${genNumber}`;
 
+    const shinyText = rewardPokemon.pokemon?.isShiny ? (i18n.language === 'fr' ? '✨ CHROMATIQUE ✨' : '✨ SHINY ✨') : '';
+    const pokemonName = i18n.language === 'fr' 
+      ? (rewardPokemon.pokemon?.frenchName ? rewardPokemon.pokemon.frenchName.charAt(0).toUpperCase() + rewardPokemon.pokemon.frenchName.slice(1) : '')
+      : (rewardPokemon.pokemon?.englishName ? rewardPokemon.pokemon.englishName.charAt(0).toUpperCase() + rewardPokemon.pokemon.englishName.slice(1) : '');
+
     const shareText = `${clickbaitMsg}\n\n` +
       `👤 ${playerName}\n` +
       `🎯 ${t('score')}: ${score}\n` +
       `⏱️ ${t('time')}: ${formatTimeForRanking(totalTimeElapsed)}\n` +
       `🌍 ${genName}\n` +
       `${userRanking ? `👑 ${t('myRank')} #${userRanking}!\n` : ''}` +
-      `${rewardPokemon.pokemon ? `✨ ${i18n.language === 'fr' ? 'Je suis un' : 'I am'} ${i18n.language === 'fr' ? rewardPokemon.pokemon.frenchName.charAt(0).toUpperCase() + rewardPokemon.pokemon.frenchName.slice(1) : rewardPokemon.pokemon.englishName.charAt(0).toUpperCase() + rewardPokemon.pokemon.englishName.slice(1)}!\n` : ''}\n` +
+      `${rewardPokemon.pokemon ? `✨ ${i18n.language === 'fr' ? 'Je suis un' : 'I am'} ${pokemonName} ${shinyText}!\n` : ''}\n` +
       `https://pokemon-guesser-game.vercel.app/\n\n` +
       `#PokemonGuesserGame #Pokemon #PokemonGuesserByYunight #Gaming`;
 
@@ -474,8 +479,6 @@ export const GameOverDialog: FC<GameOverDialogProps> = ({
               {t('menu')}
             </Button>
           </div>
-
-
         </div>
       </ScrollableDialog>
     </Dialog>

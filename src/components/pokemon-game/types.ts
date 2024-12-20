@@ -19,6 +19,8 @@ export interface Pokemon {
   frenchFlavorText: string;
   englishFlavorText: string;
   sprite: string;
+  shinySprite: string | null;
+  isShiny: boolean;
   evolvesFromSpecies: string | null;
   hasEvolution: boolean;
   evolutionStage: number;

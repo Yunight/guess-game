@@ -111,7 +111,7 @@ const PokemonGame = () => {
   const LOW_LIFE_URL = '/sounds/low_life.mp3';
   
   // Use cached Pokemon data or fetch from API
-  const { data: apiPokemonNames = [] } = useGetAllPokemonNamesQuery(undefined, {
+  const { data: apiPokemonNames = [] } = useGetAllPokemonNamesQuery({ maxHypeChain }, {
     refetchOnMountOrArgChange: false, // Don't refetch on mount
     refetchOnFocus: false, // Don't refetch when window regains focus
     refetchOnReconnect: false // Don't refetch when reconnecting
@@ -124,14 +124,14 @@ const PokemonGame = () => {
   const { 
     data: currentPokemon,
     isLoading: isPokemonLoading 
-  } = useGetPokemonByIdQuery(currentPokemonId ?? skipToken, {
+  } = useGetPokemonByIdQuery(currentPokemonId ? { id: currentPokemonId, maxHypeChain } : skipToken, {
     skip: !currentPokemonId || !isGameActive,
     refetchOnMountOrArgChange: false,
     refetchOnFocus: false,
     refetchOnReconnect: false
   });
 
-  const { data: allPokemonData = [] } = useGetAllPokemonNamesQuery(undefined, {
+  const { data: allPokemonData = [] } = useGetAllPokemonNamesQuery({ maxHypeChain }, {
     refetchOnMountOrArgChange: false,
     refetchOnFocus: false,
     refetchOnReconnect: false
@@ -428,6 +428,25 @@ const PokemonGame = () => {
                  pokemon.id >= selectedGeneration.startId && 
                  pokemon.id <= selectedGeneration.endId;
         })
+        .sort((a, b) => {
+          // Sort by exact match first
+          const aNameFr = normalizeText(a.frenchName);
+          const aNameEn = normalizeText(a.name);
+          const bNameFr = normalizeText(b.frenchName);
+          const bNameEn = normalizeText(b.name);
+          const normalizedValue = normalizeText(value);
+
+          const aExactMatch = aNameFr === normalizedValue || aNameEn === normalizedValue;
+          const bExactMatch = bNameFr === normalizedValue || bNameEn === normalizedValue;
+
+          if (aExactMatch && !bExactMatch) return -1;
+          if (!aExactMatch && bExactMatch) return 1;
+
+          // Then sort by length
+          const aLength = Math.min(a.frenchName.length, a.name.length);
+          const bLength = Math.min(b.frenchName.length, b.name.length);
+          return aLength - bLength;
+        })
         .map(pokemon => capitalize(i18n.language === 'fr' ? pokemon.frenchName : pokemon.name))
         .filter(Boolean)
         .slice(0, 5);
@@ -609,7 +628,8 @@ const PokemonGame = () => {
 
     // Start or restart timer
     if (!timerInterval.current) {
-      setGuessTimeLeft(15);
+      // Set initial time based on whether the Pokemon is shiny
+      setGuessTimeLeft(currentPokemon?.isShiny ? 10 : 15);
       timerInterval.current = setInterval(() => {
         setGuessTimeLeft((prev) => {
           if (prev <= 1) {
@@ -632,7 +652,7 @@ const PokemonGame = () => {
         timerInterval.current = null;
       }
     };
-  }, [isHardMode, isGameActive, currentPokemonId]);
+  }, [isHardMode, isGameActive, currentPokemonId, currentPokemon?.isShiny]);
 
   const handleCorrectAnswer = async () => {
     console.log('✅ Handling correct answer');
@@ -673,12 +693,20 @@ const PokemonGame = () => {
 
     // Calculate points based on remaining time in Hard mode
     if (isHardMode) {
-      if (guessTimeLeft >= 10 && guessTimeLeft <= 15) {
-        earnedPoints = 3;
-      } else if (guessTimeLeft >= 5 && guessTimeLeft <= 9) {
-        earnedPoints = 2;
-      } else if (guessTimeLeft >= 0 && guessTimeLeft <= 4) {
-        earnedPoints = 1;
+      if (currentPokemon?.isShiny) {
+        earnedPoints = 5; // Always 5 points for shiny Pokemon
+      } else {
+        const maxTime = 15;
+        const fastTime = 10;
+        const mediumTime = 5;
+
+        if (guessTimeLeft >= fastTime && guessTimeLeft <= maxTime) {
+          earnedPoints = 3;
+        } else if (guessTimeLeft >= mediumTime && guessTimeLeft < fastTime) {
+          earnedPoints = 2;
+        } else if (guessTimeLeft >= 0 && guessTimeLeft < mediumTime) {
+          earnedPoints = 1;
+        }
       }
 
       // Show special effects only if not in Hype Train
@@ -691,7 +719,7 @@ const PokemonGame = () => {
             setShowCriticalSuccess(false);
           }, 2000);
           // Base point only for Succès Critique
-          earnedPoints = 1;
+          earnedPoints = currentPokemon?.isShiny ? 5 : 1;
         }
         // Show Coup Critique with 20% chance
         else if (Math.random() < 0.2) {
@@ -700,14 +728,14 @@ const PokemonGame = () => {
           setTimeout(() => {
             setShowCriticalHit(false);
           }, 2000);
-          // Add 1 bonus point for Coup Critique
-          earnedPoints += 1;
+          // Add 1 bonus point for Coup Critique (but keep 5 points for shiny)
+          earnedPoints = currentPokemon?.isShiny ? 5 : earnedPoints + 1;
         }
       }
     } else {
-      earnedPoints = 1;
+      earnedPoints = currentPokemon?.isShiny ? 5 : 1;
     }
-    
+
     // Always show points earned animation
     setPointsEarned(earnedPoints);
     setTimeout(() => {
