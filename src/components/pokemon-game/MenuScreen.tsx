@@ -113,7 +113,7 @@ export const MenuScreen: FC<MenuScreenProps> = ({
               variant="ghost"
               size="icon"
               onClick={() => setShowHowToPlay(true)}
-              className="hover:bg-white/20 text-white hover:text-white/80 transition-colors"
+              className="hover:bg-white/20 bg-white/10 text-gray-800 hover:text-gray-900 transition-colors"
             >
               <HelpCircle className="h-5 w-5" />
             </Button>
@@ -122,7 +122,7 @@ export const MenuScreen: FC<MenuScreenProps> = ({
               variant="ghost"
               size="icon"
               onClick={() => setIsMuted(!isMuted)}
-              className="hover:bg-white/20 text-white hover:text-white/80 transition-colors"
+              className="hover:bg-white/20 bg-white/10 text-gray-800 hover:text-gray-900 transition-colors"
             >
               {isMuted ? (
                 <VolumeX className="h-5 w-5" />
