@@ -60,10 +60,20 @@ export const PokemonDisplay: FC<PokemonDisplayProps> = ({
     // Update our reference first
     currentPokemonIdRef.current = newPokemonId || null;
     
+    // Reset all states
     setDisplayState('loading');
     setDisplayedPokemon(undefined);
     loadingRef.current = true;
     soundPlayedRef.current = false;
+
+    // Add minimum loading time
+    const minLoadingTime = setTimeout(() => {
+      if (currentPokemon && currentPokemonIdRef.current === currentPokemon.id) {
+        loadingRef.current = false;
+        setDisplayState('ready');
+        setDisplayedPokemon(currentPokemon);
+      }
+    }, 500); // 500ms minimum loading time
 
     // Clean up previous audio immediately
     if (audioRef.current) {
@@ -75,6 +85,7 @@ export const PokemonDisplay: FC<PokemonDisplayProps> = ({
     }
 
     return () => {
+      clearTimeout(minLoadingTime);
       if (audioRef.current) {
         devLog('🧹 Cleaning up audio on unmount');
         audioRef.current.pause();
@@ -85,31 +96,14 @@ export const PokemonDisplay: FC<PokemonDisplayProps> = ({
     };
   }, [currentPokemon?.id]);
 
-  // Handle Pokemon loading and display
+  // Remove the separate loading effect since we handle it in the reset effect
   useEffect(() => {
-    if (!currentPokemon || isPokemonLoading) {
-      setDisplayState('loading');
-      return;
-    }
-
-    const loadPokemon = async () => {
-      if (loadingRef.current) {
-        devLog('🎮 Loading Pokemon...');
-        setDisplayState('ready');
-        setDisplayedPokemon(currentPokemon);
-        loadingRef.current = false;
-      }
-    };
-
-    loadPokemon();
-  }, [currentPokemon, isPokemonLoading]);
-
-  // Handle reveal state
-  useEffect(() => {
-    if (isCorrect !== null) {
+    if (isCorrect === true) {
       setDisplayState('revealed');
+    } else if (!isPokemonLoading && currentPokemon) {
+      setDisplayState('ready');
     }
-  }, [isCorrect]);
+  }, [isCorrect, isPokemonLoading, currentPokemon]);
 
   // Handle Pokemon cry sound
   useEffect(() => {
@@ -193,7 +187,7 @@ export const PokemonDisplay: FC<PokemonDisplayProps> = ({
         </div>
         
         <div className="relative z-10 w-full h-full flex items-center justify-center">
-          {(displayState === 'loading' || !displayedPokemon || !displayedPokemon.sprite) ? (
+          {(isPokemonLoading || !displayedPokemon || !displayedPokemon.sprite) ? (
             <div className="pokeball-loading">
               <div className="outer-circle" />
               <div className="center-circle" />
