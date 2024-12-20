@@ -9,7 +9,7 @@ import { MenuScreen } from './MenuScreen';
 import { GameOverDialog } from './GameOverDialog';
 import { Generation, Pokemon, Rankings } from '@/components/pokemon-game/types';
 import { useLocalStorage } from '@/hooks/useLocalStorage';
-
+import { useDebounce } from '@/hooks/useDebounce';
 
 const GENERATIONS: Generation[] = [
   { name: '1ère Génération', startId: 1, endId: 151 },
@@ -26,12 +26,14 @@ const MAX_HINTS = 10;
 
 // Add rarity tiers for Pokémon rewards
 const POKEMON_REWARDS = [
-  { minScore: 2000, condition: (pokemon: Pokemon) => pokemon.isMythical && pokemon.name === 'mew' },
-  { minScore: 1500, condition: (pokemon: Pokemon) => pokemon.isMythical },
-  { minScore: 1000, condition: (pokemon: Pokemon) => pokemon.isLegendary },
-  { minScore: 750, condition: (pokemon: Pokemon) => pokemon.evolutionStage === 3 && !pokemon.isLegendary && !pokemon.isMythical },
-  { minScore: 500, condition: (pokemon: Pokemon) => pokemon.evolutionStage === 2 && !pokemon.isLegendary && !pokemon.isMythical },
-  { minScore: 300, condition: (pokemon: Pokemon) => pokemon.evolutionStage === 1 && !pokemon.hasEvolution && !pokemon.isLegendary && !pokemon.isMythical },
+  { minScore: 3000, condition: (pokemon: Pokemon) => pokemon.isMythical && pokemon.name === 'mew' },
+  { minScore: 2500, condition: (pokemon: Pokemon) => pokemon.isMythical && pokemon.name === 'celebi' },
+  { minScore: 2000, condition: (pokemon: Pokemon) => pokemon.isMythical },
+  { minScore: 1500, condition: (pokemon: Pokemon) => pokemon.isLegendary && ['mewtwo', 'lugia', 'ho-oh'].includes(pokemon.name) },
+  { minScore: 1200, condition: (pokemon: Pokemon) => pokemon.isLegendary },
+  { minScore: 900, condition: (pokemon: Pokemon) => pokemon.evolutionStage === 3 && !pokemon.isLegendary && !pokemon.isMythical },
+  { minScore: 600, condition: (pokemon: Pokemon) => pokemon.evolutionStage === 2 && !pokemon.isLegendary && !pokemon.isMythical },
+  { minScore: 400, condition: (pokemon: Pokemon) => pokemon.evolutionStage === 1 && !pokemon.hasEvolution && !pokemon.isLegendary && !pokemon.isMythical },
   { minScore: 0, condition: (pokemon: Pokemon) => pokemon.evolutionStage === 1 && pokemon.hasEvolution && !pokemon.isLegendary && !pokemon.isMythical },
 ];
 
@@ -141,7 +143,6 @@ const PokemonGame = () => {
 
       if (!tier) {
         console.log('⚠ No tier found, selecting random basic Pokémon');
-        // If no tier found, return a random basic Pokémon
         const basicPokemon = allPokemonData.filter(pokemon => 
           pokemon.id >= selectedGeneration.startId && 
           pokemon.id <= selectedGeneration.endId &&
@@ -149,7 +150,7 @@ const PokemonGame = () => {
           pokemon.hasEvolution
         );
         
-        console.log(`📝 Found ${basicPokemon.length} basic Pokémon in generation`);
+        console.log(` Found ${basicPokemon.length} basic Pokémon in generation`);
         
         if (basicPokemon.length === 0) {
           console.log('❌ No basic Pokémon found in generation');
@@ -161,18 +162,46 @@ const PokemonGame = () => {
         }
         
         const randomBasic = basicPokemon[Math.floor(Math.random() * basicPokemon.length)];
-        console.log('✨ Selected basic Pokémon:', {
-          id: randomBasic.id,
-          name: randomBasic.frenchName,
-          isLegendary: randomBasic.isLegendary,
-          isMythical: randomBasic.isMythical,
-          evolutionStage: randomBasic.evolutionStage
-        });
         
-        setRewardPokemon({
-          pokemon: randomBasic,
-          isLoading: false
-        });
+        // Fetch additional species data
+        try {
+          const speciesResponse = await fetch(`https://pokeapi.co/api/v2/pokemon-species/${randomBasic.id}`);
+          const speciesData = await speciesResponse.json();
+          
+          // Update the Pokemon object with additional data
+          const enhancedPokemon = {
+            ...randomBasic,
+            genera: speciesData.genera,
+            flavor_text_entries: speciesData.flavor_text_entries,
+            color: speciesData.color,
+            shape: speciesData.shape,
+            habitat: speciesData.habitat,
+            growth_rate: speciesData.growth_rate,
+            capture_rate: speciesData.capture_rate,
+            base_happiness: speciesData.base_happiness,
+          };
+          
+          console.log('✨ Selected basic Pokémon with species data:', {
+            id: enhancedPokemon.id,
+            name: enhancedPokemon.frenchName,
+            isLegendary: enhancedPokemon.isLegendary,
+            isMythical: enhancedPokemon.isMythical,
+            evolutionStage: enhancedPokemon.evolutionStage,
+            color: enhancedPokemon.color?.name,
+            capture_rate: enhancedPokemon.capture_rate
+          });
+          
+          setRewardPokemon({
+            pokemon: enhancedPokemon,
+            isLoading: false
+          });
+        } catch (error) {
+          console.error('Error fetching species data:', error);
+          setRewardPokemon({
+            pokemon: randomBasic,
+            isLoading: false
+          });
+        }
         return;
       }
 
@@ -185,7 +214,6 @@ const PokemonGame = () => {
 
       console.log(`📝 Found ${eligiblePokemon.length} eligible Pokémon in tier`);
       
-      // If no eligible Pokémon found in the current tier, try the next lower tier
       if (eligiblePokemon.length === 0) {
         console.log('⚠️ No eligible Pokémon in current tier, trying lower tiers');
         const lowerTiers = POKEMON_REWARDS.slice(POKEMON_REWARDS.indexOf(tier) + 1);
@@ -201,24 +229,52 @@ const PokemonGame = () => {
           
           if (lowerTierPokemon.length > 0) {
             const randomPokemon = lowerTierPokemon[Math.floor(Math.random() * lowerTierPokemon.length)];
-            console.log('✨ Selected Pokémon from lower tier:', {
-              id: randomPokemon.id,
-              name: randomPokemon.frenchName,
-              isLegendary: randomPokemon.isLegendary,
-              isMythical: randomPokemon.isMythical,
-              evolutionStage: randomPokemon.evolutionStage
-            });
             
-            setRewardPokemon({
-              pokemon: randomPokemon,
-              isLoading: false
-            });
-            return;
+            // Fetch additional species data
+            try {
+              const speciesResponse = await fetch(`https://pokeapi.co/api/v2/pokemon-species/${randomPokemon.id}`);
+              const speciesData = await speciesResponse.json();
+              
+              // Update the Pokemon object with additional data
+              const enhancedPokemon = {
+                ...randomPokemon,
+                genera: speciesData.genera,
+                flavor_text_entries: speciesData.flavor_text_entries,
+                color: speciesData.color,
+                shape: speciesData.shape,
+                habitat: speciesData.habitat,
+                growth_rate: speciesData.growth_rate,
+                capture_rate: speciesData.capture_rate,
+                base_happiness: speciesData.base_happiness,
+              };
+              
+              console.log('✨ Selected Pokémon from lower tier with species data:', {
+                id: enhancedPokemon.id,
+                name: enhancedPokemon.frenchName,
+                isLegendary: enhancedPokemon.isLegendary,
+                isMythical: enhancedPokemon.isMythical,
+                evolutionStage: enhancedPokemon.evolutionStage,
+                color: enhancedPokemon.color?.name,
+                capture_rate: enhancedPokemon.capture_rate
+              });
+              
+              setRewardPokemon({
+                pokemon: enhancedPokemon,
+                isLoading: false
+              });
+              return;
+            } catch (error) {
+              console.error('Error fetching species data:', error);
+              setRewardPokemon({
+                pokemon: randomPokemon,
+                isLoading: false
+              });
+              return;
+            }
           }
         }
         
         console.log('⚠️ No Pokémon found in any tier, selecting random from generation');
-        // If still no Pokémon found, return a random Pokémon from the generation
         const generationPokemon = allPokemonData.filter(pokemon => 
           pokemon.id >= selectedGeneration.startId && 
           pokemon.id <= selectedGeneration.endId
@@ -227,35 +283,92 @@ const PokemonGame = () => {
         console.log(`📝 Found ${generationPokemon.length} Pokémon in generation`);
         
         const randomPokemon = generationPokemon[Math.floor(Math.random() * generationPokemon.length)];
-        console.log('✨ Selected random Pokémon from generation:', {
-          id: randomPokemon.id,
-          name: randomPokemon.frenchName,
-          isLegendary: randomPokemon.isLegendary,
-          isMythical: randomPokemon.isMythical,
-          evolutionStage: randomPokemon.evolutionStage
-        });
         
-        setRewardPokemon({
-          pokemon: randomPokemon,
-          isLoading: false
-        });
-        return;
+        // Fetch additional species data
+        try {
+          const speciesResponse = await fetch(`https://pokeapi.co/api/v2/pokemon-species/${randomPokemon.id}`);
+          const speciesData = await speciesResponse.json();
+          
+          // Update the Pokemon object with additional data
+          const enhancedPokemon = {
+            ...randomPokemon,
+            genera: speciesData.genera,
+            flavor_text_entries: speciesData.flavor_text_entries,
+            color: speciesData.color,
+            shape: speciesData.shape,
+            habitat: speciesData.habitat,
+            growth_rate: speciesData.growth_rate,
+            capture_rate: speciesData.capture_rate,
+            base_happiness: speciesData.base_happiness,
+          };
+          
+          console.log('✨ Selected random Pokémon with species data:', {
+            id: enhancedPokemon.id,
+            name: enhancedPokemon.frenchName,
+            isLegendary: enhancedPokemon.isLegendary,
+            isMythical: enhancedPokemon.isMythical,
+            evolutionStage: enhancedPokemon.evolutionStage,
+            color: enhancedPokemon.color?.name,
+            capture_rate: enhancedPokemon.capture_rate
+          });
+          
+          setRewardPokemon({
+            pokemon: enhancedPokemon,
+            isLoading: false
+          });
+          return;
+        } catch (error) {
+          console.error('Error fetching species data:', error);
+          setRewardPokemon({
+            pokemon: randomPokemon,
+            isLoading: false
+          });
+          return;
+        }
       }
       
       // Pick a random Pokémon from the eligible ones
       const randomPokemon = eligiblePokemon[Math.floor(Math.random() * eligiblePokemon.length)];
-      console.log('✨ Selected Pokémon from eligible tier:', {
-        id: randomPokemon.id,
-        name: randomPokemon.frenchName,
-        isLegendary: randomPokemon.isLegendary,
-        isMythical: randomPokemon.isMythical,
-        evolutionStage: randomPokemon.evolutionStage
-      });
       
-      setRewardPokemon({
-        pokemon: randomPokemon,
-        isLoading: false
-      });
+      // Fetch additional species data
+      try {
+        const speciesResponse = await fetch(`https://pokeapi.co/api/v2/pokemon-species/${randomPokemon.id}`);
+        const speciesData = await speciesResponse.json();
+        
+        // Update the Pokemon object with additional data
+        const enhancedPokemon = {
+          ...randomPokemon,
+          genera: speciesData.genera,
+          flavor_text_entries: speciesData.flavor_text_entries,
+          color: speciesData.color,
+          shape: speciesData.shape,
+          habitat: speciesData.habitat,
+          growth_rate: speciesData.growth_rate,
+          capture_rate: speciesData.capture_rate,
+          base_happiness: speciesData.base_happiness,
+        };
+        
+        console.log('✨ Selected Pokémon from eligible tier with species data:', {
+          id: enhancedPokemon.id,
+          name: enhancedPokemon.frenchName,
+          isLegendary: enhancedPokemon.isLegendary,
+          isMythical: enhancedPokemon.isMythical,
+          evolutionStage: enhancedPokemon.evolutionStage,
+          color: enhancedPokemon.color?.name,
+          capture_rate: enhancedPokemon.capture_rate
+        });
+        
+        setRewardPokemon({
+          pokemon: enhancedPokemon,
+          isLoading: false
+        });
+      } catch (error) {
+        console.error('Error fetching species data:', error);
+        setRewardPokemon({
+          pokemon: randomPokemon,
+          isLoading: false
+        });
+      }
     } catch (error) {
       console.error('❌ Error getting reward pokemon:', error);
       setRewardPokemon({
@@ -842,7 +955,14 @@ const PokemonGame = () => {
     }
   };
 
-  // Simplify handlePlayerNameChange since storage is handled in checkNameAvailability
+  // Add debounced name validation
+  const debouncedCheckName = useDebounce(async (name: string) => {
+    if (name.trim()) {
+      await checkNameAvailability(name);
+    }
+  }, 500);
+
+  // Update handlePlayerNameChange to use debounced validation
   const handlePlayerNameChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const newName = e.target.value;
     setPlayerName(newName);
@@ -852,9 +972,12 @@ const PokemonGame = () => {
       localStorage.removeItem('pokemonGamePlayerName');
       return;
     }
-    
-    await checkNameAvailability(newName);
   };
+
+  // Add effect to trigger debounced validation when name changes
+  useEffect(() => {
+    debouncedCheckName(playerName);
+  }, [playerName, debouncedCheckName]);
 
   // Add isRestarting state
   const [isRestarting, setIsRestarting] = useState(false);

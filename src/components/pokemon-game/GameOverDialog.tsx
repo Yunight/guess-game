@@ -1,4 +1,4 @@
-import { FC } from 'react';
+import { FC, useRef } from 'react';
 import {
   Dialog,
   DialogDescription,
@@ -9,7 +9,8 @@ import { ScrollableDialog } from '@/components/ui/scrollable-dialog';
 import { Button } from '@/components/ui/button';
 import { RewardPokemonDisplay } from './RewardPokemonDisplay';
 import { Pokemon } from './types';
-import { Trophy, Clock, Crown, RefreshCcw, Home } from 'lucide-react';
+import { Trophy, Clock, Crown, RefreshCcw, Home, Share2 } from 'lucide-react';
+import html2canvas from 'html2canvas';
 
 interface GameOverDialogProps {
   gameOver: boolean;
@@ -52,11 +53,58 @@ export const GameOverDialog: FC<GameOverDialogProps> = ({
   hyperTrainCount,
   maxHypeChain,
 }) => {
+  const dialogContentRef = useRef<HTMLDivElement>(null);
+
+  const handleShare = async () => {
+    if (!dialogContentRef.current) return;
+
+    try {
+      // Hide buttons before capturing
+      const buttons = dialogContentRef.current.querySelectorAll('button');
+      buttons.forEach(button => button.style.display = 'none');
+
+      const canvas = await html2canvas(dialogContentRef.current, {
+        backgroundColor: null,
+        scale: 2, // Higher quality
+      });
+
+      // Show buttons again
+      buttons.forEach(button => button.style.display = '');
+
+      // Convert canvas to blob
+      const blob = await new Promise<Blob>((resolve) => {
+        canvas.toBlob((blob) => {
+          resolve(blob!);
+        }, 'image/png');
+      });
+
+      // Create file from blob
+      const file = new File([blob], 'pokemon-game-result.png', { type: 'image/png' });
+
+      // Share the image
+      if (navigator.share && navigator.canShare({ files: [file] })) {
+        await navigator.share({
+          files: [file],
+          title: 'Mes résultats Pokémon Quiz!',
+          text: `J'ai deviné ${score} Pokémon${score > 1 ? 's' : ''} en ${formatTimeForRanking(totalTimeElapsed)}! Peux-tu faire mieux?`,
+        });
+      } else {
+        // Fallback for browsers that don't support native sharing
+        const tweetText = encodeURIComponent(
+          `J'ai deviné ${score} Pokémon${score > 1 ? 's' : ''} en ${formatTimeForRanking(totalTimeElapsed)} sur Pokémon Quiz! Peux-tu faire mieux? #PokemonQuiz`
+        );
+        window.open(`https://twitter.com/intent/tweet?text=${tweetText}`, '_blank');
+      }
+    } catch (error) {
+      console.error('Error sharing:', error);
+    }
+  };
+
   return (
     <Dialog open={gameOver} onOpenChange={setGameOver}>
       <ScrollableDialog className="sm:max-w-md bg-gradient-to-b from-red-500 to-red-600 border-none text-white">
         <div className="absolute inset-0 bg-[url('/pokeball-pattern.png')] opacity-5 bg-repeat"></div>
-        <div className="relative">
+        <div className="relative" ref={dialogContentRef}>
           <DialogHeader className="space-y-4">
             <div className="flex justify-center -mt-8">
               <div className="bg-white p-4 rounded-full shadow-xl">
@@ -163,7 +211,7 @@ export const GameOverDialog: FC<GameOverDialogProps> = ({
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-3 mt-6">
+          <div className="grid grid-cols-3 gap-3 mt-6">
             <Button
               onClick={handleRestart}
               className="bg-yellow-400 hover:bg-yellow-500 text-gray-900 border-none
@@ -172,6 +220,15 @@ export const GameOverDialog: FC<GameOverDialogProps> = ({
             >
               <RefreshCcw className="mr-2 h-4 w-4" />
               Rejouer
+            </Button>
+            <Button
+              onClick={handleShare}
+              className="bg-blue-500 hover:bg-blue-600 text-white border-none
+                shadow-lg hover:shadow-xl transition-all duration-300"
+              size="lg"
+            >
+              <Share2 className="mr-2 h-4 w-4" />
+              Partager
             </Button>
             <Button
               onClick={handleBackToMenu}
