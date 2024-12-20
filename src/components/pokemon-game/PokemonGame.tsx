@@ -35,6 +35,25 @@ const POKEMON_REWARDS = [
   { minScore: 0, condition: (pokemon: Pokemon) => pokemon.evolutionStage === 1 && pokemon.hasEvolution && !pokemon.isLegendary && !pokemon.isMythical },
 ];
 
+// Add this debounce utility function near other utility functions
+const debounce = <T extends (...args: Parameters<T>) => ReturnType<T>>(
+  func: T,
+  wait: number
+): ((...args: Parameters<T>) => void) => {
+  let timeoutId: NodeJS.Timeout | undefined;
+
+  return (...args: Parameters<T>) => {
+    if (timeoutId) {
+      clearTimeout(timeoutId);
+    }
+
+    timeoutId = setTimeout(() => {
+      func(...args);
+      timeoutId = undefined;
+    }, wait);
+  };
+};
+
 const PokemonGame = () => {
   const [bestScore, setBestScore] = useLocalStorage<number>('bestScore', 0);
   const [bestTime, setBestTime] = useLocalStorage<number>('bestTime', 0);
@@ -802,8 +821,8 @@ const PokemonGame = () => {
     return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
 
-  // Update the checkNameAvailability function
-  const checkNameAvailability = async (name: string) => {
+  // Move checkNameAvailability outside handlePlayerNameChange and memoize it
+  const checkNameAvailability = useCallback(async (name: string) => {
     if (!name.trim()) {
       setNameError(null);
       localStorage.removeItem('pokemonGamePlayerName');
@@ -832,7 +851,6 @@ const PokemonGame = () => {
         }
       }
       
-      // Only set error to null, don't store in localStorage yet
       setNameError(null);
       return true;
     } catch (error) {
@@ -840,10 +858,16 @@ const PokemonGame = () => {
       setNameError('Erreur lors de la vérification du nom');
       return false;
     }
-  };
+  }, [GENERATIONS]);
 
-  // Simplify handlePlayerNameChange since storage is handled in checkNameAvailability
-  const handlePlayerNameChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  // Create debounced version of checkNameAvailability
+  const debouncedCheckName = useCallback(
+    debounce((name: string) => checkNameAvailability(name), 500),
+    [checkNameAvailability]
+  );
+
+  // Update handlePlayerNameChange to use debounced check
+  const handlePlayerNameChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const newName = e.target.value;
     setPlayerName(newName);
     
@@ -853,8 +877,8 @@ const PokemonGame = () => {
       return;
     }
     
-    await checkNameAvailability(newName);
-  };
+    debouncedCheckName(newName);
+  }, [debouncedCheckName]);
 
   // Add isRestarting state
   const [isRestarting, setIsRestarting] = useState(false);
