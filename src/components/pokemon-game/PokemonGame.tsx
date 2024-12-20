@@ -56,8 +56,6 @@ const debounce = <T extends (...args: Parameters<T>) => ReturnType<T>>(
 
 const PokemonGame = () => {
   const { i18n } = useTranslation();
-  const [namesLoaded, setNamesLoaded] = useState(false);
-  const [loadedNames, setLoadedNames] = useState<Pokemon[]>([]);
   const [bestScore, setBestScore] = useLocalStorage<number>('bestScore', 0);
   const [bestTime, setBestTime] = useLocalStorage<number>('bestTime', 0);
   const [guess, setGuess] = useState('');
@@ -103,9 +101,6 @@ const PokemonGame = () => {
   const trainHornRef = useRef<HTMLAudioElement | null>(null);
   const lowLifeAudioRef = useRef<HTMLAudioElement | null>(null);
   const canStartGame = Boolean(playerName && !nameError);
-  
-  // Add loading progress state
-  const [loadingProgress, setLoadingProgress] = useState(0);
 
   // Add sound URLs as constants at the top of the component
   const CORRECT_SOUND_URL = '/sounds/pkm_level_up.mp3';
@@ -113,41 +108,16 @@ const PokemonGame = () => {
   const VICTORY_SOUND_URL = '/sounds/battle_win.mp3';
   const TRAIN_HORN_URL = '/sounds/train_horn_bell.mp3';
   const LOW_LIFE_URL = '/sounds/low_life.mp3';
-  
-  // Use cached Pokémon names from localStorage or fetch from API
-  const { data: apiPokemonNames = [] } = useGetAllPokemonNamesQuery(undefined, {
-    skip: !!localStorage.getItem('pokemonNames') // Skip API call if we have cached data
-  });
+
+  // Use cached Pokémon names from API
+  const { data: apiPokemonNames = [] } = useGetAllPokemonNamesQuery();
 
   const pokemonNames = useMemo<Pokemon[]>(() => {
-    if (namesLoaded) return loadedNames;
-    
-    const cachedData = localStorage.getItem('pokemonNames');
-    if (cachedData) {
-      console.log('📦 Loading Pokémon names from cache');
-      try {
-        const parsed = JSON.parse(cachedData);
-        setNamesLoaded(true);
-        const names = parsed.names || [];
-        setLoadedNames(names);
-        return names;
-      } catch (error) {
-        console.error('❌ Error parsing cached Pokémon names:', error);
-        return [];
-      }
-    }
-    
-    // If no cache but we have API data, store it in localStorage
     if (apiPokemonNames.length > 0) {
-      console.log('💾 Storing API Pokémon names in cache');
-      localStorage.setItem('pokemonNames', JSON.stringify({ names: apiPokemonNames }));
-      setNamesLoaded(true);
-      setLoadedNames(apiPokemonNames);
       return apiPokemonNames;
     }
-
     return [];
-  }, [apiPokemonNames, namesLoaded, loadedNames]);
+  }, [apiPokemonNames]);
 
   const { 
     data: currentPokemon,
@@ -156,11 +126,12 @@ const PokemonGame = () => {
     skip: !currentPokemonId || !isGameActive,
   });
 
-  const { data: allPokemonData = [] } = useGetAllPokemonNamesQuery();
+  // Use the same data for allPokemonData
+  const allPokemonData = apiPokemonNames;
 
   const [rewardPokemon, setRewardPokemon] = useState<{ pokemon: Pokemon | undefined; isLoading: boolean }>({
     pokemon: undefined,
-    isLoading: true
+    isLoading: false
   });
 
   const calculateRewardPokemon = useCallback(async (score: number) => {
@@ -976,141 +947,52 @@ const PokemonGame = () => {
     return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
 
-  // Move checkNameAvailability outside handlePlayerNameChange and memoize it
-  const checkNameAvailability = useCallback(async (name: string) => {
-    if (!name.trim()) {
-      setNameError(null);
-      localStorage.removeItem('pokemonGamePlayerName');
-      return false;
-    }
-
-    // If it's the user's saved name, allow it
-    const savedName = localStorage.getItem('pokemonGamePlayerName');
-    if (savedName === name) {
-      setNameError(null);
-      return true;
-    }
-
-    try {
-      // Check across all generations
-      for (const gen of GENERATIONS) {
-        const collectionName = `rankings_gen${gen.startId}_${gen.endId}`;
-        const rankingsRef = collection(db, collectionName);
-        const q = query(rankingsRef, where('name', '==', name));
-        const querySnapshot = await getDocs(q);
-        
-        if (!querySnapshot.empty) {
-          setNameError('Ce nom est déjà utilisé. Veuillez en choisir un autre.');
-          localStorage.removeItem('pokemonGamePlayerName');
-          return false;
-        }
-      }
-      
-      setNameError(null);
-      return true;
-    } catch (error) {
-      console.error('Error checking name availability:', error);
-      setNameError('Erreur lors de la vérification du nom');
-      return false;
-    }
-  }, [GENERATIONS]);
-
-  // Create debounced version of checkNameAvailability
   const debouncedCheckName = useCallback(
-    debounce((name: string) => checkNameAvailability(name), 500),
-    [checkNameAvailability]
+    debounce(async (name: string) => {
+      if (!name.trim()) {
+        setNameError(null);
+        localStorage.removeItem('pokemonGamePlayerName');
+        return false;
+      }
+
+      // If it's the user's saved name, allow it
+      const savedName = localStorage.getItem('pokemonGamePlayerName');
+      if (savedName === name) {
+        setNameError(null);
+        return true;
+      }
+
+      try {
+        // Check across all generations
+        for (const gen of GENERATIONS) {
+          const collectionName = `rankings_gen${gen.startId}_${gen.endId}`;
+          const rankingsRef = collection(db, collectionName);
+          const q = query(rankingsRef, where('name', '==', name));
+          const querySnapshot = await getDocs(q);
+          
+          if (!querySnapshot.empty) {
+            setNameError('Ce nom est déjà utilisé. Veuillez en choisir un autre.');
+            localStorage.removeItem('pokemonGamePlayerName');
+            return false;
+          }
+        }
+        
+        setNameError(null);
+        return true;
+      } catch (error) {
+        console.error('Error checking name availability:', error);
+        setNameError('Erreur lors de la vérification du nom');
+        return false;
+      }
+    }, 500),
+    [GENERATIONS]
   );
 
   // Update handlePlayerNameChange to use debounced check
-  const handlePlayerNameChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    const newName = e.target.value;
-    setPlayerName(newName);
-    
-    if (!newName.trim()) {
-      setNameError(null);
-      localStorage.removeItem('pokemonGamePlayerName');
-      return;
-    }
-    
-    debouncedCheckName(newName);
-  }, [debouncedCheckName]);
-
-  // Add isRestarting state
-  const [isRestarting, setIsRestarting] = useState(false);
-
-  // Update the startGame function
-  const startGame = async (isHardMode: boolean) => {
-    console.log('🎮 Starting new game in', isHardMode ? 'Hard Mode' : 'Chill Mode');
-    if (!playerName) return;
-    
-    const isAvailable = await checkNameAvailability(playerName);
-    if (!isAvailable) return;
-    
-    setIsRestarting(true);
-    setIsHardMode(isHardMode);
-    setConsecutiveFastAnswers(0);
-    setShowHypeTrain(false);
-    setPointsEarned(0);
-    
-    // Clean up all audio
-    cleanupAllAudio();
-    
-    console.log(' Resetting current Pokemon');
-    setCurrentPokemonId(null);
-    
-    // If it's a new user (different from saved name), clean up localStorage
-    const savedName = localStorage.getItem('pokemonGamePlayerName');
-    if (savedName !== playerName) {
-      localStorage.clear();
-      localStorage.setItem('pokemonGamePlayerName', playerName);
-    }
-    
-    // Stop any existing timers
-    if (timerInterval.current) {
-      clearInterval(timerInterval.current);
-      timerInterval.current = null;
-    }
-    if (totalTimeInterval.current) {
-      clearInterval(totalTimeInterval.current);
-      totalTimeInterval.current = null;
-    }
-    
-    // Reset all game states
-    setScore(0);
-    // In Chill mode, set hints to Infinity, in Hard mode set to 0
-    setHintsLeft(isHardMode ? 0 : Infinity);
-    setShowHint(false);
-    setIsCorrect(null);
-    setGuess('');
-    setSuggestions([]);
-    // In Chill mode, no timer (set to Infinity), in Hard mode set to 15
-    setGuessTimeLeft(isHardMode ? 15 : Infinity);
-    setTotalTimeElapsed(0);
-    setGameOver(false);
-    setUserRanking(null);
-    setHighlightedIndex(-1);
-    
-    // Initialize Pokémon list for selected generation
-    const filteredIds = Array.from(
-      { length: selectedGeneration.endId - selectedGeneration.startId + 1 },
-      (_, i) => selectedGeneration.startId + i
-    );
-    setRemainingPokemon(filteredIds);
-    
-    // Add a small delay to ensure state is reset before fetching new Pokemon
-    await new Promise(resolve => setTimeout(resolve, 100));
-    
-    // Set game active and clear restarting state
-    setIsGameActive(true);
-    setIsRestarting(false);
-    
-    // Start timers based on game mode
-    if (isHardMode) {
-      startGuessTimer();
-    }
-    startTotalTimer();
-    fetchRandomPokemon();
-    inputRef.current?.focus();
+  const handlePlayerNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const name = e.target.value;
+    setPlayerName(name);
+    debouncedCheckName(name);
   };
 
   // Add this effect to handle mute state persistence
@@ -1140,11 +1022,12 @@ const PokemonGame = () => {
     }
   }, [selectedGeneration, isGameActive, fetchSelectedRankings]);
 
-  const formatDate = (timestamp: Date): string => {
-    const date = new Date(timestamp);
-    const day = String(date.getDate()).padStart(2, '0');
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    return `${day}/${month}/${date.getFullYear()}`;
+  const formatDate = (date: Date): string => {
+    return new Intl.DateTimeFormat('fr-FR', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric'
+    }).format(date);
   };
 
   // Modify the startGuessTimer function
@@ -1205,9 +1088,9 @@ const PokemonGame = () => {
 
   // Add this helper function near your other utility functions
   const formatTimeForRanking = (seconds: number): string => {
-    const minutes = Math.floor(seconds / 60);
-    const remainingSeconds = seconds % 60;
-    return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins}m ${secs}s`;
   };
 
   // Update the initial useEffect for loading the username
@@ -1221,51 +1104,128 @@ const PokemonGame = () => {
 
   const handleGenerationSelect = (generation: Generation) => {
     setSelectedGeneration(generation);
-    // Reset game state
-    setScore(0);
-    setGuess('');
-    setSuggestions([]);
-    setIsCorrect(null);
-    setShowHint(false);
   };
 
-  // Add loading state
-  const [isInitialLoading, setIsInitialLoading] = useState(true);
-
-  // Smooth loading animation
-  useEffect(() => {
-    if (pokemonNames.length > 0) {
-      let progress = 0;
-      const interval = setInterval(() => {
-        progress += 1;
-        if (progress <= 100) {
-          setLoadingProgress(progress);
-        } else {
-          clearInterval(interval);
-          setTimeout(() => {
-            setIsInitialLoading(false);
-          }, 500);
-        }
-      }, 20);
-      return () => clearInterval(interval);
-    }
-  }, [pokemonNames.length]);
-
-  // Add handleQuit function
-  const handleQuit = useCallback(() => {
-    handleGameOver();
-  }, [handleGameOver]);
+  const handleQuit = () => {
+    setIsGameActive(false);
+    setGameOver(false);
+    setCurrentPokemonId(null);
+    setScore(0);
+    setGuessTimeLeft(15);
+    setTotalTimeElapsed(0);
+    setHintsLeft(MAX_HINTS);
+    setGuess('');
+    setIsCorrect(null);
+    setSuggestions([]);
+    setHighlightedIndex(-1);
+    setShowHint(false);
+    setConsecutiveFastAnswers(0);
+    setPointsEarned(0);
+    setCriticalHitCount(0);
+    setCriticalSuccessCount(0);
+    setHyperTrainCount(0);
+    setMaxHypeChain(0);
+  };
 
   const handleRestart = () => {
-    // Clean up all audio first
+    // Reset game state
+    setGameOver(false);
+    setCurrentPokemonId(null);
+    setScore(0);
+    setGuessTimeLeft(isHardMode ? 15 : Infinity);
+    setTotalTimeElapsed(0);
+    setHintsLeft(isHardMode ? 0 : Infinity);
+    setGuess('');
+    setIsCorrect(null);
+    setSuggestions([]);
+    setHighlightedIndex(-1);
+    setShowHint(false);
+    setConsecutiveFastAnswers(0);
+    setPointsEarned(0);
+    setCriticalHitCount(0);
+    setCriticalSuccessCount(0);
+    setHyperTrainCount(0);
+    setMaxHypeChain(0);
+    setShowCriticalSuccess(false);
+    setShowCriticalHit(false);
+    setShowHypeTrain(false);
+    setRewardPokemon({ pokemon: undefined, isLoading: false });
+
+    // Reset timers
+    if (timerInterval.current) {
+      clearInterval(timerInterval.current);
+      timerInterval.current = null;
+    }
+    if (totalTimeInterval.current) {
+      clearInterval(totalTimeInterval.current);
+      totalTimeInterval.current = null;
+    }
+
+    // Clean up audio
     cleanupAllAudio();
-    
-    // Start a new game with the same mode
-    startGame(isHardMode);
+
+    // Initialize new game with a small delay to ensure state is reset
+    setTimeout(() => {
+      // Initialize Pokémon list for selected generation
+      const filteredIds = Array.from(
+        { length: selectedGeneration.endId - selectedGeneration.startId + 1 },
+        (_, i) => selectedGeneration.startId + i
+      );
+      setRemainingPokemon(filteredIds);
+      setIsGameActive(true);
+
+      // Start timers based on game mode
+      if (isHardMode) {
+        startGuessTimer();
+      }
+      startTotalTimer();
+
+      // Fetch first Pokemon after a small delay
+      setTimeout(() => {
+        fetchRandomPokemon();
+        inputRef.current?.focus();
+      }, 100);
+    }, 100);
   };
 
   const handleBackToMenu = () => {
-    // Stop any ongoing timers
+    handleQuit();
+  };
+
+  const startGame = async (isHardMode: boolean) => {
+    console.log('🎮 Starting new game in', isHardMode ? 'Hard Mode' : 'Chill Mode');
+    if (!playerName) return;
+    
+    // Wait for the debounced check to complete
+    const isAvailable = await new Promise<boolean>((resolve) => {
+      debouncedCheckName(playerName);
+      // Since debouncedCheckName returns void, we'll use a timeout to wait for the state update
+      setTimeout(() => {
+        resolve(nameError === null);
+      }, 600); // Wait slightly longer than the debounce delay
+    });
+    
+    if (!isAvailable) return;
+    
+    setIsHardMode(isHardMode);
+    setConsecutiveFastAnswers(0);
+    setShowHypeTrain(false);
+    setPointsEarned(0);
+    
+    // Clean up all audio
+    cleanupAllAudio();
+    
+    console.log(' Resetting current Pokemon');
+    setCurrentPokemonId(null);
+    
+    // If it's a new user (different from saved name), clean up localStorage
+    const savedName = localStorage.getItem('pokemonGamePlayerName');
+    if (savedName !== playerName) {
+      localStorage.clear();
+      localStorage.setItem('pokemonGamePlayerName', playerName);
+    }
+    
+    // Stop any existing timers
     if (timerInterval.current) {
       clearInterval(timerInterval.current);
       timerInterval.current = null;
@@ -1275,142 +1235,121 @@ const PokemonGame = () => {
       totalTimeInterval.current = null;
     }
     
-    // Clean up all audio
-    cleanupAllAudio();
-    
-    // Reset game state
-    setIsGameActive(false);
-    setGameOver(false);
+    // Reset all game states
     setScore(0);
-    setHintsLeft(MAX_HINTS);
+    // In Chill mode, set hints to Infinity, in Hard mode set to 0
+    setHintsLeft(isHardMode ? 0 : Infinity);
+    setShowHint(false);
     setIsCorrect(null);
     setGuess('');
     setSuggestions([]);
-    setShowHint(false);
-    setConsecutiveFastAnswers(0);
-    setShowHypeTrain(false);
-    setCriticalHitCount(0);
-    setCriticalSuccessCount(0);
-    setHyperTrainCount(0);
-    setMaxHypeChain(0);
+    // In Chill mode, no timer (set to Infinity), in Hard mode set to 15
+    setGuessTimeLeft(isHardMode ? 15 : Infinity);
     setTotalTimeElapsed(0);
+    setGameOver(false);
+    setUserRanking(null);
+    setHighlightedIndex(-1);
+    
+    // Initialize Pokémon list for selected generation
+    const filteredIds = Array.from(
+      { length: selectedGeneration.endId - selectedGeneration.startId + 1 },
+      (_, i) => selectedGeneration.startId + i
+    );
+    setRemainingPokemon(filteredIds);
+    
+    // Add a small delay to ensure state is reset before fetching new Pokemon
+    await new Promise(resolve => setTimeout(resolve, 100));
+    
+    // Set game active
+    setIsGameActive(true);
+    
+    // Start timers based on game mode
+    if (isHardMode) {
+      startGuessTimer();
+    }
+    startTotalTimer();
+    fetchRandomPokemon();
+    inputRef.current?.focus();
   };
 
-  // Update loading screen component
-  if (isInitialLoading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-b from-blue-100 to-blue-50 flex items-center justify-center">
-        <div className="text-center space-y-4">
-          <div className="relative w-24 h-24 mx-auto">
-            <div className="pokeball-loading scale-150">
-              <div className="outer-circle" />
-              <div className="center-circle" />
-            </div>
-          </div>
-          <div className="text-xl font-medium text-gray-700">
-            Chargement des Pokémons...
-          </div>
-          <div className="text-sm font-bold text-gray-600">
-            {loadingProgress}%
-          </div>
-          <div className="w-80 h-3 bg-gradient-to-r from-gray-100 to-gray-200 rounded-full overflow-hidden shadow-lg relative border border-white/50">
-            <div className="absolute inset-0 bg-gradient-to-r from-blue-500/20 to-purple-500/20 animate-pulse rounded-full" />
-            <div 
-              className="h-full bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 transition-all duration-500 ease-out relative rounded-full"
-              style={{ width: `${loadingProgress}%` }}
-            >
-              <div className="absolute inset-0 bg-grid-pattern opacity-30 rounded-full" />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/10 to-white/20 rounded-full" />
-              {loadingProgress > 5 && (
-                <div className="absolute right-0 top-1/2 -translate-y-1/2 w-3 h-3 bg-white rounded-full shadow-[0_0_10px_rgba(255,255,255,0.8)] animate-pulse" />
-              )}
-            </div>
-            <div className="absolute top-0 left-0 w-full h-full bg-shine-gradient opacity-20 animate-shine rounded-full" />
-          </div>
-          <div className="flex justify-center gap-2 mt-2">
-            <div className="w-2 h-2 rounded-full bg-blue-500 animate-bounce" style={{ animationDelay: '0ms' }} />
-            <div className="w-2 h-2 rounded-full bg-purple-500 animate-bounce" style={{ animationDelay: '150ms' }} />
-            <div className="w-2 h-2 rounded-full bg-pink-500 animate-bounce" style={{ animationDelay: '300ms' }} />
-          </div>
-        </div>
-      </div>
-    );
-  }
-
   return (
-    <div className="min-h-screen bg-gradient-to-b from-blue-100 to-blue-50 p-4 flex items-start sm:items-center justify-center font-oswald">
-      {isGameActive ? (
-        <GameScreen
-          currentPokemon={isRestarting ? undefined : currentPokemon}
-          isPokemonLoading={isRestarting || isPokemonLoading}
-          isCorrect={isCorrect}
-          score={score}
-          bestScore={bestScore}
-          bestTime={bestTime}
-          guessTimeLeft={guessTimeLeft}
-          hintsLeft={hintsLeft}
-          guess={guess}
-          handleGuessChange={handleGuessChange}
-          handleKeyDown={handleKeyDown}
-          suggestions={suggestions}
-          handleSuggestionClick={handleSuggestionClick}
-          highlightedIndex={highlightedIndex}
-          showHint={showHint}
-          useHint={useHint}
-          inputRef={inputRef}
-          suggestionsRef={suggestionsRef}
-          formatTime={formatTime}
-          isMuted={isMuted}
-          setIsMuted={setIsMuted}
-          totalTimeElapsed={totalTimeElapsed}
-          onQuit={handleQuit}
-          isHardMode={isHardMode}
-          showCriticalSuccess={showCriticalSuccess}
-          showCriticalHit={showCriticalHit}
-          showHypeTrain={showHypeTrain}
-          consecutiveFastAnswers={consecutiveFastAnswers}
-          pointsEarned={pointsEarned}
-        />
-      ) : (
+    <div className="min-h-screen bg-gradient-to-b from-blue-500 to-blue-700 text-white p-4">
+      {!isGameActive ? (
         <MenuScreen
           playerName={playerName}
-          handlePlayerNameChange={handlePlayerNameChange}
+          onPlayerNameChange={handlePlayerNameChange}
           nameError={nameError}
           selectedGeneration={selectedGeneration}
-          handleGenerationSelect={handleGenerationSelect}
-          GENERATIONS={GENERATIONS}
+          onGenerationSelect={handleGenerationSelect}
+          generations={GENERATIONS}
           canStartGame={canStartGame}
-          startGame={startGame}
+          onStartGame={startGame}
           score={score}
           bestScore={bestScore}
           isMuted={isMuted}
-          setIsMuted={setIsMuted}
+          onMutedChange={setIsMuted}
           rankings={rankings}
-          formatTimeForRanking={formatTimeForRanking}
+          formatTime={formatTimeForRanking}
           formatDate={formatDate}
         />
+      ) : (
+        <div className="flex justify-center">
+          <div className="w-full max-w-md">
+            <GameScreen
+              currentPokemon={currentPokemon}
+              isPokemonLoading={isPokemonLoading}
+              isCorrect={isCorrect}
+              score={score}
+              bestScore={bestScore}
+              bestTime={bestTime}
+              guessTimeLeft={guessTimeLeft}
+              hintsLeft={hintsLeft}
+              guess={guess}
+              onGuessChange={handleGuessChange}
+              onKeyDown={handleKeyDown}
+              suggestions={suggestions}
+              onSuggestionClick={handleSuggestionClick}
+              highlightedIndex={highlightedIndex}
+              showHint={showHint}
+              onUseHint={useHint}
+              inputRef={inputRef}
+              suggestionsRef={suggestionsRef}
+              formatTime={formatTime}
+              isMuted={isMuted}
+              onMutedChange={setIsMuted}
+              totalTimeElapsed={totalTimeElapsed}
+              onQuit={handleQuit}
+              isHardMode={isHardMode}
+              showCriticalSuccess={showCriticalSuccess}
+              showCriticalHit={showCriticalHit}
+              showHypeTrain={showHypeTrain}
+              consecutiveFastAnswers={consecutiveFastAnswers}
+              pointsEarned={pointsEarned}
+            />
+          </div>
+        </div>
       )}
 
       <GameOverDialog
-        gameOver={gameOver}
-        setGameOver={setGameOver}
+        isOpen={gameOver}
+        onClose={() => setGameOver(false)}
         playerName={playerName}
         score={score}
-        bestScore={bestScore}
-        bestTime={bestTime}
-        userRanking={userRanking}
         totalTimeElapsed={totalTimeElapsed}
-        formatTimeForRanking={formatTimeForRanking}
+        userRanking={userRanking}
         rewardPokemon={rewardPokemon}
-        totalPokemonCount={remainingPokemon.length}
-        handleRestart={handleRestart}
-        handleBackToMenu={handleBackToMenu}
+        onRestart={handleRestart}
+        onBackToMenu={handleBackToMenu}
         isMuted={isMuted}
-        criticalHitCount={criticalHitCount}
-        criticalSuccessCount={criticalSuccessCount}
-        hyperTrainCount={hyperTrainCount}
-        maxHypeChain={maxHypeChain}
-        selectedGeneration={selectedGeneration}
+        stats={{
+          criticalHitCount,
+          criticalSuccessCount,
+          hyperTrainCount,
+          maxHypeChain,
+          totalPokemonCount: remainingPokemon.length,
+          selectedGeneration
+        }}
+        formatTime={formatTimeForRanking}
       />
     </div>
   );

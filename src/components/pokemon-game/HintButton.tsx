@@ -4,19 +4,19 @@ import { Pokemon } from './types';
 import { useTranslation } from 'react-i18next';
 
 interface HintButtonProps {
-  hintsLeft: number;
   showHint: boolean;
-  useHint: () => void;
+  onUseHint: () => void;
+  hintsLeft: number;
+  currentPokemon?: Pokemon;
   isPokemonLoading: boolean;
-  currentPokemon: Pokemon | undefined;
 }
 
 export const HintButton: FC<HintButtonProps> = ({
-  hintsLeft,
   showHint,
-  useHint,
-  isPokemonLoading,
+  onUseHint,
+  hintsLeft,
   currentPokemon,
+  isPokemonLoading
 }) => {
   const { t, i18n } = useTranslation();
 
@@ -44,7 +44,7 @@ export const HintButton: FC<HintButtonProps> = ({
             transition-all duration-300 font-medium font-oswald h-12
             disabled:bg-gray-300 disabled:hover:scale-100
             relative overflow-hidden"
-          onClick={useHint}
+          onClick={onUseHint}
           disabled={hintsLeft === 0 || showHint || isPokemonLoading}
         >
           <div className="absolute left-3 top-1/2 -translate-y-1/2 flex gap-1.5">

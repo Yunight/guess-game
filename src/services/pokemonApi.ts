@@ -1,74 +1,50 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 import { Pokemon } from '@/components/pokemon-game/types';
 
-interface PokemonSpeciesResponse {
-  name: string;
-  names: Array<{
-    language: { name: string };
-    name: string;
-  }>;
-  flavor_text_entries: Array<{
-    flavor_text: string;
-    language: { name: string };
-    version: { name: string; url: string };
-  }>;
-  is_legendary: boolean;
-  is_mythical: boolean;
-  evolves_from_species: { name: string } | null;
-  evolution_chain: { url: string };
-  forms_switchable: boolean;
-  gender_rate: number;
-  has_gender_differences: boolean;
-  id: number;
-  is_baby: boolean;
-  varieties: Array<{
-    is_default: boolean;
-    pokemon: {
-      name: string;
-      url: string;
-    };
-  }>;
-  genera: Array<{
-    genus: string;
-    language: { name: string };
-  }>;
-  generation: {
-    name: string;
-    url: string;
+interface TyradexPokemon {
+  pokedex_id: number;
+  generation: number;
+  category: string;
+  name: {
+    fr: string;
+    en: string;
+    jp: string;
   };
-}
-
-interface PokemonResponse {
-  id: number;
-  name: string;
   sprites: {
-    other: {
-      'official-artwork': {
-        front_default: string;
-      };
-    };
+    regular: string;
+    shiny: string | null;
+    gmax: {
+      regular: string;
+      shiny: string;
+    } | null;
+  };
+  evolution: {
+    pre: Array<{
+      pokedex_id: number;
+      name: string;
+      condition: string;
+    }> | null;
+    next: Array<{
+      pokedex_id: number;
+      name: string;
+      condition: string;
+    }> | null;
+  } | null;
+}
+
+interface PokeAPIFlavorTextEntry {
+  flavor_text: string;
+  language: {
+    name: string;
   };
 }
 
-interface EvolutionChainNode {
-  species: { name: string };
-  evolves_to: EvolutionChainNode[];
+interface PokeAPISpeciesResponse {
+  flavor_text_entries: PokeAPIFlavorTextEntry[];
 }
 
-interface EvolutionChain {
-  chain: EvolutionChainNode;
-}
-
-type EvolutionChainResponse = EvolutionChain;
-
-const POKEMON_CACHE_KEY = 'pokemonDetailsCache';
 const POKEMON_NAMES_CACHE_KEY = 'allPokemonNamesCache';
 const CACHE_DURATION = 24 * 60 * 60 * 1000; // 24 hours
-
-interface CachedPokemonData {
-  timestamp: number;
-  pokemons: Record<number, Pokemon>;
-}
 
 interface CachedNamesData {
   timestamp: number;
@@ -85,52 +61,11 @@ interface ApiError {
   data: unknown;
 }
 
-const getEvolutionStage = async (pokemonName: string): Promise<number> => {
-  try {
-    const speciesResponse = await fetch(`https://pokeapi.co/api/v2/pokemon-species/${pokemonName}`);
-    const speciesData = await speciesResponse.json();
-    const evolutionChainUrl = speciesData.evolution_chain.url;
-    
-    const evolutionResponse = await fetch(evolutionChainUrl);
-    const evolutionData: EvolutionChain = await evolutionResponse.json();
-    
-    let stage = 1;
-    let foundStage = false;
-    
-    // Helper function to traverse the evolution chain
-    const findStageInChain = (chain: EvolutionChainNode, currentStage: number) => {
-      if (foundStage) return;
-      
-      if (chain.species.name === pokemonName) {
-        stage = currentStage;
-        foundStage = true;
-        return;
-      }
-      
-      // Check next evolution stage
-      chain.evolves_to.forEach(evolution => {
-        findStageInChain(evolution, currentStage + 1);
-      });
-    };
-    
-    // Start traversing from the base form
-    findStageInChain(evolutionData.chain, 1);
-    
-    // If we found the stage, return it
-    if (foundStage) {
-      return stage;
-    }
-    
-    // If we didn't find the Pokémon in the chain (shouldn't happen), return 1
-    console.warn(`Could not find ${pokemonName} in evolution chain`);
-    return 1;
-  } catch (error) {
-    console.error('Error fetching evolution stage:', error);
-    return 1;
-  }
-};
+// Add legendary and mythical Pokemon ID lists
+const LEGENDARY_POKEMON_IDS = new Set([144, 145, 146, 150, 243, 244, 245, 249, 250, 377, 378, 379, 380, 381, 382, 383, 384, 480, 481, 482, 483, 484, 485, 486, 487, 488, 638, 639, 640, 641, 642, 643, 644, 645, 646, 716, 717, 718, 772, 773, 785, 786, 787, 788, 789, 790, 791, 792, 800, 888, 889, 890, 894, 895, 896, 897, 898]);
 
-// Move getCryUrl outside of transformPokemonData to make it accessible
+const MYTHICAL_POKEMON_IDS = new Set([151, 251, 385, 386, 489, 490, 491, 492, 493, 494, 647, 648, 649, 719, 720, 721, 801, 802, 807, 808, 809, 893]);
+
 const getCryUrl = (name: string): string => {
   // Handle special cases
   const specialCases: { [key: string]: string } = {
@@ -147,47 +82,36 @@ const getCryUrl = (name: string): string => {
     'kommo-o': 'kommoo'
   };
 
-  // Normalize the name: lowercase and remove special characters
   const normalizedName = name.toLowerCase();
-  
-  // Check if it's a special case
   const soundName = specialCases[normalizedName] || normalizedName
-    .replace(/[^a-z0-9]/g, '') // Remove any non-alphanumeric characters
-    .replace(/\s+/g, ''); // Remove spaces
+    .replace(/[^a-z0-9]/g, '')
+    .replace(/\s+/g, '');
 
-  // Return both URLs for fallback
   return `https://play.pokemonshowdown.com/audio/cries/${soundName}.mp3|https://play.pokemonshowdown.com/audio/cries/${soundName}.ogg`;
 };
 
-export const transformPokemonData = async (data: PokemonResponse & { species: { url: string } }): Promise<Pokemon> => {
-  const speciesResponse = await fetch(data.species.url);
-  const speciesData = await speciesResponse.json() as PokemonSpeciesResponse;
-
-  const frenchName = speciesData.names.find((name) => name.language.name === 'fr')?.name || data.name;
-  const frenchFlavorText = speciesData.flavor_text_entries.find(
-    (entry) => entry.language.name === 'fr'
-  )?.flavor_text || '';
-  const englishFlavorText = speciesData.flavor_text_entries.find(
-    (entry) => entry.language.name === 'en'
-  )?.flavor_text || '';
-
-  const evolutionStage = await getEvolutionStage(data.name);
-
-  return {
-    id: data.id,
-    name: data.name,
-    englishName: data.name,
-    frenchName,
-    frenchFlavorText: frenchFlavorText.replace(/\n/g, ' ').replace(/\f/g, ' '),
-    englishFlavorText: englishFlavorText.replace(/\n/g, ' ').replace(/\f/g, ' '),
-    sprite: data.sprites.other['official-artwork'].front_default,
-    evolvesFromSpecies: speciesData.evolves_from_species?.name || null,
-    hasEvolution: evolutionStage < 3,
-    evolutionStage,
-    isLegendary: speciesData.is_legendary,
-    isMythical: speciesData.is_mythical,
-    cryUrl: getCryUrl(data.name)
-  };
+// Add function to fetch flavor text from PokeAPI
+const fetchFlavorText = async (pokemonId: number, language: string): Promise<string> => {
+  try {
+    const response = await fetch(`https://pokeapi.co/api/v2/pokemon-species/${pokemonId}`);
+    const data = await response.json() as PokeAPISpeciesResponse;
+    
+    const flavorTextEntry = data.flavor_text_entries
+      .reverse()
+      .find(entry => entry.language.name === language);
+    
+    if (flavorTextEntry) {
+      return flavorTextEntry.flavor_text
+        .replace(/[\f\n\r]/g, ' ')
+        .replace(/POKéMON/g, 'Pokémon')
+        .replace(/  +/g, ' ')
+        .trim();
+    }
+    return '';
+  } catch (error) {
+    console.error('Error fetching flavor text:', error);
+    return '';
+  }
 };
 
 // Update localStorage handling to be safe for SSR
@@ -210,99 +134,91 @@ const setToStorage = (key: string, value: string) => {
   }
 };
 
+// Add in-memory cache for all Pokemon data
+let inMemoryPokemonCache: Pokemon[] | null = null;
+let inMemoryCacheTimestamp: number = 0;
+
+export const transformTyradexPokemon = async (pokemon: TyradexPokemon, shouldFetchFlavorText = false): Promise<Pokemon> => {
+  const isShiny = pokemon.sprites.shiny !== null;
+  const sprite = isShiny ? pokemon.sprites.shiny : pokemon.sprites.regular;
+
+  // Only fetch flavor text if explicitly requested
+  const [frenchFlavorText, englishFlavorText] = shouldFetchFlavorText 
+    ? await Promise.all([
+        fetchFlavorText(pokemon.pokedex_id, 'fr'),
+        fetchFlavorText(pokemon.pokedex_id, 'en')
+      ])
+    : ['', ''];
+
+  return {
+    id: pokemon.pokedex_id,
+    name: pokemon.name.en.toLowerCase(),
+    englishName: pokemon.name.en,
+    frenchName: pokemon.name.fr,
+    sprite: sprite || '',
+    isLegendary: LEGENDARY_POKEMON_IDS.has(pokemon.pokedex_id),
+    isMythical: MYTHICAL_POKEMON_IDS.has(pokemon.pokedex_id),
+    isShiny,
+    hasEvolution: Boolean(pokemon.evolution?.next?.length),
+    evolvesFromSpecies: pokemon.evolution?.pre?.[0]?.name || null,
+    evolutionStage: pokemon.evolution?.pre?.length || 0,
+    cryUrl: getCryUrl(pokemon.name.en),
+    frenchFlavorText,
+    englishFlavorText,
+  };
+};
+
 export const pokemonApi = createApi({
   reducerPath: 'pokemonApi',
-  baseQuery: fetchBaseQuery({ baseUrl: 'https://pokeapi.co/api/v2/' }),
+  baseQuery: fetchBaseQuery({ baseUrl: 'https://tyradex.vercel.app/api/v1/' }),
   endpoints: (builder) => ({
     getAllPokemonNames: builder.query<Pokemon[], void>({
       async queryFn(_arg, _queryApi, _extraOptions, fetchWithBQ) {
         try {
-          // Check cache first
+          // Check in-memory cache first
+          if (inMemoryPokemonCache && Date.now() - inMemoryCacheTimestamp < CACHE_DURATION) {
+            return { data: inMemoryPokemonCache };
+          }
+
+          // Check localStorage cache
           const cachedData = getFromStorage(POKEMON_NAMES_CACHE_KEY);
           if (cachedData) {
             const { timestamp, names } = JSON.parse(cachedData) as CachedNamesData;
             if (Date.now() - timestamp < CACHE_DURATION) {
-              // Map cached data to Pokemon objects
               const pokemonList = names.map(p => ({
                 id: p.id,
                 name: p.name,
-                englishName: p.name,
-                frenchName: p.frenchName || p.name,
+                englishName: p.englishName,
+                frenchName: p.frenchName,
                 frenchFlavorText: '',
                 englishFlavorText: '',
-                sprite: `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${p.id}.png`,
+                sprite: `https://raw.githubusercontent.com/Yarkis01/TyraDex/images/sprites/${p.id}/regular.png`,
                 evolvesFromSpecies: null,
                 hasEvolution: false,
                 evolutionStage: 1,
-                isLegendary: false,
-                isMythical: false,
-                cryUrl: getCryUrl(p.name)
+                isLegendary: LEGENDARY_POKEMON_IDS.has(p.id),
+                isMythical: MYTHICAL_POKEMON_IDS.has(p.id),
+                cryUrl: getCryUrl(p.name),
+                isShiny: false
               }));
+              inMemoryPokemonCache = pokemonList;
+              inMemoryCacheTimestamp = Date.now();
               return { data: pokemonList };
             }
           }
 
-          // If no cache or expired, fetch all pokemon species at once
-          const response = await fetchWithBQ('pokemon-species?limit=1025');
+          const response = await fetchWithBQ('pokemon');
           if (response.error) throw response.error;
 
-          const data = response.data as { results: Array<{ name: string; url: string }> };
-          
-          // Fetch all species data and evolution chains in parallel
-          const speciesPromises = data.results.map((_pokemon, index) => 
-            fetchWithBQ(`pokemon-species/${index + 1}`)
-          );
-          
-          const speciesResponses = await Promise.all(speciesPromises);
-          const evolutionChainPromises = speciesResponses.map(response => {
-            const speciesData = response.data as PokemonSpeciesResponse;
-            return fetchWithBQ(speciesData.evolution_chain.url.replace('https://pokeapi.co/api/v2/', ''));
-          });
-          
-          const evolutionChainResponses = await Promise.all(evolutionChainPromises);
-          
-          const pokemonPromises = speciesResponses.map(async (response, index) => {
-            const speciesData = response.data as PokemonSpeciesResponse;
-            const evolutionChainData = evolutionChainResponses[index].data as EvolutionChainResponse;
-            
-            let hasEvolution = false;
-            const checkEvolutions = (node: EvolutionChainNode) => {
-              if (node.species.name === speciesData.name) {
-                hasEvolution = node.evolves_to.length > 0;
-              } else {
-                node.evolves_to.forEach((evolution) => {
-                  checkEvolutions(evolution);
-                });
-              }
-            };
-            checkEvolutions(evolutionChainData.chain);
-
-            const evolutionStage = await getEvolutionStage(speciesData.name);
-            const frenchNameData = speciesData.names.find(n => n.language.name === 'fr');
-            const frenchName = frenchNameData ? frenchNameData.name : speciesData.name;
-            const englishNameData = speciesData.names.find(n => n.language.name === 'en');
-            const englishName = englishNameData ? englishNameData.name : speciesData.name;
-
-            return {
-              id: index + 1,
-              name: speciesData.name,
-              englishName,
-              frenchName,
-              frenchFlavorText: speciesData.flavor_text_entries.find(entry => entry.language.name === 'fr')?.flavor_text || '',
-              englishFlavorText: speciesData.flavor_text_entries.find(entry => entry.language.name === 'en')?.flavor_text || '',
-              sprite: `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${index + 1}.png`,
-              isLegendary: speciesData.is_legendary,
-              isMythical: speciesData.is_mythical,
-              evolvesFromSpecies: speciesData.evolves_from_species?.name || null,
-              hasEvolution,
-              evolutionStage,
-              cryUrl: `https://play.pokemonshowdown.com/audio/cries/${speciesData.name.toLowerCase()}.mp3`
-            };
-          });
+          const pokemonPromises = (response.data as TyradexPokemon[])
+            .filter(p => p.pokedex_id > 0)
+            .map(p => transformTyradexPokemon(p, false)); // Don't fetch flavor text for the list
 
           const pokemonData = await Promise.all(pokemonPromises);
 
-          // Cache the data
+          inMemoryPokemonCache = pokemonData;
+          inMemoryCacheTimestamp = Date.now();
+
           const cacheData: CachedNamesData = {
             timestamp: Date.now(),
             names: pokemonData.map(p => ({
@@ -325,71 +241,37 @@ export const pokemonApi = createApi({
     getPokemonById: builder.query<Pokemon, number>({
       async queryFn(pokemonId, _queryApi, _extraOptions, fetchWithBQ) {
         try {
-          // Check cache first
-          const cachedData = getFromStorage(POKEMON_CACHE_KEY);
-          if (cachedData) {
-            const { timestamp, pokemons } = JSON.parse(cachedData) as CachedPokemonData;
-            if (Date.now() - timestamp < CACHE_DURATION && pokemons[pokemonId]) {
-              return { data: pokemons[pokemonId] };
+          if (inMemoryPokemonCache && Date.now() - inMemoryCacheTimestamp < CACHE_DURATION) {
+            const pokemon = inMemoryPokemonCache.find(p => p.id === pokemonId);
+            if (pokemon) {
+              // If we have the Pokemon in cache but no flavor text, fetch it
+              if (!pokemon.englishFlavorText || !pokemon.frenchFlavorText) {
+                const [frenchFlavorText, englishFlavorText] = await Promise.all([
+                  fetchFlavorText(pokemonId, 'fr'),
+                  fetchFlavorText(pokemonId, 'en')
+                ]);
+                return { 
+                  data: {
+                    ...pokemon,
+                    frenchFlavorText,
+                    englishFlavorText
+                  }
+                };
+              }
+              return { data: pokemon };
             }
           }
 
-          // If not in cache or expired, fetch from API
-          const [pokemonResponse, speciesResponse] = await Promise.all([
-            fetchWithBQ(`pokemon/${pokemonId}`),
-            fetchWithBQ(`pokemon-species/${pokemonId}`)
-          ]);
+          const response = await fetchWithBQ('pokemon');
+          if (response.error) throw response.error;
 
-          if (pokemonResponse.error) throw pokemonResponse.error;
-          if (speciesResponse.error) throw speciesResponse.error;
-
-          const pokemonData = pokemonResponse.data as PokemonResponse;
-          const speciesData = speciesResponse.data as PokemonSpeciesResponse;
-
-          const frenchName = speciesData.names.find(
-            (name) => name.language.name === 'fr'
-          )?.name || pokemonData.name;
-
-          const frenchFlavorText = speciesData.flavor_text_entries
-            .find((entry) => entry.language.name === 'fr')
-            ?.flavor_text.replace(/\\n|\\f/g, ' ')
-            .replace(new RegExp(frenchName, 'gi'), '_____') || '';
-
-          const englishFlavorText = speciesData.flavor_text_entries
-            .find((entry) => entry.language.name === 'en')
-            ?.flavor_text.replace(/\\n|\\f/g, ' ')
-            .replace(new RegExp(pokemonData.name, 'gi'), '_____') || '';
-
-          const pokemon: Pokemon = {
-            id: pokemonId,
-            name: pokemonData.name,
-            englishName: speciesData.names.find(name => name.language.name === 'en')?.name || pokemonData.name,
-            frenchName,
-            frenchFlavorText,
-            englishFlavorText,
-            sprite: pokemonData.sprites.other['official-artwork'].front_default,
-            evolvesFromSpecies: speciesData.evolves_from_species?.name || null,
-            hasEvolution: false,
-            evolutionStage: await getEvolutionStage(pokemonData.name),
-            isLegendary: speciesData.is_legendary,
-            isMythical: speciesData.is_mythical,
-            cryUrl: getCryUrl(pokemonData.name)
-          };
-
-          // Update cache with new pokemon data
-          const existingCache = getFromStorage(POKEMON_CACHE_KEY);
-          const cache: CachedPokemonData = existingCache 
-            ? JSON.parse(existingCache)
-            : { timestamp: Date.now(), pokemons: {} };
-
-          if (Date.now() - cache.timestamp >= CACHE_DURATION) {
-            cache.timestamp = Date.now();
-            cache.pokemons = {};
+          const pokemonData = (response.data as TyradexPokemon[]).find(p => p.pokedex_id === pokemonId);
+          
+          if (!pokemonData) {
+            throw new Error(`Pokemon with ID ${pokemonId} not found`);
           }
 
-          cache.pokemons[pokemonId] = pokemon;
-          setToStorage(POKEMON_CACHE_KEY, JSON.stringify(cache));
-
+          const pokemon = await transformTyradexPokemon(pokemonData, true); // Fetch flavor text for individual Pokemon
           return { data: pokemon };
         } catch (error) {
           return { error: error as ApiError };

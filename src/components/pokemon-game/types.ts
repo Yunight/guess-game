@@ -16,20 +16,27 @@ export interface Pokemon {
   name: string;
   englishName: string;
   frenchName: string;
-  frenchFlavorText: string;
-  englishFlavorText: string;
   sprite: string;
-  evolvesFromSpecies: string | null;
-  hasEvolution: boolean;
-  evolutionStage: number;
   isLegendary: boolean;
   isMythical: boolean;
-  cryUrl: string;
+  isShiny: boolean;
+  hasEvolution: boolean;
+  evolvesFromSpecies: string | null;
+  evolutionStage: number;
+  cryUrl?: string;
+  frenchFlavorText?: string;
+  englishFlavorText?: string;
 }
 
 export interface Rankings {
+  id: number;
+  playerName: string;
   name: string;
   score: number;
   time: number;
+  date: Date;
   timestamp: Date;
-} 
+  generation: Generation;
+}
+
+export type Ranking = Rankings; 

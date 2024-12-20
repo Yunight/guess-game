@@ -10,37 +10,38 @@ import { LanguageToggle } from '@/components/ui/language-toggle';
 
 interface MenuScreenProps {
   playerName: string;
-  handlePlayerNameChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  onPlayerNameChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   nameError: string | null;
   selectedGeneration: Generation;
-  handleGenerationSelect: (generation: Generation) => void;
-  GENERATIONS: Generation[];
+  onGenerationSelect: (generation: Generation) => void;
+  generations: Generation[];
   canStartGame: boolean;
-  startGame: (isHardMode: boolean) => void;
+  onStartGame: (isHardMode: boolean) => void;
   score: number;
-  isMuted: boolean;
-  setIsMuted: (muted: boolean) => void;
-  rankings: Rankings[];
-  formatTimeForRanking: (seconds: number) => string;
-  formatDate: (timestamp: Date) => string;
   bestScore: number;
+  isMuted: boolean;
+  onMutedChange: (muted: boolean) => void;
+  rankings: Rankings[];
+  formatTime: (seconds: number) => string;
+  formatDate: (date: Date) => string;
 }
 
 export const MenuScreen: FC<MenuScreenProps> = ({
   playerName,
-  handlePlayerNameChange,
+  onPlayerNameChange,
   nameError,
   selectedGeneration,
-  handleGenerationSelect,
-  GENERATIONS,
+  onGenerationSelect,
+  generations,
   canStartGame,
-  startGame,
+  onStartGame,
   score,
+  bestScore,
   isMuted,
-  setIsMuted,
+  onMutedChange,
   rankings,
-  formatTimeForRanking,
-  formatDate,
+  formatTime,
+  formatDate
 }) => {
   const { t } = useTranslation();
   const [showHowToPlay, setShowHowToPlay] = useState(false);
@@ -52,11 +53,11 @@ export const MenuScreen: FC<MenuScreenProps> = ({
 
   const handleGameModeSelect = (isHardMode: boolean) => {
     setShowGameModeDialog(false);
-    startGame(isHardMode);
+    onStartGame(isHardMode);
   };
 
   return (
-    <div className="w-full max-w-[1200px] px-4 sm:px-6 lg:px-8">
+    <div className="w-full max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8">
       {/* Title Section */}
       <div className="text-center mb-8 relative pt-4">
         <h1 className="text-4xl sm:text-5xl md:text-6xl font-pokemon text-center relative">
@@ -121,7 +122,7 @@ export const MenuScreen: FC<MenuScreenProps> = ({
             <Button
               variant="ghost"
               size="icon"
-              onClick={() => setIsMuted(!isMuted)}
+              onClick={() => onMutedChange(!isMuted)}
               className="hover:bg-white/20 bg-white/10 text-gray-800 hover:text-gray-900 transition-colors"
             >
               {isMuted ? (
@@ -143,11 +144,11 @@ export const MenuScreen: FC<MenuScreenProps> = ({
                   id="playerName"
                   type="text"
                   placeholder={t('enterName')}
-                  className={`w-full h-10 px-4 text-lg transition-colors
+                  className={`w-full h-10 px-4 text-lg text-gray-900 bg-white transition-colors
                     ${nameError ? 'border-red-500 focus:ring-red-500' : 'border-gray-300'}
                   `}
                   value={playerName}
-                  onChange={handlePlayerNameChange}
+                  onChange={onPlayerNameChange}
                 />
                 {nameError && (
                   <p className="text-red-500 text-sm">{nameError}</p>
@@ -160,10 +161,10 @@ export const MenuScreen: FC<MenuScreenProps> = ({
                   {t('pokemonGeneration')}
                 </h2>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
-                  {GENERATIONS.map((gen) => (
+                  {generations.map((gen) => (
                     <Button
                       key={gen.name}
-                      onClick={() => handleGenerationSelect(gen)}
+                      onClick={() => onGenerationSelect(gen)}
                       className={`px-2 py-1.5 text-sm font-medium transition-all duration-500 ease-out relative overflow-hidden
                         ${selectedGeneration.name === gen.name
                           ? 'bg-gradient-to-br from-red-500 to-red-600 text-white shadow-lg scale-[1.02] border-2 border-white'
@@ -320,7 +321,7 @@ export const MenuScreen: FC<MenuScreenProps> = ({
                     {player.score}
                   </div>
                   <div className="col-span-2 text-center font-mono text-gray-700 text-sm sm:text-base">
-                    {formatTimeForRanking(player.time)}
+                    {formatTime(player.time)}
                   </div>
                   <div className="col-span-3 text-center text-xs sm:text-sm text-gray-500 hidden sm:block">
                     {formatDate(player.timestamp)}
@@ -346,17 +347,17 @@ export const MenuScreen: FC<MenuScreenProps> = ({
       </div>
       
       {/* Copyright and social links */}
-      <div className="mt-6 text-center text-sm text-gray-500">
+      <div className="mt-6 text-center text-sm text-white">
         <div className="flex justify-center items-center gap-4">
           <p>© 2024 Pokémon. © 1995-2024 Nintendo/Creatures Inc./GAME FREAK inc.</p>
           <div className="flex items-center gap-2">
             <span>Developed by</span>
-            <a href="https://github.com/Yunight" target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:text-blue-600 transition-colors">Yunight</a>
+            <a href="https://github.com/Yunight" target="_blank" rel="noopener noreferrer" className="text-white hover:text-gray-700 transition-colors">Yunight</a>
             <a
               href="https://github.com/Yunight"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-gray-500 hover:text-gray-700 transition-colors"
+              className="text-white hover:text-gray-700 transition-colors"
             >
               <Github className="h-5 w-5" />
             </a>
@@ -364,7 +365,7 @@ export const MenuScreen: FC<MenuScreenProps> = ({
               href="https://x.com/NightOfLunaTV"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-gray-500 hover:text-gray-700 transition-colors"
+              className="text-white hover:text-gray-700 transition-colors"
             >
               <Twitter className="h-5 w-5" />
             </a>

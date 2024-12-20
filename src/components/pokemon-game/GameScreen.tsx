@@ -1,4 +1,4 @@
-import { FC, RefObject } from 'react';
+import { FC } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Volume2, VolumeX } from 'lucide-react';
@@ -11,28 +11,28 @@ import { ScoreIncrease } from './ScoreIncrease';
 import { useTranslation } from 'react-i18next';
 
 interface GameScreenProps {
-  currentPokemon: Pokemon | undefined;
+  currentPokemon?: Pokemon;
   isPokemonLoading: boolean;
   isCorrect: boolean | null;
   score: number;
+  bestScore: number;
+  bestTime: number;
   guessTimeLeft: number;
   hintsLeft: number;
   guess: string;
-  handleGuessChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
-  handleKeyDown: (e: React.KeyboardEvent<HTMLInputElement>) => void;
+  onGuessChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  onKeyDown: (e: React.KeyboardEvent<HTMLInputElement>) => void;
   suggestions: string[];
-  handleSuggestionClick: (suggestion: string) => void;
+  onSuggestionClick: (suggestion: string) => void;
   highlightedIndex: number;
   showHint: boolean;
-  useHint: () => void;
-  inputRef: RefObject<HTMLInputElement>;
-  suggestionsRef: RefObject<HTMLDivElement>;
+  onUseHint: () => void;
+  inputRef: React.RefObject<HTMLInputElement>;
+  suggestionsRef: React.RefObject<HTMLDivElement>;
   formatTime: (seconds: number) => string;
   isMuted: boolean;
-  setIsMuted: (value: boolean) => void;
+  onMutedChange: (muted: boolean) => void;
   totalTimeElapsed: number;
-  bestScore: number;
-  bestTime: number;
   onQuit: () => void;
   isHardMode: boolean;
   showCriticalSuccess: boolean;
@@ -47,24 +47,24 @@ export const GameScreen: FC<GameScreenProps> = ({
   isPokemonLoading,
   isCorrect,
   score,
+  bestScore,
+  bestTime,
   guessTimeLeft,
   hintsLeft,
   guess,
-  handleGuessChange,
-  handleKeyDown,
+  onGuessChange,
+  onKeyDown,
   suggestions,
-  handleSuggestionClick,
+  onSuggestionClick,
   highlightedIndex,
   showHint,
-  useHint,
+  onUseHint,
   inputRef,
   suggestionsRef,
   formatTime,
   isMuted,
-  setIsMuted,
+  onMutedChange,
   totalTimeElapsed,
-  bestScore,
-  bestTime,
   onQuit,
   isHardMode,
   showCriticalSuccess,
@@ -200,7 +200,7 @@ export const GameScreen: FC<GameScreenProps> = ({
         <Button
           variant="ghost"
           size="icon"
-          onClick={() => setIsMuted(!isMuted)}
+          onClick={() => onMutedChange(!isMuted)}
           className="hover:bg-white/10"
         >
           {isMuted ? (
@@ -286,10 +286,10 @@ export const GameScreen: FC<GameScreenProps> = ({
           <div className="flex-1 bg-gradient-to-br from-green-300 to-green-400 rounded-lg p-2 shadow-inner">
             <GuessInput
               guess={guess}
-              handleGuessChange={handleGuessChange}
-              handleKeyDown={handleKeyDown}
+              onGuessChange={onGuessChange}
+              onKeyDown={onKeyDown}
               suggestions={suggestions}
-              handleSuggestionClick={handleSuggestionClick}
+              onSuggestionClick={onSuggestionClick}
               highlightedIndex={highlightedIndex}
               inputRef={inputRef}
               suggestionsRef={suggestionsRef}
@@ -302,7 +302,7 @@ export const GameScreen: FC<GameScreenProps> = ({
         <div className="mt-2">
           <HintButton 
             showHint={showHint}
-            useHint={useHint}
+            onUseHint={onUseHint}
             hintsLeft={hintsLeft}
             currentPokemon={currentPokemon}
             isPokemonLoading={isPokemonLoading}

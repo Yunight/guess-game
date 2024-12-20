@@ -11,52 +11,59 @@ import { RewardPokemonDisplay } from './RewardPokemonDisplay';
 import { Pokemon } from './types';
 import { Trophy, Clock, Crown, RefreshCcw, Home, Share2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { Generation } from '@/types/generation';
 
 interface GameOverDialogProps {
-  gameOver: boolean;
-  setGameOver: (open: boolean) => void;
+  isOpen: boolean;
+  onClose: () => void;
   playerName: string;
   score: number;
-  bestScore: number;
-  bestTime: number;
-  userRanking: number | null;
   totalTimeElapsed: number;
-  formatTimeForRanking: (seconds: number) => string;
-  rewardPokemon: { pokemon: Pokemon | undefined; isLoading: boolean };
-  totalPokemonCount: number;
-  handleRestart: () => void;
-  handleBackToMenu: () => void;
+  userRanking: number | null;
+  rewardPokemon: {
+    pokemon: Pokemon | undefined;
+    isLoading: boolean;
+  };
+  onRestart: () => void;
+  onBackToMenu: () => void;
   isMuted: boolean;
-  criticalHitCount: number;
-  criticalSuccessCount: number;
-  hyperTrainCount: number;
-  maxHypeChain: number;
-  selectedGeneration: { name: string; startId: number; endId: number };
+  stats: {
+    criticalHitCount: number;
+    criticalSuccessCount: number;
+    hyperTrainCount: number;
+    maxHypeChain: number;
+    totalPokemonCount: number;
+    selectedGeneration: Generation;
+  };
+  formatTime: (seconds: number) => string;
 }
 
 export const GameOverDialog: FC<GameOverDialogProps> = ({
-  gameOver,
-  setGameOver,
+  isOpen,
+  onClose,
   playerName,
   score,
-  bestScore,
-  bestTime,
-  userRanking,
   totalTimeElapsed,
-  formatTimeForRanking,
+  userRanking,
   rewardPokemon,
-  totalPokemonCount,
-  handleRestart,
-  handleBackToMenu,
+  onRestart,
+  onBackToMenu,
   isMuted,
-  criticalHitCount,
-  criticalSuccessCount,
-  hyperTrainCount,
-  maxHypeChain,
-  selectedGeneration,
+  stats,
+  formatTime
 }) => {
   const { t, i18n } = useTranslation();
   const [lastPlayedId, setLastPlayedId] = useState<number | null>(null);
+  const [cryAudio, setCryAudio] = useState<HTMLAudioElement | null>(null);
+
+  // Cleanup audio when dialog closes
+  useEffect(() => {
+    if (!isOpen && cryAudio) {
+      cryAudio.pause();
+      cryAudio.currentTime = 0;
+      setCryAudio(null);
+    }
+  }, [isOpen]);
 
   useEffect(() => {
     const playPokemonCry = async () => {
@@ -87,29 +94,36 @@ export const GameOverDialog: FC<GameOverDialogProps> = ({
       console.log('🔊 Generated cry URL:', cryUrl);
       
       try {
-        const cryAudio = new Audio(cryUrl);
+        // Stop any existing audio
+        if (cryAudio) {
+          cryAudio.pause();
+          cryAudio.currentTime = 0;
+        }
+
+        const audio = new Audio(cryUrl);
+        setCryAudio(audio);
         let hasError = false;
         
         // Add event listeners for debugging
-        cryAudio.addEventListener('loadstart', () => console.log('🎵 Started loading audio'));
-        cryAudio.addEventListener('canplay', () => console.log('✅ Audio can start playing'));
-        cryAudio.addEventListener('loadeddata', () => console.log('✅ Audio data loaded successfully'));
-        cryAudio.addEventListener('error', (e) => {
+        audio.addEventListener('loadstart', () => console.log('🎵 Started loading audio'));
+        audio.addEventListener('canplay', () => console.log('✅ Audio can start playing'));
+        audio.addEventListener('loadeddata', () => console.log('✅ Audio data loaded successfully'));
+        audio.addEventListener('error', (e) => {
           hasError = true;
-          const audio = e.currentTarget as HTMLAudioElement;
+          const audioElement = e.currentTarget as HTMLAudioElement;
           console.error('❌ Audio loading error:', {
-            src: audio.src,
-            networkState: audio.networkState,
-            readyState: audio.readyState,
-            error: audio.error ? {
-              code: audio.error.code,
-              message: audio.error.message
+            src: audioElement.src,
+            networkState: audioElement.networkState,
+            readyState: audioElement.readyState,
+            error: audioElement.error ? {
+              code: audioElement.error.code,
+              message: audioElement.error.message
             } : null
           });
         });
         
         console.log('⏳ Attempting to play audio...');
-        await cryAudio.play();
+        await audio.play();
         
         // Only set lastPlayedId if there was no error
         if (!hasError) {
@@ -132,12 +146,12 @@ export const GameOverDialog: FC<GameOverDialogProps> = ({
     };
 
     playPokemonCry();
-  }, [rewardPokemon.pokemon, isMuted, lastPlayedId]);
+  }, [rewardPokemon.pokemon, isMuted, lastPlayedId, cryAudio]);
 
   const handleShare = async () => {
     const getClickbaitMessage = () => {
       // Get generation name in correct language
-      const genNumber = selectedGeneration.name.match(/\d+/)?.[0] || '1';
+      const genNumber = stats.selectedGeneration.name.match(/\d+/)?.[0] || '1';
       const genName = i18n.language === 'fr' 
         ? `${genNumber}ère Génération`
         : `Generation ${genNumber}`;
@@ -232,19 +246,19 @@ export const GameOverDialog: FC<GameOverDialogProps> = ({
       if (userRanking && userRanking <= 10) {
         return t('shareMsgTop10', { gen: genName });
       }
-      if (maxHypeChain >= 10) {
-        return t('shareMsgHypeLegend', { gen: genName, count: maxHypeChain });
+      if (stats.maxHypeChain >= 10) {
+        return t('shareMsgHypeLegend', { gen: genName, count: stats.maxHypeChain });
       }
-      if (maxHypeChain >= 5) {
-        return t('shareMsgHype', { gen: genName, count: maxHypeChain });
+      if (stats.maxHypeChain >= 5) {
+        return t('shareMsgHype', { gen: genName, count: stats.maxHypeChain });
       }
-      if (criticalHitCount >= 3) {
+      if (stats.criticalHitCount >= 3) {
         return t('shareMsgCriticalHit', { gen: genName });
       }
-      if (criticalSuccessCount >= 2) {
+      if (stats.criticalSuccessCount >= 2) {
         return t('shareMsgCriticalSuccess', { gen: genName });
       }
-      if (hyperTrainCount >= 3) {
+      if (stats.hyperTrainCount >= 3) {
         return t('shareMsgHypeTrain', { gen: genName });
       }
       if (rewardPokemon.pokemon?.isLegendary) {
@@ -258,7 +272,7 @@ export const GameOverDialog: FC<GameOverDialogProps> = ({
 
     const clickbaitMsg = getClickbaitMessage();
     // Get generation name in correct language for the share text
-    const genNumber = selectedGeneration.name.match(/\d+/)?.[0] || '1';
+    const genNumber = stats.selectedGeneration.name.match(/\d+/)?.[0] || '1';
     const genName = i18n.language === 'fr' 
       ? `${genNumber}ère Génération`
       : `Generation ${genNumber}`;
@@ -266,7 +280,7 @@ export const GameOverDialog: FC<GameOverDialogProps> = ({
     const shareText = `${clickbaitMsg}\n\n` +
       `👤 ${playerName}\n` +
       `🎯 ${t('score')}: ${score}\n` +
-      `⏱️ ${t('time')}: ${formatTimeForRanking(totalTimeElapsed)}\n` +
+      `⏱️ ${t('time')}: ${formatTime(totalTimeElapsed)}\n` +
       `🌍 ${genName}\n` +
       `${userRanking ? `👑 ${t('myRank')} #${userRanking}!\n` : ''}` +
       `${rewardPokemon.pokemon ? `✨ ${i18n.language === 'fr' ? 'Je suis un' : 'I am'} ${i18n.language === 'fr' ? rewardPokemon.pokemon.frenchName.charAt(0).toUpperCase() + rewardPokemon.pokemon.frenchName.slice(1) : rewardPokemon.pokemon.englishName.charAt(0).toUpperCase() + rewardPokemon.pokemon.englishName.slice(1)}!\n` : ''}\n` +
@@ -295,7 +309,7 @@ export const GameOverDialog: FC<GameOverDialogProps> = ({
   };
 
   return (
-    <Dialog open={gameOver} onOpenChange={setGameOver}>
+    <Dialog open={isOpen} onOpenChange={onClose}>
       <ScrollableDialog className="sm:max-w-md bg-gradient-to-b from-red-500 to-red-600 border-none text-white">
         <div className="absolute inset-0 bg-[url('/pokeball-pattern.png')] opacity-5 bg-repeat"></div>
         <div className="relative">
@@ -306,7 +320,7 @@ export const GameOverDialog: FC<GameOverDialogProps> = ({
               </div>
             </div>
             <DialogTitle className="text-center text-3xl font-bold text-white">
-              {score === bestScore && score === totalPokemonCount ? (
+              {score === stats.totalPokemonCount ? (
                 t('congratulations', { name: playerName })
               ) : (
                 t('congrats', { name: playerName })
@@ -334,10 +348,10 @@ export const GameOverDialog: FC<GameOverDialogProps> = ({
                     <span className="text-sm text-gray-200">{t('current')}:</span>
                     <p className="text-lg font-bold">{score}</p>
                   </div>
-                  {bestScore > 0 && (
+                  {stats.totalPokemonCount > 0 && (
                     <div className="flex items-center justify-between">
                       <span className="text-sm text-gray-200">{t('best')}:</span>
-                      <p className="text-lg font-bold text-yellow-300">{bestScore}</p>
+                      <p className="text-lg font-bold text-yellow-300">{stats.totalPokemonCount}</p>
                     </div>
                   )}
                 </div>
@@ -351,12 +365,12 @@ export const GameOverDialog: FC<GameOverDialogProps> = ({
                 <div className="space-y-1">
                   <div className="flex items-center justify-between">
                     <span className="text-sm text-gray-200">{t('current')}:</span>
-                    <p className="text-lg font-bold">{formatTimeForRanking(totalTimeElapsed)}</p>
+                    <p className="text-lg font-bold">{formatTime(totalTimeElapsed)}</p>
                   </div>
-                  {bestTime > 0 && (
+                  {stats.totalPokemonCount > 0 && (
                     <div className="flex items-center justify-between">
                       <span className="text-sm text-gray-200">{t('best')}:</span>
-                      <p className="text-lg font-bold text-yellow-300">{formatTimeForRanking(bestTime)}</p>
+                      <p className="text-lg font-bold text-yellow-300">{formatTime(stats.totalPokemonCount)}</p>
                     </div>
                   )}
                 </div>
@@ -382,21 +396,21 @@ export const GameOverDialog: FC<GameOverDialogProps> = ({
                   <div className="space-y-1">
                     <div className="flex items-center justify-between">
                       <span className="text-sm text-gray-200">{t('criticalHits')}:</span>
-                      <p className="text-lg font-bold text-yellow-300">{criticalHitCount}</p>
+                      <p className="text-lg font-bold text-yellow-300">{stats.criticalHitCount}</p>
                     </div>
                     <div className="flex items-center justify-between">
                       <span className="text-sm text-gray-200">{t('criticalSuccesses')}:</span>
-                      <p className="text-lg font-bold text-yellow-300">{criticalSuccessCount}</p>
+                      <p className="text-lg font-bold text-yellow-300">{stats.criticalSuccessCount}</p>
                     </div>
                   </div>
                   <div className="space-y-1">
                     <div className="flex items-center justify-between">
                       <span className="text-sm text-gray-200">{t('hypeTrain_stat')}:</span>
-                      <p className="text-lg font-bold text-yellow-300">{hyperTrainCount}</p>
+                      <p className="text-lg font-bold text-yellow-300">{stats.hyperTrainCount}</p>
                     </div>
                     <div className="flex items-center justify-between">
                       <span className="text-sm text-gray-200">{t('maxHype')}:</span>
-                      <p className="text-lg font-bold text-yellow-300">{maxHypeChain}</p>
+                      <p className="text-lg font-bold text-yellow-300">{stats.maxHypeChain}</p>
                     </div>
                   </div>
                 </div>
@@ -406,7 +420,7 @@ export const GameOverDialog: FC<GameOverDialogProps> = ({
 
           <div className="grid grid-cols-3 gap-3 mt-6">
             <Button
-              onClick={handleRestart}
+              onClick={onRestart}
               className="bg-yellow-400 hover:bg-yellow-500 text-gray-900 border-none
                 shadow-lg hover:shadow-xl transition-all duration-300 font-bold"
               size="lg"
@@ -424,7 +438,7 @@ export const GameOverDialog: FC<GameOverDialogProps> = ({
               {t('share')}
             </Button>
             <Button
-              onClick={handleBackToMenu}
+              onClick={onBackToMenu}
               className="bg-blue-500 hover:bg-blue-600 text-white border-none
                 shadow-lg hover:shadow-xl transition-all duration-300 font-bold"
               size="lg"

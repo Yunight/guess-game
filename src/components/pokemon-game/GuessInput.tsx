@@ -1,61 +1,53 @@
 import { FC, RefObject } from 'react';
 import { Input } from '@/components/ui/input';
 import { useTranslation } from 'react-i18next';
+import { cn } from '@/lib/utils';
+import { PokemonIcon } from '@/components/pokemon-icon';
 
 interface GuessInputProps {
   guess: string;
-  handleGuessChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
-  handleKeyDown: (e: React.KeyboardEvent<HTMLInputElement>) => void;
+  onGuessChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  onKeyDown: (e: React.KeyboardEvent<HTMLInputElement>) => void;
   suggestions: string[];
-  handleSuggestionClick: (suggestion: string) => void;
+  onSuggestionClick: (suggestion: string) => void;
   highlightedIndex: number;
-  inputRef: RefObject<HTMLInputElement>;
-  suggestionsRef: RefObject<HTMLDivElement>;
-  isCorrect: boolean | null;
+  inputRef: React.RefObject<HTMLInputElement>;
+  suggestionsRef: React.RefObject<HTMLDivElement>;
   guessTimeLeft: number;
 }
 
 export const GuessInput: FC<GuessInputProps> = ({
   guess,
-  handleGuessChange,
-  handleKeyDown,
+  onGuessChange,
+  onKeyDown,
   suggestions,
-  handleSuggestionClick,
+  onSuggestionClick,
   highlightedIndex,
   inputRef,
   suggestionsRef,
-  isCorrect,
-  guessTimeLeft,
+  guessTimeLeft
 }) => {
   const { t } = useTranslation();
 
   return (
     <div className="relative w-full">
-      <div className={`relative ${isCorrect === false ? 'animate-shake' : ''}`}>
+      <div className="relative">
         <Input
           ref={inputRef}
           type="text"
           value={guess}
-          onChange={handleGuessChange}
-          onKeyDown={handleKeyDown}
+          onChange={onGuessChange}
+          onKeyDown={onKeyDown}
           placeholder={t('guessInputPlaceholder')}
           disabled={guessTimeLeft <= 0}
           style={{ fontSize: '1.1rem', lineHeight: '1.75rem' }}
           className={`w-full h-14 px-6 font-medium bg-green-100/80 border-2 text-center
             focus:ring-2 focus:ring-white/50 placeholder:text-gray-500/50 placeholder:text-xl rounded-xl
-            ${isCorrect === true 
-              ? 'border-green-500 text-green-700' 
-              : isCorrect === false 
-                ? 'border-red-500 text-red-700 animate-pulse' 
-                : 'border-transparent text-gray-700'}
+            border-transparent text-gray-900 font-bold
             ${guessTimeLeft <= 0 ? 'opacity-50 cursor-not-allowed' : ''}`}
         />
-        {/* Wrong answer effect */}
-        {isCorrect === false && (
-          <div className="absolute inset-0 rounded-xl bg-red-500/10 animate-pulse pointer-events-none"></div>
-        )}
       </div>
-      
+
       {suggestions.length > 0 && guessTimeLeft > 0 && (
         <div
           ref={suggestionsRef}
@@ -64,7 +56,7 @@ export const GuessInput: FC<GuessInputProps> = ({
           {suggestions.map((suggestion, index) => (
             <div
               key={suggestion}
-              onClick={() => handleSuggestionClick(suggestion)}
+              onClick={() => onSuggestionClick(suggestion)}
               style={{ fontSize: '1.1rem', lineHeight: '1.75rem' }}
               className={`px-4 py-2.5 cursor-pointer flex items-center gap-3 hover:bg-gray-100 text-gray-700
                 ${index === highlightedIndex ? 'bg-gray-100 font-medium' : ''}`}
