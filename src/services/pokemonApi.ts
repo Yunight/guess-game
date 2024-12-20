@@ -93,25 +93,35 @@ const getEvolutionStage = async (pokemonName: string): Promise<number> => {
     const evolutionResponse = await fetch(evolutionChainUrl);
     const evolutionData: EvolutionChain = await evolutionResponse.json();
     
-    // Check first stage
-    if (evolutionData.chain.species.name === pokemonName) {
-      return 1;
-    }
+    let stage = 1;
+    let foundStage = false;
     
-    // Check second stage
-    for (const firstEvo of evolutionData.chain.evolves_to) {
-      if (firstEvo.species.name === pokemonName) {
-        return 2;
+    // Helper function to traverse the evolution chain
+    const findStageInChain = (chain: EvolutionChainNode, currentStage: number) => {
+      if (foundStage) return;
+      
+      if (chain.species.name === pokemonName) {
+        stage = currentStage;
+        foundStage = true;
+        return;
       }
       
-      // Check third stage
-      for (const secondEvo of firstEvo.evolves_to) {
-        if (secondEvo.species.name === pokemonName) {
-          return 3;
-        }
-      }
+      // Check next evolution stage
+      chain.evolves_to.forEach(evolution => {
+        findStageInChain(evolution, currentStage + 1);
+      });
+    };
+    
+    // Start traversing from the base form
+    findStageInChain(evolutionData.chain, 1);
+    
+    // If we found the stage, return it
+    if (foundStage) {
+      return stage;
     }
     
+    // If we didn't find the Pokémon in the chain (shouldn't happen), return 1
+    console.warn(`Could not find ${pokemonName} in evolution chain`);
     return 1;
   } catch (error) {
     console.error('Error fetching evolution stage:', error);

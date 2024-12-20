@@ -26,13 +26,13 @@ const MAX_HINTS = 10;
 
 // Add rarity tiers for Pokémon rewards
 const POKEMON_REWARDS = [
-  { minScore: 151, condition: (pokemon: Pokemon) => pokemon.isMythical && pokemon.name === 'mew' }, // Mew only
-  { minScore: 100, condition: (pokemon: Pokemon) => pokemon.isMythical }, // Other Mythical
-  { minScore: 80, condition: (pokemon: Pokemon) => pokemon.isLegendary }, // Legendary
-  { minScore: 60, condition: (pokemon: Pokemon) => pokemon.evolutionStage === 3 && !pokemon.isLegendary && !pokemon.isMythical }, // Final evolution (like Venusaur)
-  { minScore: 40, condition: (pokemon: Pokemon) => pokemon.evolutionStage === 2 && !pokemon.isLegendary && !pokemon.isMythical }, // Middle evolution (like Ivysaur)
-  { minScore: 20, condition: (pokemon: Pokemon) => pokemon.evolutionStage === 1 && !pokemon.hasEvolution && !pokemon.isLegendary && !pokemon.isMythical }, // No evolution (like Tauros)
-  { minScore: 0, condition: (pokemon: Pokemon) => pokemon.evolutionStage === 1 && pokemon.hasEvolution && !pokemon.isLegendary && !pokemon.isMythical }, // Base form (like Bulbasaur)
+  { minScore: 450, condition: (pokemon: Pokemon) => pokemon.isMythical && pokemon.name === 'mew' }, // Mew only (150 perfect answers)
+  { minScore: 300, condition: (pokemon: Pokemon) => pokemon.isMythical }, // Other Mythical (100 perfect answers)
+  { minScore: 240, condition: (pokemon: Pokemon) => pokemon.isLegendary }, // Legendary (80 perfect answers)
+  { minScore: 180, condition: (pokemon: Pokemon) => pokemon.evolutionStage === 3 && !pokemon.isLegendary && !pokemon.isMythical }, // Final evolution (60 perfect answers)
+  { minScore: 120, condition: (pokemon: Pokemon) => pokemon.evolutionStage === 2 && !pokemon.isLegendary && !pokemon.isMythical }, // Middle evolution (40 perfect answers)
+  { minScore: 60, condition: (pokemon: Pokemon) => pokemon.evolutionStage === 1 && !pokemon.hasEvolution && !pokemon.isLegendary && !pokemon.isMythical }, // No evolution (20 perfect answers)
+  { minScore: 0, condition: (pokemon: Pokemon) => pokemon.evolutionStage === 1 && pokemon.hasEvolution && !pokemon.isLegendary && !pokemon.isMythical }, // Base form (any score)
 ];
 
 const PokemonGame = () => {
