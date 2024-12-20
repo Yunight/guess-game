@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Volume2, VolumeX, HelpCircle } from 'lucide-react';
 import { Generation, Rankings } from '@/components/pokemon-game/types';
 import { HowToPlay } from './HowToPlay';
+import { GameModeDialog } from '@/components/pokemon-game/GameModeDialog';
 
 interface MenuScreenProps {
   playerName: string;
@@ -13,7 +14,7 @@ interface MenuScreenProps {
   handleGenerationSelect: (generation: Generation) => void;
   GENERATIONS: Generation[];
   canStartGame: boolean;
-  startGame: () => void;
+  startGame: (isHardMode: boolean) => void;
   score: number;
   isMuted: boolean;
   setIsMuted: (muted: boolean) => void;
@@ -40,6 +41,16 @@ export const MenuScreen: FC<MenuScreenProps> = ({
   formatDate,
 }) => {
   const [showHowToPlay, setShowHowToPlay] = useState(false);
+  const [showGameModeDialog, setShowGameModeDialog] = useState(false);
+
+  const handleStartGameClick = () => {
+    setShowGameModeDialog(true);
+  };
+
+  const handleGameModeSelect = (isHardMode: boolean) => {
+    setShowGameModeDialog(false);
+    startGame(isHardMode);
+  };
 
   return (
     <div className="w-full max-w-[1200px] px-4 sm:px-6 lg:px-8">
@@ -99,20 +110,20 @@ export const MenuScreen: FC<MenuScreenProps> = ({
               variant="ghost"
               size="icon"
               onClick={() => setShowHowToPlay(true)}
-              className="hover:bg-white/10"
+              className="hover:bg-white/20 text-white hover:text-white/80 transition-colors"
             >
-              <HelpCircle className="h-5 w-5 text-white" />
+              <HelpCircle className="h-5 w-5" />
             </Button>
             <Button
               variant="ghost"
               size="icon"
               onClick={() => setIsMuted(!isMuted)}
-              className="hover:bg-white/10"
+              className="hover:bg-white/20 text-white hover:text-white/80 transition-colors"
             >
               {isMuted ? (
-                <VolumeX className="h-5 w-5 text-white" />
+                <VolumeX className="h-5 w-5" />
               ) : (
-                <Volume2 className="h-5 w-5 text-white" />
+                <Volume2 className="h-5 w-5" />
               )}
             </Button>
           </div>
@@ -170,9 +181,9 @@ export const MenuScreen: FC<MenuScreenProps> = ({
               </div>
             </div>
 
-            <Button
-              onClick={startGame}
-              disabled={!canStartGame}
+              <Button
+                onClick={() => handleStartGameClick()}
+                disabled={!canStartGame}
               className={`w-full h-14 sm:h-20 text-lg sm:text-xl font-bold transition-all duration-500 ease-out relative overflow-hidden rounded-xl
                 ${canStartGame 
                   ? 'bg-gradient-to-br from-blue-500 to-blue-600 text-white shadow-xl hover:shadow-2xl transform hover:scale-[1.02] border-4 border-white' 
@@ -199,14 +210,15 @@ export const MenuScreen: FC<MenuScreenProps> = ({
                 </div>
               </div>
               <div className="flex items-center justify-center gap-4">
-                <span className="sm:ml-16">
-                  {score > 0 ? 'Rejouer !' : 'Commencer !'}
+                <span className="sm:ml-16 text-3xl sm:text-4xl md:text-5xl font-bold">
+                  {score > 0 ? 'Rejouer !' : 'PLAY !'}
                 </span>
                 {canStartGame && (
                   <div className="w-4 h-4 bg-white rounded-full animate-pulse"></div>
                 )}
               </div>
             </Button>
+
           </div>
         </div>
 
@@ -323,6 +335,11 @@ export const MenuScreen: FC<MenuScreenProps> = ({
       </div>
 
       <HowToPlay isOpen={showHowToPlay} onClose={() => setShowHowToPlay(false)} />
+      <GameModeDialog 
+        isOpen={showGameModeDialog}
+        onClose={() => setShowGameModeDialog(false)}
+        onSelectMode={handleGameModeSelect}
+      />
     </div>
   );
 }; 

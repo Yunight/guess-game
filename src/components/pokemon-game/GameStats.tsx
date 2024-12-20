@@ -42,7 +42,7 @@ export const GameStats: FC<GameStatsProps> = ({
             <div className="space-y-1">
               <div className={`text-2xl font-bold font-mono transition-colors duration-300
                 ${guessTimeLeft <= 5 ? 'text-red-400' : 'text-white'}`}>
-                {formatTime(guessTimeLeft)}
+                {guessTimeLeft === Infinity ? '∞' : formatTime(guessTimeLeft)}
               </div>
               <div className="text-sm text-yellow-300 font-mono">
                 Best: {formatTime(bestTime)}
@@ -56,7 +56,9 @@ export const GameStats: FC<GameStatsProps> = ({
           <div className="absolute inset-0 bg-blue-400/5"></div>
           <div className="relative z-10">
             <div className="text-xs text-blue-200 mb-1 font-medium">Indices</div>
-            <div className="text-2xl font-bold text-white font-mono">{hintsLeft}</div>
+            <div className="text-2xl font-bold text-white font-mono">
+              {hintsLeft === Infinity ? '∞' : hintsLeft}
+            </div>
           </div>
         </div>
       </div>

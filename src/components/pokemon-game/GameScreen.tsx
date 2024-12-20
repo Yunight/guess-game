@@ -7,6 +7,7 @@ import { PokemonDisplay } from './PokemonDisplay';
 import { GameStats } from './GameStats';
 import { GuessInput } from './GuessInput';
 import { HintButton } from './HintButton';
+import { ScoreIncrease } from './ScoreIncrease';
 
 interface GameScreenProps {
   currentPokemon: Pokemon | undefined;
@@ -31,6 +32,13 @@ interface GameScreenProps {
   totalTimeElapsed: number;
   bestScore: number;
   bestTime: number;
+  onQuit: () => void;
+  isHardMode: boolean;
+  showCriticalSuccess: boolean;
+  showCriticalHit: boolean;
+  showHypeTrain: boolean;
+  consecutiveFastAnswers: number;
+  pointsEarned: number;
 }
 
 export const GameScreen: FC<GameScreenProps> = ({
@@ -56,6 +64,13 @@ export const GameScreen: FC<GameScreenProps> = ({
   totalTimeElapsed,
   bestScore,
   bestTime,
+  onQuit,
+  isHardMode,
+  showCriticalSuccess,
+  showCriticalHit,
+  showHypeTrain,
+  consecutiveFastAnswers,
+  pointsEarned,
 }) => {
   return (
     <Card className="w-full max-w-md p-1 sm:p-4 relative flex flex-col min-h-0 sm:min-h-0 bg-red-500 rounded-3xl">
@@ -69,6 +84,17 @@ export const GameScreen: FC<GameScreenProps> = ({
       {/* Blue circle light */}
       <div className="absolute top-2 left-24 w-10 h-10 rounded-full bg-blue-400 border-4 border-white"></div>
 
+      {/* Quit Button - Only show in Chill mode */}
+      {!isHardMode && (
+        <Button
+          variant="ghost"
+          onClick={onQuit}
+          className="absolute left-1/2 -translate-x-1/2 top-14 text-white hover:text-red-200 hover:bg-white/10 transition-colors font-medium"
+        >
+          Quitter
+        </Button>
+      )}
+
       {/* Global Timer */}
       <div className="absolute top-4 left-1/2 -translate-x-1/2 font-mono text-lg font-bold text-white h-9 flex items-center bg-black/20 px-4 rounded-full backdrop-blur-sm">
         {formatTime(totalTimeElapsed)}
@@ -78,6 +104,8 @@ export const GameScreen: FC<GameScreenProps> = ({
       <div className="absolute top-4 right-16 font-mono text-lg font-bold text-gray-700 h-9 flex items-center">
         #{currentPokemon?.id.toString().padStart(3, '0') || '???'}
       </div>
+
+      {pointsEarned > 0 && <ScoreIncrease points={pointsEarned} />}
 
       {/* Sound toggle */}
       <div className="absolute top-4 right-4">
@@ -96,13 +124,36 @@ export const GameScreen: FC<GameScreenProps> = ({
       </div>
 
       <div className="flex flex-col flex-1 mt-16 mb-2">
-        <PokemonDisplay 
-          currentPokemon={currentPokemon}
-          isPokemonLoading={isPokemonLoading}
-          isCorrect={isCorrect}
-          isMuted={isMuted}
-          guessTimeLeft={guessTimeLeft}
-        />
+        <div className="relative">
+          <PokemonDisplay 
+            currentPokemon={currentPokemon}
+            isPokemonLoading={isPokemonLoading}
+            isCorrect={isCorrect}
+            isMuted={isMuted}
+            guessTimeLeft={guessTimeLeft}
+          />
+
+          {/* Critical Messages */}
+          {(showCriticalSuccess || showCriticalHit || showHypeTrain) && (
+            <div className="absolute left-1/2 -translate-x-1/2 bottom-4 z-50 pointer-events-none">
+              {showCriticalSuccess && (
+                <div className="animate-float-up-fade-out text-yellow-300 font-bold text-xl whitespace-nowrap px-4 py-2 bg-black/80 rounded-full backdrop-blur-sm border-2 border-yellow-400 shadow-lg">
+                  ⚡️ Succès Critique! ⚡️
+                </div>
+              )}
+              {!showCriticalSuccess && showCriticalHit && (
+                <div className="animate-float-up-fade-out text-yellow-300 font-bold text-xl whitespace-nowrap px-4 py-2 bg-black/80 rounded-full backdrop-blur-sm border-2 border-yellow-400 shadow-lg">
+                  ❗️ Coup Critique! ❗️
+                </div>
+              )}
+              {!showCriticalSuccess && !showCriticalHit && showHypeTrain && (
+                <div className="text-yellow-300 font-bold text-xl whitespace-nowrap px-4 py-2 bg-black/80 rounded-full backdrop-blur-sm border-2 border-yellow-400 shadow-lg animate-pulse">
+                  🚂 Hype Train! x{consecutiveFastAnswers} 🚂
+                </div>
+              )}
+            </div>
+          )}
+        </div>
 
         <GameStats 
           score={score}

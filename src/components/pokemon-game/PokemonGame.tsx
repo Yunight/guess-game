@@ -44,6 +44,7 @@ const PokemonGame = () => {
   const [showHint, setShowHint] = useState(false);
   const [hintsLeft, setHintsLeft] = useState(MAX_HINTS);
   const [isGameActive, setIsGameActive] = useState(false);
+  const [isHardMode, setIsHardMode] = useState(false);
   const [playerName, setPlayerName] = useState('');
   const [selectedGeneration, setSelectedGeneration] = useState<Generation>(GENERATIONS[0]);
   const [remainingPokemon, setRemainingPokemon] = useState<number[]>([]);
@@ -52,6 +53,11 @@ const PokemonGame = () => {
   const [suggestions, setSuggestions] = useState<string[]>([]);
   const [highlightedIndex, setHighlightedIndex] = useState(-1);
   const [userRanking, setUserRanking] = useState<number | null>(null);
+  const [showCriticalSuccess, setShowCriticalSuccess] = useState(false);
+  const [showCriticalHit, setShowCriticalHit] = useState(false);
+  const [showHypeTrain, setShowHypeTrain] = useState(false);
+  const [consecutiveFastAnswers, setConsecutiveFastAnswers] = useState(0);
+  const [pointsEarned, setPointsEarned] = useState(0);
   const inputRef = useRef<HTMLInputElement>(null);
   const suggestionsRef = useRef<HTMLDivElement>(null);
 
@@ -68,6 +74,7 @@ const PokemonGame = () => {
   const victoryAudioRef = useRef<HTMLAudioElement | null>(null);
   const correctAudioRef = useRef<HTMLAudioElement | null>(null);
   const wrongAudioRef = useRef<HTMLAudioElement | null>(null);
+  const trainHornRef = useRef<HTMLAudioElement | null>(null);
   const canStartGame = Boolean(playerName && !nameError);
   
   // Add loading progress state
@@ -347,6 +354,7 @@ const PokemonGame = () => {
   const CORRECT_SOUND_URL = '/sounds/pkm_level_up.mp3';
   const WRONG_SOUND_URL = '/sounds/bump_wall.mp3';
   const VICTORY_SOUND_URL = '/sounds/battle_win.mp3';
+  const TRAIN_HORN_URL = '/sounds/train_horn_bell.mp3';
 
   // Add a function to clean up all audio instances
   const cleanupAllAudio = () => {
@@ -363,16 +371,159 @@ const PokemonGame = () => {
       wrongAudioRef.current.pause();
       wrongAudioRef.current = null;
     }
+    if (trainHornRef.current) {
+      trainHornRef.current.pause();
+      trainHornRef.current = null;
+    }
   };
+
+  // Add cleanup effect for train horn sound when component unmounts
+  useEffect(() => {
+    return () => {
+      if (trainHornRef.current) {
+        trainHornRef.current.pause();
+        trainHornRef.current.currentTime = 0;
+        trainHornRef.current = null;
+      }
+    };
+  }, []);
+
+  // Add effect to monitor timer for Hype Train
+  useEffect(() => {
+    if (guessTimeLeft === 9) {
+      console.log('🚂 Timer hit 9 seconds, stopping Hype Train');
+      // Add bonus points based on consecutive fast answers before resetting
+      if (showHypeTrain && consecutiveFastAnswers > 0) {
+        console.log(`🎯 Adding bonus points: ${consecutiveFastAnswers}`);
+        setScore(prev => prev + consecutiveFastAnswers);
+      }
+      setConsecutiveFastAnswers(0);
+      setShowHypeTrain(false);
+      // Stop train horn sound
+      if (trainHornRef.current) {
+        console.log('🔇 Stopping train horn sound at timer 9');
+        trainHornRef.current.pause();
+        trainHornRef.current.currentTime = 0;
+        trainHornRef.current = null;
+      }
+    }
+  }, [guessTimeLeft, showHypeTrain, consecutiveFastAnswers]);
+
+  // Add effect to stop train horn when game is over or when Hype Train should stop
+  useEffect(() => {
+    if (!showHypeTrain && trainHornRef.current) {
+      console.log('🔇 Stopping train horn sound on Hype Train end');
+      trainHornRef.current.pause();
+      trainHornRef.current.currentTime = 0;
+      trainHornRef.current = null;
+    }
+  }, [showHypeTrain]);
+
+  // Add separate effect for game over cleanup
+  useEffect(() => {
+    if (gameOver && trainHornRef.current) {
+      console.log('🔇 Stopping train horn sound on game over');
+      trainHornRef.current.pause();
+      trainHornRef.current.currentTime = 0;
+      trainHornRef.current = null;
+    }
+  }, [gameOver]);
 
   const handleCorrectAnswer = async () => {
     console.log('✅ Handling correct answer');
     setIsCorrect(true);
-    setScore(prev => prev + 1);
+    
+    // Handle Hype Train logic first, independently of other messages
+    if (guessTimeLeft >= 10) { // Within 5 seconds (15-10 = 5)
+      setConsecutiveFastAnswers(prev => {
+        const newCount = prev + 1;
+        console.log('🚂 Fast answer! New count:', newCount);
+        
+        // Start Hype Train when reaching 3 or more
+        if (newCount >= 3) {
+          console.log('🚂 Starting Hype Train!');
+          setShowHypeTrain(true);
+          // Play train horn sound
+          if (!isMuted && !trainHornRef.current) {
+            console.log('🔊 Starting train horn sound');
+            const trainHorn = new Audio(TRAIN_HORN_URL);
+            trainHorn.volume = 0.5; // Set volume to 50%
+            trainHorn.loop = true;
+            trainHornRef.current = trainHorn;
+            trainHorn.play().catch(error => {
+              console.error('❌ Error playing train horn sound:', error);
+            });
+          }
+        }
+        return newCount;
+      });
+    } else {
+      console.log('🚂 Slow answer, resetting Hype Train');
+      setConsecutiveFastAnswers(0);
+      setShowHypeTrain(false);
+    }
+
+    let earnedPoints = 0;
+
+    // Handle other messages only if Hype Train is not active
+    if (!showHypeTrain) {
+      // Calculate points based on remaining time in Hard mode
+      if (isHardMode) {
+        if (guessTimeLeft >= 10 && guessTimeLeft <= 15) {
+          earnedPoints = 3;
+        } else if (guessTimeLeft >= 5 && guessTimeLeft <= 9) {
+          earnedPoints = 2;
+        } else if (guessTimeLeft >= 0 && guessTimeLeft <= 4) {
+          earnedPoints = 1;
+        }
+
+        // Show Succès Critique only at 0 seconds
+        if (guessTimeLeft === 0) {
+          setShowCriticalSuccess(true);
+          setTimeout(() => {
+            setShowCriticalSuccess(false);
+          }, 2000);
+        }
+        // Show Coup Critique with 20% chance
+        else if (Math.random() < 0.2) {
+          setShowCriticalHit(true);
+          setTimeout(() => {
+            setShowCriticalHit(false);
+          }, 2000);
+        }
+      } else {
+        earnedPoints = 1;
+      }
+    } else {
+      // Still add points even if messages are suppressed
+      if (isHardMode) {
+        if (guessTimeLeft >= 10 && guessTimeLeft <= 15) {
+          earnedPoints = 3;
+        } else if (guessTimeLeft >= 5 && guessTimeLeft <= 9) {
+          earnedPoints = 2;
+        } else if (guessTimeLeft >= 0 && guessTimeLeft <= 4) {
+          earnedPoints = 1;
+        }
+      } else {
+        earnedPoints = 1;
+      }
+    }
+
+    setPointsEarned(earnedPoints);
+    setScore(prev => prev + earnedPoints);
+    
+    // Reset points earned after animation
+    setTimeout(() => {
+      setPointsEarned(0);
+    }, 1000);
     
     if (!isMuted) {
       console.log('🎵 About to play correct answer sound');
+      const currentTrainHorn = trainHornRef.current; // Save reference to train horn
       cleanupAllAudio();
+      if (showHypeTrain) { // Only restore train horn if Hype Train is active
+        trainHornRef.current = currentTrainHorn; // Restore train horn reference
+      }
       correctAudioRef.current = new Audio(CORRECT_SOUND_URL);
       try {
         await correctAudioRef.current.play();
@@ -382,16 +533,19 @@ const PokemonGame = () => {
       }
     }
     
-    setTimeout(() => {
-      console.log('⏲️ Correct answer timeout - fetching new Pokemon');
-      setIsCorrect(null);
-      setGuess('');
-      setSuggestions([]);
-      setShowHint(false);
-      fetchRandomPokemon();
-      startGuessTimer();
-      inputRef.current?.focus();
-    }, 1500);
+    // Only proceed to next Pokémon if there's time left
+    if (guessTimeLeft > 0) {
+      setTimeout(() => {
+        console.log('⏲️ Correct answer timeout - fetching new Pokemon');
+        setIsCorrect(null);
+        setGuess('');
+        setSuggestions([]);
+        setShowHint(false);
+        fetchRandomPokemon();
+        startGuessTimer();
+        inputRef.current?.focus();
+      }, 1500);
+    }
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -489,8 +643,8 @@ const PokemonGame = () => {
     // Show the correct Pokemon first
     setIsCorrect(true);
     
-    // Wait for the reveal animation
-    await new Promise(resolve => setTimeout(resolve, 2000));
+    // Wait for the reveal animation and give time to see the name
+    await new Promise(resolve => setTimeout(resolve, 3000));
 
     // Update states
     setIsGameActive(false);
@@ -515,53 +669,58 @@ const PokemonGame = () => {
       }
     }
     
-    if (score > bestScore) {
-      setBestScore(score);
-    }
-    
-    if (score > 0 && playerName) {
-      try {
-        const collectionName = `rankings_gen${selectedGeneration.startId}_${selectedGeneration.endId}`;
-        const rankingsRef = collection(db, collectionName);
-        const q = query(rankingsRef, where('name', '==', playerName));
-        const querySnapshot = await getDocs(q);
-        
-        const playerData = {
-          name: playerName,
-          score: score,
-          time: totalTimeElapsed,
-          timestamp: serverTimestamp()
-        };
-
-        if (!querySnapshot.empty) {
-          const existingDoc = querySnapshot.docs[0];
-          const existingScore = existingDoc.data().score;
-          const existingTime = existingDoc.data().time;
-          
-          if (score > existingScore || (score === existingScore && totalTimeElapsed < existingTime)) {
-            await updateDoc(existingDoc.ref, playerData);
-            if (totalTimeElapsed < existingTime) {
-              setBestTime(totalTimeElapsed);
-            }
-          }
-        } else {
-          await addDoc(rankingsRef, playerData);
-          setBestTime(totalTimeElapsed);
-        }
-        
-        await fetchSelectedRankings();
-        
-        // Get updated ranking position
-        const rankingsQuery = query(rankingsRef, orderBy('score', 'desc'));
-        const allRankings = await getDocs(rankingsQuery);
-        const userRankingPosition = allRankings.docs.findIndex(doc => doc.data().name === playerName) + 1;
-        setUserRanking(userRankingPosition);
-        
-      } catch (error) {
-        console.error('Error saving score:', error);
+    // Only update best score and save to rankings in Hard mode
+    if (isHardMode) {
+      if (score > bestScore) {
+        setBestScore(score);
       }
+      
+      if (score > 0 && playerName) {
+        try {
+          const collectionName = `rankings_gen${selectedGeneration.startId}_${selectedGeneration.endId}`;
+          const rankingsRef = collection(db, collectionName);
+          const q = query(rankingsRef, where('name', '==', playerName));
+          const querySnapshot = await getDocs(q);
+          
+          const playerData = {
+            name: playerName,
+            score: score,
+            time: totalTimeElapsed,
+            timestamp: serverTimestamp()
+          };
+
+          if (!querySnapshot.empty) {
+            const existingDoc = querySnapshot.docs[0];
+            const existingScore = existingDoc.data().score;
+            const existingTime = existingDoc.data().time;
+            
+            if (score > existingScore || (score === existingScore && totalTimeElapsed < existingTime)) {
+              await updateDoc(existingDoc.ref, playerData);
+              if (totalTimeElapsed < existingTime) {
+                setBestTime(totalTimeElapsed);
+              }
+            }
+          } else {
+            await addDoc(rankingsRef, playerData);
+            setBestTime(totalTimeElapsed);
+          }
+          
+          await fetchSelectedRankings();
+          
+          // Get updated ranking position
+          const rankingsQuery = query(rankingsRef, orderBy('score', 'desc'));
+          const allRankings = await getDocs(rankingsQuery);
+          const userRankingPosition = allRankings.docs.findIndex(doc => doc.data().name === playerName) + 1;
+          setUserRanking(userRankingPosition);
+        } catch (error) {
+          console.error('Error saving score:', error);
+        }
+      }
+    } else {
+      // In Chill mode, just display the score without saving
+      setUserRanking(null);
     }
-  }, [score, playerName, selectedGeneration, totalTimeElapsed, gameOver, fetchSelectedRankings, bestScore, setBestScore, setBestTime, isMuted, calculateRewardPokemon]);
+  }, [score, playerName, selectedGeneration, totalTimeElapsed, gameOver, fetchSelectedRankings, bestScore, setBestScore, setBestTime, isMuted, calculateRewardPokemon, isHardMode]);
 
   // Update the effect to use both functions
   useEffect(() => {
@@ -634,19 +793,23 @@ const PokemonGame = () => {
   const [isRestarting, setIsRestarting] = useState(false);
 
   // Update the startGame function
-  const startGame = async () => {
-    console.log('🎮 Starting new game');
+  const startGame = async (isHardMode: boolean) => {
+    console.log('🎮 Starting new game in', isHardMode ? 'Hard Mode' : 'Chill Mode');
     if (!playerName) return;
     
     const isAvailable = await checkNameAvailability(playerName);
     if (!isAvailable) return;
     
     setIsRestarting(true);
+    setIsHardMode(isHardMode);
+    setConsecutiveFastAnswers(0);
+    setShowHypeTrain(false);
+    setPointsEarned(0);
     
     // Clean up all audio
     cleanupAllAudio();
     
-    console.log('🔄 Resetting current Pokemon');
+    console.log(' Resetting current Pokemon');
     setCurrentPokemonId(null);
     
     // If it's a new user (different from saved name), clean up localStorage
@@ -668,12 +831,14 @@ const PokemonGame = () => {
     
     // Reset all game states
     setScore(0);
-    setHintsLeft(10);
+    // In Chill mode, set hints to Infinity, in Hard mode set to 0
+    setHintsLeft(isHardMode ? 0 : Infinity);
     setShowHint(false);
     setIsCorrect(null);
     setGuess('');
     setSuggestions([]);
-    setGuessTimeLeft(15);
+    // In Chill mode, no timer (set to Infinity), in Hard mode set to 15
+    setGuessTimeLeft(isHardMode ? 15 : Infinity);
     setTotalTimeElapsed(0);
     setGameOver(false);
     setUserRanking(null);
@@ -693,8 +858,10 @@ const PokemonGame = () => {
     setIsGameActive(true);
     setIsRestarting(false);
     
-    // Start both timers and fetch new Pokemon
-    startGuessTimer();
+    // Start timers based on game mode
+    if (isHardMode) {
+      startGuessTimer();
+    }
     startTotalTimer();
     fetchRandomPokemon();
     inputRef.current?.focus();
@@ -726,22 +893,31 @@ const PokemonGame = () => {
     return `${day}/${month}/${date.getFullYear()}`;
   };
 
-  const startGuessTimer = () => {
-    setGuessTimeLeft(15); // Reset to 15 seconds for new guess
+  // Modify the startGuessTimer function
+  const startGuessTimer = useCallback(() => {
+    // Only start the timer in hard mode
+    if (!isHardMode) return;
+
     if (timerInterval.current) {
       clearInterval(timerInterval.current);
     }
-    
+
+    setGuessTimeLeft(15);
     timerInterval.current = setInterval(() => {
-      setGuessTimeLeft(prev => {
-        if (prev <= 0) {
-          handleGameOver();
+      setGuessTimeLeft((prev) => {
+        if (prev <= 1) {
+          if (timerInterval.current) {
+            clearInterval(timerInterval.current);
+            timerInterval.current = null;
+          }
+          // Just set isCorrect to false and don't fetch next Pokémon
+          setIsCorrect(false);
           return 0;
         }
         return prev - 1;
       });
     }, 1000);
-  };
+  }, [isHardMode]);
 
   const startTotalTimer = () => {
     if (totalTimeInterval.current) {
@@ -813,6 +989,11 @@ const PokemonGame = () => {
     }
   }, [isNamesLoading, allPokemonNames]);
 
+  // Add handleQuit function
+  const handleQuit = useCallback(() => {
+    handleGameOver();
+  }, [handleGameOver]);
+
   // Update loading screen component
   if (isInitialLoading) {
     return (
@@ -867,6 +1048,13 @@ const PokemonGame = () => {
           isMuted={isMuted}
           setIsMuted={setIsMuted}
           totalTimeElapsed={totalTimeElapsed}
+          onQuit={handleQuit}
+          isHardMode={isHardMode}
+          showCriticalSuccess={showCriticalSuccess}
+          showCriticalHit={showCriticalHit}
+          showHypeTrain={showHypeTrain}
+          consecutiveFastAnswers={consecutiveFastAnswers}
+          pointsEarned={pointsEarned}
         />
       ) : (
         <MenuScreen
@@ -918,7 +1106,7 @@ const PokemonGame = () => {
           setGameOver(false);
           setIsGameActive(false);
           setScore(0);
-          startGame();
+          startGame(isHardMode);
         }}
         handleBackToMenu={() => {
           console.log('Going back to menu, cleaning up victory sound');

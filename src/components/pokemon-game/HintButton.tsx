@@ -41,7 +41,7 @@ export const HintButton: FC<HintButtonProps> = ({
             <div className="w-1.5 h-1.5 rounded-full bg-yellow-300 animate-pulse"></div>
             <div className="w-1.5 h-1.5 rounded-full bg-yellow-300 animate-pulse delay-75"></div>
           </div>
-          Indice ({hintsLeft})
+          Indice ({hintsLeft === Infinity ? '∞' : hintsLeft})
           <div className="absolute right-3 top-1/2 -translate-y-1/2 flex gap-1.5">
             <div className="w-1.5 h-1.5 rounded-full bg-yellow-300 animate-pulse"></div>
             <div className="w-1.5 h-1.5 rounded-full bg-yellow-300 animate-pulse delay-75"></div>
