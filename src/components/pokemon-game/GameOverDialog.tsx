@@ -82,12 +82,11 @@ export const GameOverDialog: FC<GameOverDialogProps> = ({
         frenchName: rewardPokemon.pokemon.frenchName
       });
 
-      const pokemonName = rewardPokemon.pokemon.englishName.toLowerCase();
-      const cryUrl = `https://play.pokemonshowdown.com/audio/cries/${pokemonName}.mp3`;
-      console.log('🔊 Generated cry URL:', cryUrl);
+      const [latestCry, legacyCry] = rewardPokemon.pokemon.cryUrl.split('|');
+      console.log('🔊 Playing cry URL:', latestCry);
       
       try {
-        const cryAudio = new Audio(cryUrl);
+        const cryAudio = new Audio(latestCry || legacyCry);
         let hasError = false;
         
         // Add event listeners for debugging

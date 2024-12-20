@@ -863,10 +863,9 @@ const PokemonGame = () => {
       // Play reward Pokemon cry first if available
       if (rewardPokemon.pokemon) {
         console.log('🎵 About to play reward Pokemon cry');
-        const pokemonName = rewardPokemon.pokemon.englishName.toLowerCase();
-        const cryUrl = `https://play.pokemonshowdown.com/audio/cries/${pokemonName}.mp3`;
-        console.log('🔊 Playing cry URL:', cryUrl);
-        const cryAudio = new Audio(cryUrl);
+        const [latestCry, legacyCry] = rewardPokemon.pokemon.cryUrl.split('|');
+        console.log('🔊 Playing cry URL:', latestCry);
+        const cryAudio = new Audio(latestCry || legacyCry);
         try {
           await cryAudio.play();
           console.log('✅ Reward Pokemon cry played successfully');
