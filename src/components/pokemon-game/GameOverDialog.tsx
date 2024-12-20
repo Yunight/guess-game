@@ -56,43 +56,16 @@ export const GameOverDialog: FC<GameOverDialogProps> = ({
   const dialogContentRef = useRef<HTMLDivElement>(null);
 
   const handleShare = async () => {
-    if (!dialogContentRef.current) return;
-
     try {
-      // Hide buttons before capturing
-      const buttons = dialogContentRef.current.querySelectorAll('button');
-      buttons.forEach(button => button.style.display = 'none');
+      const shareText = `J'ai deviné ${score} Pokémon${score > 1 ? 's' : ''} en ${formatTimeForRanking(totalTimeElapsed)}! Peux-tu faire mieux?\n\n#PokemonGuess #PokemonGuesserByYunight\nhttps://pokemon-guesser.vercel.app`;
 
-      const canvas = await html2canvas(dialogContentRef.current, {
-        backgroundColor: null,
-        scale: 2, // Higher quality
-      });
-
-      // Show buttons again
-      buttons.forEach(button => button.style.display = '');
-
-      // Convert canvas to blob
-      const blob = await new Promise<Blob>((resolve) => {
-        canvas.toBlob((blob) => {
-          resolve(blob!);
-        }, 'image/png');
-      });
-
-      // Create file from blob
-      const file = new File([blob], 'pokemon-game-result.png', { type: 'image/png' });
-
-      // Share the image
-      if (navigator.share && navigator.canShare({ files: [file] })) {
+      if (navigator.share) {
         await navigator.share({
-          files: [file],
           title: 'Mes résultats Pokémon Quiz!',
-          text: `J'ai deviné ${score} Pokémon${score > 1 ? 's' : ''} en ${formatTimeForRanking(totalTimeElapsed)}! Peux-tu faire mieux?`,
+          text: shareText
         });
       } else {
-        // Fallback for browsers that don't support native sharing
-        const tweetText = encodeURIComponent(
-          `J'ai deviné ${score} Pokémon${score > 1 ? 's' : ''} en ${formatTimeForRanking(totalTimeElapsed)} sur Pokémon Quiz! Peux-tu faire mieux? #PokemonQuiz`
-        );
+        const tweetText = encodeURIComponent(shareText);
         window.open(`https://twitter.com/intent/tweet?text=${tweetText}`, '_blank');
       }
     } catch (error) {
