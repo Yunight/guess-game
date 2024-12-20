@@ -64,7 +64,7 @@ export const RewardPokemonDisplay: FC<RewardPokemonDisplayProps> = ({
                 />
               </div>
               
-              <div className={`absolute bottom-0 left-0 right-0 text-center ${pokemon.isShiny ? 'bg-yellow-500/50' : 'bg-black/50'} 
+              <div className={`absolute bottom-0 left-0 right-0 text-center ${pokemon.isShiny ? 'bg-yellow-500/50' : 'bg-gradient-to-r from-blue-500/50 via-blue-600/50 to-blue-500/50'} 
                 backdrop-blur-sm py-3 text-white font-bold text-xl transition-all duration-300`}>
                 <span className="text-white">{t('youAre')} </span>
                 <span className={`${pokemon.isShiny ? 'text-yellow-300' : 'text-white'} drop-shadow-[0_2px_2px_rgba(0,0,0,0.5)]`}>

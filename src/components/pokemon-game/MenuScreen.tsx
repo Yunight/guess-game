@@ -1,4 +1,4 @@
-import { FC, useState } from 'react';
+import { FC, useState, useEffect } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Volume2, VolumeX, HelpCircle, Github, Twitter } from 'lucide-react';
@@ -7,6 +7,9 @@ import { HowToPlay } from './HowToPlay';
 import { GameModeDialog } from '@/components/pokemon-game/GameModeDialog';
 import { useTranslation } from 'react-i18next';
 import { LanguageToggle } from '@/components/ui/language-toggle';
+import { AuthButtons } from './AuthButtons';
+import { auth } from '../../firebase';
+import { User } from 'firebase/auth';
 
 interface MenuScreenProps {
   playerName: string;
@@ -45,6 +48,15 @@ export const MenuScreen: FC<MenuScreenProps> = ({
   const { t } = useTranslation();
   const [showHowToPlay, setShowHowToPlay] = useState(false);
   const [showGameModeDialog, setShowGameModeDialog] = useState(false);
+  const [user, setUser] = useState<User | null>(null);
+
+  useEffect(() => {
+    const unsubscribe = auth.onAuthStateChanged((user) => {
+      setUser(user);
+    });
+
+    return () => unsubscribe();
+  }, []);
 
   const handleStartGameClick = () => {
     setShowGameModeDialog(true);
@@ -108,7 +120,7 @@ export const MenuScreen: FC<MenuScreenProps> = ({
           <div className="absolute top-2 left-24 w-10 h-10 rounded-full bg-blue-400 border-4 border-white"></div>
 
           {/* Sound, Help, and Language buttons */}
-          <div className="absolute top-4 right-4 flex gap-2">
+          <div className="absolute top-4 right-4 flex items-center gap-2">
             <Button
               variant="ghost"
               size="icon"
@@ -135,6 +147,22 @@ export const MenuScreen: FC<MenuScreenProps> = ({
           {/* Main content area */}
           <div className="mt-16 space-y-8 h-[calc(100%-5rem)] flex flex-col">
             <div className="bg-white rounded-xl p-3 sm:p-4 shadow-inner space-y-3 flex-1">
+              {/* Authentication Section */}
+              <div className="space-y-2">
+                <div className="flex items-center gap-4">
+                  {!user && (
+                    <div className="flex items-center gap-2">
+                      <div className="w-6 h-6 bg-blue-500 rounded-full border-4 border-white shadow-md"></div>
+                      <h2 className="text-lg font-semibold text-gray-800">{t('connexion')}</h2>
+                    </div>
+                  )}
+                  <AuthButtons 
+                    isAuthenticated={!!user} 
+                    userName={user?.displayName || null}
+                  />
+                </div>
+              </div>
+
               <div className="space-y-2">
                 <label htmlFor="playerName" className="text-sm font-medium text-gray-700">
                   {t('trainerName')}
@@ -145,11 +173,14 @@ export const MenuScreen: FC<MenuScreenProps> = ({
                   placeholder={t('enterName')}
                   className={`w-full h-10 px-4 text-lg transition-colors
                     ${nameError ? 'border-red-500 focus:ring-red-500' : 'border-gray-300'}
+                    ${user ? 'bg-gray-100 border-transparent cursor-not-allowed opacity-75 hover:bg-gray-100 focus:bg-gray-100 select-none' : ''}
                   `}
-                  value={playerName}
+                  value={user ? user.displayName || '' : playerName}
                   onChange={handlePlayerNameChange}
+                  readOnly={!!user}
+                  disabled={!!user}
                 />
-                {nameError && (
+                {nameError && !user && (
                   <p className="text-red-500 text-sm">{nameError}</p>
                 )}
               </div>

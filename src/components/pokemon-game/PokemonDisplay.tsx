@@ -15,6 +15,10 @@ const devError = (message: string, error?: unknown) => {
   }
 };
 
+// Detect iOS device
+const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || 
+              (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+
 interface PokemonDisplayProps {
   currentPokemon: Pokemon | undefined;
   isPokemonLoading: boolean;
@@ -25,6 +29,7 @@ interface PokemonDisplayProps {
 
 // Play shiny effect sound
 const playShinyEffect = async () => {
+  if (isIOS) return; // Skip on iOS devices
   try {
     const shinyAudio = new Audio('/sounds/shiny_effect.mp3');
     await shinyAudio.play();
@@ -57,53 +62,48 @@ export const PokemonDisplay: FC<PokemonDisplayProps> = ({
     const newPokemonId = currentPokemon?.id;
     devLog('🔄 Pokemon changed, resetting display state');
     
-    // Update our reference first
-    currentPokemonIdRef.current = newPokemonId || null;
-    
-    // Reset all states
-    setDisplayState('loading');
-    setDisplayedPokemon(undefined);
-    loadingRef.current = true;
-    soundPlayedRef.current = false;
-
-    // Add minimum loading time
-    const minLoadingTime = setTimeout(() => {
-      if (currentPokemon && currentPokemonIdRef.current === currentPokemon.id) {
-        loadingRef.current = false;
-        setDisplayState('ready');
-        setDisplayedPokemon(currentPokemon);
-      }
-    }, 500); // 500ms minimum loading time
-
-    // Clean up previous audio immediately
-    if (audioRef.current) {
-      devLog('🧹 Cleaning up previous Pokemon audio');
-      audioRef.current.pause();
-      audioRef.current.currentTime = 0;
-      audioRef.current.remove();
-      audioRef.current = null;
-    }
-
-    return () => {
-      clearTimeout(minLoadingTime);
+    // If the Pokemon ID has changed, reset sound state
+    if (newPokemonId !== currentPokemonIdRef.current) {
+      soundPlayedRef.current = false;
+      // Clean up previous audio immediately
       if (audioRef.current) {
-        devLog('🧹 Cleaning up audio on unmount');
+        devLog('🧹 Cleaning up previous Pokemon audio');
         audioRef.current.pause();
         audioRef.current.currentTime = 0;
         audioRef.current.remove();
         audioRef.current = null;
       }
-    };
-  }, [currentPokemon?.id]);
+    }
+    
+    // Update our reference
+    currentPokemonIdRef.current = newPokemonId || null;
+    
+    // Always clear display when loading
+    if (isPokemonLoading) {
+      setDisplayState('loading');
+      setDisplayedPokemon(undefined);
+      loadingRef.current = true;
+      return;
+    }
+    
+    // Handle new Pokemon
+    if (currentPokemon && currentPokemon.id !== displayedPokemon?.id) {
+      setDisplayedPokemon(currentPokemon);
+      if (isCorrect !== true) {
+        setDisplayState('ready');
+      }
+      loadingRef.current = false;
+    }
+  }, [currentPokemon?.id, isPokemonLoading, isCorrect, displayedPokemon?.id]);
 
-  // Remove the separate loading effect since we handle it in the reset effect
+  // Handle state changes
   useEffect(() => {
     if (isCorrect === true) {
       setDisplayState('revealed');
-    } else if (!isPokemonLoading && currentPokemon) {
+    } else if (!isPokemonLoading && currentPokemon && displayState === 'loading') {
       setDisplayState('ready');
     }
-  }, [isCorrect, isPokemonLoading, currentPokemon]);
+  }, [isCorrect, isPokemonLoading, currentPokemon, displayState]);
 
   // Handle Pokemon cry sound
   useEffect(() => {
@@ -116,6 +116,32 @@ export const PokemonDisplay: FC<PokemonDisplayProps> = ({
       return;
     }
 
+    const formatPokemonNameForShowdown = (name: string): string => {
+      // Handle special cases
+      const specialCases: { [key: string]: string } = {
+        'Nidoran♂': 'nidoranm',
+        'Nidoran♀': 'nidoranf',
+        'Mr. Mime': 'mrmime',
+        'Mime Jr.': 'mimejr',
+        'Type: Null': 'typenull',
+        'Flabébé': 'flabebe',
+        'Farfetch\'d': 'farfetchd',
+        'Sirfetch\'d': 'sirfetchd',
+        'Mr. Rime': 'mrrime',
+        'Wo-Chien': 'wochien',
+        'Chien-Pao': 'chienpao',
+        'Ting-Lu': 'tinglu',
+        'Chi-Yu': 'chiyu',
+        'Tapu Koko': 'tapukoko',
+        'Tapu Lele': 'tapulele',
+        'Tapu Bulu': 'tapubulu',
+        'Tapu Fini': 'tapufini'
+      };
+
+      const pokemonName = name.toLowerCase();
+      return specialCases[name] || pokemonName.replace(/[^a-z0-9]/g, '');
+    };
+
     const playPokemonCry = async () => {
       if (audioRef.current) {
         audioRef.current.pause();
@@ -125,7 +151,7 @@ export const PokemonDisplay: FC<PokemonDisplayProps> = ({
       }
 
       // Play shiny effect first if it's a shiny Pokemon
-      if (displayedPokemon.isShiny) {
+      if (displayedPokemon.isShiny && !isIOS) {
         await playShinyEffect();
       }
 
@@ -143,16 +169,25 @@ export const PokemonDisplay: FC<PokemonDisplayProps> = ({
       };
 
       try {
-        soundPlayedRef.current = true;
-        const urls = displayedPokemon.cryUrl.split('|');
         let audio: HTMLAudioElement | null = null;
-
-        for (const url of urls) {
-          audio = await tryPlayAudio(url);
-          if (audio) {
-            audioRef.current = audio;
-            break;
+        
+        if (isIOS) {
+          // Use Pokemon Showdown's MP3 cry for iOS devices
+          const formattedName = formatPokemonNameForShowdown(displayedPokemon.englishName);
+          const showdownUrl = `https://play.pokemonshowdown.com/audio/cries/${formattedName}.mp3`;
+          audio = await tryPlayAudio(showdownUrl);
+        } else {
+          // Use regular cries for other devices
+          const urls = displayedPokemon.cryUrl.split('|');
+          for (const url of urls) {
+            audio = await tryPlayAudio(url);
+            if (audio) break;
           }
+        }
+
+        if (audio) {
+          audioRef.current = audio;
+          soundPlayedRef.current = true;
         }
       } catch (error) {
         devError('❌ Error playing Pokemon cry:', error);
@@ -187,7 +222,7 @@ export const PokemonDisplay: FC<PokemonDisplayProps> = ({
         </div>
         
         <div className="relative z-10 w-full h-full flex items-center justify-center">
-          {(isPokemonLoading || !displayedPokemon || !displayedPokemon.sprite) ? (
+          {(displayState === 'loading' || !displayedPokemon || !displayedPokemon.sprite) ? (
             <div className="pokeball-loading">
               <div className="outer-circle" />
               <div className="center-circle" />
@@ -225,7 +260,7 @@ export const PokemonDisplay: FC<PokemonDisplayProps> = ({
                 {/* Pokemon name reveal */}
                 {displayState === 'revealed' && guessTimeLeft === 0 && (
                   <div className="absolute bottom-4 left-0 right-0 text-center">
-                    <div className="bg-black/70 text-white px-4 py-2 rounded-full mx-auto inline-block backdrop-blur-sm font-bold text-xl animate-fade-in">
+                    <div className="bg-gradient-to-r from-blue-500/50 via-blue-600/50 to-blue-500/50 text-white px-6 py-3 rounded-full mx-auto inline-block backdrop-blur-sm font-bold text-xl animate-fade-in drop-shadow-[0_2px_2px_rgba(0,0,0,0.5)]">
                       {i18n.language === 'fr' ? displayedPokemon.frenchName : displayedPokemon.englishName}
                     </div>
                   </div>
