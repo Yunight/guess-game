@@ -9,7 +9,7 @@ import { ScrollableDialog } from '@/components/ui/scrollable-dialog';
 import { Button } from '@/components/ui/button';
 import { RewardPokemonDisplay } from './RewardPokemonDisplay';
 import { Pokemon } from './types';
-import { Trophy, Clock, Crown, RefreshCcw, Home, Share2 } from 'lucide-react';
+import { Trophy, Clock, Crown, RefreshCcw, Home, Share2, Github, Twitter } from 'lucide-react';
 
 interface GameOverDialogProps {
   gameOver: boolean;
@@ -272,6 +272,25 @@ export const GameOverDialog: FC<GameOverDialogProps> = ({
               <Home className="mr-2 h-4 w-4" />
               Menu
             </Button>
+          </div>
+
+          <div className="flex justify-center items-center gap-4 mt-6 pb-2">
+            <a
+              href="https://github.com/Yunight"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-white/80 hover:text-white transition-colors"
+            >
+              <Github className="h-5 w-5" />
+            </a>
+            <a
+              href="https://x.com/NightOfLunaTV"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-white/80 hover:text-white transition-colors"
+            >
+              <Twitter className="h-5 w-5" />
+            </a>
           </div>
         </div>
       </ScrollableDialog>

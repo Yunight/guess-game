@@ -1,7 +1,7 @@
 import { FC, useState } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Volume2, VolumeX, HelpCircle } from 'lucide-react';
+import { Volume2, VolumeX, HelpCircle, Github, Twitter } from 'lucide-react';
 import { Generation, Rankings } from '@/components/pokemon-game/types';
 import { HowToPlay } from './HowToPlay';
 import { GameModeDialog } from '@/components/pokemon-game/GameModeDialog';
@@ -328,8 +328,26 @@ export const MenuScreen: FC<MenuScreenProps> = ({
         </div>
       </div>
       
-      {/* Copyright and GitHub link */}
-      <div className="mt-6 text-center text-sm text-gray-500 space-y-1">
+      {/* Copyright and social links */}
+      <div className="mt-6 text-center text-sm text-gray-500 space-y-2">
+        <div className="flex justify-center items-center gap-4">
+          <a
+            href="https://github.com/Yunight"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-gray-500 hover:text-gray-700 transition-colors"
+          >
+            <Github className="h-5 w-5" />
+          </a>
+          <a
+            href="https://x.com/NightOfLunaTV"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-gray-500 hover:text-gray-700 transition-colors"
+          >
+            <Twitter className="h-5 w-5" />
+          </a>
+        </div>
         <p>© 2024 Pokémon. © 1995-2024 Nintendo/Creatures Inc./GAME FREAK inc.</p>
         <p>Developed by <a href="https://github.com/Yunight" target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:text-blue-600 transition-colors">Yunight</a></p>
       </div>
