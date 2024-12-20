@@ -165,5 +165,14 @@ export default {
 			},
 		},
 	},
-	plugins: [require('tailwindcss-animate')],
+	plugins: [
+		// @ts-ignore
+		function ({ addBase, addUtilities }) {
+			addUtilities({
+				'.animate-accordion-down': { animation: 'accordion-down 0.2s ease-out' },
+				'.animate-accordion-up': { animation: 'accordion-up 0.2s ease-out' },
+				// ... other animations from tailwindcss-animate
+			});
+		}
+	],
 };
