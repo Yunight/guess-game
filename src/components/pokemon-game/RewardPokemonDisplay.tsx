@@ -37,8 +37,12 @@ export const RewardPokemonDisplay: FC<RewardPokemonDisplayProps> = ({
                 alt={i18n.language === 'fr' ? pokemon.frenchName : pokemon.englishName}
                 className="w-full h-full object-contain animate-bounce-in"
               />
-              <div className="absolute bottom-0 left-0 right-0 text-center bg-black/50 backdrop-blur-sm py-2 text-white font-medium">
-                {t('youAre')} {i18n.language === 'fr' ? pokemon.frenchName : pokemon.englishName}!
+              <div className="absolute bottom-0 left-0 right-0 text-center bg-black/50 backdrop-blur-sm py-3 text-white font-bold text-xl">
+                <span className="text-yellow-300">{t('youAre')} </span>
+                <span className="text-white drop-shadow-[0_2px_2px_rgba(0,0,0,0.5)]">
+                  {i18n.language === 'fr' ? pokemon.frenchName : pokemon.englishName}
+                </span>
+                <span className="text-yellow-300"> !</span>
               </div>
             </>
           ) : null}

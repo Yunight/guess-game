@@ -97,8 +97,8 @@ export const fr = {
   shareMsgCriticalHit: '⚡ Expert des coups critiques en {{gen}}! La chance ou le talent? Viens tester! 🎯',
   shareMsgCriticalSuccess: '⏱️ Maître du timing en {{gen}}! Des réponses à la dernière seconde! 🎭',
   shareMsgHypeTrain: '🚄 Le Hype Train était incontrôlable en {{gen}}! Quelle performance! 🔥',
-  shareMsgLegendary: '✨ J\'ai capturé un Pokémon LÉGENDAIRE en {{gen}}: {{pokemon}}! ��',
-  shareMsgMythical: '🌈 Un Pokémon MYTHIQUE capturé en {{gen}}: {{pokemon}}! ✨',
+  shareMsgLegendary: '✨ Je suis un Pokémon LÉGENDAIRE en {{gen}}: {{pokemon}}! 🌟',
+  shareMsgMythical: '🌈 Je suis un Pokémon MYTHIQUE en {{gen}}: {{pokemon}}! ✨',
   shareMsgDefault: '🎮 Nouveau challenge sur Pokemon Guesser en {{gen}}! Viens tester tes connaissances! ✨',
   
   // Generations

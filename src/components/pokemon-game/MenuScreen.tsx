@@ -346,27 +346,30 @@ export const MenuScreen: FC<MenuScreenProps> = ({
       </div>
       
       {/* Copyright and social links */}
-      <div className="mt-6 text-center text-sm text-gray-500 space-y-2">
+      <div className="mt-6 text-center text-sm text-gray-500">
         <div className="flex justify-center items-center gap-4">
-          <a
-            href="https://github.com/Yunight"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-gray-500 hover:text-gray-700 transition-colors"
-          >
-            <Github className="h-5 w-5" />
-          </a>
-          <a
-            href="https://x.com/NightOfLunaTV"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-gray-500 hover:text-gray-700 transition-colors"
-          >
-            <Twitter className="h-5 w-5" />
-          </a>
+          <p>© 2024 Pokémon. © 1995-2024 Nintendo/Creatures Inc./GAME FREAK inc.</p>
+          <div className="flex items-center gap-2">
+            <span>Developed by</span>
+            <a href="https://github.com/Yunight" target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:text-blue-600 transition-colors">Yunight</a>
+            <a
+              href="https://github.com/Yunight"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-gray-500 hover:text-gray-700 transition-colors"
+            >
+              <Github className="h-5 w-5" />
+            </a>
+            <a
+              href="https://x.com/NightOfLunaTV"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-gray-500 hover:text-gray-700 transition-colors"
+            >
+              <Twitter className="h-5 w-5" />
+            </a>
+          </div>
         </div>
-        <p>© 2024 Pokémon. © 1995-2024 Nintendo/Creatures Inc./GAME FREAK inc.</p>
-        <p>Developed by <a href="https://github.com/Yunight" target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:text-blue-600 transition-colors">Yunight</a></p>
       </div>
 
       <HowToPlay isOpen={showHowToPlay} onClose={() => setShowHowToPlay(false)} />
