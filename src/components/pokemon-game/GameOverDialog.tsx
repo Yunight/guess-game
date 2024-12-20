@@ -199,8 +199,8 @@ export const GameOverDialog: FC<GameOverDialogProps> = ({
       `🎯 ${t('score')}: ${score}\n` +
       `⏱️ ${t('time')}: ${formatTimeForRanking(totalTimeElapsed)}\n` +
       `🌍 ${genName}\n` +
-      `${userRanking ? `👑 #${userRanking} ${t('ranking')}!\n` : ''}` +
-      `${rewardPokemon.pokemon ? `✨ ${rewardPokemon.pokemon.frenchName} ${t('caught')}!\n` : ''}\n` +
+      `${userRanking ? `👑 ${t('myRank')} #${userRanking}!\n` : ''}` +
+      `${rewardPokemon.pokemon ? `✨ ${i18n.language === 'fr' ? 'Je suis un' : 'I am'} ${i18n.language === 'fr' ? rewardPokemon.pokemon.frenchName.charAt(0).toUpperCase() + rewardPokemon.pokemon.frenchName.slice(1) : rewardPokemon.pokemon.englishName.charAt(0).toUpperCase() + rewardPokemon.pokemon.englishName.slice(1)}!\n` : ''}\n` +
       `https://pokemon-guesser-game.vercel.app/\n\n` +
       `#PokemonGuesserGame #Pokemon #PokemonGuesserByYunight #Gaming`;
 

@@ -56,6 +56,8 @@ const debounce = <T extends (...args: Parameters<T>) => ReturnType<T>>(
 
 const PokemonGame = () => {
   const { i18n } = useTranslation();
+  const [namesLoaded, setNamesLoaded] = useState(false);
+  const [loadedNames, setLoadedNames] = useState<Pokemon[]>([]);
   const [bestScore, setBestScore] = useLocalStorage<number>('bestScore', 0);
   const [bestTime, setBestTime] = useLocalStorage<number>('bestTime', 0);
   const [guess, setGuess] = useState('');
@@ -118,12 +120,17 @@ const PokemonGame = () => {
   });
 
   const pokemonNames = useMemo<Pokemon[]>(() => {
+    if (namesLoaded) return loadedNames;
+    
     const cachedData = localStorage.getItem('pokemonNames');
     if (cachedData) {
       console.log('📦 Loading Pokémon names from cache');
       try {
         const parsed = JSON.parse(cachedData);
-        return parsed.names || [];
+        setNamesLoaded(true);
+        const names = parsed.names || [];
+        setLoadedNames(names);
+        return names;
       } catch (error) {
         console.error('❌ Error parsing cached Pokémon names:', error);
         return [];
@@ -134,11 +141,13 @@ const PokemonGame = () => {
     if (apiPokemonNames.length > 0) {
       console.log('💾 Storing API Pokémon names in cache');
       localStorage.setItem('pokemonNames', JSON.stringify({ names: apiPokemonNames }));
+      setNamesLoaded(true);
+      setLoadedNames(apiPokemonNames);
       return apiPokemonNames;
     }
 
     return [];
-  }, [apiPokemonNames]);
+  }, [apiPokemonNames, namesLoaded, loadedNames]);
 
   const { 
     data: currentPokemon,
