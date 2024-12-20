@@ -90,6 +90,7 @@ const PokemonGame = () => {
   const [guessTimeLeft, setGuessTimeLeft] = useState<number>(15);
   const [totalTimeElapsed, setTotalTimeElapsed] = useState<number>(0);
   const [nameError, setNameError] = useState<string | null>(null);
+  const [isCheckingName, setIsCheckingName] = useState(false);
   const [currentPokemonId, setCurrentPokemonId] = useState<number | null>(null);
   const [isMuted, setIsMuted] = useState(() => {
     const savedMute = localStorage.getItem('pokemonGameMuted');
@@ -100,7 +101,7 @@ const PokemonGame = () => {
   const wrongAudioRef = useRef<HTMLAudioElement | null>(null);
   const trainHornRef = useRef<HTMLAudioElement | null>(null);
   const lowLifeAudioRef = useRef<HTMLAudioElement | null>(null);
-  const canStartGame = Boolean(playerName && !nameError);
+  const canStartGame = Boolean(playerName && !nameError && !isCheckingName);
   
   // Add sound URLs as constants at the top of the component
   const CORRECT_SOUND_URL = '/sounds/pkm_level_up.mp3';
@@ -648,8 +649,8 @@ const PokemonGame = () => {
       setHintsLeft(prev => prev + 1);
     }
     
-    // Handle Hype Train logic first, independently of other messages
-    if (guessTimeLeft >= 10) { // Within 5 seconds (15-10 = 5)
+    // Handle Hype Train logic only in hard mode
+    if (isHardMode && guessTimeLeft >= 10) { // Within 5 seconds (15-10 = 5)
       setConsecutiveFastAnswers(prev => {
         const newCount = prev + 1;
         console.log('🚂 Fast answer! New count:', newCount);
@@ -663,7 +664,7 @@ const PokemonGame = () => {
         return newCount;
       });
     } else {
-      console.log('🚂 Slow answer, resetting Hype Train');
+      console.log('🚂 Slow answer or not in hard mode, resetting Hype Train');
       setConsecutiveFastAnswers(0);
       setShowHypeTrain(false);
     }
@@ -953,7 +954,7 @@ const PokemonGame = () => {
     return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
 
-  // Move checkNameAvailability outside handlePlayerNameChange and memoize it
+  // Update checkNameAvailability to handle loading state
   const checkNameAvailability = useCallback(async (name: string) => {
     if (!name.trim()) {
       setNameError(null);
@@ -968,6 +969,7 @@ const PokemonGame = () => {
       return true;
     }
 
+    setIsCheckingName(true);
     try {
       // Check across all generations
       for (const gen of GENERATIONS) {
@@ -979,15 +981,18 @@ const PokemonGame = () => {
         if (!querySnapshot.empty) {
           setNameError('Ce nom est déjà utilisé. Veuillez en choisir un autre.');
           localStorage.removeItem('pokemonGamePlayerName');
+          setIsCheckingName(false);
           return false;
         }
       }
       
       setNameError(null);
+      setIsCheckingName(false);
       return true;
     } catch (error) {
       console.error('Error checking name availability:', error);
       setNameError('Erreur lors de la vérification du nom');
+      setIsCheckingName(false);
       return false;
     }
   }, [GENERATIONS]);

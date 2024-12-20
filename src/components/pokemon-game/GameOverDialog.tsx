@@ -58,6 +58,46 @@ export const GameOverDialog: FC<GameOverDialogProps> = ({
   const { t, i18n } = useTranslation();
   const [lastPlayedId, setLastPlayedId] = useState<number | null>(null);
 
+  // Add a function to handle cry URL caching
+  const getCachedCryUrl = async (pokemonId: number): Promise<{ latest: string; legacy: string }> => {
+    const POKEAPI_CACHE_KEY = 'pokeApiCryCache';
+    const CACHE_DURATION = 24 * 60 * 60 * 1000; // 24 hours
+
+    try {
+      // Check cache first
+      const cachedData = localStorage.getItem(POKEAPI_CACHE_KEY);
+      if (cachedData) {
+        const cache = JSON.parse(cachedData);
+        if (cache[pokemonId] && Date.now() - cache[pokemonId].timestamp < CACHE_DURATION) {
+          console.log('📦 Using cached cry URL for Pokemon:', pokemonId);
+          return cache[pokemonId].cries;
+        }
+      }
+
+      // If not in cache, fetch from PokeAPI
+      console.log('🔄 Fetching cry from PokeAPI for Pokemon:', pokemonId);
+      const response = await fetch(`https://pokeapi.co/api/v2/pokemon/${pokemonId}`);
+      if (!response.ok) throw new Error('Failed to fetch Pokemon cry');
+      
+      const data = await response.json();
+      const cries = data.cries as { latest: string; legacy: string };
+
+      // Update cache
+      const newCache = cachedData ? JSON.parse(cachedData) : {};
+      newCache[pokemonId] = {
+        timestamp: Date.now(),
+        cries
+      };
+      localStorage.setItem(POKEAPI_CACHE_KEY, JSON.stringify(newCache));
+      console.log('💾 Cry URL cached successfully');
+
+      return cries;
+    } catch (error) {
+      console.error('Error fetching cry URL:', error);
+      throw error;
+    }
+  };
+
   useEffect(() => {
     const playPokemonCry = async () => {
       if (!rewardPokemon.pokemon) {
@@ -82,10 +122,12 @@ export const GameOverDialog: FC<GameOverDialogProps> = ({
         frenchName: rewardPokemon.pokemon.frenchName
       });
 
-      const [latestCry, legacyCry] = rewardPokemon.pokemon.cryUrl.split('|');
-      console.log('🔊 Playing cry URL:', latestCry);
-      
       try {
+        // Get cry URL from cache or PokeAPI
+        const cries = await getCachedCryUrl(rewardPokemon.pokemon.id);
+        const [latestCry, legacyCry] = [cries.latest, cries.legacy];
+        
+        console.log('🔊 Playing cry URL:', latestCry);
         const cryAudio = new Audio(latestCry || legacyCry);
         let hasError = false;
         
