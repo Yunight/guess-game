@@ -1232,15 +1232,24 @@ const PokemonGame = () => {
   // Add loading state
   const [isInitialLoading, setIsInitialLoading] = useState(true);
 
-  // Update effect to handle initial loading and set final progress
+  // Smooth loading animation
   useEffect(() => {
     if (pokemonNames.length > 0) {
-      setLoadingProgress(100);
-      setTimeout(() => {
-        setIsInitialLoading(false);
-      }, 500);
+      let progress = 0;
+      const interval = setInterval(() => {
+        progress += 1;
+        if (progress <= 100) {
+          setLoadingProgress(progress);
+        } else {
+          clearInterval(interval);
+          setTimeout(() => {
+            setIsInitialLoading(false);
+          }, 500);
+        }
+      }, 20);
+      return () => clearInterval(interval);
     }
-  }, [pokemonNames]);
+  }, [pokemonNames.length]);
 
   // Add handleQuit function
   const handleQuit = useCallback(() => {
@@ -1301,14 +1310,27 @@ const PokemonGame = () => {
           <div className="text-xl font-medium text-gray-700">
             Chargement des Pokémons...
           </div>
-          <div className="text-sm text-gray-500">
+          <div className="text-sm font-bold text-gray-600">
             {loadingProgress}%
           </div>
-          <div className="w-64 h-2 bg-gray-200 rounded-full overflow-hidden">
+          <div className="w-80 h-3 bg-gradient-to-r from-gray-100 to-gray-200 rounded-full overflow-hidden shadow-lg relative border border-white/50">
+            <div className="absolute inset-0 bg-gradient-to-r from-blue-500/20 to-purple-500/20 animate-pulse rounded-full" />
             <div 
-              className="h-full bg-blue-500 transition-all duration-300 ease-out"
+              className="h-full bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 transition-all duration-500 ease-out relative rounded-full"
               style={{ width: `${loadingProgress}%` }}
-            />
+            >
+              <div className="absolute inset-0 bg-grid-pattern opacity-30 rounded-full" />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/10 to-white/20 rounded-full" />
+              {loadingProgress > 5 && (
+                <div className="absolute right-0 top-1/2 -translate-y-1/2 w-3 h-3 bg-white rounded-full shadow-[0_0_10px_rgba(255,255,255,0.8)] animate-pulse" />
+              )}
+            </div>
+            <div className="absolute top-0 left-0 w-full h-full bg-shine-gradient opacity-20 animate-shine rounded-full" />
+          </div>
+          <div className="flex justify-center gap-2 mt-2">
+            <div className="w-2 h-2 rounded-full bg-blue-500 animate-bounce" style={{ animationDelay: '0ms' }} />
+            <div className="w-2 h-2 rounded-full bg-purple-500 animate-bounce" style={{ animationDelay: '150ms' }} />
+            <div className="w-2 h-2 rounded-full bg-pink-500 animate-bounce" style={{ animationDelay: '300ms' }} />
           </div>
         </div>
       </div>
