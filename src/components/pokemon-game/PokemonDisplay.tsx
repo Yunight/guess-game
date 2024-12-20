@@ -87,78 +87,29 @@ export const PokemonDisplay: FC<PokemonDisplayProps> = ({
 
   // Handle Pokemon loading and display
   useEffect(() => {
-    if (!currentPokemon || isPokemonLoading || !loadingRef.current) {
-      devLog('⏳ Waiting for Pokemon data...');
+    if (!currentPokemon || isPokemonLoading) {
+      setDisplayState('loading');
       return;
     }
 
-    const initialPokemonId = currentPokemon.id;
-    if (initialPokemonId !== currentPokemonIdRef.current) {
-      devLog('❌ Pokemon ID mismatch at start of effect, aborting');
-      return;
-    }
-    
-    devLog(`🎯 Starting to load Pokemon: ${initialPokemonId}`);
-
-    const loadImage = async () => {
-      try {
-        // Check if we're still loading the same Pokemon
-        if (initialPokemonId !== currentPokemonIdRef.current) {
-          devLog('❌ Pokemon changed during loading, aborting');
-          return;
-        }
-
-        // Only attempt to load if we have a valid sprite URL
-        if (!currentPokemon.sprite) {
-          devError('❌ No sprite URL available');
-          // Don't set display state to ready if we don't have a sprite
-          return;
-        }
-
-        // Only log the name if we have valid data
-        if (currentPokemon.frenchName && currentPokemon.englishName) {
-          const pokemonName = i18n.language === 'fr' ? currentPokemon.frenchName : currentPokemon.englishName;
-          devLog(`🖼️ Loading Pokemon sprite for: ${pokemonName} ID: ${currentPokemon.id}`);
-        } else {
-          devLog(`🖼️ Loading Pokemon sprite for ID: ${currentPokemon.id}`);
-        }
-
-        // Preload the image
-        await new Promise((resolve, reject) => {
-          const img = new Image();
-          img.onload = resolve;
-          img.onerror = (error) => {
-            devError('❌ Error loading Pokemon sprite:', error);
-            reject(error);
-          };
-          img.src = currentPokemon.sprite;
-        });
-
-        // Check again if we're still loading the same Pokemon
-        if (initialPokemonId !== currentPokemonIdRef.current) {
-          devLog('❌ Pokemon changed after loading sprite, aborting');
-          return;
-        }
-
-        // Only set Pokemon data and display state if we have a valid sprite
-        if (currentPokemon.sprite) {
-          setDisplayedPokemon(currentPokemon);
-          setDisplayState('ready');
-        }
-      } catch (error) {
-        devError('❌ Error in loadImage:', error);
+    const loadPokemon = async () => {
+      if (loadingRef.current) {
+        devLog('🎮 Loading Pokemon...');
+        setDisplayState('ready');
+        setDisplayedPokemon(currentPokemon);
+        loadingRef.current = false;
       }
     };
 
-    loadImage();
-  }, [currentPokemon, isPokemonLoading, i18n.language]);
+    loadPokemon();
+  }, [currentPokemon, isPokemonLoading]);
 
-  // Handle Pokemon reveal
+  // Handle reveal state
   useEffect(() => {
-    if (isCorrect === true || guessTimeLeft === 0) {
+    if (isCorrect !== null) {
       setDisplayState('revealed');
     }
-  }, [isCorrect, guessTimeLeft]);
+  }, [isCorrect]);
 
   // Handle Pokemon cry sound
   useEffect(() => {
