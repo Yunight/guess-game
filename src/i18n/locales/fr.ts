@@ -22,6 +22,7 @@ export const fr = {
   criticalHit: '❗️ Coup Critique! ❗️',
   hypeTrain: '🚂 Hype Train! x{{count}} 🚂',
   youAre: 'Tu es',
+  firstLetter: 'Première lettre',
   
   // Game Over Dialog
   congratulations: 'Félicitations {{name}}, vous avez deviné tous les pokémons, vous êtes un vrai maitre pokémon!',

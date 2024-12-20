@@ -1,4 +1,4 @@
-import { FC } from 'react';
+import { FC, useEffect, useState } from 'react';
 import {
   Dialog,
   DialogDescription,
@@ -48,67 +48,157 @@ export const GameOverDialog: FC<GameOverDialogProps> = ({
   totalPokemonCount,
   handleRestart,
   handleBackToMenu,
+  isMuted,
   criticalHitCount,
   criticalSuccessCount,
   hyperTrainCount,
   maxHypeChain,
   selectedGeneration,
 }) => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const [lastPlayedId, setLastPlayedId] = useState<number | null>(null);
+
+  useEffect(() => {
+    const playPokemonCry = async () => {
+      if (!rewardPokemon.pokemon) {
+        console.log('❌ No reward Pokémon available');
+        return;
+      }
+      
+      if (rewardPokemon.pokemon.id === lastPlayedId) {
+        console.log('⏭️ Skip playing cry - same Pokémon as last time:', lastPlayedId);
+        return;
+      }
+      
+      if (isMuted) {
+        console.log('🔇 Audio is muted, setting last played ID without playing');
+        setLastPlayedId(rewardPokemon.pokemon.id);
+        return;
+      }
+
+      console.log('🎵 Attempting to play reward Pokemon cry:', {
+        pokemonId: rewardPokemon.pokemon.id,
+        pokemonName: rewardPokemon.pokemon.englishName,
+        frenchName: rewardPokemon.pokemon.frenchName
+      });
+
+      const pokemonName = rewardPokemon.pokemon.englishName.toLowerCase();
+      const cryUrl = `https://play.pokemonshowdown.com/audio/cries/${pokemonName}.mp3`;
+      console.log('🔊 Generated cry URL:', cryUrl);
+      
+      try {
+        const cryAudio = new Audio(cryUrl);
+        let hasError = false;
+        
+        // Add event listeners for debugging
+        cryAudio.addEventListener('loadstart', () => console.log('🎵 Started loading audio'));
+        cryAudio.addEventListener('canplay', () => console.log('✅ Audio can start playing'));
+        cryAudio.addEventListener('loadeddata', () => console.log('✅ Audio data loaded successfully'));
+        cryAudio.addEventListener('error', (e) => {
+          hasError = true;
+          const audio = e.currentTarget as HTMLAudioElement;
+          console.error('❌ Audio loading error:', {
+            src: audio.src,
+            networkState: audio.networkState,
+            readyState: audio.readyState,
+            error: audio.error ? {
+              code: audio.error.code,
+              message: audio.error.message
+            } : null
+          });
+        });
+        
+        console.log('⏳ Attempting to play audio...');
+        await cryAudio.play();
+        
+        // Only set lastPlayedId if there was no error
+        if (!hasError) {
+          setLastPlayedId(rewardPokemon.pokemon.id);
+          console.log('✅ Reward Pokemon cry played successfully');
+        } else {
+          console.log('❌ Not setting lastPlayedId due to error');
+        }
+      } catch (err) {
+        const error = err as Error;
+        console.error('❌ Error playing reward Pokemon cry:', {
+          name: error.name,
+          message: error.message,
+          stack: error.stack,
+          type: Object.prototype.toString.call(error)
+        });
+        // Don't set lastPlayedId on error
+        console.log('❌ Not setting lastPlayedId due to error');
+      }
+    };
+
+    playPokemonCry();
+  }, [rewardPokemon.pokemon, isMuted, lastPlayedId]);
 
   const handleShare = async () => {
     const getClickbaitMessage = () => {
+      // Get generation name in correct language
+      const genNumber = selectedGeneration.name.match(/\d+/)?.[0] || '1';
+      const genName = i18n.language === 'fr' 
+        ? `${genNumber}ère Génération`
+        : `Generation ${genNumber}`;
+
       if (score >= 50) {
-        return t('shareMsg50', { gen: selectedGeneration.name });
+        return t('shareMsg50', { gen: genName });
       }
       if (score >= 30) {
-        return t('shareMsg30', { gen: selectedGeneration.name });
+        return t('shareMsg30', { gen: genName });
       }
       if (score >= 20) {
-        return t('shareMsg20', { gen: selectedGeneration.name });
+        return t('shareMsg20', { gen: genName });
       }
       if (score >= 10) {
-        return t('shareMsg10', { gen: selectedGeneration.name });
+        return t('shareMsg10', { gen: genName });
       }
       if (userRanking === 1) {
-        return t('shareMsgChampion', { gen: selectedGeneration.name });
+        return t('shareMsgChampion', { gen: genName });
       }
       if (userRanking && userRanking <= 3) {
-        return t('shareMsgTop3', { gen: selectedGeneration.name });
+        return t('shareMsgTop3', { gen: genName });
       }
       if (userRanking && userRanking <= 10) {
-        return t('shareMsgTop10', { gen: selectedGeneration.name });
+        return t('shareMsgTop10', { gen: genName });
       }
       if (maxHypeChain >= 10) {
-        return t('shareMsgHypeLegend', { gen: selectedGeneration.name, count: maxHypeChain });
+        return t('shareMsgHypeLegend', { gen: genName, count: maxHypeChain });
       }
       if (maxHypeChain >= 5) {
-        return t('shareMsgHype', { gen: selectedGeneration.name, count: maxHypeChain });
+        return t('shareMsgHype', { gen: genName, count: maxHypeChain });
       }
       if (criticalHitCount >= 3) {
-        return t('shareMsgCriticalHit', { gen: selectedGeneration.name });
+        return t('shareMsgCriticalHit', { gen: genName });
       }
       if (criticalSuccessCount >= 2) {
-        return t('shareMsgCriticalSuccess', { gen: selectedGeneration.name });
+        return t('shareMsgCriticalSuccess', { gen: genName });
       }
       if (hyperTrainCount >= 3) {
-        return t('shareMsgHypeTrain', { gen: selectedGeneration.name });
+        return t('shareMsgHypeTrain', { gen: genName });
       }
       if (rewardPokemon.pokemon?.isLegendary) {
-        return t('shareMsgLegendary', { gen: selectedGeneration.name, pokemon: rewardPokemon.pokemon.frenchName });
+        return t('shareMsgLegendary', { gen: genName, pokemon: rewardPokemon.pokemon.frenchName });
       }
       if (rewardPokemon.pokemon?.isMythical) {
-        return t('shareMsgMythical', { gen: selectedGeneration.name, pokemon: rewardPokemon.pokemon.frenchName });
+        return t('shareMsgMythical', { gen: genName, pokemon: rewardPokemon.pokemon.frenchName });
       }
-      return t('shareMsgDefault', { gen: selectedGeneration.name });
+      return t('shareMsgDefault', { gen: genName });
     };
 
     const clickbaitMsg = getClickbaitMessage();
+    // Get generation name in correct language for the share text
+    const genNumber = selectedGeneration.name.match(/\d+/)?.[0] || '1';
+    const genName = i18n.language === 'fr' 
+      ? `${genNumber}ère Génération`
+      : `Generation ${genNumber}`;
+
     const shareText = `${clickbaitMsg}\n\n` +
       `👤 ${playerName}\n` +
       `🎯 ${t('score')}: ${score}\n` +
       `⏱️ ${t('time')}: ${formatTimeForRanking(totalTimeElapsed)}\n` +
-      `🌍 ${selectedGeneration.name}\n` +
+      `🌍 ${genName}\n` +
       `${userRanking ? `👑 #${userRanking} ${t('ranking')}!\n` : ''}` +
       `${rewardPokemon.pokemon ? `✨ ${rewardPokemon.pokemon.frenchName} ${t('caught')}!\n` : ''}\n` +
       `https://pokemon-guesser-game.vercel.app/\n\n` +

@@ -8,6 +8,7 @@ import { GameStats } from './GameStats';
 import { GuessInput } from './GuessInput';
 import { HintButton } from './HintButton';
 import { ScoreIncrease } from './ScoreIncrease';
+import { useTranslation } from 'react-i18next';
 
 interface GameScreenProps {
   currentPokemon: Pokemon | undefined;
@@ -72,6 +73,8 @@ export const GameScreen: FC<GameScreenProps> = ({
   consecutiveFastAnswers,
   pointsEarned,
 }) => {
+  const { t } = useTranslation();
+
   return (
     <Card className="w-full max-w-md p-1 sm:p-4 relative flex flex-col min-h-0 sm:min-h-0 bg-red-500 rounded-3xl overflow-hidden">
       {/* Fire overlay when Hype Train is active */}
@@ -223,17 +226,17 @@ export const GameScreen: FC<GameScreenProps> = ({
             <div className="absolute left-1/2 -translate-x-1/2 bottom-4 z-50 pointer-events-none">
               {showCriticalSuccess && (
                 <div className="animate-float-up-fade-out text-yellow-300 font-bold text-xl whitespace-nowrap px-4 py-2 bg-black/80 rounded-full backdrop-blur-sm border-2 border-yellow-400 shadow-lg">
-                  ⚡️ Succès Critique! ⚡️
+                  {t('criticalSuccess')}
                 </div>
               )}
               {!showCriticalSuccess && showCriticalHit && (
                 <div className="animate-float-up-fade-out text-yellow-300 font-bold text-xl whitespace-nowrap px-4 py-2 bg-black/80 rounded-full backdrop-blur-sm border-2 border-yellow-400 shadow-lg">
-                  ❗️ Coup Critique! ❗️
+                  {t('criticalHit')}
                 </div>
               )}
               {!showCriticalSuccess && !showCriticalHit && showHypeTrain && (
                 <div className="text-yellow-300 font-bold text-xl whitespace-nowrap px-4 py-2 bg-black/80 rounded-full backdrop-blur-sm border-2 border-yellow-400 shadow-lg animate-pulse">
-                  🚂 Hype Train! x{consecutiveFastAnswers} 🚂
+                  {t('hypeTrain', { count: consecutiveFastAnswers })}
                 </div>
               )}
             </div>

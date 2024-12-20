@@ -22,6 +22,7 @@ export const en = {
   criticalHit: '❗️ Critical Hit! ❗️',
   hypeTrain: '🚂 Hype Train! x{{count}} 🚂',
   youAre: 'You are',
+  firstLetter: 'First letter',
   
   // Game Over Dialog
   congratulations: 'Congratulations {{name}}, you\'ve guessed all Pokémon, you\'re a true Pokémon master!',

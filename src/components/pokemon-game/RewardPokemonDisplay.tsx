@@ -40,7 +40,9 @@ export const RewardPokemonDisplay: FC<RewardPokemonDisplayProps> = ({
               <div className="absolute bottom-0 left-0 right-0 text-center bg-black/50 backdrop-blur-sm py-3 text-white font-bold text-xl">
                 <span className="text-yellow-300">{t('youAre')} </span>
                 <span className="text-white drop-shadow-[0_2px_2px_rgba(0,0,0,0.5)]">
-                  {i18n.language === 'fr' ? pokemon.frenchName : pokemon.englishName}
+                  {i18n.language === 'fr' ? 
+                    pokemon.frenchName.charAt(0).toUpperCase() + pokemon.frenchName.slice(1).toLowerCase() : 
+                    pokemon.englishName.charAt(0).toUpperCase() + pokemon.englishName.slice(1).toLowerCase()}
                 </span>
                 <span className="text-yellow-300"> !</span>
               </div>

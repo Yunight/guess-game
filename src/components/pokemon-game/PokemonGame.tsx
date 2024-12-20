@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { collection, getDocs, addDoc, query, orderBy, limit, serverTimestamp, where, updateDoc, Timestamp, DocumentData } from 'firebase/firestore';
 import { db } from '../../firebase';
 import '../../styles/PokemonGame.css';
@@ -112,28 +112,33 @@ const PokemonGame = () => {
   const TRAIN_HORN_URL = '/sounds/train_horn_bell.mp3';
   const LOW_LIFE_URL = '/sounds/low_life.mp3';
   
-  // Use RTK Query hooks with proper typing
-  const { 
-    data: allPokemonNames = [],
-    isLoading: isNamesLoading
-  } = useGetAllPokemonNamesQuery();
+  // Use cached Pokémon names from localStorage or fetch from API
+  const { data: apiPokemonNames = [] } = useGetAllPokemonNamesQuery(undefined, {
+    skip: !!localStorage.getItem('pokemonNames') // Skip API call if we have cached data
+  });
 
-  // Add loading progress effect
-  useEffect(() => {
-    if (isNamesLoading) {
-      let progress = 0;
-      const interval = setInterval(() => {
-        progress += 5;
-        if (progress > 90) {
-          clearInterval(interval);
-          return;
-        }
-        setLoadingProgress(progress);
-      }, 100);
-
-      return () => clearInterval(interval);
+  const pokemonNames = useMemo<Pokemon[]>(() => {
+    const cachedData = localStorage.getItem('pokemonNames');
+    if (cachedData) {
+      console.log('📦 Loading Pokémon names from cache');
+      try {
+        const parsed = JSON.parse(cachedData);
+        return parsed.names || [];
+      } catch (error) {
+        console.error('❌ Error parsing cached Pokémon names:', error);
+        return [];
+      }
     }
-  }, [isNamesLoading]);
+    
+    // If no cache but we have API data, store it in localStorage
+    if (apiPokemonNames.length > 0) {
+      console.log('💾 Storing API Pokémon names in cache');
+      localStorage.setItem('pokemonNames', JSON.stringify({ names: apiPokemonNames }));
+      return apiPokemonNames;
+    }
+
+    return [];
+  }, [apiPokemonNames]);
 
   const { 
     data: currentPokemon,
@@ -301,9 +306,39 @@ const PokemonGame = () => {
   const normalizeText = (text: string | undefined | null): string => {
     if (!text) return '';
     
-    return text
-      .toLowerCase()
-      .trim()
+    const lowerText = text.toLowerCase().trim();
+    
+    // Handle special cases first
+    const specialCases: { [key: string]: string } = {
+      'nidoran♂': 'nidoranm',
+      'nidoran♀': 'nidoranf',
+      'nidoranm': 'nidoranm',
+      'nidoranf': 'nidoranf',
+      'mr. mime': 'mrmime',
+      'mr mime': 'mrmime',
+      'mime jr.': 'mimejr',
+      'mime jr': 'mimejr',
+      'farfetch\'d': 'farfetchd',
+      'farfetchd': 'farfetchd',
+      'sirfetch\'d': 'sirfetchd',
+      'sirfetchd': 'sirfetchd',
+      'type: null': 'typenull',
+      'type null': 'typenull',
+      'flabébé': 'flabebe',
+      'flabebe': 'flabebe',
+      'jangmo-o': 'jangmoo',
+      'jangmoo': 'jangmoo',
+      'hakamo-o': 'hakamoo',
+      'hakamoo': 'hakamoo',
+      'kommo-o': 'kommoo',
+      'kommoo': 'kommoo'
+    };
+
+    if (specialCases[lowerText]) {
+      return specialCases[lowerText];
+    }
+    
+    return lowerText
       .normalize('NFD')
       .replace(/[\u0300-\u036f]/g, '') // Remove diacritics
       .replace(/[^a-z0-9]/g, ''); // Remove special characters
@@ -322,31 +357,46 @@ const PokemonGame = () => {
   }, []);
 
   const handleSuggestionClick = async (suggestion: string) => {
-    if (guessTimeLeft <= 0) return;
+    if (guessTimeLeft <= 0 || isPokemonLoading) return;
     
     setGuess(suggestion);
     setSuggestions([]);
+    
+    // Wait for a small delay to ensure Pokemon data is loaded
+    await new Promise(resolve => setTimeout(resolve, 50));
     
     const normalizedSuggestion = normalizeText(suggestion);
     const pokemonNameFr = currentPokemon?.frenchName;
     const pokemonNameEn = currentPokemon?.englishName;
     
-    if (!pokemonNameFr || !pokemonNameEn) return;
+    if (!pokemonNameFr || !pokemonNameEn) {
+      console.log('❌ Missing Pokemon names:', { pokemonNameFr, pokemonNameEn, currentPokemon });
+      return;
+    }
     
     const normalizedAnswerFr = normalizeText(pokemonNameFr);
     const normalizedAnswerEn = normalizeText(pokemonNameEn);
     
-    console.log('Checking answer:', {
-      suggestion: normalizedSuggestion,
-      answerFr: normalizedAnswerFr,
-      answerEn: normalizedAnswerEn
+    console.log('🔍 Checking answer:', {
+      suggestion,
+      normalizedSuggestion,
+      pokemonNameFr,
+      pokemonNameEn,
+      normalizedAnswerFr,
+      normalizedAnswerEn,
+      currentPokemon
     });
     
     if (normalizedSuggestion === normalizedAnswerFr || 
-        normalizedSuggestion === normalizedAnswerEn) {
+        normalizedSuggestion === normalizedAnswerEn ||
+        suggestion.toLowerCase() === pokemonNameFr.toLowerCase() ||
+        suggestion.toLowerCase() === pokemonNameEn.toLowerCase()) {
       handleCorrectAnswer();
     } else {
-      console.log('❌ Handling wrong answer');
+      console.log('❌ Wrong answer:', {
+        suggestionMatch: normalizedSuggestion === normalizedAnswerFr || normalizedSuggestion === normalizedAnswerEn,
+        exactMatch: suggestion.toLowerCase() === pokemonNameFr.toLowerCase() || suggestion.toLowerCase() === pokemonNameEn.toLowerCase()
+      });
       setIsCorrect(false);
       if (!isMuted) {
         console.log('🎵 About to play wrong answer sound');
@@ -362,6 +412,7 @@ const PokemonGame = () => {
     }
   };
 
+  // Update handleGuessChange to use pokemonNames
   const handleGuessChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (guessTimeLeft <= 0) return;
     
@@ -373,32 +424,23 @@ const PokemonGame = () => {
       const normalizedValue = normalizeText(value);
       console.log('Input value:', value);
       console.log('Normalized value:', normalizedValue);
-      console.log('Available Pokemon:', allPokemonNames);
       
-      const filteredSuggestions = allPokemonNames
+      const filteredSuggestions = pokemonNames
         .filter(pokemon => {
           if (!pokemon) return false;
           const pokemonNameFr = pokemon.frenchName;
-          const pokemonNameEn = pokemon.englishName;
+          const pokemonNameEn = pokemon.name; // Use name instead of englishName
           if (!pokemonNameFr || !pokemonNameEn) return false;
           
           const normalizedNameFr = normalizeText(pokemonNameFr);
           const normalizedNameEn = normalizeText(pokemonNameEn);
-          
-          console.log('Checking Pokemon:', {
-            fr: pokemonNameFr,
-            en: pokemonNameEn,
-            normalizedFr: normalizedNameFr,
-            normalizedEn: normalizedNameEn,
-            input: normalizedValue
-          });
           
           return (normalizedNameFr.startsWith(normalizedValue) || 
                  normalizedNameEn.startsWith(normalizedValue)) && 
                  pokemon.id >= selectedGeneration.startId && 
                  pokemon.id <= selectedGeneration.endId;
         })
-        .map(pokemon => capitalize(i18n.language === 'fr' ? pokemon.frenchName : pokemon.englishName))
+        .map(pokemon => capitalize(i18n.language === 'fr' ? pokemon.frenchName : pokemon.name))
         .filter(Boolean)
         .slice(0, 5);
 
@@ -409,8 +451,6 @@ const PokemonGame = () => {
       setHighlightedIndex(-1);
     }
   };
-
-
 
   // Add a function to clean up all audio instances
   const cleanupAllAudio = () => {
@@ -831,8 +871,27 @@ const PokemonGame = () => {
     
     // Then handle audio
     if (!isMuted) {
-      console.log('🎵 About to play victory sound');
       cleanupAllAudio();
+
+      // Play reward Pokemon cry first if available
+      if (rewardPokemon.pokemon) {
+        console.log('🎵 About to play reward Pokemon cry');
+        const pokemonName = rewardPokemon.pokemon.englishName.toLowerCase();
+        const cryUrl = `https://play.pokemonshowdown.com/audio/cries/${pokemonName}.mp3`;
+        console.log('🔊 Playing cry URL:', cryUrl);
+        const cryAudio = new Audio(cryUrl);
+        try {
+          await cryAudio.play();
+          console.log('✅ Reward Pokemon cry played successfully');
+          // Wait for cry to finish
+          await new Promise(resolve => setTimeout(resolve, 1000));
+        } catch (error) {
+          console.error('❌ Error playing reward Pokemon cry:', error);
+        }
+      }
+
+      // Then play victory sound
+      console.log('🎵 About to play victory sound');
       victoryAudioRef.current = new Audio(VICTORY_SOUND_URL);
       try {
         await victoryAudioRef.current.play();
@@ -893,7 +952,7 @@ const PokemonGame = () => {
       // In Chill mode, just display the score without saving
       setUserRanking(null);
     }
-  }, [score, playerName, selectedGeneration, totalTimeElapsed, gameOver, fetchSelectedRankings, bestScore, setBestScore, setBestTime, isMuted, calculateRewardPokemon, isHardMode]);
+  }, [score, playerName, selectedGeneration, totalTimeElapsed, gameOver, fetchSelectedRankings, bestScore, setBestScore, setBestTime, isMuted, calculateRewardPokemon, isHardMode, rewardPokemon]);
 
   // Update the effect to use both functions
   useEffect(() => {
@@ -1166,14 +1225,13 @@ const PokemonGame = () => {
 
   // Update effect to handle initial loading and set final progress
   useEffect(() => {
-    if (!isNamesLoading && allPokemonNames.length > 0) {
+    if (pokemonNames.length > 0) {
       setLoadingProgress(100);
-      // Add a small delay before hiding the loading screen
       setTimeout(() => {
         setIsInitialLoading(false);
       }, 500);
     }
-  }, [isNamesLoading, allPokemonNames]);
+  }, [pokemonNames]);
 
   // Add handleQuit function
   const handleQuit = useCallback(() => {

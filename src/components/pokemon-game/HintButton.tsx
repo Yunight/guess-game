@@ -26,9 +26,13 @@ export const HintButton: FC<HintButtonProps> = ({
     : currentPokemon?.englishFlavorText;
 
   // Get first letter of Pokemon name based on current language
-  const firstLetter = i18n.language === 'fr'
-    ? currentPokemon?.frenchName?.charAt(0)
-    : currentPokemon?.englishName?.charAt(0);
+  const getFirstLetter = () => {
+    if (!currentPokemon) return '';
+    
+    // Use englishName for English, frenchName for French
+    const name = i18n.language === 'fr' ? currentPokemon.frenchName : currentPokemon.englishName;
+    return name.charAt(0);
+  };
 
   return (
     <div className="mx-2 mt-2">
@@ -64,7 +68,7 @@ export const HintButton: FC<HintButtonProps> = ({
                 <div className="absolute right-2 top-2 w-1.5 h-1.5 rounded-full bg-red-500"></div>
                 <div className="flex flex-col gap-1 items-center">
                   <div className="text-base font-bold">
-                    {t('firstLetter')} : {firstLetter}
+                    {t('firstLetter')} : {getFirstLetter()}
                   </div>
                   <p className="text-center px-4 text-sm">{hintText}</p>
                 </div>
