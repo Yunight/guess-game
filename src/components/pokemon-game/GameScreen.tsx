@@ -73,16 +73,101 @@ export const GameScreen: FC<GameScreenProps> = ({
   pointsEarned,
 }) => {
   return (
-    <Card className="w-full max-w-md p-1 sm:p-4 relative flex flex-col min-h-0 sm:min-h-0 bg-red-500 rounded-3xl">
+    <Card className="w-full max-w-md p-1 sm:p-4 relative flex flex-col min-h-0 sm:min-h-0 bg-red-500 rounded-3xl overflow-hidden">
+      {/* Fire overlay when Hype Train is active */}
+      {showHypeTrain && (
+        <div className="absolute inset-0 z-0 overflow-hidden">
+          {/* Base glow */}
+          <div className="absolute inset-0 bg-gradient-to-t from-red-900 via-red-800 to-red-900 opacity-70"></div>
+          
+          {/* Heat distortion effect */}
+          <div className="absolute inset-0 backdrop-blur-[0.5px] animate-heat-distort"></div>
+          
+          {/* Core flames */}
+          <div className="absolute inset-x-0 bottom-0 h-full">
+            {/* Main flame core */}
+            <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-full h-full">
+              <div className="absolute bottom-0 w-full h-4/5 bg-gradient-to-t from-orange-600 via-yellow-500 to-transparent opacity-60 animate-flame-dance mix-blend-screen"></div>
+            </div>
+            
+            {/* Multiple flame layers with different colors and timings */}
+            {[...Array(6)].map((_, i) => (
+              <div
+                key={i}
+                className="absolute bottom-0 w-full"
+                style={{
+                  height: `${50 + i * 10}%`,
+                  left: `${-15 + i * 5}%`,
+                  width: `${120 - i * 5}%`,
+                  animationDelay: `${i * 0.2}s`,
+                  filter: 'contrast(1.2)',
+                }}
+              >
+                <div 
+                  className={`absolute bottom-0 w-full h-full bg-gradient-to-t animate-flame-flicker mix-blend-screen`}
+                  style={{
+                    animationDelay: `${i * 0.3}s`,
+                    background: i % 2 === 0 
+                      ? 'linear-gradient(to top, rgb(249, 115, 22), rgb(234, 179, 8), rgba(234, 179, 8, 0))'
+                      : 'linear-gradient(to top, rgb(234, 88, 12), rgb(252, 211, 77), rgba(252, 211, 77, 0))',
+                    opacity: 0.4 - i * 0.02,
+                  }}
+                ></div>
+              </div>
+            ))}
+            
+            {/* Ember particles */}
+            {[...Array(12)].map((_, i) => (
+              <div
+                key={`ember-${i}`}
+                className="absolute w-1 h-1 rounded-full animate-ember-rise mix-blend-screen"
+                style={{
+                  left: `${Math.random() * 100}%`,
+                  bottom: `${Math.random() * 30}%`,
+                  animationDelay: `${Math.random() * 2}s`,
+                  animationDuration: `${1 + Math.random()}s`,
+                  background: i % 3 === 0 ? '#fbbf24' : i % 3 === 1 ? '#f59e0b' : '#f97316',
+                  opacity: 0.8,
+                  boxShadow: '0 0 4px rgba(251, 191, 36, 0.8)',
+                }}
+              ></div>
+            ))}
+            
+            {/* Small flickering flames at the base */}
+            {[...Array(8)].map((_, i) => (
+              <div
+                key={`flicker-${i}`}
+                className="absolute bottom-0 animate-flame-flicker mix-blend-screen"
+                style={{
+                  left: `${5 + i * 15}%`,
+                  width: '30px',
+                  height: '60px',
+                  background: 'linear-gradient(to top, rgb(249, 115, 22), rgb(234, 179, 8), rgba(234, 179, 8, 0))',
+                  animationDelay: `${i * 0.15}s`,
+                  opacity: 0.6,
+                  filter: 'blur(1px)',
+                }}
+              ></div>
+            ))}
+          </div>
+          
+          {/* Heat distortion overlay */}
+          <div className="absolute inset-0 bg-gradient-to-t from-orange-500/30 via-yellow-500/10 to-transparent mix-blend-overlay"></div>
+          
+          {/* Glow effect */}
+          <div className="absolute inset-0 bg-gradient-radial from-yellow-500/20 via-orange-500/10 to-transparent mix-blend-overlay animate-fire-pulse"></div>
+        </div>
+      )}
+
       {/* Top dots */}
-      <div className="absolute top-4 left-4 flex gap-2">
+      <div className="absolute top-4 left-4 flex gap-2 z-10">
         <div className="w-3 h-3 rounded-full bg-gray-700"></div>
         <div className="w-3 h-3 rounded-full bg-yellow-400"></div>
         <div className="w-3 h-3 rounded-full bg-green-500"></div>
       </div>
 
       {/* Blue circle light */}
-      <div className="absolute top-2 left-24 w-10 h-10 rounded-full bg-blue-400 border-4 border-white"></div>
+      <div className="absolute top-2 left-24 w-10 h-10 rounded-full bg-blue-400 border-4 border-white z-10"></div>
 
       {/* Quit Button - Only show in Chill mode */}
       {!isHardMode && (
@@ -123,7 +208,7 @@ export const GameScreen: FC<GameScreenProps> = ({
         </Button>
       </div>
 
-      <div className="flex flex-col flex-1 mt-16 mb-2">
+      <div className="flex flex-col flex-1 mt-16 mb-2 relative z-10">
         <div className="relative">
           <PokemonDisplay 
             currentPokemon={currentPokemon}

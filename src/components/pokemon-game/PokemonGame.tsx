@@ -75,6 +75,7 @@ const PokemonGame = () => {
   const correctAudioRef = useRef<HTMLAudioElement | null>(null);
   const wrongAudioRef = useRef<HTMLAudioElement | null>(null);
   const trainHornRef = useRef<HTMLAudioElement | null>(null);
+  const lowLifeAudioRef = useRef<HTMLAudioElement | null>(null);
   const canStartGame = Boolean(playerName && !nameError);
   
   // Add loading progress state
@@ -355,6 +356,7 @@ const PokemonGame = () => {
   const WRONG_SOUND_URL = '/sounds/bump_wall.mp3';
   const VICTORY_SOUND_URL = '/sounds/battle_win.mp3';
   const TRAIN_HORN_URL = '/sounds/train_horn_bell.mp3';
+  const LOW_LIFE_URL = '/sounds/low_life.mp3';
 
   // Add a function to clean up all audio instances
   const cleanupAllAudio = () => {
@@ -375,6 +377,10 @@ const PokemonGame = () => {
       trainHornRef.current.pause();
       trainHornRef.current = null;
     }
+    if (lowLifeAudioRef.current) {
+      lowLifeAudioRef.current.pause();
+      lowLifeAudioRef.current = null;
+    }
   };
 
   // Add cleanup effect for train horn sound when component unmounts
@@ -394,8 +400,14 @@ const PokemonGame = () => {
       console.log('🚂 Timer hit 9 seconds, stopping Hype Train');
       // Add bonus points based on consecutive fast answers before resetting
       if (showHypeTrain && consecutiveFastAnswers > 0) {
-        console.log(`🎯 Adding bonus points: ${consecutiveFastAnswers}`);
-        setScore(prev => prev + consecutiveFastAnswers);
+        const bonusPoints = consecutiveFastAnswers;
+        console.log(`🎯 Adding bonus points: ${bonusPoints}`);
+        setScore(prev => prev + bonusPoints);
+        // Show bonus points animation
+        setPointsEarned(bonusPoints);
+        setTimeout(() => {
+          setPointsEarned(0);
+        }, 1000);
       }
       setConsecutiveFastAnswers(0);
       setShowHypeTrain(false);
@@ -429,6 +441,75 @@ const PokemonGame = () => {
     }
   }, [gameOver]);
 
+  // Add effect to handle train horn sound
+  useEffect(() => {
+    if (showHypeTrain && !isMuted && !trainHornRef.current) {
+      console.log('🔊 Starting train horn sound');
+      const trainHorn = new Audio(TRAIN_HORN_URL);
+      trainHorn.volume = 0.3;
+      trainHorn.loop = true;
+      trainHornRef.current = trainHorn;
+      trainHorn.play().catch(error => {
+        console.error('❌ Error playing train horn sound:', error);
+      });
+    } else if (!showHypeTrain && trainHornRef.current) {
+      console.log('🔇 Stopping train horn sound');
+      trainHornRef.current.pause();
+      trainHornRef.current.currentTime = 0;
+      trainHornRef.current = null;
+    }
+  }, [showHypeTrain, isMuted]);
+
+  // Add cleanup effect
+  useEffect(() => {
+    return () => {
+      if (trainHornRef.current) {
+        trainHornRef.current.pause();
+        trainHornRef.current.currentTime = 0;
+        trainHornRef.current = null;
+      }
+    };
+  }, []);
+
+  // Update effect to handle low life sound
+  useEffect(() => {
+    // Start playing when conditions are met
+    if (isHardMode && guessTimeLeft === 5 && !isMuted && !gameOver && isCorrect === null) {
+      console.log('🔊 Playing low life sound');
+      lowLifeAudioRef.current = new Audio(LOW_LIFE_URL);
+      lowLifeAudioRef.current.volume = 0.5;
+      lowLifeAudioRef.current.play().catch(error => {
+        console.error('❌ Error playing low life sound:', error);
+      });
+    }
+    
+    // Stop playing in any case where it shouldn't be playing
+    if (lowLifeAudioRef.current && (
+      !isHardMode || // Not in hard mode
+      guessTimeLeft > 5 || // Time above danger zone
+      guessTimeLeft <= 0 || // Time ran out
+      isMuted || // Sound is muted
+      gameOver || // Game is over
+      isCorrect !== null // Answer was validated
+    )) {
+      console.log('🔇 Stopping low life sound');
+      lowLifeAudioRef.current.pause();
+      lowLifeAudioRef.current.currentTime = 0;
+      lowLifeAudioRef.current = null;
+    }
+  }, [guessTimeLeft, isHardMode, isMuted, gameOver, isCorrect]);
+
+  // Add cleanup effect for low life sound
+  useEffect(() => {
+    return () => {
+      if (lowLifeAudioRef.current) {
+        lowLifeAudioRef.current.pause();
+        lowLifeAudioRef.current = null;
+      }
+    };
+  }, []);
+
+  // Update handleCorrectAnswer to handle points display
   const handleCorrectAnswer = async () => {
     console.log('✅ Handling correct answer');
     setIsCorrect(true);
@@ -443,17 +524,6 @@ const PokemonGame = () => {
         if (newCount >= 3) {
           console.log('🚂 Starting Hype Train!');
           setShowHypeTrain(true);
-          // Play train horn sound
-          if (!isMuted && !trainHornRef.current) {
-            console.log('🔊 Starting train horn sound');
-            const trainHorn = new Audio(TRAIN_HORN_URL);
-            trainHorn.volume = 0.5; // Set volume to 50%
-            trainHorn.loop = true;
-            trainHornRef.current = trainHorn;
-            trainHorn.play().catch(error => {
-              console.error('❌ Error playing train horn sound:', error);
-            });
-          }
         }
         return newCount;
       });
@@ -509,21 +579,18 @@ const PokemonGame = () => {
       }
     }
 
-    setPointsEarned(earnedPoints);
-    setScore(prev => prev + earnedPoints);
+    // Only show points earned animation if not in Hype Train mode
+    if (!showHypeTrain) {
+      setPointsEarned(earnedPoints);
+      setTimeout(() => {
+        setPointsEarned(0);
+      }, 1000);
+    }
     
-    // Reset points earned after animation
-    setTimeout(() => {
-      setPointsEarned(0);
-    }, 1000);
+    setScore(prev => prev + earnedPoints);
     
     if (!isMuted) {
       console.log('🎵 About to play correct answer sound');
-      const currentTrainHorn = trainHornRef.current; // Save reference to train horn
-      cleanupAllAudio();
-      if (showHypeTrain) { // Only restore train horn if Hype Train is active
-        trainHornRef.current = currentTrainHorn; // Restore train horn reference
-      }
       correctAudioRef.current = new Audio(CORRECT_SOUND_URL);
       try {
         await correctAudioRef.current.play();
