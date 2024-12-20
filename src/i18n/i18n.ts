@@ -17,10 +17,20 @@ i18n
       },
     },
     fallbackLng: 'fr',
+    lng: 'fr',
     debug: process.env.NODE_ENV === 'development',
     interpolation: {
       escapeValue: false,
     },
+    detection: {
+      order: ['localStorage', 'navigator'],
+      lookupLocalStorage: 'i18nextLng',
+      caches: ['localStorage'],
+    },
   });
+
+if (!localStorage.getItem('i18nextLng')) {
+  localStorage.setItem('i18nextLng', 'fr');
+}
 
 export default i18n; 

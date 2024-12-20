@@ -9,7 +9,7 @@ export const LanguageToggle: FC = () => {
   const toggleLanguage = () => {
     const newLang = isFrench ? 'en' : 'fr';
     i18n.changeLanguage(newLang);
-    localStorage.setItem('preferredLanguage', newLang);
+    localStorage.setItem('i18nextLng', newLang);
   };
 
   return (

@@ -142,17 +142,86 @@ export const GameOverDialog: FC<GameOverDialogProps> = ({
         ? `${genNumber}ère Génération`
         : `Generation ${genNumber}`;
 
+      if (score >= 2500) {
+        return t('shareMsg2500', { gen: genName });
+      }
+      if (score >= 2250) {
+        return t('shareMsg2250', { gen: genName });
+      }
+      if (score >= 2000) {
+        return t('shareMsg2000', { gen: genName });
+      }
+      if (score >= 1800) {
+        return t('shareMsg1800', { gen: genName });
+      }
+      if (score >= 1600) {
+        return t('shareMsg1600', { gen: genName });
+      }
+      if (score >= 1500) {
+        return t('shareMsg1500', { gen: genName });
+      }
+      if (score >= 1400) {
+        return t('shareMsg1400', { gen: genName });
+      }
+      if (score >= 1300) {
+        return t('shareMsg1300', { gen: genName });
+      }
+      if (score >= 1200) {
+        return t('shareMsg1200', { gen: genName });
+      }
+      if (score >= 1100) {
+        return t('shareMsg1100', { gen: genName });
+      }
+      if (score >= 1000) {
+        return t('shareMsg1000', { gen: genName });
+      }
+      if (score >= 900) {
+        return t('shareMsg900', { gen: genName });
+      }
+      if (score >= 800) {
+        return t('shareMsg800', { gen: genName });
+      }
+      if (score >= 750) {
+        return t('shareMsg750', { gen: genName });
+      }
+      if (score >= 700) {
+        return t('shareMsg700', { gen: genName });
+      }
+      if (score >= 600) {
+        return t('shareMsg600', { gen: genName });
+      }
+      if (score >= 500) {
+        return t('shareMsg500', { gen: genName });
+      }
+      if (score >= 450) {
+        return t('shareMsg450', { gen: genName });
+      }
+      if (score >= 400) {
+        return t('shareMsg400', { gen: genName });
+      }
+      if (score >= 350) {
+        return t('shareMsg350', { gen: genName });
+      }
+      if (score >= 300) {
+        return t('shareMsg300', { gen: genName });
+      }
+      if (score >= 250) {
+        return t('shareMsg250', { gen: genName });
+      }
+      if (score >= 200) {
+        return t('shareMsg200', { gen: genName });
+      }
+      if (score >= 150) {
+        return t('shareMsg150', { gen: genName });
+      }
+      if (score >= 100) {
+        return t('shareMsg100', { gen: genName });
+      }
+      if (score >= 75) {
+        return t('shareMsg75', { gen: genName });
+      }
       if (score >= 50) {
         return t('shareMsg50', { gen: genName });
-      }
-      if (score >= 30) {
-        return t('shareMsg30', { gen: genName });
-      }
-      if (score >= 20) {
-        return t('shareMsg20', { gen: genName });
-      }
-      if (score >= 10) {
-        return t('shareMsg10', { gen: genName });
       }
       if (userRanking === 1) {
         return t('shareMsgChampion', { gen: genName });
