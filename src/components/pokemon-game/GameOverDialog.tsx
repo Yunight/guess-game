@@ -9,7 +9,7 @@ import { ScrollableDialog } from '@/components/ui/scrollable-dialog';
 import { Button } from '@/components/ui/button';
 import { RewardPokemonDisplay } from './RewardPokemonDisplay';
 import { Pokemon } from './types';
-import { Trophy, Clock, Crown, RefreshCcw, Home } from 'lucide-react';
+import { Trophy, Clock, Crown, RefreshCcw, Home, Share2 } from 'lucide-react';
 
 interface GameOverDialogProps {
   gameOver: boolean;
@@ -30,6 +30,7 @@ interface GameOverDialogProps {
   criticalSuccessCount: number;
   hyperTrainCount: number;
   maxHypeChain: number;
+  selectedGeneration: { name: string; startId: number; endId: number };
 }
 
 export const GameOverDialog: FC<GameOverDialogProps> = ({
@@ -51,21 +52,83 @@ export const GameOverDialog: FC<GameOverDialogProps> = ({
   criticalSuccessCount,
   hyperTrainCount,
   maxHypeChain,
+  selectedGeneration,
 }) => {
+  const handleShare = async () => {
+    const getClickbaitMessage = () => {
+      if (score >= 50) {
+        return `🌟 INCROYABLE! Plus de 50 Pokémon devinés en ${selectedGeneration.name}! Un vrai Maître Pokémon! 🏆`;
+      }
+      if (score >= 30) {
+        return `🔥 30+ Pokémon devinés d'affilée en ${selectedGeneration.name}! Qui peut faire mieux? 💪`;
+      }
+      if (score >= 20) {
+        return `⭐ 20+ Pokémon devinés en ${selectedGeneration.name}! En route vers la ligue Pokémon! 🎯`;
+      }
+      if (score >= 10) {
+        return `✨ 10+ Pokémon devinés en ${selectedGeneration.name}! Le début d'une grande aventure! 🌟`;
+      }
+      if (userRanking === 1) {
+        return `👑 CHAMPION! Nouveau record sur Pokemon Guesser en ${selectedGeneration.name}! Qui osera me défier? 🏆`;
+      }
+      if (userRanking && userRanking <= 3) {
+        return `🥇 Top 3 mondial sur Pokemon Guesser en ${selectedGeneration.name}! Viens essayer de me battre! 🔥`;
+      }
+      if (userRanking && userRanking <= 10) {
+        return `🎖️ Top 10 sur Pokemon Guesser en ${selectedGeneration.name}! La compétition est rude! 💪`;
+      }
+      if (maxHypeChain >= 10) {
+        return `🚂 LÉGENDAIRE! ${maxHypeChain} réponses ultra rapides d'affilée en ${selectedGeneration.name}! Un vrai speedrunner! ⚡`;
+      }
+      if (maxHypeChain >= 5) {
+        return `🚂 HOT STREAK! ${maxHypeChain} réponses rapides d'affilée en ${selectedGeneration.name}! 🔥`;
+      }
+      if (criticalHitCount >= 3) {
+        return `⚡ Expert des coups critiques en ${selectedGeneration.name}! La chance ou le talent? Viens tester! 🎯`;
+      }
+      if (criticalSuccessCount >= 2) {
+        return `⏱️ Maître du timing en ${selectedGeneration.name}! Des réponses à la dernière seconde! 🎭`;
+      }
+      if (hyperTrainCount >= 3) {
+        return `🚄 Le Hype Train était incontrôlable en ${selectedGeneration.name}! Quelle performance! 🔥`;
+      }
+      if (rewardPokemon.pokemon?.isLegendary) {
+        return `✨ J'ai capturé un Pokémon LÉGENDAIRE en ${selectedGeneration.name}: ${rewardPokemon.pokemon.frenchName}! 🌟`;
+      }
+      if (rewardPokemon.pokemon?.isMythical) {
+        return `🌈 Un Pokémon MYTHIQUE capturé en ${selectedGeneration.name}: ${rewardPokemon.pokemon.frenchName}! ✨`;
+      }
+      return `🎮 Nouveau challenge sur Pokemon Guesser en ${selectedGeneration.name}! Viens tester tes connaissances! ✨`;
+    };
+
+    const clickbaitMsg = getClickbaitMessage();
+    const shareText = `${clickbaitMsg}\n\n` +
+      `👤 ${playerName}\n` +
+      `🎯 Score: ${score}\n` +
+      `⏱️ Temps: ${formatTimeForRanking(totalTimeElapsed)}\n` +
+      `🌍 ${selectedGeneration.name}\n` +
+      `${userRanking ? `👑 #${userRanking} au classement!\n` : ''}` +
+      `${rewardPokemon.pokemon ? `✨ ${rewardPokemon.pokemon.frenchName} capturé!\n` : ''}\n` +
+      `#PokemonGuesserGame #Pokemon #PokemonGuesserByYunight #Gaming\n`;
+
+    const twitterUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent('https://pokemon-guesser-game.vercel.app/')}`;
+    window.open(twitterUrl, '_blank');
+  };
+
   return (
     <Dialog open={gameOver} onOpenChange={setGameOver}>
       <ScrollableDialog className="sm:max-w-md bg-gradient-to-b from-red-500 to-red-600 border-none text-white">
         <div className="absolute inset-0 bg-[url('/pokeball-pattern.png')] opacity-5 bg-repeat"></div>
         <div className="relative">
           <DialogHeader className="space-y-4">
-            <div className="flex justify-center -mt-8">
+            <div className="flex justify-center -mt-5">
               <div className="bg-white p-4 rounded-full shadow-xl">
                 <Trophy className="h-12 w-12 text-yellow-400" />
               </div>
             </div>
             <DialogTitle className="text-center text-3xl font-bold text-white">
               {score === bestScore && score === totalPokemonCount ? (
-                `Félicitations ${playerName}, vous avez deviné tous les pokémons, vous êtes un vrai maitre pokémon!`
+                `Félicitations ${playerName}, vous avez devin�� tous les pokémons, vous êtes un vrai maitre pokémon!`
               ) : (
                 `Bravo ${playerName}!`
               )}
@@ -163,20 +226,29 @@ export const GameOverDialog: FC<GameOverDialogProps> = ({
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-3 mt-6">
+          <div className="grid grid-cols-3 gap-3 mt-6">
             <Button
               onClick={handleRestart}
               className="bg-yellow-400 hover:bg-yellow-500 text-gray-900 border-none
-                shadow-lg hover:shadow-xl transition-all duration-300"
+                shadow-lg hover:shadow-xl transition-all duration-300 font-bold"
               size="lg"
             >
               <RefreshCcw className="mr-2 h-4 w-4" />
               Rejouer
             </Button>
             <Button
+              onClick={handleShare}
+              className="bg-green-500 hover:bg-green-600 text-white border-none
+                shadow-lg hover:shadow-xl transition-all duration-300 font-bold"
+              size="lg"
+            >
+              <Share2 className="mr-2 h-4 w-4" />
+              Partager
+            </Button>
+            <Button
               onClick={handleBackToMenu}
-              className="bg-white/10 hover:bg-white/20 text-white border-2 border-white/20
-                shadow-lg hover:shadow-xl transition-all duration-300"
+              className="bg-blue-500 hover:bg-blue-600 text-white border-none
+                shadow-lg hover:shadow-xl transition-all duration-300 font-bold"
               size="lg"
             >
               <Home className="mr-2 h-4 w-4" />

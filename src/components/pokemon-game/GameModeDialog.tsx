@@ -131,7 +131,7 @@ export const GameModeDialog: FC<GameModeDialogProps> = ({
                     <span>Ton score est classé</span>
                   </div>
                   <div className='flex items-center gap-1'>
-                    <Trophy className='w-4 h-4' />
+                    <Trophy className='w-4 h-4 shrink-0' />
                     <span>Plus t'es rapide plus tu gagnes de points</span>
                   </div>
                 </div>
