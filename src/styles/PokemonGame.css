@@ -491,3 +491,203 @@
 .animate-appear-shake {
   animation: appear-shake 1.2s ease-in-out forwards;
 }
+
+/* Hype Train Animations */
+@keyframes hypeTrain {
+  0% {
+    transform: translateX(-100%) scale(1);
+    filter: brightness(1);
+  }
+  50% {
+    transform: translateX(0) scale(1.1);
+    filter: brightness(1.2);
+  }
+  100% {
+    transform: translateX(100%) scale(1);
+    filter: brightness(1);
+  }
+}
+
+@keyframes hypeTrainGlow {
+  0% {
+    box-shadow: 0 0 10px #ff6b6b, 0 0 20px #ff6b6b, 0 0 30px #ff6b6b;
+  }
+  50% {
+    box-shadow: 0 0 20px #ff6b6b, 0 0 40px #ff6b6b, 0 0 60px #ff6b6b;
+  }
+  100% {
+    box-shadow: 0 0 10px #ff6b6b, 0 0 20px #ff6b6b, 0 0 30px #ff6b6b;
+  }
+}
+
+@keyframes hypeTrainShake {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  25% {
+    transform: translateX(-2px);
+  }
+  75% {
+    transform: translateX(2px);
+  }
+}
+
+.hype-train-active {
+  position: relative;
+  overflow: hidden;
+}
+
+.hype-train-active::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 50%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 107, 107, 0.2),
+    transparent
+  );
+  animation: hypeTrain 2s infinite;
+}
+
+.hype-train-container {
+  position: relative;
+  animation: hypeTrainShake 0.5s infinite;
+}
+
+.hype-train-score {
+  animation: hypeTrainGlow 2s infinite;
+  transition: all 0.3s ease;
+  text-shadow: 0 0 10px #ff6b6b;
+}
+
+.hype-train-multiplier {
+  position: absolute;
+  top: -20px;
+  right: -20px;
+  background: #ff6b6b;
+  color: white;
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 0.8em;
+  transform-origin: center;
+  animation: hypeTrainPulse 1s infinite;
+}
+
+@keyframes hypeTrainPulse {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+}
+
+.hype-train-streak {
+  position: absolute;
+  bottom: -20px;
+  left: 50%;
+  transform: translateX(-50%);
+  color: #ff6b6b;
+  font-weight: bold;
+  text-shadow: 0 0 5px rgba(255, 107, 107, 0.5);
+  animation: hypeTrainStreak 0.5s infinite alternate;
+}
+
+@keyframes hypeTrainStreak {
+  from {
+    transform: translateX(-50%) scale(1);
+  }
+  to {
+    transform: translateX(-50%) scale(1.1);
+  }
+}
+
+/* Enhanced Hype Train Fire Animations */
+@keyframes flame-dance {
+  0%,
+  100% {
+    transform: scaleY(1) translateY(0);
+  }
+  50% {
+    transform: scaleY(1.1) translateY(-10px);
+  }
+}
+
+@keyframes flame-flicker {
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1) rotate(-2deg);
+  }
+  25% {
+    opacity: 0.8;
+    transform: scale(0.95) rotate(2deg);
+  }
+  50% {
+    opacity: 0.9;
+    transform: scale(1.1) rotate(-1deg);
+  }
+  75% {
+    opacity: 0.8;
+    transform: scale(1.05) rotate(1deg);
+  }
+}
+
+@keyframes ember-rise {
+  0% {
+    transform: translateY(0) scale(1) rotate(0deg);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(-100px) scale(0) rotate(360deg);
+    opacity: 0;
+  }
+}
+
+@keyframes heat-distort {
+  0%,
+  100% {
+    transform: scaleY(1);
+  }
+  50% {
+    transform: scaleY(1.02);
+  }
+}
+
+@keyframes fire-pulse {
+  0%,
+  100% {
+    opacity: 0.5;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.7;
+    transform: scale(1.05);
+  }
+}
+
+.animate-flame-dance {
+  animation: flame-dance 3s ease-in-out infinite;
+}
+
+.animate-flame-flicker {
+  animation: flame-flicker 2s ease-in-out infinite;
+}
+
+.animate-ember-rise {
+  animation: ember-rise 2s ease-out infinite;
+}
+
+.animate-heat-distort {
+  animation: heat-distort 2s ease-in-out infinite;
+}
+
+.animate-fire-pulse {
+  animation: fire-pulse 2s ease-in-out infinite;
+}

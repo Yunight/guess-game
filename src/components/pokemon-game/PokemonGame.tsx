@@ -103,6 +103,13 @@ const PokemonGame = () => {
   
   // Add loading progress state
   const [loadingProgress, setLoadingProgress] = useState(0);
+
+  // Add sound URLs as constants at the top of the component
+  const CORRECT_SOUND_URL = '/sounds/pkm_level_up.mp3';
+  const WRONG_SOUND_URL = '/sounds/bump_wall.mp3';
+  const VICTORY_SOUND_URL = '/sounds/battle_win.mp3';
+  const TRAIN_HORN_URL = '/sounds/train_horn_bell.mp3';
+  const LOW_LIFE_URL = '/sounds/low_life.mp3';
   
   // Use RTK Query hooks with proper typing
   const { 
@@ -374,35 +381,34 @@ const PokemonGame = () => {
     }
   };
 
-  // Add sound URLs as constants at the top of the component
-  const CORRECT_SOUND_URL = '/sounds/pkm_level_up.mp3';
-  const WRONG_SOUND_URL = '/sounds/bump_wall.mp3';
-  const VICTORY_SOUND_URL = '/sounds/battle_win.mp3';
-  const TRAIN_HORN_URL = '/sounds/train_horn_bell.mp3';
-  const LOW_LIFE_URL = '/sounds/low_life.mp3';
+
 
   // Add a function to clean up all audio instances
   const cleanupAllAudio = () => {
-    console.log('🧹 Cleaning up all audio');
+    // Clean up victory audio
     if (victoryAudioRef.current) {
       victoryAudioRef.current.pause();
-      victoryAudioRef.current = null;
+      victoryAudioRef.current.currentTime = 0;
     }
+    // Clean up correct audio
     if (correctAudioRef.current) {
       correctAudioRef.current.pause();
-      correctAudioRef.current = null;
+      correctAudioRef.current.currentTime = 0;
     }
+    // Clean up wrong audio
     if (wrongAudioRef.current) {
       wrongAudioRef.current.pause();
-      wrongAudioRef.current = null;
+      wrongAudioRef.current.currentTime = 0;
     }
+    // Clean up train horn audio
     if (trainHornRef.current) {
       trainHornRef.current.pause();
-      trainHornRef.current = null;
+      trainHornRef.current.currentTime = 0;
     }
+    // Clean up low life audio
     if (lowLifeAudioRef.current) {
       lowLifeAudioRef.current.pause();
-      lowLifeAudioRef.current = null;
+      lowLifeAudioRef.current.currentTime = 0;
     }
   };
 
@@ -545,6 +551,11 @@ const PokemonGame = () => {
       timerInterval.current = null;
     }
     
+    // Award a hint every 5 correct answers
+    if ((score + 1) % 5 === 0) {
+      setHintsLeft(prev => prev + 1);
+    }
+    
     // Handle Hype Train logic first, independently of other messages
     if (guessTimeLeft >= 10) { // Within 5 seconds (15-10 = 5)
       setConsecutiveFastAnswers(prev => {
@@ -586,6 +597,8 @@ const PokemonGame = () => {
           setTimeout(() => {
             setShowCriticalSuccess(false);
           }, 2000);
+          // Base point only for Succès Critique
+          earnedPoints = 1;
         }
         // Show Coup Critique with 20% chance
         else if (Math.random() < 0.2) {
@@ -594,6 +607,8 @@ const PokemonGame = () => {
           setTimeout(() => {
             setShowCriticalHit(false);
           }, 2000);
+          // Add 1 bonus point for Coup Critique
+          earnedPoints += 1;
         }
       }
     } else {
@@ -635,7 +650,19 @@ const PokemonGame = () => {
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (suggestions.length === 0) return;
+    // Handle right arrow for hint regardless of suggestions
+    if (e.key === 'ArrowRight') {
+      e.preventDefault();
+      if (hintsLeft > 0 && currentPokemon) {
+        setShowHint(true);
+        setHintsLeft(prev => prev - 1);
+      }
+      return;
+    }
+
+    if (suggestions.length === 0) {
+      return;
+    }
 
     if (e.key === 'ArrowDown') {
       e.preventDefault();
@@ -958,17 +985,25 @@ const PokemonGame = () => {
     inputRef.current?.focus();
   };
 
+  // Add this effect to handle mute state persistence
   useEffect(() => {
-    const initializeGame = () => {
-      setRemainingPokemon(
-        Array.from(
-          { length: selectedGeneration.endId - selectedGeneration.startId + 1 },
-          (_, i) => selectedGeneration.startId + i
-        )
-      );
-    };
-    initializeGame();
+    localStorage.setItem('pokemonGameMuted', JSON.stringify(isMuted));
+  }, [isMuted]);
+
+  // Initialize game function to set up remaining Pokemon
+  const initializeGame = useCallback(() => {
+    setRemainingPokemon(
+      Array.from(
+        { length: selectedGeneration.endId - selectedGeneration.startId + 1 },
+        (_, i) => selectedGeneration.startId + i
+      )
+    );
   }, [selectedGeneration]);
+
+  // Initialize game when generation changes
+  useEffect(() => {
+    initializeGame();
+  }, [selectedGeneration, initializeGame]);
 
   // Add this effect to fetch rankings only when the generation selector changes
   useEffect(() => {
@@ -1042,11 +1077,6 @@ const PokemonGame = () => {
     return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
   };
 
-  // Add this effect to handle mute state persistence
-  useEffect(() => {
-    localStorage.setItem('pokemonGameMuted', JSON.stringify(isMuted));
-  }, [isMuted]);
-
   // Update the initial useEffect for loading the username
   useEffect(() => {
     const savedName = localStorage.getItem('pokemonGamePlayerName');
@@ -1086,22 +1116,11 @@ const PokemonGame = () => {
   }, [handleGameOver]);
 
   const handleRestart = () => {
-    setGameOver(false);
-    setScore(0);
-    setHintsLeft(MAX_HINTS);
-    setIsCorrect(null);
-    setGuess('');
-    setSuggestions([]);
-    setShowHint(false);
-    setConsecutiveFastAnswers(0);
-    setShowHypeTrain(false);
-    setCriticalHitCount(0);
-    setCriticalSuccessCount(0);
-    setHyperTrainCount(0);
-    setMaxHypeChain(0);
-    setTotalTimeElapsed(0);
-    fetchRandomPokemon();
-    startGuessTimer();
+    // Clean up all audio first
+    cleanupAllAudio();
+    
+    // Start a new game with the same mode
+    startGame(isHardMode);
   };
 
   const handleBackToMenu = () => {
@@ -1114,6 +1133,9 @@ const PokemonGame = () => {
       clearInterval(totalTimeInterval.current);
       totalTimeInterval.current = null;
     }
+    
+    // Clean up all audio
+    cleanupAllAudio();
     
     // Reset game state
     setIsGameActive(false);

@@ -7,7 +7,7 @@ import {
   DialogDescription,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { Timer, Lightbulb, Gamepad2, Hourglass, Keyboard, ArrowDown, ArrowUp, KeyRound, Trophy, Medal } from 'lucide-react';
+import { Timer, Lightbulb, Gamepad2, Hourglass, Keyboard, ArrowDown, ArrowUp, KeyRound, Trophy, Medal, ArrowRight } from 'lucide-react';
 
 interface GameModeDialogProps {
   isOpen: boolean;
@@ -57,6 +57,11 @@ export const GameModeDialog: FC<GameModeDialogProps> = ({
               <div className='flex items-start gap-2'>
                 <KeyRound className='w-4 h-4 mt-1 text-yellow-600 shrink-0' />
                 <p>Appuyez sur <span className='font-semibold'>Entrée</span> pour valider directement la réponse</p>
+              </div>
+
+              <div className='flex items-start gap-2'>
+                <ArrowRight className='w-4 h-4 mt-1 text-yellow-600 shrink-0' />
+                <p>Appuyez sur <span className='font-semibold'>Flèche droite</span> pour utiliser un indice</p>
               </div>
 
               <div className='flex items-start gap-2'>

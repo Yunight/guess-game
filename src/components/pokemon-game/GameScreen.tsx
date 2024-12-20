@@ -78,84 +78,84 @@ export const GameScreen: FC<GameScreenProps> = ({
       {showHypeTrain && (
         <div className="absolute inset-0 z-0 overflow-hidden">
           {/* Base glow */}
-          <div className="absolute inset-0 bg-gradient-to-t from-red-900 via-red-800 to-red-900 opacity-70"></div>
+          <div className="absolute inset-0 bg-gradient-to-t from-red-900/90 via-red-800/80 to-red-900/90 opacity-80"></div>
           
           {/* Heat distortion effect */}
-          <div className="absolute inset-0 backdrop-blur-[0.5px] animate-heat-distort"></div>
+          <div className="absolute inset-0 backdrop-blur-[1px] animate-heat-distort"></div>
           
           {/* Core flames */}
           <div className="absolute inset-x-0 bottom-0 h-full">
             {/* Main flame core */}
             <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-full h-full">
-              <div className="absolute bottom-0 w-full h-4/5 bg-gradient-to-t from-orange-600 via-yellow-500 to-transparent opacity-60 animate-flame-dance mix-blend-screen"></div>
+              <div className="absolute bottom-0 w-full h-4/5 bg-gradient-to-t from-orange-600 via-yellow-500 to-transparent opacity-80 animate-flame-dance mix-blend-screen"></div>
             </div>
             
-            {/* Multiple flame layers with different colors and timings */}
-            {[...Array(6)].map((_, i) => (
+            {/* Multiple flame layers */}
+            {[...Array(8)].map((_, i) => (
               <div
                 key={i}
                 className="absolute bottom-0 w-full"
                 style={{
-                  height: `${50 + i * 10}%`,
-                  left: `${-15 + i * 5}%`,
-                  width: `${120 - i * 5}%`,
-                  animationDelay: `${i * 0.2}s`,
-                  filter: 'contrast(1.2)',
+                  height: `${60 + i * 8}%`,
+                  left: `${-20 + i * 5}%`,
+                  width: `${130 - i * 5}%`,
+                  animationDelay: `${i * 0.15}s`,
+                  filter: 'contrast(1.5) brightness(1.2)',
                 }}
               >
                 <div 
-                  className={`absolute bottom-0 w-full h-full bg-gradient-to-t animate-flame-flicker mix-blend-screen`}
+                  className="absolute bottom-0 w-full h-full bg-gradient-to-t animate-flame-flicker mix-blend-screen"
                   style={{
-                    animationDelay: `${i * 0.3}s`,
+                    animationDelay: `${i * 0.2}s`,
                     background: i % 2 === 0 
                       ? 'linear-gradient(to top, rgb(249, 115, 22), rgb(234, 179, 8), rgba(234, 179, 8, 0))'
                       : 'linear-gradient(to top, rgb(234, 88, 12), rgb(252, 211, 77), rgba(252, 211, 77, 0))',
-                    opacity: 0.4 - i * 0.02,
+                    opacity: 0.6 - i * 0.05,
                   }}
                 ></div>
               </div>
             ))}
             
             {/* Ember particles */}
-            {[...Array(12)].map((_, i) => (
+            {[...Array(20)].map((_, i) => (
               <div
                 key={`ember-${i}`}
-                className="absolute w-1 h-1 rounded-full animate-ember-rise mix-blend-screen"
+                className="absolute w-1.5 h-1.5 rounded-full animate-ember-rise mix-blend-screen"
                 style={{
                   left: `${Math.random() * 100}%`,
-                  bottom: `${Math.random() * 30}%`,
-                  animationDelay: `${Math.random() * 2}s`,
-                  animationDuration: `${1 + Math.random()}s`,
+                  bottom: `${Math.random() * 40}%`,
+                  animationDelay: `${Math.random() * 3}s`,
+                  animationDuration: `${1 + Math.random() * 2}s`,
                   background: i % 3 === 0 ? '#fbbf24' : i % 3 === 1 ? '#f59e0b' : '#f97316',
-                  opacity: 0.8,
-                  boxShadow: '0 0 4px rgba(251, 191, 36, 0.8)',
+                  opacity: 0.9,
+                  boxShadow: '0 0 6px rgba(251, 191, 36, 0.9)',
                 }}
               ></div>
             ))}
             
             {/* Small flickering flames at the base */}
-            {[...Array(8)].map((_, i) => (
+            {[...Array(12)].map((_, i) => (
               <div
                 key={`flicker-${i}`}
                 className="absolute bottom-0 animate-flame-flicker mix-blend-screen"
                 style={{
-                  left: `${5 + i * 15}%`,
-                  width: '30px',
-                  height: '60px',
+                  left: `${2 + i * 8}%`,
+                  width: '40px',
+                  height: '80px',
                   background: 'linear-gradient(to top, rgb(249, 115, 22), rgb(234, 179, 8), rgba(234, 179, 8, 0))',
-                  animationDelay: `${i * 0.15}s`,
-                  opacity: 0.6,
-                  filter: 'blur(1px)',
+                  animationDelay: `${i * 0.1}s`,
+                  opacity: 0.7,
+                  filter: 'blur(1px) brightness(1.2)',
                 }}
               ></div>
             ))}
           </div>
           
           {/* Heat distortion overlay */}
-          <div className="absolute inset-0 bg-gradient-to-t from-orange-500/30 via-yellow-500/10 to-transparent mix-blend-overlay"></div>
+          <div className="absolute inset-0 bg-gradient-to-t from-orange-500/40 via-yellow-500/20 to-transparent mix-blend-overlay"></div>
           
           {/* Glow effect */}
-          <div className="absolute inset-0 bg-gradient-radial from-yellow-500/20 via-orange-500/10 to-transparent mix-blend-overlay animate-fire-pulse"></div>
+          <div className="absolute inset-0 bg-gradient-radial from-yellow-500/30 via-orange-500/20 to-transparent mix-blend-overlay animate-fire-pulse"></div>
         </div>
       )}
 
