@@ -56,8 +56,6 @@ const debounce = <T extends (...args: Parameters<T>) => ReturnType<T>>(
 
 const PokemonGame = () => {
   const { i18n } = useTranslation();
-  const [namesLoaded, setNamesLoaded] = useState(false);
-  const [loadedNames, setLoadedNames] = useState<Pokemon[]>([]);
   const [bestScore, setBestScore] = useLocalStorage<number>('bestScore', 0);
   const [bestTime, setBestTime] = useLocalStorage<number>('bestTime', 0);
   const [guess, setGuess] = useState('');
@@ -104,9 +102,6 @@ const PokemonGame = () => {
   const lowLifeAudioRef = useRef<HTMLAudioElement | null>(null);
   const canStartGame = Boolean(playerName && !nameError);
   
-  // Add loading progress state
-  const [loadingProgress, setLoadingProgress] = useState(0);
-
   // Add sound URLs as constants at the top of the component
   const CORRECT_SOUND_URL = '/sounds/pkm_level_up.mp3';
   const WRONG_SOUND_URL = '/sounds/bump_wall.mp3';
@@ -114,49 +109,32 @@ const PokemonGame = () => {
   const TRAIN_HORN_URL = '/sounds/train_horn_bell.mp3';
   const LOW_LIFE_URL = '/sounds/low_life.mp3';
   
-  // Use cached Pokémon names from localStorage or fetch from API
+  // Use cached Pokemon data or fetch from API
   const { data: apiPokemonNames = [] } = useGetAllPokemonNamesQuery(undefined, {
-    skip: !!localStorage.getItem('pokemonNames') // Skip API call if we have cached data
+    refetchOnMountOrArgChange: false, // Don't refetch on mount
+    refetchOnFocus: false, // Don't refetch when window regains focus
+    refetchOnReconnect: false // Don't refetch when reconnecting
   });
 
   const pokemonNames = useMemo<Pokemon[]>(() => {
-    if (namesLoaded) return loadedNames;
-    
-    const cachedData = localStorage.getItem('pokemonNames');
-    if (cachedData) {
-      console.log('📦 Loading Pokémon names from cache');
-      try {
-        const parsed = JSON.parse(cachedData);
-        setNamesLoaded(true);
-        const names = parsed.names || [];
-        setLoadedNames(names);
-        return names;
-      } catch (error) {
-        console.error('❌ Error parsing cached Pokémon names:', error);
-        return [];
-      }
-    }
-    
-    // If no cache but we have API data, store it in localStorage
-    if (apiPokemonNames.length > 0) {
-      console.log('💾 Storing API Pokémon names in cache');
-      localStorage.setItem('pokemonNames', JSON.stringify({ names: apiPokemonNames }));
-      setNamesLoaded(true);
-      setLoadedNames(apiPokemonNames);
-      return apiPokemonNames;
-    }
-
-    return [];
-  }, [apiPokemonNames, namesLoaded, loadedNames]);
+    return apiPokemonNames;
+  }, [apiPokemonNames]);
 
   const { 
     data: currentPokemon,
     isLoading: isPokemonLoading 
   } = useGetPokemonByIdQuery(currentPokemonId ?? skipToken, {
     skip: !currentPokemonId || !isGameActive,
+    refetchOnMountOrArgChange: false,
+    refetchOnFocus: false,
+    refetchOnReconnect: false
   });
 
-  const { data: allPokemonData = [] } = useGetAllPokemonNamesQuery();
+  const { data: allPokemonData = [] } = useGetAllPokemonNamesQuery(undefined, {
+    refetchOnMountOrArgChange: false,
+    refetchOnFocus: false,
+    refetchOnReconnect: false
+  });
 
   const [rewardPokemon, setRewardPokemon] = useState<{ pokemon: Pokemon | undefined; isLoading: boolean }>({
     pokemon: undefined,
@@ -173,12 +151,12 @@ const PokemonGame = () => {
     }
 
     console.log(`📊 Total Pokémon in data: ${allPokemonData.length}`);
-    console.log(`🎯 Selected generation range: ${selectedGeneration.startId} - ${selectedGeneration.endId}`);
+    console.log(` Selected generation range: ${selectedGeneration.startId} - ${selectedGeneration.endId}`);
 
     try {
       // Find the appropriate tier based on score
       const tier = POKEMON_REWARDS.find(tier => score >= tier.minScore);
-      console.log('🏆 Selected tier:', tier ? `Score ${tier.minScore}+` : 'No tier found');
+      console.log(' Selected tier:', tier ? `Score ${tier.minScore}+` : 'No tier found');
 
       if (!tier) {
         console.log('⚠ No tier found, selecting random basic Pokémon');
@@ -1229,29 +1207,7 @@ const PokemonGame = () => {
     setShowHint(false);
   };
 
-  // Add loading state
-  const [isInitialLoading, setIsInitialLoading] = useState(true);
-
-  // Smooth loading animation
-  useEffect(() => {
-    if (pokemonNames.length > 0) {
-      let progress = 0;
-      const interval = setInterval(() => {
-        progress += 1;
-        if (progress <= 100) {
-          setLoadingProgress(progress);
-        } else {
-          clearInterval(interval);
-          setTimeout(() => {
-            setIsInitialLoading(false);
-          }, 500);
-        }
-      }, 20);
-      return () => clearInterval(interval);
-    }
-  }, [pokemonNames.length]);
-
-  // Add handleQuit function
+  // Add back the necessary functions
   const handleQuit = useCallback(() => {
     handleGameOver();
   }, [handleGameOver]);
@@ -1295,47 +1251,6 @@ const PokemonGame = () => {
     setMaxHypeChain(0);
     setTotalTimeElapsed(0);
   };
-
-  // Update loading screen component
-  if (isInitialLoading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-b from-blue-100 to-blue-50 flex items-center justify-center">
-        <div className="text-center space-y-4">
-          <div className="relative w-24 h-24 mx-auto">
-            <div className="pokeball-loading scale-150">
-              <div className="outer-circle" />
-              <div className="center-circle" />
-            </div>
-          </div>
-          <div className="text-xl font-medium text-gray-700">
-            Chargement des Pokémons...
-          </div>
-          <div className="text-sm font-bold text-gray-600">
-            {loadingProgress}%
-          </div>
-          <div className="w-80 h-3 bg-gradient-to-r from-gray-100 to-gray-200 rounded-full overflow-hidden shadow-lg relative border border-white/50">
-            <div className="absolute inset-0 bg-gradient-to-r from-blue-500/20 to-purple-500/20 animate-pulse rounded-full" />
-            <div 
-              className="h-full bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 transition-all duration-500 ease-out relative rounded-full"
-              style={{ width: `${loadingProgress}%` }}
-            >
-              <div className="absolute inset-0 bg-grid-pattern opacity-30 rounded-full" />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/10 to-white/20 rounded-full" />
-              {loadingProgress > 5 && (
-                <div className="absolute right-0 top-1/2 -translate-y-1/2 w-3 h-3 bg-white rounded-full shadow-[0_0_10px_rgba(255,255,255,0.8)] animate-pulse" />
-              )}
-            </div>
-            <div className="absolute top-0 left-0 w-full h-full bg-shine-gradient opacity-20 animate-shine rounded-full" />
-          </div>
-          <div className="flex justify-center gap-2 mt-2">
-            <div className="w-2 h-2 rounded-full bg-blue-500 animate-bounce" style={{ animationDelay: '0ms' }} />
-            <div className="w-2 h-2 rounded-full bg-purple-500 animate-bounce" style={{ animationDelay: '150ms' }} />
-            <div className="w-2 h-2 rounded-full bg-pink-500 animate-bounce" style={{ animationDelay: '300ms' }} />
-          </div>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-blue-100 to-blue-50 p-4 flex items-start sm:items-center justify-center font-oswald">
