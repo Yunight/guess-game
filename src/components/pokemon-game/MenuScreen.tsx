@@ -175,7 +175,11 @@ export const MenuScreen: FC<MenuScreenProps> = ({
                     ${nameError ? 'border-red-500 focus:ring-red-500' : 'border-gray-300'}
                     ${user ? 'bg-gray-100 border-transparent cursor-not-allowed opacity-75 hover:bg-gray-100 focus:bg-gray-100 select-none' : ''}
                   `}
-                  value={user ? user.displayName || '' : playerName}
+                  value={user ? (
+                    auth.currentUser?.email?.includes('@gmail.com') && user.displayName
+                      ? `${user.displayName.split(' ')[0]} .${user.displayName.split(' ').pop()?.[0].toUpperCase()}`
+                      : user.displayName || ''
+                  ) : playerName}
                   onChange={handlePlayerNameChange}
                   readOnly={!!user}
                   disabled={!!user}
