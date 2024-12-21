@@ -379,6 +379,7 @@ const PokemonGame = () => {
         normalizedSuggestion === normalizedAnswerEn ||
         suggestion.toLowerCase() === pokemonNameFr.toLowerCase() ||
         suggestion.toLowerCase() === pokemonNameEn.toLowerCase()) {
+      console.log('✅ Correct answer! Remaining Pokémon:', remainingPokemon.length);
       handleCorrectAnswer();
     } else {
       console.log('❌ Wrong answer:', {
@@ -670,7 +671,7 @@ const PokemonGame = () => {
     }
     
     // Handle Hype Train logic only in hard mode
-    if (isHardMode && guessTimeLeft >= 10) { // Within 5 seconds (15-10 = 5)
+    if (isHardMode && guessTimeLeft >= 10) {
       setConsecutiveFastAnswers(prev => {
         const newCount = prev + 1;
         console.log('🚂 Fast answer! New count:', newCount);
@@ -755,17 +756,67 @@ const PokemonGame = () => {
       }
     }
     
-    // Only proceed to next Pokémon if there's time left
-    if (guessTimeLeft > 0) {
+    // Remove the current Pokemon from remainingPokemon
+    if (currentPokemon) {
+      console.log('🔄 Current remaining Pokémon:', remainingPokemon.length);
+      setRemainingPokemon(prev => {
+        const newRemaining = prev.filter(id => id !== currentPokemon.id);
+        console.log('🔄 New remaining Pokémon:', newRemaining.length);
+        return newRemaining;
+      });
+    }
+    
+    // Check if this was the last Pokémon
+    const isLastPokemon = remainingPokemon.length <= 1;
+    console.log('🔄 Checking if last Pokémon:', { isLastPokemon, remainingCount: remainingPokemon.length });
+    
+    if (isLastPokemon) {
+      console.log('🎮 Last Pokémon found! Showing name for 1.5s before game over...');
       setTimeout(() => {
-        console.log('⏲️ Correct answer timeout - fetching new Pokemon');
-        setIsCorrect(null);
-        setGuess('');
-        setSuggestions([]);
-        setShowHint(false);
-        fetchRandomPokemon();
-        inputRef.current?.focus();
+        console.log('🎮 Triggering game over sequence...');
+        handleGameOver();
       }, 1500);
+    } else {
+      console.log('🔄 Step 1: Starting transition sequence - showing correct answer for 1 second');
+      // 1. Show the correct answer for 1 second
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      console.log('🔄 Step 2: Clearing current Pokemon to show loading state');
+      // 2. Clear current Pokemon and set loading state
+      setCurrentPokemonId(null);
+      setIsCorrect(null);
+      setGuess('');
+      setSuggestions([]);
+      setShowHint(false);
+      
+      // Wait for states to be cleared
+      await new Promise(resolve => setTimeout(resolve, 50));
+      
+      console.log('🔄 Step 3: Waiting for loading state (300ms)');
+      // 3. Wait for loading state to be visible
+      await new Promise(resolve => setTimeout(resolve, 300));
+      
+      console.log('🔄 Step 4: Selecting next Pokemon');
+      // 4. Select next Pokemon
+      const nextPokemonId = remainingPokemon[Math.floor(Math.random() * remainingPokemon.length)];
+      console.log('🎯 Selected next Pokémon:', nextPokemonId);
+      
+      console.log('🔄 Step 5: Updating remaining pool');
+      // 5. Update remaining pool
+      setRemainingPokemon(prev => prev.filter(id => id !== nextPokemonId));
+      
+      // Wait for remaining pool to update
+      await new Promise(resolve => setTimeout(resolve, 50));
+      
+      console.log('🔄 Step 6: Setting new Pokemon');
+      // 6. Set new Pokemon
+      setCurrentPokemonId(nextPokemonId);
+      
+      console.log('🔄 Step 7: Focusing input');
+      // 7. Focus input
+      inputRef.current?.focus();
+      
+      console.log('🔄 Transition sequence completed');
     }
   };
 
@@ -776,6 +827,16 @@ const PokemonGame = () => {
       if (hintsLeft > 0 && currentPokemon) {
         setShowHint(true);
         setHintsLeft(prev => prev - 1);
+      }
+      return;
+    }
+
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      if (suggestions.length > 0 && highlightedIndex >= 0) {
+        handleSuggestionClick(suggestions[highlightedIndex]);
+      } else if (guess.trim()) {
+        handleSuggestionClick(guess);
       }
       return;
     }
@@ -796,11 +857,6 @@ const PokemonGame = () => {
         const newIndex = prevIndex > 0 ? prevIndex - 1 : suggestions.length - 1;
         return newIndex;
       });
-    } else if (e.key === 'Enter') {
-      e.preventDefault();
-      if (highlightedIndex >= 0) {
-        handleSuggestionClick(suggestions[highlightedIndex]);
-      }
     }
   };
 
@@ -811,26 +867,25 @@ const PokemonGame = () => {
     }
   };
 
-  const fetchRandomPokemon = useCallback(() => {
-    if (remainingPokemon.length === 0) {
-      if (isGameActive) {
-        setIsGameActive(false);
-        setGameOver(true);
-      }
-      return;
+  // Add effect to handle invalid Pokemon data
+  useEffect(() => {
+    // Only handle invalid data if we have a currentPokemonId and the game is active
+    if (isGameActive && !isPokemonLoading && currentPokemonId !== null && remainingPokemon.length > 0 && 
+        (currentPokemon === undefined || 
+         currentPokemon?.englishName === undefined || 
+         currentPokemon?.frenchName === undefined)) {
+      console.log('⚠️ Invalid Pokémon data detected:', {
+        currentPokemonId,
+        currentPokemon,
+        isLoading: isPokemonLoading,
+        remainingCount: remainingPokemon.length
+      });
+      // Reset the current Pokemon ID to trigger a new fetch
+      setCurrentPokemonId(null);
+      // Add the ID back to the remaining pool
+      setRemainingPokemon(prev => [...prev, currentPokemonId]);
     }
-
-    const randomIndex = Math.floor(Math.random() * remainingPokemon.length);
-    const pokemonId = remainingPokemon[randomIndex];
-    
-    if (!pokemonId) {
-      console.error('Invalid Pokemon ID generated');
-      return;
-    }
-
-    setCurrentPokemonId(pokemonId);
-    setRemainingPokemon(prev => prev.filter(id => id !== pokemonId));
-  }, [remainingPokemon, isGameActive]);
+  }, [currentPokemon, currentPokemonId, isGameActive, isPokemonLoading, remainingPokemon.length]);
 
   const fetchSelectedRankings = useCallback(async () => {
     try {
@@ -858,7 +913,7 @@ const PokemonGame = () => {
   const handleGameOver = useCallback(async () => {
     if (gameOver) return;
     
-    console.log(' Starting game over sequence');
+    console.log('🎮 Starting game over sequence');
     // Stop timers first
     if (timerInterval.current) {
       clearInterval(timerInterval.current);
@@ -879,8 +934,10 @@ const PokemonGame = () => {
     setIsGameActive(false);
     setGameOver(true);
     
-    // Calculate reward Pokemon
-    await calculateRewardPokemon(score);
+    // Calculate reward Pokemon only if not all Pokémon were found
+    if (remainingPokemon.length > 0) {
+      await calculateRewardPokemon(score);
+    }
     
     // Small delay to ensure state updates are processed
     await new Promise(resolve => setTimeout(resolve, 50));
@@ -889,8 +946,8 @@ const PokemonGame = () => {
     if (!isMuted) {
       cleanupAllAudio();
 
-      // Play reward Pokemon cry first if available
-      if (rewardPokemon.pokemon) {
+      // Play reward Pokemon cry first if available and not all Pokémon were found
+      if (rewardPokemon.pokemon && remainingPokemon.length > 0) {
         console.log('🎵 About to play reward Pokemon cry');
         const [latestCry, legacyCry] = rewardPokemon.pokemon.cryUrl.split('|');
         console.log('🔊 Playing cry URL:', latestCry);
@@ -906,7 +963,7 @@ const PokemonGame = () => {
       }
 
       // Then play victory sound
-      console.log('🎵 About to play victory sound');
+      console.log('🎉 About to play victory sound');
       victoryAudioRef.current = new Audio(VICTORY_SOUND_URL);
       try {
         await victoryAudioRef.current.play();
@@ -915,7 +972,7 @@ const PokemonGame = () => {
         console.error('❌ Error playing victory sound:', error);
       }
     }
-    
+
     // Only update best score and save to rankings in Hard mode
     if (isHardMode) {
       if (score > bestScore) {
@@ -967,7 +1024,7 @@ const PokemonGame = () => {
       // In Chill mode, just display the score without saving
       setUserRanking(null);
     }
-  }, [score, playerName, selectedGeneration, totalTimeElapsed, gameOver, fetchSelectedRankings, bestScore, setBestScore, setBestTime, isMuted, calculateRewardPokemon, isHardMode, rewardPokemon]);
+  }, [score, playerName, selectedGeneration, totalTimeElapsed, gameOver, fetchSelectedRankings, bestScore, setBestScore, setBestTime, isMuted, calculateRewardPokemon, isHardMode, rewardPokemon, remainingPokemon.length]);
 
   // Update the effect to use both functions
   useEffect(() => {
@@ -1065,7 +1122,7 @@ const PokemonGame = () => {
     // Clean up all audio
     cleanupAllAudio();
     
-    console.log(' Resetting current Pokemon');
+    console.log('🔄 Resetting current Pokemon');
     setCurrentPokemonId(null);
     
     // If it's a new user (different from saved name), clean up localStorage
@@ -1101,13 +1158,16 @@ const PokemonGame = () => {
     setHighlightedIndex(-1);
     
     // Initialize Pokémon list for selected generation
-    const filteredIds = Array.from(
+    const allPokemonIds = Array.from(
       { length: selectedGeneration.endId - selectedGeneration.startId + 1 },
       (_, i) => selectedGeneration.startId + i
     );
-    setRemainingPokemon(filteredIds);
+    console.log('🔄 Initializing Pokémon pool with', allPokemonIds.length, 'Pokémon');
     
-    // Add a small delay to ensure state is reset before fetching new Pokemon
+    // Set initial state and wait for it to be updated
+    setRemainingPokemon(allPokemonIds);
+    
+    // Add a delay to ensure state is updated
     await new Promise(resolve => setTimeout(resolve, 100));
     
     // Set game active and clear restarting state
@@ -1119,7 +1179,18 @@ const PokemonGame = () => {
       startGuessTimer();
     }
     startTotalTimer();
-    fetchRandomPokemon();
+    
+    // Start the game by fetching first Pokemon
+    console.log('🎯 Starting game with', allPokemonIds.length, 'Pokémon to find');
+    // Use the allPokemonIds directly for the first fetch
+    const randomIndex = Math.floor(Math.random() * allPokemonIds.length);
+    const firstPokemonId = allPokemonIds[randomIndex];
+    console.log('🎲 Selected first Pokémon:', firstPokemonId);
+    setCurrentPokemonId(firstPokemonId);
+    
+    // Remove the first Pokémon from the pool after setting it
+    setRemainingPokemon(prev => prev.filter(id => id !== firstPokemonId));
+    
     inputRef.current?.focus();
   };
 
@@ -1127,21 +1198,6 @@ const PokemonGame = () => {
   useEffect(() => {
     localStorage.setItem('pokemonGameMuted', JSON.stringify(isMuted));
   }, [isMuted]);
-
-  // Initialize game function to set up remaining Pokemon
-  const initializeGame = useCallback(() => {
-    setRemainingPokemon(
-      Array.from(
-        { length: selectedGeneration.endId - selectedGeneration.startId + 1 },
-        (_, i) => selectedGeneration.startId + i
-      )
-    );
-  }, [selectedGeneration]);
-
-  // Initialize game when generation changes
-  useEffect(() => {
-    initializeGame();
-  }, [selectedGeneration, initializeGame]);
 
   // Add this effect to fetch rankings only when the generation selector changes
   useEffect(() => {
@@ -1224,10 +1280,24 @@ const PokemonGame = () => {
   useEffect(() => {
     const savedName = localStorage.getItem('pokemonGamePlayerName');
     if (savedName) {
+      console.log('👤 Loaded saved player name:', savedName);
       setPlayerName(savedName);
       setNameError(null); // Clear any errors since this is a valid saved name
+      // Validate the name immediately to ensure it's available
+      checkNameAvailability(savedName).then(isAvailable => {
+        if (!isAvailable) {
+          console.log('❌ Saved name is no longer available:', savedName);
+          localStorage.removeItem('pokemonGamePlayerName');
+          setPlayerName('');
+          setNameError('Ce nom est déjà utilisé. Veuillez en choisir un autre.');
+        } else {
+          console.log('✅ Saved name is valid and available:', savedName);
+        }
+      });
+    } else {
+      console.log('ℹ️ No saved player name found');
     }
-  }, []); // Empty dependency array means this runs once on mount
+  }, [checkNameAvailability]); // Add checkNameAvailability to dependencies
 
   const handleGenerationSelect = (generation: Generation) => {
     setSelectedGeneration(generation);
@@ -1284,6 +1354,81 @@ const PokemonGame = () => {
     setTotalTimeElapsed(0);
   };
 
+  // Add effect to log Pokemon data when it loads
+  useEffect(() => {
+    if (currentPokemon && !isPokemonLoading) {
+      console.log('✨ Loaded Pokémon data:', {
+        id: currentPokemon.id,
+        frenchName: currentPokemon.frenchName,
+        englishName: currentPokemon.englishName,
+        isShiny: currentPokemon.isShiny,
+        sprite: currentPokemon.sprite,
+        evolutionStage: currentPokemon.evolutionStage,
+        isLegendary: currentPokemon.isLegendary,
+        isMythical: currentPokemon.isMythical,
+        hasEvolution: currentPokemon.hasEvolution,
+        cryUrl: currentPokemon.cryUrl
+      });
+    }
+  }, [currentPokemon, isPokemonLoading]);
+
+  // Remove duplicate useEffect hooks and cleanup functions
+  useEffect(() => {
+    // Cleanup function for all audio and timers
+    return () => {
+      cleanupAllAudio();
+      if (timerInterval.current) {
+        clearInterval(timerInterval.current);
+        timerInterval.current = null;
+      }
+      if (totalTimeInterval.current) {
+        clearInterval(totalTimeInterval.current);
+        totalTimeInterval.current = null;
+      }
+    };
+  }, []);
+
+  // Consolidate train horn and low life sound effects
+  useEffect(() => {
+    // Handle train horn sound
+    if (showHypeTrain && !isMuted && !trainHornRef.current) {
+      console.log('🔊 Starting train horn sound');
+      trainHornRef.current = new Audio(TRAIN_HORN_URL);
+      trainHornRef.current.volume = 0.05;
+      trainHornRef.current.loop = true;
+      trainHornRef.current.play().catch(error => {
+        console.error('❌ Error playing train horn sound:', error);
+      });
+    } else if (!showHypeTrain && trainHornRef.current) {
+      console.log('🔇 Stopping train horn sound');
+      trainHornRef.current.pause();
+      trainHornRef.current.currentTime = 0;
+      trainHornRef.current = null;
+    }
+
+    // Handle low life sound
+    if (isHardMode && guessTimeLeft === 5 && !isMuted && !gameOver && isCorrect === null) {
+      console.log('🔊 Playing low life sound');
+      lowLifeAudioRef.current = new Audio(LOW_LIFE_URL);
+      lowLifeAudioRef.current.volume = 0.5;
+      lowLifeAudioRef.current.play().catch(error => {
+        console.error('❌ Error playing low life sound:', error);
+      });
+    } else if (lowLifeAudioRef.current && (
+      !isHardMode || 
+      guessTimeLeft > 5 || 
+      guessTimeLeft <= 0 || 
+      isMuted || 
+      gameOver || 
+      isCorrect !== null
+    )) {
+      console.log('🔇 Stopping low life sound');
+      lowLifeAudioRef.current.pause();
+      lowLifeAudioRef.current.currentTime = 0;
+      lowLifeAudioRef.current = null;
+    }
+  }, [showHypeTrain, isMuted, isHardMode, guessTimeLeft, gameOver, isCorrect]);
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-blue-100 to-blue-50 p-4 flex items-start sm:items-center justify-center font-oswald">
       {isGameActive ? (
@@ -1317,6 +1462,8 @@ const PokemonGame = () => {
           showHypeTrain={showHypeTrain}
           consecutiveFastAnswers={consecutiveFastAnswers}
           pointsEarned={pointsEarned}
+          remainingCount={remainingPokemon.length}
+          totalCount={selectedGeneration.endId - selectedGeneration.startId + 1}
         />
       ) : (
         <MenuScreen
@@ -1349,7 +1496,7 @@ const PokemonGame = () => {
         totalTimeElapsed={totalTimeElapsed}
         formatTimeForRanking={formatTimeForRanking}
         rewardPokemon={rewardPokemon}
-        totalPokemonCount={remainingPokemon.length}
+        remainingPokemon={remainingPokemon}
         handleRestart={handleRestart}
         handleBackToMenu={handleBackToMenu}
         isMuted={isMuted}

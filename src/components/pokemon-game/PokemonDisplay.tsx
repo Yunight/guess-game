@@ -25,6 +25,8 @@ interface PokemonDisplayProps {
   isCorrect: boolean | null;
   isMuted: boolean;
   guessTimeLeft: number;
+  remainingCount: number;
+  totalCount: number;
 }
 
 // Play shiny effect sound
@@ -48,62 +50,49 @@ export const PokemonDisplay: FC<PokemonDisplayProps> = ({
   isCorrect,
   isMuted,
   guessTimeLeft,
+  remainingCount,
+  totalCount,
 }) => {
   const { i18n } = useTranslation();
   const [displayState, setDisplayState] = useState<'loading' | 'ready' | 'revealed'>('loading');
-  const [displayedPokemon, setDisplayedPokemon] = useState<Pokemon | undefined>(undefined);
+  const [displayedPokemon, setDisplayedPokemon] = useState<Pokemon | undefined>();
   const audioRef = useRef<HTMLAudioElement | null>(null);
-  const loadingRef = useRef(false);
   const soundPlayedRef = useRef(false);
-  const currentPokemonIdRef = useRef<number | null>(null);
+  const currentPokemonIdRef = useRef<number | null>(0);
 
-  // Reset state when Pokemon changes
+  // Handle Pokemon changes and loading states
   useEffect(() => {
     const newPokemonId = currentPokemon?.id;
-    devLog('🔄 Pokemon changed, resetting display state');
+    const currentId = currentPokemonIdRef.current;
     
-    // If the Pokemon ID has changed, reset sound state
-    if (newPokemonId !== currentPokemonIdRef.current) {
-      soundPlayedRef.current = false;
-      // Clean up previous audio immediately
+    // If we're loading or Pokemon has changed
+    if (isPokemonLoading || newPokemonId !== currentId) {
+      devLog(`🔄 State change - Loading: ${isPokemonLoading}, Old ID: ${currentId}, New ID: ${newPokemonId}`);
+      
+      // Clean up audio
       if (audioRef.current) {
-        devLog('🧹 Cleaning up previous Pokemon audio');
         audioRef.current.pause();
         audioRef.current.currentTime = 0;
         audioRef.current.remove();
         audioRef.current = null;
       }
-    }
-    
-    // Update our reference
-    currentPokemonIdRef.current = newPokemonId || null;
-    
-    // Always clear display when loading
-    if (isPokemonLoading) {
+      soundPlayedRef.current = false;
+      
+      // Clear display
       setDisplayState('loading');
       setDisplayedPokemon(undefined);
-      loadingRef.current = true;
-      return;
+      
+      // Update reference immediately to prevent multiple clears
+      currentPokemonIdRef.current = newPokemonId || null;
     }
     
-    // Handle new Pokemon
-    if (currentPokemon && currentPokemon.id !== displayedPokemon?.id) {
+    // Set new Pokemon only when we have it and it's not loading
+    if (currentPokemon && !isPokemonLoading) {
+      devLog(`🔄 Setting Pokemon: ${currentPokemon.id}`);
       setDisplayedPokemon(currentPokemon);
-      if (isCorrect !== true) {
-        setDisplayState('ready');
-      }
-      loadingRef.current = false;
+      setDisplayState(isCorrect === true ? 'revealed' : 'ready');
     }
-  }, [currentPokemon?.id, isPokemonLoading, isCorrect, displayedPokemon?.id]);
-
-  // Handle state changes
-  useEffect(() => {
-    if (isCorrect === true) {
-      setDisplayState('revealed');
-    } else if (!isPokemonLoading && currentPokemon && displayState === 'loading') {
-      setDisplayState('ready');
-    }
-  }, [isCorrect, isPokemonLoading, currentPokemon, displayState]);
+  }, [currentPokemon, isPokemonLoading, isCorrect]);
 
   // Handle Pokemon cry sound
   useEffect(() => {
@@ -205,6 +194,12 @@ export const PokemonDisplay: FC<PokemonDisplayProps> = ({
 
   return (
     <div className="mt-12 mx-2 bg-gradient-to-b from-gray-800 to-gray-900 rounded-t-lg p-2 shadow-lg">
+      {/* Counter display */}
+      <div className="flex justify-center mb-2">
+        <div className="bg-black/80 text-white px-4 py-1 rounded-full text-sm font-medium">
+          {remainingCount}/{totalCount}
+        </div>
+      </div>
       <div className="bg-gradient-to-br from-blue-100 to-blue-200 rounded-lg flex items-center justify-center p-2 
         aspect-[4/3] mb-2 relative overflow-hidden shadow-inner">
         <div className="absolute inset-0 bg-[radial-gradient(circle,_transparent_20%,_rgba(255,255,255,0.5)_20%)] bg-[length:10px_10px] animate-grid-shine"></div>
@@ -222,7 +217,7 @@ export const PokemonDisplay: FC<PokemonDisplayProps> = ({
         </div>
         
         <div className="relative z-10 w-full h-full flex items-center justify-center">
-          {(displayState === 'loading' || !displayedPokemon || !displayedPokemon.sprite) ? (
+          {(!displayedPokemon || !displayedPokemon.sprite) ? (
             <div className="pokeball-loading">
               <div className="outer-circle" />
               <div className="center-circle" />

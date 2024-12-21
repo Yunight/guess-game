@@ -40,6 +40,8 @@ interface GameScreenProps {
   showHypeTrain: boolean;
   consecutiveFastAnswers: number;
   pointsEarned: number;
+  remainingCount: number;
+  totalCount: number;
 }
 
 export const GameScreen: FC<GameScreenProps> = ({
@@ -72,6 +74,8 @@ export const GameScreen: FC<GameScreenProps> = ({
   showHypeTrain,
   consecutiveFastAnswers,
   pointsEarned,
+  remainingCount,
+  totalCount,
 }) => {
   const { t } = useTranslation();
 
@@ -219,6 +223,8 @@ export const GameScreen: FC<GameScreenProps> = ({
             isCorrect={isCorrect}
             isMuted={isMuted}
             guessTimeLeft={guessTimeLeft}
+            remainingCount={remainingCount}
+            totalCount={totalCount}
           />
 
           {/* Critical Messages */}

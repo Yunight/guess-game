@@ -1,83 +1,172 @@
 import { FC } from 'react';
-import { Pokemon } from './types';
+import type { Pokemon } from './types';
+import { Generation } from './types';
 import { useTranslation } from 'react-i18next';
 
 interface RewardPokemonDisplayProps {
   pokemon: Pokemon | undefined;
   isLoading: boolean;
+  totalPokemonCount: number;
+  selectedGeneration: Generation;
 }
+
+const getRegionName = (generation: Generation): string => {
+  switch (generation.startId) {
+    case 1:
+      return 'Kanto';
+    case 152:
+      return 'Johto';
+    case 252:
+      return 'Hoenn';
+    case 387:
+      return 'Sinnoh';
+    case 494:
+      return 'Unova';
+    case 650:
+      return 'Kalos';
+    case 722:
+      return 'Alola';
+    case 810:
+      return 'Galar';
+    case 906:
+      return 'Paldea';
+    default:
+      return '';
+  }
+};
 
 export const RewardPokemonDisplay: FC<RewardPokemonDisplayProps> = ({
   pokemon,
-  isLoading
+  isLoading,
+  totalPokemonCount,
+  selectedGeneration
 }) => {
   const { t, i18n } = useTranslation();
 
   return (
     <div className="mt-4 bg-gradient-to-b from-gray-800 to-gray-900 rounded-lg p-2 shadow-lg">
-      <div className={`bg-gradient-to-br ${pokemon?.isShiny ? 'from-yellow-100 to-yellow-200' : 'from-blue-100 to-blue-200'} 
-        rounded-lg flex flex-col items-center justify-center p-2 aspect-[4/3] relative overflow-hidden shadow-inner`}>
-        <div className="absolute inset-0 bg-[radial-gradient(circle,_transparent_20%,_rgba(255,255,255,0.5)_20%)] bg-[length:10px_10px] animate-grid-shine"></div>
-        <div className="absolute inset-0 bg-gradient-to-br from-white/40 to-transparent opacity-50 animate-screen-glare"></div>
-        
-        <div className={`absolute top-2 left-2 w-4 h-4 border-t-2 border-l-2 ${pokemon?.isShiny ? 'border-yellow-400' : 'border-blue-400'} rounded-tl-lg animate-corner-pulse`}></div>
-        <div className={`absolute top-2 right-2 w-4 h-4 border-t-2 border-r-2 ${pokemon?.isShiny ? 'border-yellow-400' : 'border-blue-400'} rounded-tr-lg animate-corner-pulse-delay-1`}></div>
-        <div className={`absolute bottom-2 left-2 w-4 h-4 border-b-2 border-l-2 ${pokemon?.isShiny ? 'border-yellow-400' : 'border-blue-400'} rounded-bl-lg animate-corner-pulse-delay-2`}></div>
-        <div className={`absolute bottom-2 right-2 w-4 h-4 border-b-2 border-r-2 ${pokemon?.isShiny ? 'border-yellow-400' : 'border-blue-400'} rounded-br-lg animate-corner-pulse-delay-3`}></div>
-        
-        {pokemon?.isShiny && (
-          <>
-            <div className="absolute w-2 h-2 bg-yellow-300 rounded-full animate-ping" 
-                 style={{ top: '20%', left: '30%', animationDuration: '1s' }}></div>
-            <div className="absolute w-2 h-2 bg-yellow-300 rounded-full animate-ping" 
-                 style={{ top: '70%', left: '80%', animationDuration: '1.2s' }}></div>
-            <div className="absolute w-2 h-2 bg-yellow-300 rounded-full animate-ping" 
-                 style={{ top: '40%', left: '60%', animationDuration: '0.8s' }}></div>
-            <div className="absolute w-3 h-3 bg-yellow-300 rounded-full animate-ping" 
-                 style={{ top: '30%', left: '20%', animationDuration: '1.3s' }}></div>
-            <div className="absolute w-3 h-3 bg-yellow-300 rounded-full animate-ping" 
-                 style={{ top: '60%', left: '70%', animationDuration: '0.9s' }}></div>
-          </>
-        )}
-        
-        <div className="relative z-10 w-full h-full flex flex-col items-center justify-center">
+      {/* Congratulatory message */}
+      {totalPokemonCount === 0 ? (
+        <>
+          {/* Main celebration content */}
+          <div className="relative px-4 py-6 bg-gradient-to-b from-yellow-400/90 to-yellow-500/90 rounded-2xl shadow-2xl">
+            <div className="absolute inset-0 bg-[url('/pokeball-pattern.png')] opacity-10"></div>
+            
+            {/* Main content */}
+            <div className="space-y-4 relative">
+              <div className="text-6xl flex justify-center items-center gap-3">
+                <span className="animate-bounce" style={{ animationDelay: "0s" }}>🏆</span>
+                <span className="animate-bounce" style={{ animationDelay: "0.2s" }}>👑</span>
+                <span className="animate-bounce" style={{ animationDelay: "0.4s" }}>🏆</span>
+              </div>
+              
+              <div className="text-center">
+                <h2 className="text-3xl font-bold text-black mb-2">
+                  MAÎTRE POKÉMON LÉGENDAIRE!
+                </h2>
+                <p className="text-xl text-black font-semibold">
+                  Tu as trouvé tous les Pokémon de {getRegionName(selectedGeneration)} !
+                </p>
+              </div>
+
+              {/* Bottom decorative elements */}
+              <div className="flex justify-center gap-4 text-2xl">
+                {['⭐️', '🌟', '⭐️', '🌟', '⭐️'].map((star, i) => (
+                  <span key={i} className="animate-pulse" style={{ animationDelay: `${i * 0.15}s` }}>{star}</span>
+                ))}
+              </div>
+            </div>
+          </div>
+        </>
+      ) : (
+        <div className={`bg-gradient-to-br ${pokemon?.isShiny ? 'from-yellow-100 to-yellow-200' : 'from-blue-100 to-blue-200'} 
+          rounded-lg flex flex-col items-center justify-center p-2 aspect-[4/3] relative overflow-hidden shadow-inner`}>
+          <div className="absolute inset-0 bg-[radial-gradient(circle,_transparent_20%,_rgba(255,255,255,0.5)_20%)] bg-[length:10px_10px] animate-grid-shine"></div>
+          <div className="absolute inset-0 bg-gradient-to-br from-white/40 to-transparent opacity-50 animate-screen-glare"></div>
+          
+          <div className={`absolute top-2 left-2 w-4 h-4 border-t-2 border-l-2 ${pokemon?.isShiny ? 'border-yellow-400' : 'border-blue-400'} rounded-tl-lg animate-corner-pulse`}></div>
+          <div className={`absolute top-2 right-2 w-4 h-4 border-t-2 border-r-2 ${pokemon?.isShiny ? 'border-yellow-400' : 'border-blue-400'} rounded-tr-lg animate-corner-pulse-delay-1`}></div>
+          <div className={`absolute bottom-2 left-2 w-4 h-4 border-b-2 border-l-2 ${pokemon?.isShiny ? 'border-yellow-400' : 'border-blue-400'} rounded-bl-lg animate-corner-pulse-delay-2`}></div>
+          <div className={`absolute bottom-2 right-2 w-4 h-4 border-b-2 border-r-2 ${pokemon?.isShiny ? 'border-yellow-400' : 'border-blue-400'} rounded-br-lg animate-corner-pulse-delay-3`}></div>
+          
           {isLoading ? (
-            <div className="pokeball-loading">
-              <div className="outer-circle" />
-              <div className="center-circle" />
+            <div className="w-24 h-24 animate-spin">
+              <img src="/pokeball.svg" alt="Loading..." className="w-full h-full" />
             </div>
           ) : pokemon ? (
-            <>
-              {pokemon.isShiny && (
-                <div className="absolute top-2 left-0 right-0 flex justify-center">
-                  <div className="bg-yellow-400/90 text-black px-4 py-1 rounded-full font-bold text-sm animate-bounce-in">
-                    ✨ Shiny ✨
+            <div className="relative">
+              {totalPokemonCount === 0 && (
+                <>
+                  {/* Outer spinning fireworks */}
+                  <div className="absolute inset-[-150%] animate-spin-slow">
+                    {[...Array(12)].map((_, i) => (
+                      <div
+                        key={i}
+                        className="absolute w-1 h-10 bg-gradient-to-t from-yellow-500 to-yellow-200 rounded-full"
+                        style={{
+                          top: '50%',
+                          left: '50%',
+                          transform: `rotate(${i * 30}deg)`,
+                          transformOrigin: '0 0',
+                          animation: 'firework 2s ease-in-out infinite',
+                          animationDelay: `${i * 0.2}s`,
+                        }}
+                      />
+                    ))}
                   </div>
-                </div>
+                  {/* Middle spinning fireworks */}
+                  <div className="absolute inset-[-120%] animate-spin-slow-reverse">
+                    {[...Array(8)].map((_, i) => (
+                      <div
+                        key={i}
+                        className="absolute w-1 h-8 bg-gradient-to-t from-blue-500 to-blue-200 rounded-full"
+                        style={{
+                          top: '50%',
+                          left: '50%',
+                          transform: `rotate(${i * 45 + 22.5}deg)`,
+                          transformOrigin: '0 0',
+                          animation: 'firework 3s ease-in-out infinite',
+                          animationDelay: `${i * 0.3}s`,
+                        }}
+                      />
+                    ))}
+                  </div>
+                  {/* Inner spinning stars */}
+                  <div className="absolute inset-[-80%] animate-spin-slow">
+                    {[...Array(6)].map((_, i) => (
+                      <div
+                        key={i}
+                        className="absolute w-1.5 h-6 bg-gradient-to-t from-white to-yellow-100 rounded-full"
+                        style={{
+                          top: '50%',
+                          left: '50%',
+                          transform: `rotate(${i * 60}deg)`,
+                          transformOrigin: '0 0',
+                          animation: 'firework 1.5s ease-in-out infinite',
+                          animationDelay: `${i * 0.4}s`,
+                        }}
+                      />
+                    ))}
+                  </div>
+                </>
               )}
-              
-              <div className="relative w-full h-full flex items-center justify-center">
-                <img
-                  src={pokemon.sprite}
-                  alt={i18n.language === 'fr' ? pokemon.frenchName : pokemon.englishName}
-                  className={`w-auto h-[90%] max-w-full object-contain ${pokemon.isShiny ? 'animate-shiny-bounce-in' : 'animate-bounce-in'}`}
-                />
+              <img
+                src={pokemon.sprite}
+                alt={i18n.language === 'fr' ? pokemon.frenchName : pokemon.englishName}
+                className="w-32 h-32 object-contain relative z-10"
+              />
+              <div className="mt-2 text-center relative z-10">
+                <p className="text-lg font-semibold">
+                  {t('youAre')} {i18n.language === 'fr' ? pokemon.frenchName : pokemon.englishName} !
+                </p>
+                {pokemon.isShiny && (
+                  <p className="text-yellow-600 font-bold animate-pulse">✨ {i18n.language === 'fr' ? 'CHROMATIQUE' : 'SHINY'} ✨</p>
+                )}
               </div>
-              
-              <div className={`absolute bottom-0 left-0 right-0 text-center ${pokemon.isShiny ? 'bg-yellow-500/50' : 'bg-gradient-to-r from-blue-500/50 via-blue-600/50 to-blue-500/50'} 
-                backdrop-blur-sm py-3 text-white font-bold text-xl transition-all duration-300`}>
-                <span className="text-white">{t('youAre')} </span>
-                <span className={`${pokemon.isShiny ? 'text-yellow-300' : 'text-white'} drop-shadow-[0_2px_2px_rgba(0,0,0,0.5)]`}>
-                  {i18n.language === 'fr' ? 
-                    pokemon.frenchName.charAt(0).toUpperCase() + pokemon.frenchName.slice(1).toLowerCase() : 
-                    pokemon.englishName.charAt(0).toUpperCase() + pokemon.englishName.slice(1).toLowerCase()}
-                </span>
-                <span className="text-white"> !</span>
-              </div>
-            </>
+            </div>
           ) : null}
         </div>
-      </div>
+      )}
     </div>
   );
 }; 

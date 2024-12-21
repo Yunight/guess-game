@@ -66,31 +66,32 @@ const getCryUrl = async (id: number): Promise<string> => {
 };
 
 // Get Pokemon flavor text from PokeAPI
-const getFlavorText = async (id: number, language: string = 'fr'): Promise<string> => {
+const getFlavorText = async (id: number): Promise<{ french: string; english: string }> => {
   try {
     const response = await fetch(`https://pokeapi.co/api/v2/pokemon-species/${id}`);
     if (!response.ok) throw new Error('Failed to fetch Pokemon flavor text');
     
     const data = await response.json() as PokemonSpecies;
-    const flavorEntries = data.flavor_text_entries.filter(entry => 
-      entry.language.name === language
+    const frenchEntries = data.flavor_text_entries.filter(entry => 
+      entry.language.name === 'fr'
+    );
+    const englishEntries = data.flavor_text_entries.filter(entry => 
+      entry.language.name === 'en'
     );
     
-    // Get a random flavor text entry for variety
-    if (flavorEntries.length > 0) {
-      const randomEntry = flavorEntries[Math.floor(Math.random() * flavorEntries.length)];
-      return randomEntry.flavor_text.replace(/\f/g, ' ').replace(/\n/g, ' ');
-    }
+    // Get random entries for variety
+    const french = frenchEntries.length > 0
+      ? frenchEntries[Math.floor(Math.random() * frenchEntries.length)].flavor_text.replace(/\f/g, ' ').replace(/\n/g, ' ')
+      : '';
     
-    // Fallback to English if no French entries found
-    if (language === 'fr') {
-      return getFlavorText(id, 'en');
-    }
+    const english = englishEntries.length > 0
+      ? englishEntries[Math.floor(Math.random() * englishEntries.length)].flavor_text.replace(/\f/g, ' ').replace(/\n/g, ' ')
+      : '';
     
-    return '';
+    return { french, english };
   } catch (error) {
     console.error('Error fetching Pokemon flavor text:', error);
-    return '';
+    return { french: '', english: '' };
   }
 };
 
@@ -225,11 +226,10 @@ export const pokemonApi = createApi({
           // Convert Pokemon data first to check if it's shiny
           const convertedPokemon = convertToPokemon(tyradexPokemon, maxHypeChain);
 
-          // Fetch cry URL and flavor text in parallel
-          const [cryUrl, frenchFlavorText, englishFlavorText] = await Promise.all([
+          // Fetch cry URL and flavor texts in parallel
+          const [cryUrl, flavorTexts] = await Promise.all([
             getCryUrl(pokemonId),
-            getFlavorText(pokemonId, 'fr'),
-            getFlavorText(pokemonId, 'en')
+            getFlavorText(pokemonId)
           ]);
 
           // Return complete Pokemon data
@@ -237,8 +237,8 @@ export const pokemonApi = createApi({
             data: {
               ...convertedPokemon,
               cryUrl,
-              frenchFlavorText,
-              englishFlavorText
+              frenchFlavorText: flavorTexts.french,
+              englishFlavorText: flavorTexts.english
             }
           };
         } catch (error) {

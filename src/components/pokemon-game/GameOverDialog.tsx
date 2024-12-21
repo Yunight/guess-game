@@ -23,7 +23,7 @@ interface GameOverDialogProps {
   totalTimeElapsed: number;
   formatTimeForRanking: (seconds: number) => string;
   rewardPokemon: { pokemon: Pokemon | undefined; isLoading: boolean };
-  totalPokemonCount: number;
+  remainingPokemon: number[];
   handleRestart: () => void;
   handleBackToMenu: () => void;
   isMuted: boolean;
@@ -45,7 +45,7 @@ export const GameOverDialog: FC<GameOverDialogProps> = ({
   totalTimeElapsed,
   formatTimeForRanking,
   rewardPokemon,
-  totalPokemonCount,
+  remainingPokemon,
   handleRestart,
   handleBackToMenu,
   isMuted,
@@ -183,6 +183,10 @@ export const GameOverDialog: FC<GameOverDialogProps> = ({
         ? `${genNumber}ère Génération`
         : `Generation ${genNumber}`;
 
+      if (remainingPokemon.length === 0) {
+        return t('shareMsgAllPokemon', { gen: genName });
+      }
+
       if (score >= 2500) {
         return t('shareMsg2500', { gen: genName });
       }
@@ -304,7 +308,7 @@ export const GameOverDialog: FC<GameOverDialogProps> = ({
       ? `${genNumber}ère Génération`
       : `Generation ${genNumber}`;
 
-    const shinyText = rewardPokemon.pokemon?.isShiny ? (i18n.language === 'fr' ? '✨ CHROMATIQUE ✨' : '✨ SHINY ✨') : '';
+    const shinyText = rewardPokemon.pokemon?.isShiny ? (i18n.language === 'fr' ? '✨ CHROMATIQUE ✨' : '✨ SHINY ���') : '';
     const pokemonName = i18n.language === 'fr' 
       ? (rewardPokemon.pokemon?.frenchName ? rewardPokemon.pokemon.frenchName.charAt(0).toUpperCase() + rewardPokemon.pokemon.frenchName.slice(1) : '')
       : (rewardPokemon.pokemon?.englishName ? rewardPokemon.pokemon.englishName.charAt(0).toUpperCase() + rewardPokemon.pokemon.englishName.slice(1) : '');
@@ -313,11 +317,11 @@ export const GameOverDialog: FC<GameOverDialogProps> = ({
       `👤 ${playerName}\n` +
       `🎯 ${t('score')}: ${score}\n` +
       `⏱️ ${t('time')}: ${formatTimeForRanking(totalTimeElapsed)}\n` +
-      `🌍 ${genName}\n` +
-      `${userRanking ? `👑 ${t('myRank')} #${userRanking}!\n` : ''}` +
+      `🌐 ${genName}\n` +
+      `${userRanking ? `👑 ${t('myRank')} # ${userRanking}!\n` : ''}` +
       `${rewardPokemon.pokemon ? `✨ ${i18n.language === 'fr' ? 'Je suis un' : 'I am'} ${pokemonName} ${shinyText}!\n` : ''}\n` +
       `https://pokemon-guesser-game.vercel.app/\n\n` +
-      `#PokemonGuesserGame #Pokemon #PokemonGuesserByYunight #Gaming`;
+      `#PokemonGuesserGame #Pokemon #Yunight #Gaming`;
 
     try {
       if (navigator.share) {
@@ -347,19 +351,80 @@ export const GameOverDialog: FC<GameOverDialogProps> = ({
         <div className="relative">
           <DialogHeader className="space-y-4">
             <div className="flex justify-center -mt-5">
-              <div className="bg-white p-4 rounded-full shadow-xl">
-                <Trophy className="h-12 w-12 text-yellow-400" />
+              <div className="bg-white p-4 rounded-full shadow-xl relative overflow-visible">
+                {remainingPokemon.length === 0 ? (
+                  <>
+                    {/* Outer spinning fireworks */}
+                    <div className="absolute inset-[-150%] animate-spin-slow">
+                      {[...Array(12)].map((_, i) => (
+                        <div
+                          key={i}
+                          className="absolute w-1 h-10 bg-gradient-to-t from-yellow-500 to-yellow-200 rounded-full"
+                          style={{
+                            top: '50%',
+                            left: '50%',
+                            transform: `rotate(${i * 30}deg)`,
+                            transformOrigin: '0 0',
+                            animation: 'firework 2s ease-in-out infinite',
+                            animationDelay: `${i * 0.2}s`,
+                          }}
+                        />
+                      ))}
+                    </div>
+                    {/* Middle spinning fireworks */}
+                    <div className="absolute inset-[-120%] animate-spin-slow-reverse">
+                      {[...Array(8)].map((_, i) => (
+                        <div
+                          key={i}
+                          className="absolute w-1 h-8 bg-gradient-to-t from-blue-500 to-blue-200 rounded-full"
+                          style={{
+                            top: '50%',
+                            left: '50%',
+                            transform: `rotate(${i * 45 + 22.5}deg)`,
+                            transformOrigin: '0 0',
+                            animation: 'firework 3s ease-in-out infinite',
+                            animationDelay: `${i * 0.3}s`,
+                          }}
+                        />
+                      ))}
+                    </div>
+                    {/* Inner spinning stars */}
+                    <div className="absolute inset-[-80%] animate-spin-slow">
+                      {[...Array(6)].map((_, i) => (
+                        <div
+                          key={i}
+                          className="absolute w-1.5 h-6 bg-gradient-to-t from-white to-yellow-100 rounded-full"
+                          style={{
+                            top: '50%',
+                            left: '50%',
+                            transform: `rotate(${i * 60}deg)`,
+                            transformOrigin: '0 0',
+                            animation: 'firework 1.5s ease-in-out infinite',
+                            animationDelay: `${i * 0.4}s`,
+                          }}
+                        />
+                      ))}
+                    </div>
+                    {/* Pokéball with glow effect */}
+                    <div className="relative h-12 w-12 animate-pulse">
+                      <div className="absolute inset-[-25%] bg-white/30 rounded-full blur-md"></div>
+                      <div className="absolute inset-0 bg-gradient-to-br from-red-400 to-red-600 rounded-full shadow-lg"></div>
+                      <div className="absolute top-[45%] left-0 right-0 h-[10%] bg-black shadow-sm"></div>
+                      <div className="absolute top-[40%] left-[40%] w-[20%] h-[20%] bg-white rounded-full border-2 border-black shadow-inner"></div>
+                    </div>
+                  </>
+                ) : (
+                  <Trophy className="h-12 w-12 text-yellow-400" />
+                )}
               </div>
             </div>
-            <DialogTitle className="text-center text-3xl font-bold text-white">
-              {score === bestScore && score === totalPokemonCount ? (
-                t('congratulations', { name: playerName })
-              ) : (
-                t('congrats', { name: playerName })
-              )}
+            <DialogTitle className="text-2xl font-bold text-center">
+              {remainingPokemon.length === 0 ? 'MAÎTRE POKÉMON LÉGENDAIRE!' : t('gameOver')}
             </DialogTitle>
-            <DialogDescription className="text-center text-white/80">
-              {t('results')}
+            <DialogDescription className="text-center text-gray-200">
+              {remainingPokemon.length === 0 
+                ? t('congratsAllPokemon', { region: selectedGeneration.name })
+                : t('gameOverDesc')}
             </DialogDescription>
           </DialogHeader>
 
@@ -367,6 +432,8 @@ export const GameOverDialog: FC<GameOverDialogProps> = ({
             <RewardPokemonDisplay
               pokemon={rewardPokemon.pokemon}
               isLoading={rewardPokemon.isLoading}
+              totalPokemonCount={remainingPokemon.length}
+              selectedGeneration={selectedGeneration}
             />
 
             <div className="grid grid-cols-2 gap-4">

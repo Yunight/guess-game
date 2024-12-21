@@ -37,9 +37,12 @@ export const AuthButtons: FC<AuthButtonsProps> = ({ isAuthenticated, userName })
 
   const handleGoogleSignIn = async () => {
     try {
-      await signInWithPopup(auth, googleProvider);
+      const result = await signInWithPopup(auth, googleProvider);
+      if (result.user.displayName) {
+        localStorage.setItem('pokemonGamePlayerName', result.user.displayName);
+      }
     } catch (error) {
-      console.error('Erreur de connexion Google:', error);
+      console.error('Error signing in with Google:', error);
     }
   };
 

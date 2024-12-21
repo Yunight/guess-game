@@ -71,10 +71,50 @@ export default {
 					from: { height: 'var(--radix-accordion-content-height)' },
 					to: { height: '0' },
 				},
+				'spin-slow': {
+					'0%': { transform: 'rotate(0deg)' },
+					'100%': { transform: 'rotate(360deg)' },
+				},
+				'spin-slow-reverse': {
+					'0%': { transform: 'rotate(360deg)' },
+					'100%': { transform: 'rotate(0deg)' },
+				},
+				'firework': {
+					'0%': { transform: 'scale(1)', opacity: '1' },
+					'50%': { transform: 'scale(1.2)', opacity: '0.8' },
+					'100%': { transform: 'scale(1)', opacity: '1' },
+				},
+				"firework-1": {
+					"0%": { transform: "translateY(0) scale(1)", opacity: 1 },
+					"50%": { transform: "translateY(-80px) scale(0.4)", opacity: 0.8 },
+					"100%": { transform: "translateY(-120px) scale(0)", opacity: 0 }
+				},
+				"firework-2": {
+					"0%": { transform: "translateY(0) scale(1)", opacity: 1 },
+					"50%": { transform: "translateY(-100px) scale(0.4)", opacity: 0.8 },
+					"100%": { transform: "translateY(-140px) scale(0)", opacity: 0 }
+				},
+				"firework-3": {
+					"0%": { transform: "translateY(0) scale(1)", opacity: 1 },
+					"50%": { transform: "translateY(-60px) scale(0.4)", opacity: 0.8 },
+					"100%": { transform: "translateY(-100px) scale(0)", opacity: 0 }
+				},
+				"explode": {
+					"0%": { transform: "scale(1)", opacity: 1 },
+					"50%": { transform: "scale(8)", opacity: 0.8 },
+					"100%": { transform: "scale(16)", opacity: 0 }
+				}
 			},
 			animation: {
 				'accordion-down': 'accordion-down 0.2s ease-out',
 				'accordion-up': 'accordion-up 0.2s ease-out',
+				'spin-slow': 'spin-slow 8s linear infinite',
+				'spin-slow-reverse': 'spin-slow-reverse 10s linear infinite',
+				'firework': 'firework 2s ease-in-out infinite',
+				"firework-1": "firework-1 1.5s ease-out infinite",
+				"firework-2": "firework-2 1.8s ease-out infinite",
+				"firework-3": "firework-3 1.3s ease-out infinite",
+				"explode": "explode 1.5s ease-out infinite"
 			},
 		},
 	},

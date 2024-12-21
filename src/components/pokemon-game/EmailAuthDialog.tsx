@@ -1,53 +1,85 @@
 import { FC, useState } from 'react';
-import { signInWithEmailAndPassword, createUserWithEmailAndPassword } from 'firebase/auth';
+import { signInWithEmailAndPassword, createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
 import { auth } from '../../firebase';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { X } from 'lucide-react';
-import { updateProfile } from 'firebase/auth';
 
 interface EmailAuthDialogProps {
   isOpen: boolean;
   onClose: () => void;
+  checkNameAvailability: (name: string) => Promise<boolean>;
 }
 
-export const EmailAuthDialog: FC<EmailAuthDialogProps> = ({ isOpen, onClose }) => {
+export const EmailAuthDialog: FC<EmailAuthDialogProps> = ({ isOpen, onClose, checkNameAvailability }) => {
   const { t } = useTranslation();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [trainerName, setTrainerName] = useState('');
   const [isSignUp, setIsSignUp] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+
+  const handleTrainerNameChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newName = e.target.value;
+    setTrainerName(newName);
+    
+    if (!newName.trim()) {
+      setError(null);
+      return;
+    }
+    
+    const isAvailable = await checkNameAvailability(newName);
+    if (!isAvailable) {
+      setError(t('trainerNameTaken'));
+    } else {
+      setError(null);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError(null);
+    setIsLoading(true);
 
     try {
       if (isSignUp) {
         if (!trainerName.trim()) {
           setError(t('trainerNameRequired'));
+          setIsLoading(false);
           return;
         }
+
+        if (error) {
+          setIsLoading(false);
+          return;
+        }
+
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
         await updateProfile(userCredential.user, {
           displayName: trainerName
         });
+        localStorage.setItem('pokemonGamePlayerName', trainerName);
       } else {
-        await signInWithEmailAndPassword(auth, email, password);
+        const userCredential = await signInWithEmailAndPassword(auth, email, password);
+        if (userCredential.user.displayName) {
+          localStorage.setItem('pokemonGamePlayerName', userCredential.user.displayName);
+        }
       }
       onClose();
     } catch (error: unknown) {
       if (error instanceof Error) {
         setError(error.message);
       }
+    } finally {
+      setIsLoading(false);
     }
   };
 
   const toggleMode = () => {
     setIsSignUp(!isSignUp);
     setError(null);
+    setTrainerName('');
   };
 
   if (!isOpen) return null;
@@ -76,10 +108,11 @@ export const EmailAuthDialog: FC<EmailAuthDialogProps> = ({ isOpen, onClose }) =
               <Input
                 type="text"
                 value={trainerName}
-                onChange={(e) => setTrainerName(e.target.value)}
+                onChange={handleTrainerNameChange}
                 required
                 className="w-full"
                 placeholder={t('enterName')}
+                disabled={isLoading}
               />
             </div>
           )}
@@ -94,6 +127,7 @@ export const EmailAuthDialog: FC<EmailAuthDialogProps> = ({ isOpen, onClose }) =
               onChange={(e) => setEmail(e.target.value)}
               required
               className="w-full"
+              disabled={isLoading}
             />
           </div>
 
@@ -107,6 +141,7 @@ export const EmailAuthDialog: FC<EmailAuthDialogProps> = ({ isOpen, onClose }) =
               onChange={(e) => setPassword(e.target.value)}
               required
               className="w-full"
+              disabled={isLoading}
             />
           </div>
 
@@ -118,6 +153,7 @@ export const EmailAuthDialog: FC<EmailAuthDialogProps> = ({ isOpen, onClose }) =
             <Button 
               type="submit" 
               className="w-full bg-black hover:bg-gray-800 text-white"
+              disabled={isLoading || (isSignUp && error !== null)}
             >
               {isSignUp ? t('signUp') : t('signIn')}
             </Button>
@@ -126,6 +162,7 @@ export const EmailAuthDialog: FC<EmailAuthDialogProps> = ({ isOpen, onClose }) =
               variant="outline"
               onClick={toggleMode}
               className="w-full text-black hover:text-black hover:bg-gray-100"
+              disabled={isLoading}
             >
               {isSignUp ? t('alreadyHaveAccount') : t('needAccount')}
             </Button>

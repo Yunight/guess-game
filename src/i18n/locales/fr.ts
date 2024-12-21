@@ -2,7 +2,10 @@ export const fr = {
   // Menu Screen
   title: 'Pokémon Guesser',
   trainerName: 'Nom du dresseur',
-  enterName: 'Entrez votre nom',
+  enterName: 'Choisis ton nom de dresseur',
+  trainerStatus: 'Statut: Dresseur Pokémon',
+  trainerNameRequired: 'Le nom du dresseur est requis',
+  trainerNameTaken: 'Ce nom de dresseur est déjà pris',
   pokemonGeneration: 'Génération Pokémon',
   connexion: 'Connexion',
   connectWithGoogle: 'Se connecter avec Google',
@@ -14,7 +17,6 @@ export const fr = {
   password: 'Mot de passe',
   alreadyHaveAccount: 'Déjà un compte ? Se connecter',
   needAccount: 'Pas de compte ? S\'inscrire',
-  trainerNameRequired: 'Le nom du dresseur est requis',
   play: 'JOUER !',
   replay: 'Rejouer !',
   bestScores: 'Meilleurs Scores',
@@ -23,6 +25,7 @@ export const fr = {
   time: 'Temps',
   date: 'Date',
   noScores: 'Aucun score enregistré pour cette génération',
+  loggedInAs: 'Connecté en tant que {{name}}',
   
   // Game Screen
   quit: 'Quitter',
@@ -36,9 +39,12 @@ export const fr = {
   firstLetter: 'Première lettre',
   
   // Game Over Dialog
-  congratulations: 'Félicitations {{name}}, vous avez deviné tous les pokémons, vous êtes un vrai maitre pokémon!',
+  congratulations: 'Félicitations {{name}}, tu es un vrai Maître Pokémon!',
   congrats: 'Bravo {{name}}!',
   results: 'Voici vos résultats pour cette partie.',
+  congratsAllPokemon: 'Tu as trouvé tous les Pokémon de la {{region}}! 🏆',
+  gameOver: 'PARTIE TERMINÉE',
+  gameOverDesc: 'Voici ton Pokémon récompense !',
   ranking: 'Classement',
   statistics: 'Statistiques',
   criticalHits: 'Coup Critique',
@@ -51,6 +57,7 @@ export const fr = {
   current: 'Actuel',
   best: 'Meilleur',
   caught: 'capturé',
+  myRank: 'Mon Rang',
   
   // Game Mode Dialog
   gameMode: 'Mode de jeu',
@@ -100,6 +107,7 @@ export const fr = {
   shareMsg2500: '🌈 NIVEAU ARCEUS! Plus de 2500 points en {{gen}}! Tu as transcendé la mortalité! 🌌',
   shareMsg2250: '🎇 ULTRA-CHIMÈRE! Plus de 2250 points en {{gen}}! Tu brises les records dimensionnels! ⚡',
   shareMsg2000: '👑 MYTHIQUE! Plus de 2000 points en {{gen}}! Au-delà du légendaire! 🌟',
+  shareMsgAllPokemon: '⭐️ RÉUSSITE LÉGENDAIRE! ⭐️\n\n🏆 J\'ai trouvé TOUS les Pokémon de la {{gen}}!\n\n✨ Qui osera relever le défi? ✨',
   shareMsg1800: '🔮 CÉLESTE! Plus de 1800 points en {{gen}}! Tu touches les étoiles! ✨',
   shareMsg1600: '⚔️ MAÎTRE CHAMPION! Plus de 1600 points en {{gen}}! Puissance inégalée! 🏆',
   shareMsg1500: '🌠 ULTRA MAÎTRE! Plus de 1500 points en {{gen}}! Absolument époustouflant! 🔥',
@@ -131,7 +139,7 @@ export const fr = {
   shareMsgHype: '🚂 HOT STREAK! {{count}} réponses rapides d\'affilée en {{gen}}! 🔥',
   shareMsgCriticalHit: '⚡ Expert des coups critiques en {{gen}}! La chance ou le talent? Viens tester! 🎯',
   shareMsgCriticalSuccess: '⏱️ Maître du timing en {{gen}}! Des réponses à la dernière seconde! 🎭',
-  shareMsgHypeTrain: '🚄 Le Hype Train était incontr��lable en {{gen}}! Quelle performance! 🔥',
+  shareMsgHypeTrain: '🚄 Le Hype Train était incontrlable en {{gen}}! Quelle performance! 🔥',
   shareMsgLegendary: '✨ Je suis un Pokémon LÉGENDAIRE en {{gen}}: {{pokemon}}! 🌟',
   shareMsgMythical: '🌈 Je suis un Pokémon MYTHIQUE en {{gen}}: {{pokemon}}! ✨',
   shareMsgDefault: '🎮 Nouveau challenge sur Pokemon Guesser en {{gen}}! Viens tester tes connaissances! ✨',

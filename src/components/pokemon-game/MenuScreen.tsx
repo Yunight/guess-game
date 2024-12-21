@@ -177,7 +177,9 @@ export const MenuScreen: FC<MenuScreenProps> = ({
                   `}
                   value={user ? (
                     auth.currentUser?.email?.includes('@gmail.com') && user.displayName
-                      ? `${user.displayName.split(' ')[0]} .${user.displayName.split(' ').pop()?.[0].toUpperCase()}`
+                      ? user.displayName.includes(' ')
+                        ? `${user.displayName.split(' ')[0]} .${user.displayName.split(' ').pop()?.[0].toUpperCase()}`
+                        : user.displayName
                       : user.displayName || ''
                   ) : playerName}
                   onChange={handlePlayerNameChange}
