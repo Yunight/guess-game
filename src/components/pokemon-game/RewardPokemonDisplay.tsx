@@ -79,11 +79,14 @@ export const RewardPokemonDisplay: FC<RewardPokemonDisplayProps> = ({
           </div>
         </>
       ) : (
-        <div className={`bg-gradient-to-br ${pokemon?.isShiny ? 'from-yellow-100 to-yellow-200' : 'from-blue-100 to-blue-200'} 
+        <div className={`bg-gradient-to-br ${pokemon?.isShiny ? 'from-yellow-100/90 to-yellow-300/90' : 'from-blue-100/90 to-blue-300/90'} 
           rounded-lg flex flex-col items-center justify-center p-2 aspect-[4/3] relative overflow-hidden shadow-inner`}>
+          {/* Sparkle grid background */}
           <div className="absolute inset-0 bg-[radial-gradient(circle,_transparent_20%,_rgba(255,255,255,0.5)_20%)] bg-[length:10px_10px] animate-grid-shine"></div>
+          {/* Screen glare effect */}
           <div className="absolute inset-0 bg-gradient-to-br from-white/40 to-transparent opacity-50 animate-screen-glare"></div>
           
+          {/* Animated corners */}
           <div className={`absolute top-2 left-2 w-4 h-4 border-t-2 border-l-2 ${pokemon?.isShiny ? 'border-yellow-400' : 'border-blue-400'} rounded-tl-lg animate-corner-pulse`}></div>
           <div className={`absolute top-2 right-2 w-4 h-4 border-t-2 border-r-2 ${pokemon?.isShiny ? 'border-yellow-400' : 'border-blue-400'} rounded-tr-lg animate-corner-pulse-delay-1`}></div>
           <div className={`absolute bottom-2 left-2 w-4 h-4 border-b-2 border-l-2 ${pokemon?.isShiny ? 'border-yellow-400' : 'border-blue-400'} rounded-bl-lg animate-corner-pulse-delay-2`}></div>
@@ -153,14 +156,18 @@ export const RewardPokemonDisplay: FC<RewardPokemonDisplayProps> = ({
               <img
                 src={pokemon.sprite}
                 alt={i18n.language === 'fr' ? pokemon.frenchName : pokemon.englishName}
-                className="w-32 h-32 object-contain relative z-10"
+                className="w-52 h-52 object-contain relative z-10"
               />
               <div className="mt-2 text-center relative z-10">
-                <p className="text-lg font-semibold">
-                  {t('youAre')} {i18n.language === 'fr' ? pokemon.frenchName : pokemon.englishName} !
+                <p className="text-lg font-bold text-gray-800 dark:text-gray-100">
+                  {t('youAre')} <span className="text-blue-800 dark:text-blue-300">
+                    {i18n.language === 'fr' ? pokemon.frenchName : pokemon.englishName}
+                  </span> {pokemon.isShiny ? '⭐' : '!'} 
                 </p>
                 {pokemon.isShiny && (
-                  <p className="text-yellow-600 font-bold animate-pulse">✨ {i18n.language === 'fr' ? 'CHROMATIQUE' : 'SHINY'} ✨</p>
+                  <p className="text-yellow-700 dark:text-yellow-400 font-extrabold animate-pulse">
+                    ✨ {i18n.language === 'fr' ? 'POKÉMON CHROMATIQUE' : 'SHINY POKÉMON'} ✨
+                  </p>
                 )}
               </div>
             </div>

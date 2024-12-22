@@ -103,6 +103,33 @@ export default {
 					"0%": { transform: "scale(1)", opacity: 1 },
 					"50%": { transform: "scale(8)", opacity: 0.8 },
 					"100%": { transform: "scale(16)", opacity: 0 }
+				},
+				'grid-shine': {
+					'0%, 100%': { transform: 'translateX(-100%)' },
+					'50%': { transform: 'translateX(100%)' }
+				},
+				'screen-glare': {
+					'0%, 100%': { opacity: '0.5' },
+					'50%': { opacity: '0.2' }
+				},
+				'corner-pulse': {
+					'0%, 100%': { opacity: '0.3' },
+					'50%': { opacity: '1' }
+				},
+				'corner-pulse-delay-1': {
+					'0%, 100%': { opacity: '0.3' },
+					'50%': { opacity: '1' },
+					'0.5s': { opacity: '0.3' }
+				},
+				'corner-pulse-delay-2': {
+					'0%, 100%': { opacity: '0.3' },
+					'50%': { opacity: '1' },
+					'1s': { opacity: '0.3' }
+				},
+				'corner-pulse-delay-3': {
+					'0%, 100%': { opacity: '0.3' },
+					'50%': { opacity: '1' },
+					'1.5s': { opacity: '0.3' }
 				}
 			},
 			animation: {
