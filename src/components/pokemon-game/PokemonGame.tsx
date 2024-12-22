@@ -143,24 +143,17 @@ const PokemonGame = () => {
   });
 
   const calculateRewardPokemon = useCallback(async (score: number) => {
-    console.log('🎮 Starting reward calculation with score:', score);
     setRewardPokemon({ pokemon: undefined, isLoading: true });
 
     if (!allPokemonData || allPokemonData.length === 0) {
-      console.log('❌ No Pokémon data available');
       return;
     }
-
-    console.log(`📊 Total Pokémon in data: ${allPokemonData.length}`);
-    console.log(` Selected generation range: ${selectedGeneration.startId} - ${selectedGeneration.endId}`);
 
     try {
       // Find the appropriate tier based on score
       const tier = POKEMON_REWARDS.find(tier => score >= tier.minScore);
-      console.log(' Selected tier:', tier ? `Score ${tier.minScore}+` : 'No tier found');
 
       if (!tier) {
-        console.log('⚠ No tier found, selecting random basic Pokémon');
         // If no tier found, return a random basic Pokémon
         const basicPokemon = allPokemonData.filter(pokemon => 
           pokemon.id >= selectedGeneration.startId && 
@@ -169,10 +162,7 @@ const PokemonGame = () => {
           pokemon.hasEvolution
         );
         
-        console.log(`📝 Found ${basicPokemon.length} basic Pokémon in generation`);
-        
         if (basicPokemon.length === 0) {
-          console.log('❌ No basic Pokémon found in generation');
           setRewardPokemon({
             pokemon: undefined,
             isLoading: false
@@ -181,13 +171,6 @@ const PokemonGame = () => {
         }
         
         const randomBasic = basicPokemon[Math.floor(Math.random() * basicPokemon.length)];
-        console.log('✨ Selected basic Pokémon:', {
-          id: randomBasic.id,
-          name: randomBasic.frenchName,
-          isLegendary: randomBasic.isLegendary,
-          isMythical: randomBasic.isMythical,
-          evolutionStage: randomBasic.evolutionStage
-        });
         
         setRewardPokemon({
           pokemon: randomBasic,
@@ -203,31 +186,18 @@ const PokemonGame = () => {
         pokemon.id <= selectedGeneration.endId
       );
 
-      console.log(`📝 Found ${eligiblePokemon.length} eligible Pokémon in tier`);
-      
       // If no eligible Pokémon found in the current tier, try the next lower tier
       if (eligiblePokemon.length === 0) {
-        console.log('⚠️ No eligible Pokémon in current tier, trying lower tiers');
         const lowerTiers = POKEMON_REWARDS.slice(POKEMON_REWARDS.indexOf(tier) + 1);
         for (const lowerTier of lowerTiers) {
-          console.log(`🔍 Checking lower tier with minScore: ${lowerTier.minScore}`);
           const lowerTierPokemon = allPokemonData.filter(pokemon => 
             lowerTier.condition(pokemon) && 
             pokemon.id >= selectedGeneration.startId && 
             pokemon.id <= selectedGeneration.endId
           );
           
-          console.log(`📝 Found ${lowerTierPokemon.length} Pokémon in lower tier`);
-          
           if (lowerTierPokemon.length > 0) {
             const randomPokemon = lowerTierPokemon[Math.floor(Math.random() * lowerTierPokemon.length)];
-            console.log('✨ Selected Pokémon from lower tier:', {
-              id: randomPokemon.id,
-              name: randomPokemon.frenchName,
-              isLegendary: randomPokemon.isLegendary,
-              isMythical: randomPokemon.isMythical,
-              evolutionStage: randomPokemon.evolutionStage
-            });
             
             setRewardPokemon({
               pokemon: randomPokemon,
@@ -237,23 +207,13 @@ const PokemonGame = () => {
           }
         }
         
-        console.log('⚠️ No Pokémon found in any tier, selecting random from generation');
         // If still no Pokémon found, return a random Pokémon from the generation
         const generationPokemon = allPokemonData.filter(pokemon => 
           pokemon.id >= selectedGeneration.startId && 
           pokemon.id <= selectedGeneration.endId
         );
         
-        console.log(`📝 Found ${generationPokemon.length} Pokémon in generation`);
-        
         const randomPokemon = generationPokemon[Math.floor(Math.random() * generationPokemon.length)];
-        console.log('✨ Selected random Pokémon from generation:', {
-          id: randomPokemon.id,
-          name: randomPokemon.frenchName,
-          isLegendary: randomPokemon.isLegendary,
-          isMythical: randomPokemon.isMythical,
-          evolutionStage: randomPokemon.evolutionStage
-        });
         
         setRewardPokemon({
           pokemon: randomPokemon,
@@ -264,20 +224,12 @@ const PokemonGame = () => {
       
       // Pick a random Pokémon from the eligible ones
       const randomPokemon = eligiblePokemon[Math.floor(Math.random() * eligiblePokemon.length)];
-      console.log('✨ Selected Pokémon from eligible tier:', {
-        id: randomPokemon.id,
-        name: randomPokemon.frenchName,
-        isLegendary: randomPokemon.isLegendary,
-        isMythical: randomPokemon.isMythical,
-        evolutionStage: randomPokemon.evolutionStage
-      });
       
       setRewardPokemon({
         pokemon: randomPokemon,
         isLoading: false
       });
-    } catch (error) {
-      console.error('❌ Error getting reward pokemon:', error);
+    } catch {
       setRewardPokemon({
         pokemon: undefined,
         isLoading: false
@@ -358,44 +310,28 @@ const PokemonGame = () => {
     const pokemonNameEn = currentPokemon?.englishName;
     
     if (!pokemonNameFr || !pokemonNameEn) {
-      console.log('❌ Missing Pokemon names:', { pokemonNameFr, pokemonNameEn, currentPokemon });
       return;
     }
     
     const normalizedAnswerFr = normalizeText(pokemonNameFr);
     const normalizedAnswerEn = normalizeText(pokemonNameEn);
     
-    console.log('🔍 Checking answer:', {
-      suggestion,
-      normalizedSuggestion,
-      pokemonNameFr,
-      pokemonNameEn,
-      normalizedAnswerFr,
-      normalizedAnswerEn,
-      currentPokemon
-    });
-    
     if (normalizedSuggestion === normalizedAnswerFr || 
         normalizedSuggestion === normalizedAnswerEn ||
         suggestion.toLowerCase() === pokemonNameFr.toLowerCase() ||
         suggestion.toLowerCase() === pokemonNameEn.toLowerCase()) {
-      console.log('✅ Correct answer! Remaining Pokémon:', remainingPokemon.length);
       handleCorrectAnswer();
     } else {
-      console.log('❌ Wrong answer:', {
-        suggestionMatch: normalizedSuggestion === normalizedAnswerFr || normalizedSuggestion === normalizedAnswerEn,
-        exactMatch: suggestion.toLowerCase() === pokemonNameFr.toLowerCase() || suggestion.toLowerCase() === pokemonNameEn.toLowerCase()
-      });
       setIsCorrect(false);
       if (!isMuted) {
-        console.log('🎵 About to play wrong answer sound');
         cleanupAllAudio();
         wrongAudioRef.current = new Audio(WRONG_SOUND_URL);
         try {
           await wrongAudioRef.current.play();
-          console.log('✅ Wrong answer sound played successfully');
-        } catch (error) {
-          console.error('❌ Error playing wrong sound:', error);
+        } catch {
+          if (wrongAudioRef.current) {
+            wrongAudioRef.current = null;
+          }
         }
       }
     }
@@ -411,8 +347,6 @@ const PokemonGame = () => {
     
     if (value.length > 0) {
       const normalizedValue = normalizeText(value);
-      console.log('Input value:', value);
-      console.log('Normalized value:', normalizedValue);
       
       const filteredSuggestions = pokemonNames
         .filter(pokemon => {
@@ -452,7 +386,6 @@ const PokemonGame = () => {
         .filter(Boolean)
         .slice(0, 5);
 
-      console.log('Filtered suggestions:', filteredSuggestions);
       setSuggestions(filteredSuggestions);
     } else {
       setSuggestions([]);
@@ -503,11 +436,8 @@ const PokemonGame = () => {
   // Add effect to monitor timer for Hype Train
   useEffect(() => {
     if (guessTimeLeft === 9) {
-      console.log('🚂 Timer hit 9 seconds, stopping Hype Train');
-      // Add bonus points based on consecutive fast answers before resetting
       if (showHypeTrain && consecutiveFastAnswers > 0) {
         const bonusPoints = consecutiveFastAnswers;
-        console.log(`🎯 Adding bonus points: ${bonusPoints}`);
         setScore(prev => prev + bonusPoints);
         // Show bonus points animation
         setPointsEarned(bonusPoints);
@@ -521,7 +451,6 @@ const PokemonGame = () => {
       setShowHypeTrain(false);
       // Stop train horn sound
       if (trainHornRef.current) {
-        console.log('🔇 Stopping train horn sound at timer 9');
         trainHornRef.current.pause();
         trainHornRef.current.currentTime = 0;
         trainHornRef.current = null;
@@ -532,7 +461,6 @@ const PokemonGame = () => {
   // Add effect to stop train horn when game is over or when Hype Train should stop
   useEffect(() => {
     if (!showHypeTrain && trainHornRef.current) {
-      console.log('🔇 Stopping train horn sound on Hype Train end');
       trainHornRef.current.pause();
       trainHornRef.current.currentTime = 0;
       trainHornRef.current = null;
@@ -542,7 +470,6 @@ const PokemonGame = () => {
   // Add separate effect for game over cleanup
   useEffect(() => {
     if (gameOver && trainHornRef.current) {
-      console.log('🔇 Stopping train horn sound on game over');
       trainHornRef.current.pause();
       trainHornRef.current.currentTime = 0;
       trainHornRef.current = null;
@@ -552,16 +479,16 @@ const PokemonGame = () => {
   // Add effect to handle train horn sound
   useEffect(() => {
     if (showHypeTrain && !isMuted && !trainHornRef.current) {
-      console.log('🔊 Starting train horn sound');
       const trainHorn = new Audio(TRAIN_HORN_URL);
       trainHorn.volume = 0.05;
       trainHorn.loop = true;
       trainHornRef.current = trainHorn;
-      trainHorn.play().catch(error => {
-        console.error('❌ Error playing train horn sound:', error);
+      trainHorn.play().catch(() => {
+        if (trainHornRef.current) {
+          trainHornRef.current = null;
+        }
       });
     } else if (!showHypeTrain && trainHornRef.current) {
-      console.log('🔇 Stopping train horn sound');
       trainHornRef.current.pause();
       trainHornRef.current.currentTime = 0;
       trainHornRef.current = null;
@@ -583,8 +510,6 @@ const PokemonGame = () => {
   useEffect(() => {
     // Start playing when conditions are met
     if (isHardMode && guessTimeLeft === 5 && !isMuted && !gameOver && isCorrect === null) {
-      console.log('🔊 Playing low life sound');
-      // Clean up any existing low life sound first
       if (lowLifeAudioRef.current) {
         lowLifeAudioRef.current.pause();
         lowLifeAudioRef.current.currentTime = 0;
@@ -592,28 +517,22 @@ const PokemonGame = () => {
       }
       lowLifeAudioRef.current = new Audio(LOW_LIFE_URL);
       lowLifeAudioRef.current.volume = 0.5;
-      lowLifeAudioRef.current.play().catch(error => {
-        console.error('❌ Error playing low life sound:', error);
+      lowLifeAudioRef.current.play().catch(() => {
+        if (lowLifeAudioRef.current) {
+          lowLifeAudioRef.current = null;
+        }
       });
     }
     
     // Stop playing in any case where it shouldn't be playing
     if (lowLifeAudioRef.current && (
-      !isHardMode || // Not in hard mode
-      guessTimeLeft > 5 || // Time above danger zone
-      guessTimeLeft <= 0 || // Time ran out
-      isMuted || // Sound is muted
-      gameOver || // Game is over
-      isCorrect !== null // Answer was validated (correct or incorrect)
+      !isHardMode || 
+      guessTimeLeft > 5 || 
+      guessTimeLeft <= 0 || 
+      isMuted || 
+      gameOver || 
+      isCorrect !== null
     )) {
-      console.log('🔇 Stopping low life sound, reason:', {
-        notHardMode: !isHardMode,
-        timeAbove5: guessTimeLeft > 5,
-        timeUp: guessTimeLeft <= 0,
-        muted: isMuted,
-        gameOver: gameOver,
-        answerValidated: isCorrect !== null
-      });
       lowLifeAudioRef.current.pause();
       lowLifeAudioRef.current.currentTime = 0;
       lowLifeAudioRef.current = null;
@@ -669,7 +588,6 @@ const PokemonGame = () => {
   }, [isHardMode, isGameActive, currentPokemonId, currentPokemon?.isShiny]);
 
   const handleCorrectAnswer = async () => {
-    console.log('✅ Handling correct answer');
     setIsCorrect(true);
     
     // Stop the timer immediately to preserve the current time for points calculation
@@ -690,18 +608,15 @@ const PokemonGame = () => {
     if (isHardMode && guessTimeLeft >= 10) {
       setConsecutiveFastAnswers(prev => {
         const newCount = prev + 1;
-        console.log('🚂 Fast answer! New count:', newCount);
         
         // Start Hype Train when reaching 3 or more
         if (newCount >= 3) {
-          console.log('🚂 Starting Hype Train!');
           setShowHypeTrain(true);
           setMaxHypeChain(prev => Math.max(prev, newCount));
         }
         return newCount;
       });
     } else {
-      console.log('🚂 Slow answer or not in hard mode, resetting Hype Train');
       setConsecutiveFastAnswers(0);
       setShowHypeTrain(false);
     }
@@ -762,42 +677,32 @@ const PokemonGame = () => {
     setScore(prev => prev + earnedPoints);
     
     if (!isMuted) {
-      console.log('🎵 About to play correct answer sound');
       correctAudioRef.current = new Audio(CORRECT_SOUND_URL);
       try {
         await correctAudioRef.current.play();
-        console.log('✅ Correct answer sound played successfully');
-      } catch (error) {
-        console.error('❌ Error playing correct sound:', error);
+      } catch {
+        if (correctAudioRef.current) {
+          correctAudioRef.current = null;
+        }
       }
     }
     
     // Remove the current Pokemon from remainingPokemon
     if (currentPokemon) {
-      console.log('🔄 Current remaining Pokémon:', remainingPokemon.length);
-      setRemainingPokemon(prev => {
-        const newRemaining = prev.filter(id => id !== currentPokemon.id);
-        console.log('🔄 New remaining Pokémon:', newRemaining.length);
-        return newRemaining;
-      });
+      setRemainingPokemon(prev => prev.filter(id => id !== currentPokemon.id));
     }
     
     // Check if this was the last Pokémon
     const isLastPokemon = remainingPokemon.length <= 1;
-    console.log('🔄 Checking if last Pokémon:', { isLastPokemon, remainingCount: remainingPokemon.length });
     
     if (isLastPokemon) {
-      console.log('🎮 Last Pokémon found! Showing name for 1.5s before game over...');
       setTimeout(() => {
-        console.log('🎮 Triggering game over sequence...');
         handleGameOver();
       }, 1500);
     } else {
-      console.log('🔄 Step 1: Starting transition sequence - showing correct answer for 1 second');
       // 1. Show the correct answer for 1 second
       await new Promise(resolve => setTimeout(resolve, 1000));
       
-      console.log('🔄 Step 2: Clearing current Pokemon to show loading state');
       // 2. Clear current Pokemon and set loading state
       setCurrentPokemonId(null);
       setIsCorrect(null);
@@ -808,31 +713,23 @@ const PokemonGame = () => {
       // Wait for states to be cleared
       await new Promise(resolve => setTimeout(resolve, 50));
       
-      console.log('🔄 Step 3: Waiting for loading state (300ms)');
       // 3. Wait for loading state to be visible
       await new Promise(resolve => setTimeout(resolve, 300));
       
-      console.log('🔄 Step 4: Selecting next Pokemon');
       // 4. Select next Pokemon
       const nextPokemonId = remainingPokemon[Math.floor(Math.random() * remainingPokemon.length)];
-      console.log('🎯 Selected next Pokémon:', nextPokemonId);
       
-      console.log('🔄 Step 5: Updating remaining pool');
       // 5. Update remaining pool
       setRemainingPokemon(prev => prev.filter(id => id !== nextPokemonId));
       
       // Wait for remaining pool to update
       await new Promise(resolve => setTimeout(resolve, 50));
       
-      console.log('🔄 Step 6: Setting new Pokemon');
       // 6. Set new Pokemon
       setCurrentPokemonId(nextPokemonId);
       
-      console.log('🔄 Step 7: Focusing input');
       // 7. Focus input
       inputRef.current?.focus();
-      
-      console.log('🔄 Transition sequence completed');
     }
   };
 
@@ -890,12 +787,6 @@ const PokemonGame = () => {
         (currentPokemon === undefined || 
          currentPokemon?.englishName === undefined || 
          currentPokemon?.frenchName === undefined)) {
-      console.log('⚠️ Invalid Pokémon data detected:', {
-        currentPokemonId,
-        currentPokemon,
-        isLoading: isPokemonLoading,
-        remainingCount: remainingPokemon.length
-      });
       // Reset the current Pokemon ID to trigger a new fetch
       setCurrentPokemonId(null);
       // Add the ID back to the remaining pool
@@ -921,25 +812,14 @@ const PokemonGame = () => {
       if (userBestRecord) {
         setBestTime(userBestRecord.time);
       }
-    } catch (error) {
-      console.error('Error fetching rankings:', error);
+    } catch {
+      // Ignore database errors
     }
   }, [selectedGeneration, playerName, setBestTime]);
 
   const handleGameOver = useCallback(async () => {
     if (gameOver) return;
     
-    console.log('🎮 Starting game over sequence');
-    // Stop timers first
-    if (timerInterval.current) {
-      clearInterval(timerInterval.current);
-      timerInterval.current = null;
-    }
-    if (totalTimeInterval.current) {
-      clearInterval(totalTimeInterval.current);
-      totalTimeInterval.current = null;
-    }
-
     // Show the correct Pokemon first
     setIsCorrect(true);
     
@@ -964,28 +844,23 @@ const PokemonGame = () => {
 
       // Play reward Pokemon cry first if available and not all Pokémon were found
       if (rewardPokemon.pokemon && remainingPokemon.length > 0) {
-        console.log('🎵 About to play reward Pokemon cry');
         const [latestCry, legacyCry] = rewardPokemon.pokemon.cryUrl.split('|');
-        console.log('🔊 Playing cry URL:', latestCry);
         const cryAudio = new Audio(latestCry || legacyCry);
         try {
           await cryAudio.play();
-          console.log('✅ Reward Pokemon cry played successfully');
           // Wait for cry to finish
           await new Promise(resolve => setTimeout(resolve, 1000));
-        } catch (error) {
-          console.error('❌ Error playing reward Pokemon cry:', error);
+        } catch {
+          // Ignore audio play errors
         }
       }
 
       // Then play victory sound
-      console.log('🎉 About to play victory sound');
       victoryAudioRef.current = new Audio(VICTORY_SOUND_URL);
       try {
         await victoryAudioRef.current.play();
-        console.log('✅ Victory sound played successfully');
-      } catch (error) {
-        console.error('❌ Error playing victory sound:', error);
+      } catch {
+        // Ignore audio play errors
       }
     }
 
@@ -1032,8 +907,8 @@ const PokemonGame = () => {
           const allRankings = await getDocs(rankingsQuery);
           const userRankingPosition = allRankings.docs.findIndex(doc => doc.data().name === playerName) + 1;
           setUserRanking(userRankingPosition);
-        } catch (error) {
-          console.error('Error saving score:', error);
+        } catch {
+          // Ignore database errors
         }
       }
     } else {
@@ -1123,7 +998,6 @@ const PokemonGame = () => {
 
   // Update the startGame function
   const startGame = async (isHardMode: boolean) => {
-    console.log('🎮 Starting new game in', isHardMode ? 'Hard Mode' : 'Chill Mode');
     if (!playerName) return;
     
     const isAvailable = await checkNameAvailability(playerName);
@@ -1138,7 +1012,6 @@ const PokemonGame = () => {
     // Clean up all audio
     cleanupAllAudio();
     
-    console.log('🔄 Resetting current Pokemon');
     setCurrentPokemonId(null);
     
     // If it's a new user (different from saved name), clean up localStorage
@@ -1178,7 +1051,6 @@ const PokemonGame = () => {
       { length: selectedGeneration.endId - selectedGeneration.startId + 1 },
       (_, i) => selectedGeneration.startId + i
     );
-    console.log('🔄 Initializing Pokémon pool with', allPokemonIds.length, 'Pokémon');
     
     // Set initial state and wait for it to be updated
     setRemainingPokemon(allPokemonIds);
@@ -1197,11 +1069,8 @@ const PokemonGame = () => {
     startTotalTimer();
     
     // Start the game by fetching first Pokemon
-    console.log('🎯 Starting game with', allPokemonIds.length, 'Pokémon to find');
-    // Use the allPokemonIds directly for the first fetch
     const randomIndex = Math.floor(Math.random() * allPokemonIds.length);
     const firstPokemonId = allPokemonIds[randomIndex];
-    console.log('🎲 Selected first Pokémon:', firstPokemonId);
     setCurrentPokemonId(firstPokemonId);
     
     // Remove the first Pokémon from the pool after setting it
@@ -1296,24 +1165,18 @@ const PokemonGame = () => {
   useEffect(() => {
     const savedName = localStorage.getItem('pokemonGamePlayerName');
     if (savedName) {
-      console.log('👤 Loaded saved player name:', savedName);
       setPlayerName(savedName);
       setNameError(null); // Clear any errors since this is a valid saved name
       // Validate the name immediately to ensure it's available
       checkNameAvailability(savedName).then(isAvailable => {
         if (!isAvailable) {
-          console.log('❌ Saved name is no longer available:', savedName);
           localStorage.removeItem('pokemonGamePlayerName');
           setPlayerName('');
           setNameError('Ce nom est déjà utilisé. Veuillez en choisir un autre.');
-        } else {
-          console.log('✅ Saved name is valid and available:', savedName);
         }
       });
-    } else {
-      console.log('ℹ️ No saved player name found');
     }
-  }, [checkNameAvailability]); // Add checkNameAvailability to dependencies
+  }, [checkNameAvailability]);
 
   const handleGenerationSelect = (generation: Generation) => {
     setSelectedGeneration(generation);
@@ -1373,18 +1236,7 @@ const PokemonGame = () => {
   // Add effect to log Pokemon data when it loads
   useEffect(() => {
     if (currentPokemon && !isPokemonLoading) {
-      console.log('✨ Loaded Pokémon data:', {
-        id: currentPokemon.id,
-        frenchName: currentPokemon.frenchName,
-        englishName: currentPokemon.englishName,
-        isShiny: currentPokemon.isShiny,
-        sprite: currentPokemon.sprite,
-        evolutionStage: currentPokemon.evolutionStage,
-        isLegendary: currentPokemon.isLegendary,
-        isMythical: currentPokemon.isMythical,
-        hasEvolution: currentPokemon.hasEvolution,
-        cryUrl: currentPokemon.cryUrl
-      });
+      // Pokemon data loaded, no need to log
     }
   }, [currentPokemon, isPokemonLoading]);
 
@@ -1408,15 +1260,15 @@ const PokemonGame = () => {
   useEffect(() => {
     // Handle train horn sound
     if (showHypeTrain && !isMuted && !trainHornRef.current) {
-      console.log('🔊 Starting train horn sound');
       trainHornRef.current = new Audio(TRAIN_HORN_URL);
       trainHornRef.current.volume = 0.05;
       trainHornRef.current.loop = true;
-      trainHornRef.current.play().catch(error => {
-        console.error('❌ Error playing train horn sound:', error);
+      trainHornRef.current.play().catch(() => {
+        if (trainHornRef.current) {
+          trainHornRef.current = null;
+        }
       });
     } else if (!showHypeTrain && trainHornRef.current) {
-      console.log('🔇 Stopping train horn sound');
       trainHornRef.current.pause();
       trainHornRef.current.currentTime = 0;
       trainHornRef.current = null;
@@ -1424,8 +1276,6 @@ const PokemonGame = () => {
 
     // Handle low life sound
     if (isHardMode && guessTimeLeft === 5 && !isMuted && !gameOver && isCorrect === null) {
-      console.log('🔊 Playing low life sound');
-      // Clean up any existing low life sound first
       if (lowLifeAudioRef.current) {
         lowLifeAudioRef.current.pause();
         lowLifeAudioRef.current.currentTime = 0;
@@ -1433,8 +1283,10 @@ const PokemonGame = () => {
       }
       lowLifeAudioRef.current = new Audio(LOW_LIFE_URL);
       lowLifeAudioRef.current.volume = 0.5;
-      lowLifeAudioRef.current.play().catch(error => {
-        console.error('❌ Error playing low life sound:', error);
+      lowLifeAudioRef.current.play().catch(() => {
+        if (lowLifeAudioRef.current) {
+          lowLifeAudioRef.current = null;
+        }
       });
     } else if (lowLifeAudioRef.current && (
       !isHardMode || 
@@ -1444,14 +1296,6 @@ const PokemonGame = () => {
       gameOver || 
       isCorrect !== null
     )) {
-      console.log('🔇 Stopping low life sound, reason:', {
-        notHardMode: !isHardMode,
-        timeAbove5: guessTimeLeft > 5,
-        timeUp: guessTimeLeft <= 0,
-        muted: isMuted,
-        gameOver: gameOver,
-        answerValidated: isCorrect !== null
-      });
       lowLifeAudioRef.current.pause();
       lowLifeAudioRef.current.currentTime = 0;
       lowLifeAudioRef.current = null;
