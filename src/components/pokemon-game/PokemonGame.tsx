@@ -584,6 +584,12 @@ const PokemonGame = () => {
     // Start playing when conditions are met
     if (isHardMode && guessTimeLeft === 5 && !isMuted && !gameOver && isCorrect === null) {
       console.log('🔊 Playing low life sound');
+      // Clean up any existing low life sound first
+      if (lowLifeAudioRef.current) {
+        lowLifeAudioRef.current.pause();
+        lowLifeAudioRef.current.currentTime = 0;
+        lowLifeAudioRef.current = null;
+      }
       lowLifeAudioRef.current = new Audio(LOW_LIFE_URL);
       lowLifeAudioRef.current.volume = 0.5;
       lowLifeAudioRef.current.play().catch(error => {
@@ -598,9 +604,16 @@ const PokemonGame = () => {
       guessTimeLeft <= 0 || // Time ran out
       isMuted || // Sound is muted
       gameOver || // Game is over
-      isCorrect !== null // Answer was validated
+      isCorrect !== null // Answer was validated (correct or incorrect)
     )) {
-      console.log('🔇 Stopping low life sound');
+      console.log('🔇 Stopping low life sound, reason:', {
+        notHardMode: !isHardMode,
+        timeAbove5: guessTimeLeft > 5,
+        timeUp: guessTimeLeft <= 0,
+        muted: isMuted,
+        gameOver: gameOver,
+        answerValidated: isCorrect !== null
+      });
       lowLifeAudioRef.current.pause();
       lowLifeAudioRef.current.currentTime = 0;
       lowLifeAudioRef.current = null;
@@ -664,6 +677,9 @@ const PokemonGame = () => {
       clearInterval(timerInterval.current);
       timerInterval.current = null;
     }
+
+    // Clean up all audio immediately when correct answer is given
+    cleanupAllAudio();
     
     // Award a hint every 5 correct answers
     if ((score + 1) % 5 === 0) {
@@ -1056,7 +1072,7 @@ const PokemonGame = () => {
 
     setIsCheckingName(true);
     try {
-      // Check across all generations
+      // Check across all generations using exact name match
       for (const gen of GENERATIONS) {
         const collectionName = `rankings_gen${gen.startId}_${gen.endId}`;
         const rankingsRef = collection(db, collectionName);
@@ -1088,10 +1104,10 @@ const PokemonGame = () => {
     [checkNameAvailability]
   );
 
-  // Update handlePlayerNameChange to use debounced check
+  // Update handlePlayerNameChange to preserve exact name format
   const handlePlayerNameChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const newName = e.target.value;
-    setPlayerName(newName);
+    setPlayerName(newName); // Store the exact name as entered
     
     if (!newName.trim()) {
       setNameError(null);
@@ -1409,6 +1425,12 @@ const PokemonGame = () => {
     // Handle low life sound
     if (isHardMode && guessTimeLeft === 5 && !isMuted && !gameOver && isCorrect === null) {
       console.log('🔊 Playing low life sound');
+      // Clean up any existing low life sound first
+      if (lowLifeAudioRef.current) {
+        lowLifeAudioRef.current.pause();
+        lowLifeAudioRef.current.currentTime = 0;
+        lowLifeAudioRef.current = null;
+      }
       lowLifeAudioRef.current = new Audio(LOW_LIFE_URL);
       lowLifeAudioRef.current.volume = 0.5;
       lowLifeAudioRef.current.play().catch(error => {
@@ -1422,7 +1444,14 @@ const PokemonGame = () => {
       gameOver || 
       isCorrect !== null
     )) {
-      console.log('🔇 Stopping low life sound');
+      console.log('🔇 Stopping low life sound, reason:', {
+        notHardMode: !isHardMode,
+        timeAbove5: guessTimeLeft > 5,
+        timeUp: guessTimeLeft <= 0,
+        muted: isMuted,
+        gameOver: gameOver,
+        answerValidated: isCorrect !== null
+      });
       lowLifeAudioRef.current.pause();
       lowLifeAudioRef.current.currentTime = 0;
       lowLifeAudioRef.current = null;

@@ -2,13 +2,6 @@ import { FC, useEffect, useState, useRef } from 'react';
 import { Pokemon } from './types';
 import { useTranslation } from 'react-i18next';
 
-// Add custom logger that only logs in development
-const devLog = (message: string) => {
-  if (process.env.NODE_ENV === 'development') {
-    console.log(message);
-  }
-};
-
 const devError = (message: string, error?: unknown) => {
   if (process.env.NODE_ENV === 'development') {
     console.error(message, error);
@@ -62,15 +55,31 @@ export const PokemonDisplay: FC<PokemonDisplayProps> = ({
 
   // Handle Pokemon changes and loading states
   useEffect(() => {
+    console.log('🔄 Effect triggered with:', {
+      currentPokemonId: currentPokemon?.id,
+      isPokemonLoading,
+      isCorrect,
+      displayState,
+      displayedPokemonId: displayedPokemon?.id,
+      currentIdRef: currentPokemonIdRef.current
+    });
+
     const newPokemonId = currentPokemon?.id;
     const currentId = currentPokemonIdRef.current;
     
     // If we're loading or Pokemon has changed
     if (isPokemonLoading || newPokemonId !== currentId) {
-      devLog(`🔄 State change - Loading: ${isPokemonLoading}, Old ID: ${currentId}, New ID: ${newPokemonId}`);
+      console.log('📊 State change detected:', {
+        isPokemonLoading,
+        newPokemonId,
+        currentId,
+        displayState,
+        isCorrect
+      });
       
       // Clean up audio
       if (audioRef.current) {
+        console.log('🔊 Cleaning up audio');
         audioRef.current.pause();
         audioRef.current.currentTime = 0;
         audioRef.current.remove();
@@ -78,21 +87,66 @@ export const PokemonDisplay: FC<PokemonDisplayProps> = ({
       }
       soundPlayedRef.current = false;
       
-      // Clear display
-      setDisplayState('loading');
-      setDisplayedPokemon(undefined);
+      // Only clear display if we're loading a new Pokemon AND it's a different Pokemon
+      if (newPokemonId !== currentId) {
+        console.log('🔄 New Pokemon detected:', {
+          newPokemonId,
+          currentId,
+          displayState
+        });
+        // Only reset display state if it's a different Pokemon
+        if (newPokemonId !== displayedPokemon?.id) {
+          console.log('🔄 Resetting display state for new Pokemon');
+          setDisplayState('loading');
+          setDisplayedPokemon(undefined);
+        }
+      }
       
       // Update reference immediately to prevent multiple clears
+      console.log('📝 Updating Pokemon ID reference:', {
+        from: currentId,
+        to: newPokemonId
+      });
       currentPokemonIdRef.current = newPokemonId || null;
     }
     
     // Set new Pokemon only when we have it and it's not loading
     if (currentPokemon && !isPokemonLoading) {
-      devLog(`🔄 Setting Pokemon: ${currentPokemon.id}`);
-      setDisplayedPokemon(currentPokemon);
-      setDisplayState(isCorrect === true ? 'revealed' : 'ready');
+      console.log('🎯 Setting new Pokemon:', {
+        pokemonId: currentPokemon.id,
+        isCorrect,
+        displayState,
+        currentDisplayedId: displayedPokemon?.id
+      });
+      
+      // Keep revealed state during transition until new Pokemon
+      if (displayState === 'revealed' && currentPokemon.id === displayedPokemon?.id) {
+        console.log('✨ Keeping revealed state during transition');
+        setDisplayedPokemon(currentPokemon);
+      } else {
+        // Set new state only if it's a different Pokemon or not revealed
+        const newState = isCorrect === true ? 'revealed' : 'ready';
+        console.log('🔄 Setting new state and Pokemon:', {
+          newState,
+          pokemonId: currentPokemon.id,
+          currentState: displayState
+        });
+        setDisplayState(newState);
+        setDisplayedPokemon(currentPokemon);
+      }
     }
-  }, [currentPokemon, isPokemonLoading, isCorrect]);
+  }, [currentPokemon, isPokemonLoading, isCorrect, displayState, displayedPokemon]);
+
+  // Log state changes
+  useEffect(() => {
+    console.log('🔄 Display state changed:', {
+      displayState,
+      displayedPokemonId: displayedPokemon?.id,
+      currentPokemonId: currentPokemon?.id,
+      isCorrect,
+      isPokemonLoading
+    });
+  }, [displayState, displayedPokemon, currentPokemon, isCorrect, isPokemonLoading]);
 
   // Handle Pokemon cry sound
   useEffect(() => {
