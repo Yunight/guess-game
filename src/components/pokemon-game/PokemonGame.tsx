@@ -143,10 +143,8 @@ const PokemonGame = () => {
   });
 
   const calculateRewardPokemon = useCallback(async (score: number) => {
-    setRewardPokemon({ pokemon: undefined, isLoading: true });
-
     if (!allPokemonData || allPokemonData.length === 0) {
-      return;
+      return { pokemon: undefined, isLoading: false };
     }
 
     try {
@@ -163,20 +161,18 @@ const PokemonGame = () => {
         );
         
         if (basicPokemon.length === 0) {
-          setRewardPokemon({
+          return {
             pokemon: undefined,
             isLoading: false
-          });
-          return;
+          };
         }
         
         const randomBasic = basicPokemon[Math.floor(Math.random() * basicPokemon.length)];
         
-        setRewardPokemon({
+        return {
           pokemon: randomBasic,
           isLoading: false
-        });
-        return;
+        };
       }
 
       // Filter Pokémon based on the tier condition and selected generation
@@ -199,11 +195,10 @@ const PokemonGame = () => {
           if (lowerTierPokemon.length > 0) {
             const randomPokemon = lowerTierPokemon[Math.floor(Math.random() * lowerTierPokemon.length)];
             
-            setRewardPokemon({
+            return {
               pokemon: randomPokemon,
               isLoading: false
-            });
-            return;
+            };
           }
         }
         
@@ -215,25 +210,24 @@ const PokemonGame = () => {
         
         const randomPokemon = generationPokemon[Math.floor(Math.random() * generationPokemon.length)];
         
-        setRewardPokemon({
+        return {
           pokemon: randomPokemon,
           isLoading: false
-        });
-        return;
+        };
       }
       
       // Pick a random Pokémon from the eligible ones
       const randomPokemon = eligiblePokemon[Math.floor(Math.random() * eligiblePokemon.length)];
       
-      setRewardPokemon({
+      return {
         pokemon: randomPokemon,
         isLoading: false
-      });
+      };
     } catch {
-      setRewardPokemon({
+      return {
         pokemon: undefined,
         isLoading: false
-      });
+      };
     }
   }, [allPokemonData, selectedGeneration]);
 
@@ -415,11 +409,6 @@ const PokemonGame = () => {
       trainHornRef.current.pause();
       trainHornRef.current.currentTime = 0;
     }
-    // Clean up low life audio
-    if (lowLifeAudioRef.current) {
-      lowLifeAudioRef.current.pause();
-      lowLifeAudioRef.current.currentTime = 0;
-    }
   };
 
   // Add cleanup effect for train horn sound when component unmounts
@@ -429,6 +418,18 @@ const PokemonGame = () => {
         trainHornRef.current.pause();
         trainHornRef.current.currentTime = 0;
         trainHornRef.current = null;
+      }
+    };
+  }, []);
+
+  // Add cleanup effect for low life sound when component unmounts
+  useEffect(() => {
+    return () => {
+      if (lowLifeAudioRef.current) {
+        console.log('🧹 Cleaning up Low Life Sound on component unmount');
+        lowLifeAudioRef.current.pause();
+        lowLifeAudioRef.current.currentTime = 0;
+        lowLifeAudioRef.current = null;
       }
     };
   }, []);
@@ -467,87 +468,90 @@ const PokemonGame = () => {
     }
   }, [showHypeTrain]);
 
-  // Add separate effect for game over cleanup
+  // Add separate effect for low life sound
   useEffect(() => {
-    if (gameOver && trainHornRef.current) {
-      trainHornRef.current.pause();
-      trainHornRef.current.currentTime = 0;
-      trainHornRef.current = null;
+    const shouldPlayLowLife = isHardMode && guessTimeLeft === 5 && !isMuted && !gameOver && isCorrect === null;
+    console.log('🔊 Low Life Sound Check:', {
+      shouldPlay: shouldPlayLowLife,
+      isPlaying: !!lowLifeAudioRef.current,
+      conditions: {
+        isHardMode,
+        guessTimeLeft,
+        isMuted,
+        gameOver,
+        isCorrect
+      }
+    });
+    
+    let isAborted = false;  // Flag to track if audio was aborted
+    
+    // Stop the sound if it's playing and shouldn't be
+    if (!shouldPlayLowLife && lowLifeAudioRef.current) {
+      console.log('🔇 Stopping Low Life Sound - Conditions not met');
+      lowLifeAudioRef.current.pause();
+      lowLifeAudioRef.current.currentTime = 0;
+      lowLifeAudioRef.current = null;
+      return;
     }
-  }, [gameOver]);
-
-  // Add effect to handle train horn sound
-  useEffect(() => {
-    if (showHypeTrain && !isMuted && !trainHornRef.current) {
-      const trainHorn = new Audio(TRAIN_HORN_URL);
-      trainHorn.volume = 0.05;
-      trainHorn.loop = true;
-      trainHornRef.current = trainHorn;
-      trainHorn.play().catch(() => {
-        if (trainHornRef.current) {
-          trainHornRef.current = null;
+    
+    if (shouldPlayLowLife && !lowLifeAudioRef.current && !isAborted) {
+      console.log('🎵 Starting Low Life Sound');
+      const audio = new Audio(LOW_LIFE_URL);
+      audio.volume = 0.5;
+      // Add event listeners for better tracking
+      audio.addEventListener('play', () => {
+        console.log('✅ Low Life Sound started playing successfully');
+      });
+      audio.addEventListener('ended', () => {
+        console.log('🏁 Low Life Sound ended naturally');
+        if (lowLifeAudioRef.current === audio) {
+          lowLifeAudioRef.current = null;
         }
       });
-    } else if (!showHypeTrain && trainHornRef.current) {
-      trainHornRef.current.pause();
-      trainHornRef.current.currentTime = 0;
-      trainHornRef.current = null;
-    }
-  }, [showHypeTrain, isMuted]);
-
-  // Add cleanup effect
-  useEffect(() => {
-    return () => {
-      if (trainHornRef.current) {
-        trainHornRef.current.pause();
-        trainHornRef.current.currentTime = 0;
-        trainHornRef.current = null;
-      }
-    };
-  }, []);
-
-  // Update effect to handle low life sound
-  useEffect(() => {
-    // Start playing when conditions are met
-    if (isHardMode && guessTimeLeft === 5 && !isMuted && !gameOver && isCorrect === null) {
-      if (lowLifeAudioRef.current) {
-        lowLifeAudioRef.current.pause();
-        lowLifeAudioRef.current.currentTime = 0;
-        lowLifeAudioRef.current = null;
-      }
-      lowLifeAudioRef.current = new Audio(LOW_LIFE_URL);
-      lowLifeAudioRef.current.volume = 0.5;
-      lowLifeAudioRef.current.play().catch(() => {
-        if (lowLifeAudioRef.current) {
+      audio.addEventListener('error', (e) => {
+        console.log('❌ Error playing Low Life Sound:', e);
+        isAborted = e.type === 'abort';  // Set aborted flag if it was an abort error
+        if (lowLifeAudioRef.current === audio) {
+          lowLifeAudioRef.current = null;
+        }
+      });
+      audio.addEventListener('abort', () => {
+        console.log('🛑 Low Life Sound was aborted');
+        isAborted = true;
+        if (lowLifeAudioRef.current === audio) {
+          lowLifeAudioRef.current = null;
+        }
+      });
+      
+      // Set the ref before playing to ensure proper state tracking
+      lowLifeAudioRef.current = audio;
+      
+      // Try to play the sound
+      audio.play().catch((error) => {
+        console.log('❌ Error playing Low Life Sound:', error);
+        isAborted = error.name === 'AbortError';  // Set aborted flag if it was an abort error
+        if (lowLifeAudioRef.current === audio) {
           lowLifeAudioRef.current = null;
         }
       });
     }
     
-    // Stop playing in any case where it shouldn't be playing
-    if (lowLifeAudioRef.current && (
-      !isHardMode || 
-      guessTimeLeft > 5 || 
-      guessTimeLeft <= 0 || 
-      isMuted || 
-      gameOver || 
-      isCorrect !== null
-    )) {
-      lowLifeAudioRef.current.pause();
-      lowLifeAudioRef.current.currentTime = 0;
-      lowLifeAudioRef.current = null;
-    }
-  }, [guessTimeLeft, isHardMode, isMuted, gameOver, isCorrect]);
-
-  // Add cleanup effect for low life sound
-  useEffect(() => {
+    // Cleanup function
     return () => {
       if (lowLifeAudioRef.current) {
+        console.log('🧹 Cleaning up Low Life Sound in effect cleanup, triggered by:', {
+          isHardMode,
+          guessTimeLeft,
+          isMuted,
+          gameOver,
+          isCorrect
+        });
         lowLifeAudioRef.current.pause();
+        lowLifeAudioRef.current.currentTime = 0;
         lowLifeAudioRef.current = null;
       }
     };
-  }, []);
+  }, [isHardMode, guessTimeLeft, isMuted, gameOver, isCorrect]);
 
   // Add effect to handle timer
   useEffect(() => {
@@ -589,6 +593,7 @@ const PokemonGame = () => {
 
   const handleCorrectAnswer = async () => {
     setIsCorrect(true);
+    console.log('✅ Correct Answer - isCorrect set to true');
     
     // Stop the timer immediately to preserve the current time for points calculation
     if (timerInterval.current) {
@@ -832,7 +837,12 @@ const PokemonGame = () => {
     
     // Calculate reward Pokemon only if not all Pokémon were found
     if (remainingPokemon.length > 0) {
-      await calculateRewardPokemon(score);
+      // Set loading state first
+      setRewardPokemon({ pokemon: undefined, isLoading: true });
+      // Calculate reward Pokemon only once
+      const rewardResult = await calculateRewardPokemon(score);
+      // Update the reward Pokemon state
+      setRewardPokemon(rewardResult);
     }
     
     // Small delay to ensure state updates are processed
