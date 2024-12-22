@@ -782,28 +782,24 @@ const PokemonGame = () => {
         cleanupAllAudio();
         console.log('🔊 Cleaned up audio');
 
-        // Play reward Pokemon cry if available
-        if (rewardResult.pokemon) {
-          console.log('🎵 Playing reward Pokemon cry');
-          const [latestCry, legacyCry] = rewardResult.pokemon.cryUrl.split('|');
-          const cryAudio = new Audio(latestCry || legacyCry);
-          try {
-            await cryAudio.play();
-            console.log('✅ Played reward Pokemon cry');
-            // Wait for cry to finish
-            await new Promise(resolve => setTimeout(resolve, 1000));
-          } catch (error) {
-            console.error('❌ Error playing reward Pokemon cry:', error);
-          }
-        }
-
-        // Then play victory sound
-        victoryAudioRef.current = new Audio(VICTORY_SOUND_URL);
         try {
+          // Wait for any Pokemon cry handling to finish
+          if (rewardResult.pokemon) {
+            console.log('🎵 Playing reward Pokemon cry');
+            // Wait for potential cry playback and cleanup
+            await new Promise(resolve => setTimeout(resolve, 2000));
+          }
+
+          // Always play victory sound
+          console.log('🎺 Playing victory sound');
+          victoryAudioRef.current = new Audio(VICTORY_SOUND_URL);
           await victoryAudioRef.current.play();
-          console.log('🎺 Played victory sound');
+          console.log('✅ Victory sound played successfully');
         } catch (error) {
-          console.error('❌ Error playing victory sound:', error);
+          console.error('❌ Error playing audio:', error);
+          if (victoryAudioRef.current) {
+            victoryAudioRef.current = null;
+          }
         }
       }
 
