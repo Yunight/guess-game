@@ -761,24 +761,17 @@ const PokemonGame = () => {
       setGameOver(true);
       console.log('🔄 Updated game states: isGameActive=false, gameOver=true');
       
-      // Calculate reward Pokemon only if not all Pokémon were found and only once
-      if (remainingPokemon.length > 0 && !rewardPokemon.pokemon) {
-        console.log('🎁 Calculating reward Pokemon, remaining Pokemon:', remainingPokemon.length);
-        // Set loading state first
-        setRewardPokemon({ pokemon: undefined, isLoading: true });
-        console.log('⌛ Set reward Pokemon loading state');
-        // Calculate reward Pokemon only once
-        const rewardResult = await calculateRewardPokemon(score);
-        console.log('✨ Calculated reward Pokemon:', rewardResult.pokemon?.englishName);
-        // Update the reward Pokemon state
-        setRewardPokemon(rewardResult);
-        console.log('💾 Updated reward Pokemon state');
-      } else {
-        console.log('⏭️ Skipping reward Pokemon calculation:', {
-          remainingPokemon: remainingPokemon.length,
-          hasRewardPokemon: !!rewardPokemon.pokemon
-        });
-      }
+      // Always calculate reward Pokemon, regardless of remaining Pokemon
+      console.log('🎁 Calculating reward Pokemon');
+      // Set loading state first
+      setRewardPokemon({ pokemon: undefined, isLoading: true });
+      console.log('⌛ Set reward Pokemon loading state');
+      // Calculate reward Pokemon
+      const rewardResult = await calculateRewardPokemon(score);
+      console.log('✨ Calculated reward Pokemon:', rewardResult.pokemon?.englishName);
+      // Update the reward Pokemon state
+      setRewardPokemon(rewardResult);
+      console.log('💾 Updated reward Pokemon state');
       
       // Small delay to ensure state updates are processed
       await new Promise(resolve => setTimeout(resolve, 50));
@@ -789,10 +782,10 @@ const PokemonGame = () => {
         cleanupAllAudio();
         console.log('🔊 Cleaned up audio');
 
-        // Play reward Pokemon cry first if available and not all Pokémon were found
-        if (rewardPokemon.pokemon && remainingPokemon.length > 0) {
+        // Play reward Pokemon cry if available
+        if (rewardResult.pokemon) {
           console.log('🎵 Playing reward Pokemon cry');
-          const [latestCry, legacyCry] = rewardPokemon.pokemon.cryUrl.split('|');
+          const [latestCry, legacyCry] = rewardResult.pokemon.cryUrl.split('|');
           const cryAudio = new Audio(latestCry || legacyCry);
           try {
             await cryAudio.play();
@@ -861,7 +854,7 @@ const PokemonGame = () => {
       isHandlingGameOverRef.current = null;
       console.log('🧹 Reset game over handling state');
     }
-  }, [gameOver, score, remainingPokemon.length, rewardPokemon.pokemon, isMuted, isHardMode, bestScore, playerName, selectedGeneration.startId, selectedGeneration.endId, totalTimeElapsed, fetchSelectedRankings, calculateRewardPokemon]);
+  }, [gameOver, score, isMuted, calculateRewardPokemon]);
 
   // Update the effect to use both functions
   useEffect(() => {
@@ -949,16 +942,28 @@ const PokemonGame = () => {
     const isAvailable = await checkNameAvailability(playerName);
     if (!isAvailable) return;
     
+    // Ensure we're in restarting state
     setIsRestarting(true);
+    
+    // Reset all game states first
     setIsHardMode(isHardMode);
     setConsecutiveFastAnswers(0);
     setShowHypeTrain(false);
     setPointsEarned(0);
+    setCurrentPokemonId(null);
+    setIsCorrect(null);
+    setGuess('');
+    setSuggestions([]);
+    setShowHint(false);
+    
+    // Reset reward Pokemon state
+    setRewardPokemon({
+      pokemon: undefined,
+      isLoading: true
+    });
     
     // Clean up all audio
     cleanupAllAudio();
-    
-    setCurrentPokemonId(null);
     
     // If it's a new user (different from saved name), clean up localStorage
     const savedName = localStorage.getItem('pokemonGamePlayerName');
@@ -981,10 +986,6 @@ const PokemonGame = () => {
     setScore(0);
     // In Chill mode, set hints to Infinity, in Hard mode set to 0
     setHintsLeft(isHardMode ? 0 : Infinity);
-    setShowHint(false);
-    setIsCorrect(null);
-    setGuess('');
-    setSuggestions([]);
     // In Chill mode, no timer (set to Infinity), in Hard mode set to 15
     setGuessTimeLeft(isHardMode ? 15 : Infinity);
     setTotalTimeElapsed(0);
@@ -1006,7 +1007,6 @@ const PokemonGame = () => {
     
     // Set game active and clear restarting state
     setIsGameActive(true);
-    setIsRestarting(false);
     
     // Start timers based on game mode
     if (isHardMode) {
@@ -1014,14 +1014,21 @@ const PokemonGame = () => {
     }
     startTotalTimer();
     
+    // Add another small delay before setting the first Pokemon
+    await new Promise(resolve => setTimeout(resolve, 50));
+    
     // Start the game by fetching first Pokemon
     const randomIndex = Math.floor(Math.random() * allPokemonIds.length);
     const firstPokemonId = allPokemonIds[randomIndex];
-    setCurrentPokemonId(firstPokemonId);
     
-    // Remove the first Pokémon from the pool after setting it
+    // Remove the first Pokémon from the pool before setting it
     setRemainingPokemon(prev => prev.filter(id => id !== firstPokemonId));
     
+    // Finally set the current Pokemon ID and clear restarting state
+    setCurrentPokemonId(firstPokemonId);
+    setIsRestarting(false);
+    
+    // Focus the input
     inputRef.current?.focus();
   };
 
@@ -1143,8 +1150,21 @@ const PokemonGame = () => {
     // Clean up all audio first
     cleanupAllAudio();
     
-    // Start a new game with the same mode
-    startGame(isHardMode);
+    // Reset Pokemon-related states first
+    setCurrentPokemonId(null);
+    setIsCorrect(null);
+    setGuess('');
+    setSuggestions([]);
+    setShowHint(false);
+    
+    // Set restarting state to true
+    setIsRestarting(true);
+    
+    // Add a small delay to ensure states are cleared before starting new game
+    setTimeout(() => {
+      // Start a new game with the same mode
+      startGame(isHardMode);
+    }, 100);
   };
 
   const handleBackToMenu = () => {
