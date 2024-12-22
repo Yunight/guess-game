@@ -9,6 +9,7 @@ import { EmailAuthDialog } from './EmailAuthDialog';
 interface AuthButtonsProps {
   isAuthenticated: boolean;
   userName: string | null;
+  checkNameAvailability: (name: string) => Promise<boolean>;
 }
 
 const formatGmailDisplayName = (name: string | null): string => {
@@ -31,7 +32,7 @@ const formatGmailDisplayName = (name: string | null): string => {
   return name;
 };
 
-export const AuthButtons: FC<AuthButtonsProps> = ({ isAuthenticated, userName }) => {
+export const AuthButtons: FC<AuthButtonsProps> = ({ isAuthenticated, userName, checkNameAvailability }) => {
   const { t } = useTranslation();
   const [showEmailDialog, setShowEmailDialog] = useState(false);
 
@@ -53,6 +54,8 @@ export const AuthButtons: FC<AuthButtonsProps> = ({ isAuthenticated, userName })
   const handleSignOut = async () => {
     try {
       await signOut(auth);
+      localStorage.removeItem('pokemonGamePlayerName');
+      window.location.reload(); // Force a reload to ensure all states are reset
     } catch (error) {
       console.error('Erreur de déconnexion:', error);
     }
@@ -100,6 +103,7 @@ export const AuthButtons: FC<AuthButtonsProps> = ({ isAuthenticated, userName })
       <EmailAuthDialog
         isOpen={showEmailDialog}
         onClose={() => setShowEmailDialog(false)}
+        checkNameAvailability={checkNameAvailability}
       />
     </>
   );

@@ -1,4 +1,4 @@
-import { FC, useState, useEffect } from 'react';
+import { FC, useState } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Volume2, VolumeX, HelpCircle, Github, Twitter } from 'lucide-react';
@@ -9,7 +9,6 @@ import { useTranslation } from 'react-i18next';
 import { LanguageToggle } from '@/components/ui/language-toggle';
 import { AuthButtons } from './AuthButtons';
 import { auth } from '../../firebase';
-import { User } from 'firebase/auth';
 
 interface MenuScreenProps {
   playerName: string;
@@ -27,6 +26,7 @@ interface MenuScreenProps {
   formatTimeForRanking: (seconds: number) => string;
   formatDate: (timestamp: Date) => string;
   bestScore: number;
+  checkNameAvailability: (name: string) => Promise<boolean>;
 }
 
 export const MenuScreen: FC<MenuScreenProps> = ({
@@ -44,19 +44,11 @@ export const MenuScreen: FC<MenuScreenProps> = ({
   rankings,
   formatTimeForRanking,
   formatDate,
+  checkNameAvailability
 }) => {
   const { t } = useTranslation();
   const [showHowToPlay, setShowHowToPlay] = useState(false);
   const [showGameModeDialog, setShowGameModeDialog] = useState(false);
-  const [user, setUser] = useState<User | null>(null);
-
-  useEffect(() => {
-    const unsubscribe = auth.onAuthStateChanged((user) => {
-      setUser(user);
-    });
-
-    return () => unsubscribe();
-  }, []);
 
   const handleStartGameClick = () => {
     setShowGameModeDialog(true);
@@ -150,15 +142,16 @@ export const MenuScreen: FC<MenuScreenProps> = ({
               {/* Authentication Section */}
               <div className="space-y-2">
                 <div className="flex items-center gap-4">
-                  {!user && (
+                  {!auth.currentUser && (
                     <div className="flex items-center gap-2">
                       <div className="w-6 h-6 bg-blue-500 rounded-full border-4 border-white shadow-md"></div>
                       <h2 className="text-lg font-semibold text-gray-800">{t('connexion')}</h2>
                     </div>
                   )}
                   <AuthButtons 
-                    isAuthenticated={!!user} 
-                    userName={user?.displayName || null}
+                    isAuthenticated={!!auth.currentUser} 
+                    userName={auth.currentUser?.displayName || null}
+                    checkNameAvailability={checkNameAvailability}
                   />
                 </div>
               </div>
@@ -173,20 +166,14 @@ export const MenuScreen: FC<MenuScreenProps> = ({
                   placeholder={t('enterName')}
                   className={`w-full h-10 px-4 text-lg transition-colors
                     ${nameError ? 'border-red-500 focus:ring-red-500' : 'border-gray-300'}
-                    ${user ? 'bg-gray-100 border-transparent cursor-not-allowed opacity-75 hover:bg-gray-100 focus:bg-gray-100 select-none' : ''}
+                    ${auth.currentUser ? 'bg-gray-100 border-transparent cursor-not-allowed opacity-75 hover:bg-gray-100 focus:bg-gray-100 select-none' : ''}
                   `}
-                  value={user ? (
-                    auth.currentUser?.email?.includes('@gmail.com') && user.displayName
-                      ? user.displayName.includes(' ')
-                        ? `${user.displayName.split(' ')[0]} .${user.displayName.split(' ').pop()?.[0].toUpperCase()}`
-                        : user.displayName
-                      : user.displayName || ''
-                  ) : playerName}
+                  value={playerName}
                   onChange={handlePlayerNameChange}
-                  readOnly={!!user}
-                  disabled={!!user}
+                  readOnly={!!auth.currentUser}
+                  disabled={!!auth.currentUser}
                 />
-                {nameError && !user && (
+                {nameError && !auth.currentUser && (
                   <p className="text-red-500 text-sm">{nameError}</p>
                 )}
               </div>

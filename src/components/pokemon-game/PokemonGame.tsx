@@ -960,13 +960,17 @@ const PokemonGame = () => {
 
   // Update handlePlayerNameChange to only reset auth state for manual changes
   const handlePlayerNameChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    // If user is authenticated, don't allow changes
+    if (auth.currentUser) {
+      return;
+    }
+
     const exactName = e.target.value;
     setPlayerName(exactName);
-    // Only reset auth state for manual changes
-    setIsAuthName(false);
     
     if (!exactName.trim()) {
       setNameError(null);
+      setIsAuthName(false);
       localStorage.removeItem('pokemonGamePlayerName');
       return;
     }
@@ -1184,10 +1188,12 @@ const PokemonGame = () => {
   useEffect(() => {
     const savedName = localStorage.getItem('pokemonGamePlayerName');
     if (playerName) {
-      // If we have a player name, treat it as auth name initially
-      setIsAuthName(true);
+      // Only set isAuthName if it matches the saved name
+      if (playerName === savedName) {
+        setIsAuthName(true);
+      }
+      // If it's a new name, save it
       if (playerName !== savedName) {
-        // If it's a new name, save it
         localStorage.setItem('pokemonGamePlayerName', playerName);
       }
     } else {
@@ -1321,15 +1327,34 @@ const PokemonGame = () => {
     }
   }, [showHypeTrain, isMuted, isHardMode, guessTimeLeft]);
 
+  // Add formatDisplayName function
+  const formatDisplayName = useCallback((name: string | null | undefined, email: string | null | undefined): string => {
+    if (!name) return '';
+    
+    // Check if it's a Gmail user
+    const isGmailUser = email?.includes('@gmail.com');
+    
+    if (isGmailUser && name.includes(' ')) {
+      // Split the full name into parts
+      const nameParts = name.split(' ');
+      const firstName = nameParts[0];
+      const lastNameInitial = nameParts[nameParts.length - 1][0].toUpperCase();
+      return `${firstName} .${lastNameInitial}`;
+    }
+    
+    return name;
+  }, []);
+
   // Add effect to handle auth state changes
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged((user) => {
       if (user?.displayName) {
-        setPlayerName(user.displayName);
+        const formattedName = formatDisplayName(user.displayName, user.email);
+        setPlayerName(formattedName);
         setIsAuthName(true);
         setNameError(null);
         setIsCheckingName(false);
-        localStorage.setItem('pokemonGamePlayerName', user.displayName);
+        localStorage.setItem('pokemonGamePlayerName', formattedName);
       } else {
         // If no user, only clear if we were using an auth name
         if (isAuthName) {
@@ -1341,7 +1366,7 @@ const PokemonGame = () => {
     });
 
     return () => unsubscribe();
-  }, [isAuthName]);
+  }, [formatDisplayName]);
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-blue-100 to-blue-50 p-4 flex items-start sm:items-center justify-center font-oswald">
@@ -1396,6 +1421,7 @@ const PokemonGame = () => {
           rankings={rankings}
           formatTimeForRanking={formatTimeForRanking}
           formatDate={formatDate}
+          checkNameAvailability={checkNameAvailability}
         />
       )}
 
