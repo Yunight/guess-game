@@ -97,7 +97,7 @@ export const RewardPokemonDisplay: FC<RewardPokemonDisplayProps> = ({
               <img src="/pokeball.svg" alt="Loading..." className="w-full h-full" />
             </div>
           ) : pokemon ? (
-            <div className="relative">
+            <div className="relative flex flex-col items-center justify-center w-full">
               {totalPokemonCount === 0 && (
                 <>
                   {/* Outer spinning fireworks */}
@@ -156,9 +156,9 @@ export const RewardPokemonDisplay: FC<RewardPokemonDisplayProps> = ({
               <img
                 src={pokemon.sprite}
                 alt={i18n.language === 'fr' ? pokemon.frenchName : pokemon.englishName}
-                className="w-52 h-52 object-contain relative z-10"
+                className="w-52 h-52 object-contain relative z-10 mx-auto"
               />
-              <div className="mt-2 text-center relative z-10">
+              <div className="mt-2 text-center relative z-10 w-full">
                 <p className="text-lg font-bold text-gray-800 dark:text-gray-100 relative">
                   <span className="animate-fade-in-up inline-block" style={{ animationDelay: '0.2s' }}>
                     {t('youAre')}
