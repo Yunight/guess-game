@@ -159,10 +159,21 @@ export const RewardPokemonDisplay: FC<RewardPokemonDisplayProps> = ({
                 className="w-52 h-52 object-contain relative z-10"
               />
               <div className="mt-2 text-center relative z-10">
-                <p className="text-lg font-bold text-gray-800 dark:text-gray-100">
-                  {t('youAre')} <span className="text-blue-800 dark:text-blue-300">
-                    {i18n.language === 'fr' ? pokemon.frenchName : pokemon.englishName}
-                  </span> {pokemon.isShiny ? '⭐' : '!'} 
+                <p className="text-lg font-bold text-gray-800 dark:text-gray-100 relative">
+                  <span className="animate-fade-in-up inline-block" style={{ animationDelay: '0.2s' }}>
+                    {t('youAre')}
+                  </span>{' '}
+                  <span className="relative inline-block">
+                    <span className="absolute -inset-1 bg-gradient-to-r from-blue-600/30 to-purple-600/30 blur-sm animate-pulse"></span>
+                    <span className="relative text-xl md:text-2xl bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent font-extrabold animate-bounce-gentle">
+                      {i18n.language === 'fr' ? pokemon.frenchName : pokemon.englishName}
+                    </span>
+                  </span>{' '}
+                  {pokemon.isShiny ? (
+                    <span className="inline-block animate-spin-slow">⭐</span>
+                  ) : (
+                    <span className="inline-block animate-bounce-gentle" style={{ animationDelay: '0.4s' }}>!</span>
+                  )}
                 </p>
                 {pokemon.isShiny && (
                   <p className="text-yellow-700 dark:text-yellow-400 font-extrabold animate-pulse">

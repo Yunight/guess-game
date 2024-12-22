@@ -130,7 +130,15 @@ export default {
 					'0%, 100%': { opacity: '0.3' },
 					'50%': { opacity: '1' },
 					'1.5s': { opacity: '0.3' }
-				}
+				},
+				'bounce-gentle': {
+					'0%, 100%': { transform: 'translateY(-5%)' },
+					'50%': { transform: 'translateY(5%)' },
+				},
+				'fade-in-up': {
+					'0%': { opacity: '0', transform: 'translateY(10px)' },
+					'100%': { opacity: '1', transform: 'translateY(0)' },
+				},
 			},
 			animation: {
 				'accordion-down': 'accordion-down 0.2s ease-out',
@@ -141,7 +149,9 @@ export default {
 				"firework-1": "firework-1 1.5s ease-out infinite",
 				"firework-2": "firework-2 1.8s ease-out infinite",
 				"firework-3": "firework-3 1.3s ease-out infinite",
-				"explode": "explode 1.5s ease-out infinite"
+				"explode": "explode 1.5s ease-out infinite",
+				'bounce-gentle': 'bounce-gentle 1s infinite',
+				'fade-in-up': 'fade-in-up 0.6s ease-out forwards',
 			},
 		},
 	},
