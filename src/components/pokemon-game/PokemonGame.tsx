@@ -435,11 +435,14 @@ const PokemonGame = () => {
     const shouldPlayLowLife = isHardMode && 
                             guessTimeLeft <= 5 && 
                             guessTimeLeft > 0 && 
-                            !isMuted;
+                            !isMuted &&
+                            !gameOver &&
+                            isCorrect === null;
     
-    const shouldStopLowLife = guessTimeLeft <= 0 || isCorrect === true;
+    const shouldStopLowLife = guessTimeLeft <= 0 || isCorrect !== null || gameOver || !isHardMode;
     
     if (shouldPlayLowLife && lowLifeAudioRef.current && !isLowLifePlaying && isLowLifeAudioReady) {
+      console.log('🔊 Starting low life sound at', guessTimeLeft, 'seconds');
       lowLifeAudioRef.current.currentTime = 0;
       const playPromise = lowLifeAudioRef.current.play();
       
@@ -451,11 +454,17 @@ const PokemonGame = () => {
         });
       }
     } else if (lowLifeAudioRef.current && shouldStopLowLife) {
+      console.log('🔇 Stopping low life sound, reason:', {
+        timeUp: guessTimeLeft <= 0,
+        correctAnswer: isCorrect !== null,
+        gameOver,
+        notHardMode: !isHardMode
+      });
       lowLifeAudioRef.current.pause();
       lowLifeAudioRef.current.currentTime = 0;
       setIsLowLifePlaying(false);
     }
-  }, [isHardMode, guessTimeLeft, isMuted, isCorrect, isLowLifeAudioReady, isLowLifePlaying]);
+  }, [isHardMode, guessTimeLeft, isMuted, isCorrect, isLowLifeAudioReady, isLowLifePlaying, gameOver]);
 
   // Add a separate cleanup effect
   useEffect(() => {
@@ -1281,34 +1290,7 @@ const PokemonGame = () => {
       trainHornRef.current.currentTime = 0;
       trainHornRef.current = null;
     }
-
-    // Handle low life sound
-    if (isHardMode && guessTimeLeft === 5 && !isMuted && !gameOver && isCorrect === null) {
-      if (lowLifeAudioRef.current) {
-        lowLifeAudioRef.current.pause();
-        lowLifeAudioRef.current.currentTime = 0;
-        lowLifeAudioRef.current = null;
-      }
-      lowLifeAudioRef.current = new Audio(LOW_LIFE_URL);
-      lowLifeAudioRef.current.volume = 0.5;
-      lowLifeAudioRef.current.play().catch(() => {
-        if (lowLifeAudioRef.current) {
-          lowLifeAudioRef.current = null;
-        }
-      });
-    } else if (lowLifeAudioRef.current && (
-      !isHardMode || 
-      guessTimeLeft > 5 || 
-      guessTimeLeft <= 0 || 
-      isMuted || 
-      gameOver || 
-      isCorrect !== null
-    )) {
-      lowLifeAudioRef.current.pause();
-      lowLifeAudioRef.current.currentTime = 0;
-      lowLifeAudioRef.current = null;
-    }
-  }, [showHypeTrain, isMuted, isHardMode, guessTimeLeft, gameOver, isCorrect]);
+  }, [showHypeTrain]);
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-blue-100 to-blue-50 p-4 flex items-start sm:items-center justify-center font-oswald">
