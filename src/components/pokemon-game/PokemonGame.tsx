@@ -703,6 +703,17 @@ const PokemonGame = () => {
     }
   }, [currentPokemon, currentPokemonId, isGameActive, isPokemonLoading, remainingPokemon.length]);
 
+  // Add name format conversion functions
+  const convertToStoredFormat = (displayName: string): string => {
+    // Keep only the part before the first space
+    return displayName.trim().split(/\s+/)[0];
+  };
+
+  const convertToDisplayFormat = (storedName: string): string => {
+    // Display name is the same as stored name since we only keep the first part
+    return storedName;
+  };
+
   const fetchSelectedRankings = useCallback(async () => {
     try {
       const rankingsRef = collection(db, `rankings_gen${selectedGeneration.startId}_${selectedGeneration.endId}`);
@@ -711,13 +722,24 @@ const PokemonGame = () => {
       const rankingsData: Rankings[] = [];
       querySnapshot.forEach((doc) => {
         const data = doc.data() as DocumentData;
-        data.timestamp = (data.timestamp as Timestamp)?.toDate() || new Date(data.timestamp);
-        rankingsData.push(data as Rankings);
+        // Convert the stored name to display format
+        const storedName = data.name;
+        const displayName = convertToDisplayFormat(storedName);
+        
+        rankingsData.push({
+          ...data,
+          name: displayName, // Use display name for UI
+          timestamp: (data.timestamp as Timestamp)?.toDate() || new Date(data.timestamp)
+        } as Rankings);
       });
       setRankings(rankingsData);
 
       // Find user's best record and update best time
-      const userBestRecord = rankingsData.find(record => record.name === playerName);
+      // Use the stored format for comparison
+      const userStoredName = convertToStoredFormat(playerName);
+      const userBestRecord = rankingsData.find(record => 
+        convertToStoredFormat(record.name) === userStoredName
+      );
       if (userBestRecord) {
         setBestTime(userBestRecord.time);
       }
@@ -811,13 +833,15 @@ const PokemonGame = () => {
         
         if (score > 0 && playerName) {
           try {
+            const storedName = convertToStoredFormat(playerName.trim());
             const collectionName = `rankings_gen${selectedGeneration.startId}_${selectedGeneration.endId}`;
             const rankingsRef = collection(db, collectionName);
-            const q = query(rankingsRef, where('name', '==', playerName));
+            // Use stored format for query
+            const q = query(rankingsRef, where('name', '==', storedName));
             const querySnapshot = await getDocs(q);
             
             const playerData = {
-              name: playerName,
+              name: storedName, // Store in abbreviated format
               score: score,
               time: totalTimeElapsed,
               timestamp: serverTimestamp()
@@ -850,7 +874,7 @@ const PokemonGame = () => {
       isHandlingGameOverRef.current = null;
       console.log('🧹 Reset game over handling state');
     }
-  }, [gameOver, score, isMuted, calculateRewardPokemon]);
+  }, [gameOver, score, isMuted, calculateRewardPokemon, selectedGeneration.startId, selectedGeneration.endId, bestScore, playerName, totalTimeElapsed, setBestTime, fetchSelectedRankings]);
 
   // Update the effect to use both functions
   useEffect(() => {
@@ -865,9 +889,10 @@ const PokemonGame = () => {
     return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
 
-  // Update checkNameAvailability to handle loading state
+  // Update checkNameAvailability to use stored format
   const checkNameAvailability = useCallback(async (name: string) => {
-    if (!name.trim()) {
+    const storedName = convertToStoredFormat(name.trim());
+    if (!storedName) {
       setNameError(null);
       localStorage.removeItem('pokemonGamePlayerName');
       return false;
@@ -875,18 +900,18 @@ const PokemonGame = () => {
 
     // If it's the user's saved name, allow it
     const savedName = localStorage.getItem('pokemonGamePlayerName');
-    if (savedName === name) {
+    if (savedName === storedName) {
       setNameError(null);
       return true;
     }
 
     setIsCheckingName(true);
     try {
-      // Check across all generations using exact name match
+      // Check across all generations using stored format
       for (const gen of GENERATIONS) {
         const collectionName = `rankings_gen${gen.startId}_${gen.endId}`;
         const rankingsRef = collection(db, collectionName);
-        const q = query(rankingsRef, where('name', '==', name));
+        const q = query(rankingsRef, where('name', '==', storedName));
         const querySnapshot = await getDocs(q);
         
         if (!querySnapshot.empty) {
@@ -916,16 +941,16 @@ const PokemonGame = () => {
 
   // Update handlePlayerNameChange to preserve exact name format
   const handlePlayerNameChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    const newName = e.target.value;
-    setPlayerName(newName); // Store the exact name as entered
+    const exactName = e.target.value; // Store exact input name
+    setPlayerName(exactName);
     
-    if (!newName.trim()) {
+    if (!exactName.trim()) {
       setNameError(null);
       localStorage.removeItem('pokemonGamePlayerName');
       return;
     }
     
-    debouncedCheckName(newName);
+    debouncedCheckName(exactName);
   }, [debouncedCheckName]);
 
   // Add isRestarting state
@@ -935,8 +960,16 @@ const PokemonGame = () => {
   const startGame = async (isHardMode: boolean) => {
     if (!playerName) return;
     
-    const isAvailable = await checkNameAvailability(playerName);
+    const exactName = playerName.trim(); // Store exact input name
+    const isAvailable = await checkNameAvailability(exactName);
     if (!isAvailable) return;
+    
+    // If it's a new user (different from saved name), clean up localStorage
+    const savedName = localStorage.getItem('pokemonGamePlayerName');
+    if (savedName !== exactName) {
+      localStorage.clear();
+      localStorage.setItem('pokemonGamePlayerName', exactName);
+    }
     
     // Ensure we're in restarting state
     setIsRestarting(true);
@@ -960,13 +993,6 @@ const PokemonGame = () => {
     
     // Clean up all audio
     cleanupAllAudio();
-    
-    // If it's a new user (different from saved name), clean up localStorage
-    const savedName = localStorage.getItem('pokemonGamePlayerName');
-    if (savedName !== playerName) {
-      localStorage.clear();
-      localStorage.setItem('pokemonGamePlayerName', playerName);
-    }
     
     // Stop any existing timers
     if (timerInterval.current) {
