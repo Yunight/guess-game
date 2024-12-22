@@ -10,6 +10,7 @@ import { GameOverDialog } from './GameOverDialog';
 import { Generation, Pokemon, Rankings } from '@/components/pokemon-game/types';
 import { useLocalStorage } from '@/hooks/useLocalStorage';
 import { useTranslation } from 'react-i18next';
+import { auth } from '../../firebase';
 
 const GENERATIONS: Generation[] = [
   { name: '1ère Génération', startId: 1, endId: 151 },
@@ -102,7 +103,14 @@ const PokemonGame = () => {
   const trainHornRef = useRef<HTMLAudioElement | null>(null);
   const lowLifeRef = useRef<HTMLAudioElement | null>(null);
   const isHandlingGameOverRef = useRef<{ timestamp: number } | null>(null);
-  const canStartGame = Boolean(playerName && !nameError && !isCheckingName);
+  // Track if the name came from auth
+  const [isAuthName, setIsAuthName] = useState(false);
+  const savedName = localStorage.getItem('pokemonGamePlayerName');
+  const canStartGame = Boolean(
+    (playerName && !nameError && !isCheckingName) || 
+    (savedName && playerName === savedName) ||
+    (playerName && isAuthName)
+  );
   
   // Add sound URLs as constants at the top of the component
   const CORRECT_SOUND_URL = '/sounds/pkm_level_up.mp3';
@@ -751,7 +759,7 @@ const PokemonGame = () => {
   const handleGameOver = useCallback(async () => {
     console.log('🎮 handleGameOver called, gameOver state:', gameOver);
     if (gameOver) {
-      console.log('⏹️ Game already over, returning');
+      console.log('️ Game already over, returning');
       return;
     }
     if (isHandlingGameOverRef.current) {
@@ -898,14 +906,25 @@ const PokemonGame = () => {
       return false;
     }
 
-    // If it's the user's saved name, allow it
-    const savedName = localStorage.getItem('pokemonGamePlayerName');
-    if (savedName === storedName) {
+    // If user is authenticated and this is their name, allow it immediately
+    const currentUser = auth.currentUser;
+    if (currentUser?.displayName === name) {
       setNameError(null);
+      setIsCheckingName(false);
       return true;
     }
 
+    // If it's the user's saved name and they're not authenticated, still allow it
+    const savedName = localStorage.getItem('pokemonGamePlayerName');
+    if (savedName === storedName && !currentUser) {
+      setNameError(null);
+      setIsCheckingName(false);
+      return true;
+    }
+
+    // Only set isCheckingName to true for new names
     setIsCheckingName(true);
+
     try {
       // Check across all generations using stored format
       for (const gen of GENERATIONS) {
@@ -939,10 +958,12 @@ const PokemonGame = () => {
     [checkNameAvailability]
   );
 
-  // Update handlePlayerNameChange to preserve exact name format
+  // Update handlePlayerNameChange to only reset auth state for manual changes
   const handlePlayerNameChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    const exactName = e.target.value; // Store exact input name
+    const exactName = e.target.value;
     setPlayerName(exactName);
+    // Only reset auth state for manual changes
+    setIsAuthName(false);
     
     if (!exactName.trim()) {
       setNameError(null);
@@ -1141,17 +1162,38 @@ const PokemonGame = () => {
     const savedName = localStorage.getItem('pokemonGamePlayerName');
     if (savedName) {
       setPlayerName(savedName);
-      setNameError(null); // Clear any errors since this is a valid saved name
-      // Validate the name immediately to ensure it's available
+      setNameError(null);
+      setIsAuthName(true); // Set auth name state for saved names
+      // For saved names, we don't need to set isCheckingName to true
+      // Just validate silently in the background
       checkNameAvailability(savedName).then(isAvailable => {
         if (!isAvailable) {
           localStorage.removeItem('pokemonGamePlayerName');
           setPlayerName('');
           setNameError('Ce nom est déjà utilisé. Veuillez en choisir un autre.');
+          setIsAuthName(false);
         }
+      }).catch(() => {
+        // If check fails, still allow using the saved name
+        setNameError(null);
       });
     }
   }, [checkNameAvailability]);
+
+  // Modify the auth name effect to be more immediate
+  useEffect(() => {
+    const savedName = localStorage.getItem('pokemonGamePlayerName');
+    if (playerName) {
+      // If we have a player name, treat it as auth name initially
+      setIsAuthName(true);
+      if (playerName !== savedName) {
+        // If it's a new name, save it
+        localStorage.setItem('pokemonGamePlayerName', playerName);
+      }
+    } else {
+      setIsAuthName(false);
+    }
+  }, [playerName]);
 
   const handleGenerationSelect = (generation: Generation) => {
     setSelectedGeneration(generation);
@@ -1278,6 +1320,28 @@ const PokemonGame = () => {
       lowLifeRef.current = null;
     }
   }, [showHypeTrain, isMuted, isHardMode, guessTimeLeft]);
+
+  // Add effect to handle auth state changes
+  useEffect(() => {
+    const unsubscribe = auth.onAuthStateChanged((user) => {
+      if (user?.displayName) {
+        setPlayerName(user.displayName);
+        setIsAuthName(true);
+        setNameError(null);
+        setIsCheckingName(false);
+        localStorage.setItem('pokemonGamePlayerName', user.displayName);
+      } else {
+        // If no user, only clear if we were using an auth name
+        if (isAuthName) {
+          setPlayerName('');
+          setIsAuthName(false);
+          localStorage.removeItem('pokemonGamePlayerName');
+        }
+      }
+    });
+
+    return () => unsubscribe();
+  }, [isAuthName]);
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-blue-100 to-blue-50 p-4 flex items-start sm:items-center justify-center font-oswald">
