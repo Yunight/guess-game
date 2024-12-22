@@ -914,14 +914,6 @@ const PokemonGame = () => {
       return true;
     }
 
-    // If it's the user's saved name and they're not authenticated, still allow it
-    const savedName = localStorage.getItem('pokemonGamePlayerName');
-    if (savedName === storedName && !currentUser) {
-      setNameError(null);
-      setIsCheckingName(false);
-      return true;
-    }
-
     // Only set isCheckingName to true for new names
     setIsCheckingName(true);
 
