@@ -101,6 +101,7 @@ const PokemonGame = () => {
   const wrongAudioRef = useRef<HTMLAudioElement | null>(null);
   const trainHornRef = useRef<HTMLAudioElement | null>(null);
   const lowLifeAudioRef = useRef<HTMLAudioElement | null>(null);
+  const isHandlingGameOverRef = useRef<boolean>(false);
   const canStartGame = Boolean(playerName && !nameError && !isCheckingName);
   
   // Add sound URLs as constants at the top of the component
@@ -143,15 +144,19 @@ const PokemonGame = () => {
   });
 
   const calculateRewardPokemon = useCallback(async (score: number) => {
+    console.log('🎯 calculateRewardPokemon called with score:', score);
     if (!allPokemonData || allPokemonData.length === 0) {
+      console.log('❌ No Pokemon data available');
       return { pokemon: undefined, isLoading: false };
     }
 
     try {
       // Find the appropriate tier based on score
       const tier = POKEMON_REWARDS.find(tier => score >= tier.minScore);
+      console.log('🏆 Found tier:', tier ? `minScore: ${tier.minScore}` : 'No tier found');
 
       if (!tier) {
+        console.log('🎲 Selecting random basic Pokemon');
         // If no tier found, return a random basic Pokémon
         const basicPokemon = allPokemonData.filter(pokemon => 
           pokemon.id >= selectedGeneration.startId && 
@@ -161,6 +166,7 @@ const PokemonGame = () => {
         );
         
         if (basicPokemon.length === 0) {
+          console.log('❌ No basic Pokemon found');
           return {
             pokemon: undefined,
             isLoading: false
@@ -168,6 +174,7 @@ const PokemonGame = () => {
         }
         
         const randomBasic = basicPokemon[Math.floor(Math.random() * basicPokemon.length)];
+        console.log('✅ Selected basic Pokemon:', randomBasic.englishName);
         
         return {
           pokemon: randomBasic,
@@ -175,17 +182,21 @@ const PokemonGame = () => {
         };
       }
 
+      console.log('🔍 Filtering eligible Pokemon for tier');
       // Filter Pokémon based on the tier condition and selected generation
       const eligiblePokemon = allPokemonData.filter(pokemon => 
         tier.condition(pokemon) && 
         pokemon.id >= selectedGeneration.startId && 
         pokemon.id <= selectedGeneration.endId
       );
+      console.log('📊 Found eligible Pokemon:', eligiblePokemon.length);
 
       // If no eligible Pokémon found in the current tier, try the next lower tier
       if (eligiblePokemon.length === 0) {
+        console.log('⬇️ No eligible Pokemon in current tier, trying lower tiers');
         const lowerTiers = POKEMON_REWARDS.slice(POKEMON_REWARDS.indexOf(tier) + 1);
         for (const lowerTier of lowerTiers) {
+          console.log('🔄 Trying lower tier with minScore:', lowerTier.minScore);
           const lowerTierPokemon = allPokemonData.filter(pokemon => 
             lowerTier.condition(pokemon) && 
             pokemon.id >= selectedGeneration.startId && 
@@ -194,6 +205,7 @@ const PokemonGame = () => {
           
           if (lowerTierPokemon.length > 0) {
             const randomPokemon = lowerTierPokemon[Math.floor(Math.random() * lowerTierPokemon.length)];
+            console.log('✅ Selected Pokemon from lower tier:', randomPokemon.englishName);
             
             return {
               pokemon: randomPokemon,
@@ -202,6 +214,7 @@ const PokemonGame = () => {
           }
         }
         
+        console.log('⚠️ No Pokemon found in lower tiers, selecting random from generation');
         // If still no Pokémon found, return a random Pokémon from the generation
         const generationPokemon = allPokemonData.filter(pokemon => 
           pokemon.id >= selectedGeneration.startId && 
@@ -209,6 +222,7 @@ const PokemonGame = () => {
         );
         
         const randomPokemon = generationPokemon[Math.floor(Math.random() * generationPokemon.length)];
+        console.log('✅ Selected random Pokemon from generation:', randomPokemon.englishName);
         
         return {
           pokemon: randomPokemon,
@@ -218,12 +232,14 @@ const PokemonGame = () => {
       
       // Pick a random Pokémon from the eligible ones
       const randomPokemon = eligiblePokemon[Math.floor(Math.random() * eligiblePokemon.length)];
+      console.log('✅ Selected Pokemon from eligible tier:', randomPokemon.englishName);
       
       return {
         pokemon: randomPokemon,
         isLoading: false
       };
-    } catch {
+    } catch (error) {
+      console.error('❌ Error calculating reward Pokemon:', error);
       return {
         pokemon: undefined,
         isLoading: false
@@ -785,109 +801,129 @@ const PokemonGame = () => {
   }, [selectedGeneration, playerName, setBestTime]);
 
   const handleGameOver = useCallback(async () => {
-    if (gameOver) return;
-    
-    // Show the correct Pokemon first
-    setIsCorrect(true);
-    
-    // Wait for the reveal animation and give time to see the name
-    await new Promise(resolve => setTimeout(resolve, 3000));
-
-    // Update states
-    setIsGameActive(false);
-    setGameOver(true);
-    
-    // Calculate reward Pokemon only if not all Pokémon were found
-    if (remainingPokemon.length > 0) {
-      // Set loading state first
-      setRewardPokemon({ pokemon: undefined, isLoading: true });
-      // Calculate reward Pokemon only once
-      const rewardResult = await calculateRewardPokemon(score);
-      // Update the reward Pokemon state
-      setRewardPokemon(rewardResult);
+    console.log('🎮 handleGameOver called, gameOver state:', gameOver);
+    if (gameOver || isHandlingGameOverRef.current) {
+      console.log('⏹️ Game already over or being handled, returning');
+      return;
     }
     
-    // Small delay to ensure state updates are processed
-    await new Promise(resolve => setTimeout(resolve, 50));
+    // Set the ref to true to prevent multiple executions
+    isHandlingGameOverRef.current = true;
     
-    // Then handle audio
-    if (!isMuted) {
-      cleanupAllAudio();
+    try {
+      // Show the correct Pokemon first
+      setIsCorrect(true);
+      console.log('✅ Set isCorrect to true');
+      
+      // Wait for the reveal animation and give time to see the name
+      await new Promise(resolve => setTimeout(resolve, 3000));
+      console.log('⏱️ Waited for reveal animation');
 
-      // Play reward Pokemon cry first if available and not all Pokémon were found
-      if (rewardPokemon.pokemon && remainingPokemon.length > 0) {
-        const [latestCry, legacyCry] = rewardPokemon.pokemon.cryUrl.split('|');
-        const cryAudio = new Audio(latestCry || legacyCry);
-        try {
-          await cryAudio.play();
-          // Wait for cry to finish
-          await new Promise(resolve => setTimeout(resolve, 1000));
-        } catch {
-          // Ignore audio play errors
-        }
-      }
-
-      // Then play victory sound
-      victoryAudioRef.current = new Audio(VICTORY_SOUND_URL);
-      try {
-        await victoryAudioRef.current.play();
-      } catch {
-        // Ignore audio play errors
-      }
-    }
-
-    // Only update best score and save to rankings in Hard mode
-    if (isHardMode) {
-      if (score > bestScore) {
-        setBestScore(score);
+      // Update states
+      setIsGameActive(false);
+      setGameOver(true);
+      console.log('🔄 Updated game states: isGameActive=false, gameOver=true');
+      
+      // Calculate reward Pokemon only if not all Pokémon were found and only once
+      if (remainingPokemon.length > 0 && !rewardPokemon.pokemon) {
+        console.log('🎁 Calculating reward Pokemon, remaining Pokemon:', remainingPokemon.length);
+        // Set loading state first
+        setRewardPokemon({ pokemon: undefined, isLoading: true });
+        console.log('⌛ Set reward Pokemon loading state');
+        // Calculate reward Pokemon only once
+        const rewardResult = await calculateRewardPokemon(score);
+        console.log('✨ Calculated reward Pokemon:', rewardResult.pokemon?.englishName);
+        // Update the reward Pokemon state
+        setRewardPokemon(rewardResult);
+        console.log('💾 Updated reward Pokemon state');
+      } else {
+        console.log('⏭️ Skipping reward Pokemon calculation:', {
+          remainingPokemon: remainingPokemon.length,
+          hasRewardPokemon: !!rewardPokemon.pokemon
+        });
       }
       
-      if (score > 0 && playerName) {
-        try {
-          const collectionName = `rankings_gen${selectedGeneration.startId}_${selectedGeneration.endId}`;
-          const rankingsRef = collection(db, collectionName);
-          const q = query(rankingsRef, where('name', '==', playerName));
-          const querySnapshot = await getDocs(q);
-          
-          const playerData = {
-            name: playerName,
-            score: score,
-            time: totalTimeElapsed,
-            timestamp: serverTimestamp()
-          };
+      // Small delay to ensure state updates are processed
+      await new Promise(resolve => setTimeout(resolve, 50));
+      console.log('⏱️ Waited for state updates');
+      
+      // Then handle audio
+      if (!isMuted) {
+        cleanupAllAudio();
+        console.log('🔊 Cleaned up audio');
 
-          if (!querySnapshot.empty) {
-            const existingDoc = querySnapshot.docs[0];
-            const existingScore = existingDoc.data().score;
-            const existingTime = existingDoc.data().time;
-            
-            if (score > existingScore || (score === existingScore && totalTimeElapsed < existingTime)) {
-              await updateDoc(existingDoc.ref, playerData);
-              if (totalTimeElapsed < existingTime) {
-                setBestTime(totalTimeElapsed);
-              }
-            }
-          } else {
-            await addDoc(rankingsRef, playerData);
-            setBestTime(totalTimeElapsed);
+        // Play reward Pokemon cry first if available and not all Pokémon were found
+        if (rewardPokemon.pokemon && remainingPokemon.length > 0) {
+          console.log('🎵 Playing reward Pokemon cry');
+          const [latestCry, legacyCry] = rewardPokemon.pokemon.cryUrl.split('|');
+          const cryAudio = new Audio(latestCry || legacyCry);
+          try {
+            await cryAudio.play();
+            console.log('✅ Played reward Pokemon cry');
+            // Wait for cry to finish
+            await new Promise(resolve => setTimeout(resolve, 1000));
+          } catch (error) {
+            console.error('❌ Error playing reward Pokemon cry:', error);
           }
-          
-          await fetchSelectedRankings();
-          
-          // Get updated ranking position
-          const rankingsQuery = query(rankingsRef, orderBy('score', 'desc'));
-          const allRankings = await getDocs(rankingsQuery);
-          const userRankingPosition = allRankings.docs.findIndex(doc => doc.data().name === playerName) + 1;
-          setUserRanking(userRankingPosition);
-        } catch {
-          // Ignore database errors
+        }
+
+        // Then play victory sound
+        victoryAudioRef.current = new Audio(VICTORY_SOUND_URL);
+        try {
+          await victoryAudioRef.current.play();
+          console.log('🎺 Played victory sound');
+        } catch (error) {
+          console.error('❌ Error playing victory sound:', error);
         }
       }
-    } else {
-      // In Chill mode, just display the score without saving
-      setUserRanking(null);
+
+      // Only update best score and save to rankings in Hard mode
+      if (isHardMode) {
+        if (score > bestScore) {
+          setBestScore(score);
+        }
+        
+        if (score > 0 && playerName) {
+          try {
+            const collectionName = `rankings_gen${selectedGeneration.startId}_${selectedGeneration.endId}`;
+            const rankingsRef = collection(db, collectionName);
+            const q = query(rankingsRef, where('name', '==', playerName));
+            const querySnapshot = await getDocs(q);
+            
+            const playerData = {
+              name: playerName,
+              score: score,
+              time: totalTimeElapsed,
+              timestamp: serverTimestamp()
+            };
+
+            if (!querySnapshot.empty) {
+              const existingDoc = querySnapshot.docs[0];
+              const existingScore = existingDoc.data().score;
+              const existingTime = existingDoc.data().time;
+              
+              if (score > existingScore || (score === existingScore && totalTimeElapsed < existingTime)) {
+                await updateDoc(existingDoc.ref, playerData);
+                if (totalTimeElapsed < existingTime) {
+                  setBestTime(totalTimeElapsed);
+                }
+              }
+            } else {
+              await addDoc(rankingsRef, playerData);
+              setBestTime(totalTimeElapsed);
+            }
+            
+            await fetchSelectedRankings();
+          } catch {
+            // Ignore database errors
+          }
+        }
+      }
+    } finally {
+      // Reset the ref in finally block to ensure it's always reset
+      isHandlingGameOverRef.current = false;
     }
-  }, [score, playerName, selectedGeneration, totalTimeElapsed, gameOver, fetchSelectedRankings, bestScore, setBestScore, setBestTime, isMuted, calculateRewardPokemon, isHardMode, rewardPokemon, remainingPokemon.length]);
+  }, [gameOver, score, remainingPokemon.length, rewardPokemon.pokemon, isMuted, isHardMode, bestScore, playerName, selectedGeneration.startId, selectedGeneration.endId, totalTimeElapsed, fetchSelectedRankings, calculateRewardPokemon]);
 
   // Update the effect to use both functions
   useEffect(() => {

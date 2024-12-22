@@ -99,6 +99,8 @@ export const GameOverDialog: FC<GameOverDialogProps> = ({
   };
 
   useEffect(() => {
+    let isSubscribed = true;
+    
     const playPokemonCry = async () => {
       if (!rewardPokemon.pokemon) {
         console.log('❌ No reward Pokémon available');
@@ -125,6 +127,13 @@ export const GameOverDialog: FC<GameOverDialogProps> = ({
       try {
         // Get cry URL from cache or PokeAPI
         const cries = await getCachedCryUrl(rewardPokemon.pokemon.id);
+        
+        // Check if we're still subscribed before continuing
+        if (!isSubscribed) {
+          console.log('🛑 Component unmounted, skipping audio playback');
+          return;
+        }
+        
         const [latestCry, legacyCry] = [cries.latest, cries.legacy];
         
         console.log('🔊 Playing cry URL:', latestCry);
@@ -132,10 +141,17 @@ export const GameOverDialog: FC<GameOverDialogProps> = ({
         let hasError = false;
         
         // Add event listeners for debugging
-        cryAudio.addEventListener('loadstart', () => console.log('🎵 Started loading audio'));
-        cryAudio.addEventListener('canplay', () => console.log('✅ Audio can start playing'));
-        cryAudio.addEventListener('loadeddata', () => console.log('✅ Audio data loaded successfully'));
+        cryAudio.addEventListener('loadstart', () => {
+          if (isSubscribed) console.log('🎵 Started loading audio');
+        });
+        cryAudio.addEventListener('canplay', () => {
+          if (isSubscribed) console.log('✅ Audio can start playing');
+        });
+        cryAudio.addEventListener('loadeddata', () => {
+          if (isSubscribed) console.log('✅ Audio data loaded successfully');
+        });
         cryAudio.addEventListener('error', (e) => {
+          if (!isSubscribed) return;
           hasError = true;
           const audio = e.currentTarget as HTMLAudioElement;
           console.error('❌ Audio loading error:', {
@@ -152,14 +168,16 @@ export const GameOverDialog: FC<GameOverDialogProps> = ({
         console.log('⏳ Attempting to play audio...');
         await cryAudio.play();
         
-        // Only set lastPlayedId if there was no error
-        if (!hasError) {
+        // Only set lastPlayedId if there was no error and we're still subscribed
+        if (!hasError && isSubscribed) {
           setLastPlayedId(rewardPokemon.pokemon.id);
           console.log('✅ Reward Pokemon cry played successfully');
-        } else {
+        } else if (hasError) {
           console.log('❌ Not setting lastPlayedId due to error');
         }
       } catch (err) {
+        if (!isSubscribed) return;
+        
         const error = err as Error;
         console.error('❌ Error playing reward Pokemon cry:', {
           name: error.name,
@@ -173,6 +191,12 @@ export const GameOverDialog: FC<GameOverDialogProps> = ({
     };
 
     playPokemonCry();
+    
+    // Cleanup function
+    return () => {
+      isSubscribed = false;
+      console.log('🧹 Cleaning up GameOverDialog effect');
+    };
   }, [rewardPokemon.pokemon, isMuted, lastPlayedId]);
 
   const handleShare = async () => {
@@ -308,7 +332,7 @@ export const GameOverDialog: FC<GameOverDialogProps> = ({
       ? `${genNumber}ère Génération`
       : `Generation ${genNumber}`;
 
-    const shinyText = rewardPokemon.pokemon?.isShiny ? (i18n.language === 'fr' ? '✨ CHROMATIQUE ✨' : '✨ SHINY ���') : '';
+    const shinyText = rewardPokemon.pokemon?.isShiny ? (i18n.language === 'fr' ? '✨ CHROMATIQUE ✨' : '✨ SHINY ✨') : '';
     const pokemonName = i18n.language === 'fr' 
       ? (rewardPokemon.pokemon?.frenchName ? rewardPokemon.pokemon.frenchName.charAt(0).toUpperCase() + rewardPokemon.pokemon.frenchName.slice(1) : '')
       : (rewardPokemon.pokemon?.englishName ? rewardPokemon.pokemon.englishName.charAt(0).toUpperCase() + rewardPokemon.pokemon.englishName.slice(1) : '');
