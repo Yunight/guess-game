@@ -100,8 +100,8 @@ const PokemonGame = () => {
   const correctAudioRef = useRef<HTMLAudioElement | null>(null);
   const wrongAudioRef = useRef<HTMLAudioElement | null>(null);
   const trainHornRef = useRef<HTMLAudioElement | null>(null);
-  const lowLifeAudioRef = useRef<HTMLAudioElement | null>(null);
-  const isHandlingGameOverRef = useRef<boolean>(false);
+  const lowLifeRef = useRef<HTMLAudioElement | null>(null);
+  const isHandlingGameOverRef = useRef<{ timestamp: number } | null>(null);
   const canStartGame = Boolean(playerName && !nameError && !isCheckingName);
   
   // Add sound URLs as constants at the top of the component
@@ -109,7 +109,7 @@ const PokemonGame = () => {
   const WRONG_SOUND_URL = '/sounds/bump_wall.mp3';
   const VICTORY_SOUND_URL = '/sounds/battle_win.mp3';
   const TRAIN_HORN_URL = '/sounds/train_horn_bell.mp3';
-  const LOW_LIFE_URL = '/sounds/low_life.mp3';
+  const LOW_LIFE_SOUND_URL = '/sounds/low_life.mp3';
   
   // Use cached Pokemon data or fetch from API
   const { data: apiPokemonNames = [] } = useGetAllPokemonNamesQuery({ maxHypeChain }, {
@@ -403,97 +403,14 @@ const PokemonGame = () => {
     }
   };
 
-  // Add this state near other state declarations
-  const [isLowLifeAudioReady, setIsLowLifeAudioReady] = useState(false);
-  const [isLowLifePlaying, setIsLowLifePlaying] = useState(false);
-
-  // Add this ref near other refs
-  const isLowLifeInitialized = useRef(false);
-
-  // Update the audio effect
-  useEffect(() => {
-    // Only initialize once
-    if (!isLowLifeInitialized.current && !lowLifeAudioRef.current) {
-      lowLifeAudioRef.current = new Audio(LOW_LIFE_URL);
-      lowLifeAudioRef.current.volume = 0.5;
-      lowLifeAudioRef.current.loop = true;
-      
-      const handleCanPlay = () => setIsLowLifeAudioReady(true);
-      const handleError = () => {
-        setIsLowLifeAudioReady(false);
-        setIsLowLifePlaying(false);
-      };
-      
-      lowLifeAudioRef.current.addEventListener('canplaythrough', handleCanPlay);
-      lowLifeAudioRef.current.addEventListener('error', handleError);
-      lowLifeAudioRef.current.load();
-      
-      isLowLifeInitialized.current = true;
-    }
-    
-    // Handle low life sound playing
-    const shouldPlayLowLife = isHardMode && 
-                            guessTimeLeft <= 5 && 
-                            guessTimeLeft > 0 && 
-                            !isMuted &&
-                            !gameOver &&
-                            isCorrect === null;
-    
-    const shouldStopLowLife = guessTimeLeft <= 0 || isCorrect !== null || gameOver || !isHardMode;
-    
-    if (shouldPlayLowLife && lowLifeAudioRef.current && !isLowLifePlaying && isLowLifeAudioReady) {
-      console.log('🔊 Starting low life sound at', guessTimeLeft, 'seconds');
-      lowLifeAudioRef.current.currentTime = 0;
-      const playPromise = lowLifeAudioRef.current.play();
-      
-      if (playPromise !== undefined) {
-        playPromise.then(() => {
-          setIsLowLifePlaying(true);
-        }).catch(() => {
-          setIsLowLifePlaying(false);
-        });
-      }
-    } else if (lowLifeAudioRef.current && shouldStopLowLife) {
-      console.log('🔇 Stopping low life sound, reason:', {
-        timeUp: guessTimeLeft <= 0,
-        correctAnswer: isCorrect !== null,
-        gameOver,
-        notHardMode: !isHardMode
-      });
-      lowLifeAudioRef.current.pause();
-      lowLifeAudioRef.current.currentTime = 0;
-      setIsLowLifePlaying(false);
-    }
-  }, [isHardMode, guessTimeLeft, isMuted, isCorrect, isLowLifeAudioReady, isLowLifePlaying, gameOver]);
-
-  // Add a separate cleanup effect
-  useEffect(() => {
-    return () => {
-      if (lowLifeAudioRef.current) {
-        lowLifeAudioRef.current.pause();
-        lowLifeAudioRef.current.currentTime = 0;
-        lowLifeAudioRef.current = null;
-        isLowLifeInitialized.current = false;
-        setIsLowLifePlaying(false);
-        setIsLowLifeAudioReady(false);
-      }
-    };
-  }, []);
-
   // Update cleanupAllAudio
   const cleanupAllAudio = () => {
-    [victoryAudioRef, correctAudioRef, wrongAudioRef, trainHornRef].forEach(ref => {
+    [victoryAudioRef, correctAudioRef, wrongAudioRef, trainHornRef, lowLifeRef].forEach(ref => {
       if (ref.current) {
         ref.current.pause();
         ref.current.currentTime = 0;
       }
     });
-    
-    if (lowLifeAudioRef.current) {
-      lowLifeAudioRef.current.pause();
-      lowLifeAudioRef.current.currentTime = 0;
-      setIsLowLifePlaying(false);
-    }
   };
 
   // Add cleanup effect for train horn sound when component unmounts
@@ -811,13 +728,24 @@ const PokemonGame = () => {
 
   const handleGameOver = useCallback(async () => {
     console.log('🎮 handleGameOver called, gameOver state:', gameOver);
-    if (gameOver || isHandlingGameOverRef.current) {
-      console.log('⏹️ Game already over or being handled, returning');
+    if (gameOver) {
+      console.log('⏹️ Game already over, returning');
       return;
     }
+    if (isHandlingGameOverRef.current) {
+      console.log('⚠️ Previous game over handling detected, checking timeout...');
+      const now = Date.now();
+      if (!isHandlingGameOverRef.current.timestamp || now - isHandlingGameOverRef.current.timestamp > 10000) {
+        console.log('🔄 Resetting stuck game over state');
+        isHandlingGameOverRef.current = null;
+      } else {
+        console.log('⏹️ Game over is being handled, returning');
+        return;
+      }
+    }
     
-    // Set the ref to true to prevent multiple executions
-    isHandlingGameOverRef.current = true;
+    // Set the ref with timestamp to track how long we've been handling
+    isHandlingGameOverRef.current = { timestamp: Date.now() };
     
     try {
       // Show the correct Pokemon first
@@ -930,7 +858,8 @@ const PokemonGame = () => {
       }
     } finally {
       // Reset the ref in finally block to ensure it's always reset
-      isHandlingGameOverRef.current = false;
+      isHandlingGameOverRef.current = null;
+      console.log('🧹 Reset game over handling state');
     }
   }, [gameOver, score, remainingPokemon.length, rewardPokemon.pokemon, isMuted, isHardMode, bestScore, playerName, selectedGeneration.startId, selectedGeneration.endId, totalTimeElapsed, fetchSelectedRankings, calculateRewardPokemon]);
 
@@ -1290,7 +1219,23 @@ const PokemonGame = () => {
       trainHornRef.current.currentTime = 0;
       trainHornRef.current = null;
     }
-  }, [showHypeTrain]);
+
+    // Handle low life sound
+    if (isHardMode && guessTimeLeft <= 5 && guessTimeLeft > 0 && !isMuted && !lowLifeRef.current) {
+      lowLifeRef.current = new Audio(LOW_LIFE_SOUND_URL);
+      lowLifeRef.current.volume = 0.1;
+      lowLifeRef.current.loop = true;
+      lowLifeRef.current.play().catch(() => {
+        if (lowLifeRef.current) {
+          lowLifeRef.current = null;
+        }
+      });
+    } else if ((guessTimeLeft > 5 || guessTimeLeft <= 0 || !isHardMode) && lowLifeRef.current) {
+      lowLifeRef.current.pause();
+      lowLifeRef.current.currentTime = 0;
+      lowLifeRef.current = null;
+    }
+  }, [showHypeTrain, isMuted, isHardMode, guessTimeLeft]);
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-blue-100 to-blue-50 p-4 flex items-start sm:items-center justify-center font-oswald">
