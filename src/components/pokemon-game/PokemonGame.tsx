@@ -387,27 +387,118 @@ const PokemonGame = () => {
     }
   };
 
-  // Add a function to clean up all audio instances
+  // Add this state near other state declarations
+  const [isLowLifeAudioReady, setIsLowLifeAudioReady] = useState(false);
+  const [isLowLifePlaying, setIsLowLifePlaying] = useState(false);
+
+  // Add this ref near other refs
+  const isLowLifeInitialized = useRef(false);
+
+  // Update the audio effect
+  useEffect(() => {
+    // Only initialize once
+    if (!isLowLifeInitialized.current && !lowLifeAudioRef.current) {
+      console.log('🔊 Initializing Low Life Sound');
+      lowLifeAudioRef.current = new Audio(LOW_LIFE_URL);
+      lowLifeAudioRef.current.volume = 0.5;
+      lowLifeAudioRef.current.loop = true;
+      
+      const handleCanPlay = () => {
+        console.log('✅ Low Life Sound is ready to play');
+        setIsLowLifeAudioReady(true);
+      };
+      
+      const handleError = (e: ErrorEvent) => {
+        console.error('❌ Low Life Sound initialization error:', e);
+        setIsLowLifeAudioReady(false);
+        setIsLowLifePlaying(false);
+      };
+      
+      lowLifeAudioRef.current.addEventListener('canplaythrough', handleCanPlay);
+      lowLifeAudioRef.current.addEventListener('error', handleError);
+      lowLifeAudioRef.current.load();
+      
+      isLowLifeInitialized.current = true;
+    }
+    
+    // Handle low life sound playing
+    const shouldPlayLowLife = isHardMode && 
+                            guessTimeLeft <= 5 && 
+                            guessTimeLeft > 0 && 
+                            !isMuted;
+    
+    const shouldStopLowLife = guessTimeLeft <= 0 || isCorrect === true;
+    
+    console.log('🔊 Low Life Sound Check:', {
+      shouldPlay: shouldPlayLowLife,
+      shouldStop: shouldStopLowLife,
+      isPlaying: isLowLifePlaying,
+      conditions: {
+        isHardMode,
+        guessTimeLeft,
+        isMuted,
+        isCorrect,
+        isReady: isLowLifeAudioReady
+      }
+    });
+    
+    if (shouldPlayLowLife && lowLifeAudioRef.current && !isLowLifePlaying && isLowLifeAudioReady) {
+      console.log('🎵 Starting Low Life Sound');
+      lowLifeAudioRef.current.currentTime = 0;
+      const playPromise = lowLifeAudioRef.current.play();
+      
+      if (playPromise !== undefined) {
+        playPromise.then(() => {
+          console.log('✅ Low Life Sound started playing successfully');
+          setIsLowLifePlaying(true);
+        }).catch(error => {
+          console.error('❌ Error playing Low Life Sound:', error);
+          setIsLowLifePlaying(false);
+        });
+      }
+    } else if (lowLifeAudioRef.current && shouldStopLowLife) {
+      console.log('⏹️ Stopping Low Life Sound, reason:', {
+        timerZero: guessTimeLeft <= 0,
+        correctAnswer: isCorrect === true
+      });
+      lowLifeAudioRef.current.pause();
+      lowLifeAudioRef.current.currentTime = 0;
+      setIsLowLifePlaying(false);
+    }
+  }, [isHardMode, guessTimeLeft, isMuted, isCorrect, isLowLifeAudioReady, isLowLifePlaying]);
+
+  // Add a separate cleanup effect
+  useEffect(() => {
+    return () => {
+      if (lowLifeAudioRef.current) {
+        console.log('🧹 Final cleanup of Low Life Sound');
+        lowLifeAudioRef.current.pause();
+        lowLifeAudioRef.current.currentTime = 0;
+        lowLifeAudioRef.current = null;
+        isLowLifeInitialized.current = false;
+        setIsLowLifePlaying(false);
+        setIsLowLifeAudioReady(false);
+      }
+    };
+  }, []); // Empty dependency array for component unmount only
+
+  // Update cleanupAllAudio
   const cleanupAllAudio = () => {
-    // Clean up victory audio
-    if (victoryAudioRef.current) {
-      victoryAudioRef.current.pause();
-      victoryAudioRef.current.currentTime = 0;
-    }
-    // Clean up correct audio
-    if (correctAudioRef.current) {
-      correctAudioRef.current.pause();
-      correctAudioRef.current.currentTime = 0;
-    }
-    // Clean up wrong audio
-    if (wrongAudioRef.current) {
-      wrongAudioRef.current.pause();
-      wrongAudioRef.current.currentTime = 0;
-    }
-    // Clean up train horn audio
-    if (trainHornRef.current) {
-      trainHornRef.current.pause();
-      trainHornRef.current.currentTime = 0;
+    console.log('🧹 Cleaning up all audio');
+    
+    [victoryAudioRef, correctAudioRef, wrongAudioRef, trainHornRef].forEach(ref => {
+      if (ref.current) {
+        ref.current.pause();
+        ref.current.currentTime = 0;
+      }
+    });
+    
+    // Special handling for low life audio - only pause, don't destroy
+    if (lowLifeAudioRef.current) {
+      console.log('🧹 Pausing Low Life Sound in cleanupAllAudio');
+      lowLifeAudioRef.current.pause();
+      lowLifeAudioRef.current.currentTime = 0;
+      setIsLowLifePlaying(false);
     }
   };
 
@@ -418,18 +509,6 @@ const PokemonGame = () => {
         trainHornRef.current.pause();
         trainHornRef.current.currentTime = 0;
         trainHornRef.current = null;
-      }
-    };
-  }, []);
-
-  // Add cleanup effect for low life sound when component unmounts
-  useEffect(() => {
-    return () => {
-      if (lowLifeAudioRef.current) {
-        console.log('🧹 Cleaning up Low Life Sound on component unmount');
-        lowLifeAudioRef.current.pause();
-        lowLifeAudioRef.current.currentTime = 0;
-        lowLifeAudioRef.current = null;
       }
     };
   }, []);
@@ -467,91 +546,6 @@ const PokemonGame = () => {
       trainHornRef.current = null;
     }
   }, [showHypeTrain]);
-
-  // Add separate effect for low life sound
-  useEffect(() => {
-    const shouldPlayLowLife = isHardMode && guessTimeLeft === 5 && !isMuted && !gameOver && isCorrect === null;
-    console.log('🔊 Low Life Sound Check:', {
-      shouldPlay: shouldPlayLowLife,
-      isPlaying: !!lowLifeAudioRef.current,
-      conditions: {
-        isHardMode,
-        guessTimeLeft,
-        isMuted,
-        gameOver,
-        isCorrect
-      }
-    });
-    
-    let isAborted = false;  // Flag to track if audio was aborted
-    
-    // Stop the sound if it's playing and shouldn't be
-    if (!shouldPlayLowLife && lowLifeAudioRef.current) {
-      console.log('🔇 Stopping Low Life Sound - Conditions not met');
-      lowLifeAudioRef.current.pause();
-      lowLifeAudioRef.current.currentTime = 0;
-      lowLifeAudioRef.current = null;
-      return;
-    }
-    
-    if (shouldPlayLowLife && !lowLifeAudioRef.current && !isAborted) {
-      console.log('🎵 Starting Low Life Sound');
-      const audio = new Audio(LOW_LIFE_URL);
-      audio.volume = 0.5;
-      // Add event listeners for better tracking
-      audio.addEventListener('play', () => {
-        console.log('✅ Low Life Sound started playing successfully');
-      });
-      audio.addEventListener('ended', () => {
-        console.log('🏁 Low Life Sound ended naturally');
-        if (lowLifeAudioRef.current === audio) {
-          lowLifeAudioRef.current = null;
-        }
-      });
-      audio.addEventListener('error', (e) => {
-        console.log('❌ Error playing Low Life Sound:', e);
-        isAborted = e.type === 'abort';  // Set aborted flag if it was an abort error
-        if (lowLifeAudioRef.current === audio) {
-          lowLifeAudioRef.current = null;
-        }
-      });
-      audio.addEventListener('abort', () => {
-        console.log('🛑 Low Life Sound was aborted');
-        isAborted = true;
-        if (lowLifeAudioRef.current === audio) {
-          lowLifeAudioRef.current = null;
-        }
-      });
-      
-      // Set the ref before playing to ensure proper state tracking
-      lowLifeAudioRef.current = audio;
-      
-      // Try to play the sound
-      audio.play().catch((error) => {
-        console.log('❌ Error playing Low Life Sound:', error);
-        isAborted = error.name === 'AbortError';  // Set aborted flag if it was an abort error
-        if (lowLifeAudioRef.current === audio) {
-          lowLifeAudioRef.current = null;
-        }
-      });
-    }
-    
-    // Cleanup function
-    return () => {
-      if (lowLifeAudioRef.current) {
-        console.log('🧹 Cleaning up Low Life Sound in effect cleanup, triggered by:', {
-          isHardMode,
-          guessTimeLeft,
-          isMuted,
-          gameOver,
-          isCorrect
-        });
-        lowLifeAudioRef.current.pause();
-        lowLifeAudioRef.current.currentTime = 0;
-        lowLifeAudioRef.current = null;
-      }
-    };
-  }, [isHardMode, guessTimeLeft, isMuted, gameOver, isCorrect]);
 
   // Add effect to handle timer
   useEffect(() => {
