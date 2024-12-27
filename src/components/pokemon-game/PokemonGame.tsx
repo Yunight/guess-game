@@ -778,6 +778,16 @@ const PokemonGame = () => {
     isHandlingGameOverRef.current = { timestamp: Date.now() };
     
     try {
+      // Stop all timers immediately
+      if (timerInterval.current) {
+        clearInterval(timerInterval.current);
+        timerInterval.current = null;
+      }
+      if (totalTimeInterval.current) {
+        clearInterval(totalTimeInterval.current);
+        totalTimeInterval.current = null;
+      }
+
       // Show the correct Pokemon first
       setIsCorrect(true);
       console.log('✅ Set isCorrect to true');
