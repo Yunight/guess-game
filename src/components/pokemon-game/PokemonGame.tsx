@@ -282,7 +282,7 @@ const PokemonGame = () => {
       'sirfetchd': 'sirfetchd',
       'type: null': 'typenull',
       'type null': 'typenull',
-      'flabébé': 'flabebe',
+      'flabéb��': 'flabebe',
       'flabebe': 'flabebe',
       'jangmo-o': 'jangmoo',
       'jangmoo': 'jangmoo',
@@ -988,8 +988,12 @@ const PokemonGame = () => {
     if (!playerName) return;
     
     const exactName = playerName.trim(); // Store exact input name
-    const isAvailable = await checkNameAvailability(exactName);
-    if (!isAvailable) return;
+    
+    // If user is authenticated, skip name validation
+    if (!auth.currentUser) {
+      const isAvailable = await checkNameAvailability(exactName);
+      if (!isAvailable) return;
+    }
     
     // If it's a new user (different from saved name), clean up localStorage
     const savedName = localStorage.getItem('pokemonGamePlayerName');
@@ -1001,84 +1005,88 @@ const PokemonGame = () => {
     // Ensure we're in restarting state
     setIsRestarting(true);
     
-    // Reset all game states first
-    setIsHardMode(isHardMode);
-    setConsecutiveFastAnswers(0);
-    setShowHypeTrain(false);
-    setPointsEarned(0);
-    setCurrentPokemonId(null);
-    setIsCorrect(null);
-    setGuess('');
-    setSuggestions([]);
-    setShowHint(false);
-    
-    // Reset reward Pokemon state
-    setRewardPokemon({
-      pokemon: undefined,
-      isLoading: true
-    });
-    
-    // Clean up all audio
-    cleanupAllAudio();
-    
-    // Stop any existing timers
-    if (timerInterval.current) {
-      clearInterval(timerInterval.current);
-      timerInterval.current = null;
+    try {
+      // Reset all game states first
+      setIsHardMode(isHardMode);
+      setConsecutiveFastAnswers(0);
+      setShowHypeTrain(false);
+      setPointsEarned(0);
+      setCurrentPokemonId(null);
+      setIsCorrect(null);
+      setGuess('');
+      setSuggestions([]);
+      setShowHint(false);
+      
+      // Reset reward Pokemon state
+      setRewardPokemon({
+        pokemon: undefined,
+        isLoading: true
+      });
+      
+      // Clean up all audio
+      cleanupAllAudio();
+      
+      // Stop any existing timers
+      if (timerInterval.current) {
+        clearInterval(timerInterval.current);
+        timerInterval.current = null;
+      }
+      if (totalTimeInterval.current) {
+        clearInterval(totalTimeInterval.current);
+        totalTimeInterval.current = null;
+      }
+      
+      // Reset all game states
+      setScore(0);
+      // In Chill mode, set hints to Infinity, in Hard mode set to 0
+      setHintsLeft(isHardMode ? 0 : Infinity);
+      // In Chill mode, no timer (set to Infinity), in Hard mode set to 15
+      setGuessTimeLeft(isHardMode ? 15 : Infinity);
+      setTotalTimeElapsed(0);
+      setGameOver(false);
+      setUserRanking(null);
+      setHighlightedIndex(-1);
+      
+      // Initialize Pokémon list for selected generation
+      const allPokemonIds = Array.from(
+        { length: selectedGeneration.endId - selectedGeneration.startId + 1 },
+        (_, i) => selectedGeneration.startId + i
+      );
+      
+      // Set initial state and wait for it to be updated
+      setRemainingPokemon(allPokemonIds);
+      
+      // Add a delay to ensure state is updated
+      await new Promise(resolve => setTimeout(resolve, 100));
+      
+      // Set game active
+      setIsGameActive(true);
+      
+      // Start timers based on game mode
+      if (isHardMode) {
+        startGuessTimer();
+      }
+      startTotalTimer();
+      
+      // Start the game by fetching first Pokemon
+      const randomIndex = Math.floor(Math.random() * allPokemonIds.length);
+      const firstPokemonId = allPokemonIds[randomIndex];
+      
+      // Remove the first Pokémon from the pool before setting it
+      setRemainingPokemon(prev => prev.filter(id => id !== firstPokemonId));
+      
+      // Finally set the current Pokemon ID and clear restarting state
+      setCurrentPokemonId(firstPokemonId);
+      
+      // Focus the input
+      if (inputRef.current) {
+        inputRef.current.focus();
+      }
+    } catch (error) {
+      console.error('Error starting game:', error);
+    } finally {
+      setIsRestarting(false);
     }
-    if (totalTimeInterval.current) {
-      clearInterval(totalTimeInterval.current);
-      totalTimeInterval.current = null;
-    }
-    
-    // Reset all game states
-    setScore(0);
-    // In Chill mode, set hints to Infinity, in Hard mode set to 0
-    setHintsLeft(isHardMode ? 0 : Infinity);
-    // In Chill mode, no timer (set to Infinity), in Hard mode set to 15
-    setGuessTimeLeft(isHardMode ? 15 : Infinity);
-    setTotalTimeElapsed(0);
-    setGameOver(false);
-    setUserRanking(null);
-    setHighlightedIndex(-1);
-    
-    // Initialize Pokémon list for selected generation
-    const allPokemonIds = Array.from(
-      { length: selectedGeneration.endId - selectedGeneration.startId + 1 },
-      (_, i) => selectedGeneration.startId + i
-    );
-    
-    // Set initial state and wait for it to be updated
-    setRemainingPokemon(allPokemonIds);
-    
-    // Add a delay to ensure state is updated
-    await new Promise(resolve => setTimeout(resolve, 100));
-    
-    // Set game active and clear restarting state
-    setIsGameActive(true);
-    
-    // Start timers based on game mode
-    if (isHardMode) {
-      startGuessTimer();
-    }
-    startTotalTimer();
-    
-    // Add another small delay before setting the first Pokemon
-    await new Promise(resolve => setTimeout(resolve, 50));
-    
-    // Start the game by fetching first Pokemon
-    const randomIndex = Math.floor(Math.random() * allPokemonIds.length);
-    const firstPokemonId = allPokemonIds[randomIndex];
-    
-    // Remove the first Pokémon from the pool before setting it
-    setRemainingPokemon(prev => prev.filter(id => id !== firstPokemonId));
-    
-    // Finally set the current Pokemon ID and clear restarting state
-    setCurrentPokemonId(firstPokemonId);
-    setIsRestarting(false);
-    
-    // Focus the input
-    inputRef.current?.focus();
   };
 
   // Add this effect to handle mute state persistence
