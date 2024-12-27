@@ -725,7 +725,7 @@ const PokemonGame = () => {
   const fetchSelectedRankings = useCallback(async () => {
     try {
       const rankingsRef = collection(db, `rankings_gen${selectedGeneration.startId}_${selectedGeneration.endId}`);
-      const q = query(rankingsRef, orderBy('score', 'desc'), limit(20)); // Fetch top 20 players
+      const q = query(rankingsRef, orderBy('score', 'desc'), limit(50)); // Fetch top 50 players
       const querySnapshot = await getDocs(q);
       const rankingsData: Rankings[] = [];
       querySnapshot.forEach((doc) => {
@@ -735,18 +735,21 @@ const PokemonGame = () => {
         const displayName = convertToDisplayFormat(storedName);
         
         rankingsData.push({
-          ...data,
-          name: displayName, // Use display name for UI
-          timestamp: (data.timestamp as Timestamp)?.toDate() || new Date(data.timestamp)
-        } as Rankings);
+          name: displayName,
+          score: data.score,
+          time: data.time,
+          timestamp: (data.timestamp as Timestamp)?.toDate() || new Date(data.timestamp),
+          uid: data.uid || null // Include uid in rankings data
+        });
       });
       setRankings(rankingsData);
 
       // Find user's best record and update best time
-      // Use the stored format for comparison
-      const userStoredName = convertToStoredFormat(playerName);
+      // Use uid for comparison if authenticated, otherwise use name
       const userBestRecord = rankingsData.find(record => 
-        convertToStoredFormat(record.name) === userStoredName
+        auth.currentUser 
+          ? record.uid === auth.currentUser.uid
+          : convertToStoredFormat(record.name) === convertToStoredFormat(playerName)
       );
       if (userBestRecord) {
         setBestTime(userBestRecord.time);
@@ -854,15 +857,21 @@ const PokemonGame = () => {
             const storedName = convertToStoredFormat(playerName.trim());
             const collectionName = `rankings_gen${selectedGeneration.startId}_${selectedGeneration.endId}`;
             const rankingsRef = collection(db, collectionName);
-            // Use stored format for query
-            const q = query(rankingsRef, where('name', '==', storedName));
+            
+            // Use uid for query if authenticated, otherwise use name
+            const q = query(rankingsRef, 
+              auth.currentUser 
+                ? where('uid', '==', auth.currentUser.uid)
+                : where('name', '==', storedName)
+            );
             const querySnapshot = await getDocs(q);
             
             const playerData = {
-              name: storedName, // Store in abbreviated format
+              name: storedName,
               score: score,
               time: totalTimeElapsed,
-              timestamp: serverTimestamp()
+              timestamp: serverTimestamp(),
+              uid: auth.currentUser?.uid || null // Add uid field
             };
 
             if (!querySnapshot.empty) {
@@ -907,7 +916,7 @@ const PokemonGame = () => {
     return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
 
-  // Update checkNameAvailability to use stored format
+  // Update checkNameAvailability to use uid
   const checkNameAvailability = useCallback(async (name: string) => {
     const storedName = convertToStoredFormat(name.trim());
     if (!storedName) {
@@ -916,7 +925,7 @@ const PokemonGame = () => {
       return false;
     }
 
-    // If user is authenticated and this is their name, allow it immediately
+    // If user is authenticated, allow it immediately
     const currentUser = auth.currentUser;
     if (currentUser?.displayName === name) {
       setNameError(null);
@@ -928,14 +937,18 @@ const PokemonGame = () => {
     setIsCheckingName(true);
 
     try {
-      // Check across all generations using stored format
+      // Check across all generations using uid if authenticated, otherwise use name
       for (const gen of GENERATIONS) {
         const collectionName = `rankings_gen${gen.startId}_${gen.endId}`;
         const rankingsRef = collection(db, collectionName);
-        const q = query(rankingsRef, where('name', '==', storedName));
+        const q = query(rankingsRef, 
+          auth.currentUser 
+            ? where('uid', '==', auth.currentUser.uid)
+            : where('name', '==', storedName)
+        );
         const querySnapshot = await getDocs(q);
         
-        if (!querySnapshot.empty) {
+        if (!querySnapshot.empty && !auth.currentUser) {
           setNameError('Ce nom est déjà utilisé. Veuillez en choisir un autre.');
           localStorage.removeItem('pokemonGamePlayerName');
           setIsCheckingName(false);

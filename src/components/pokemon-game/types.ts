@@ -34,4 +34,5 @@ export interface Rankings {
   score: number;
   time: number;
   timestamp: Date;
+  uid?: string | null;
 } 
