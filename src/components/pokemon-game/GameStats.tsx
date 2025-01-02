@@ -28,7 +28,12 @@ export const GameStats: FC<GameStatsProps> = ({
           <div className="relative z-10">
             <div className="text-xs text-blue-200 mb-1 font-medium">{t('score')}</div>
             <div className="space-y-1">
-              <div className="text-2xl font-bold text-white font-mono">{score}</div>
+              <div
+                data-testid="current-score"
+                className={`text-2xl font-bold text-white font-mono`}
+              >
+                {score}
+              </div>
               <div className="text-sm text-yellow-300 font-mono">
                 {t('best')}: {bestScore}
               </div>

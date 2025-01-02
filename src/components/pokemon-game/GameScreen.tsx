@@ -83,7 +83,7 @@ export const GameScreen: FC<GameScreenProps> = ({
     <Card className="w-full max-w-md p-1 sm:p-4 relative flex flex-col min-h-0 sm:min-h-0 bg-red-500 rounded-3xl overflow-hidden">
       {/* Fire overlay when Hype Train is active */}
       {showHypeTrain && (
-        <div className="absolute inset-0 z-0 overflow-hidden">
+        <div className="absolute inset-0 z-0 overflow-hidden" data-testid="fire-effects">
           {/* Base glow */}
           <div className="absolute inset-0 bg-gradient-to-t from-red-900/90 via-red-800/80 to-red-900/90 opacity-80"></div>
           
@@ -209,9 +209,9 @@ export const GameScreen: FC<GameScreenProps> = ({
           data-testid="volume-toggle-button"
         >
           {isMuted ? (
-            <VolumeX className="h-5 w-5 text-white" />
+            <VolumeX className="h-5 w-5 text-white" data-testid="volume-x-icon" />
           ) : (
-            <Volume2 className="h-5 w-5 text-white" />
+            <Volume2 className="h-5 w-5 text-white" data-testid="volume-2-icon" />
           )}
         </Button>
       </div>
