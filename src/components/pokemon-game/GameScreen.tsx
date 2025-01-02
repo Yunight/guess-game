@@ -206,6 +206,7 @@ export const GameScreen: FC<GameScreenProps> = ({
           size="icon"
           onClick={() => setIsMuted(!isMuted)}
           className="hover:bg-white/10"
+          data-testid="volume-toggle-button"
         >
           {isMuted ? (
             <VolumeX className="h-5 w-5 text-white" />
