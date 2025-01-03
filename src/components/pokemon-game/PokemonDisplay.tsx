@@ -239,7 +239,8 @@ export const PokemonDisplay: FC<PokemonDisplayProps> = ({
                       : 'opacity-0'
                 }`}
                 isRevealed={displayState === 'revealed'}
-                
+                name={i18n.language === 'fr' ? displayedPokemon.frenchName : displayedPokemon.englishName}
+                isShiny={displayedPokemon.isShiny}
               />
               
               {/* Pokemon name reveal */}
