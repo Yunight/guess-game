@@ -23,16 +23,16 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">79.46% </span>
+                <span class="strong">79.1% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>236/297</span>
+                <span class='fraction'>231/292</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">70% </span>
+                <span class="strong">69.49% </span>
                 <span class="quiet">Branches</span>
-                <span class='fraction'>42/60</span>
+                <span class='fraction'>41/59</span>
             </div>
         
             
@@ -44,9 +44,9 @@
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">79.46% </span>
+                <span class="strong">79.1% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>236/297</span>
+                <span class='fraction'>231/292</span>
             </div>
         
             
@@ -354,12 +354,8 @@
 <a name='L289'></a><a href='#L289'>289</a>
 <a name='L290'></a><a href='#L290'>290</a>
 <a name='L291'></a><a href='#L291'>291</a>
-<a name='L292'></a><a href='#L292'>292</a>
-<a name='L293'></a><a href='#L293'>293</a>
-<a name='L294'></a><a href='#L294'>294</a>
-<a name='L295'></a><a href='#L295'>295</a>
-<a name='L296'></a><a href='#L296'>296</a>
-<a name='L297'></a><a href='#L297'>297</a></td><td class="line-coverage quiet"><span class="cline-any cline-yes">1x</span>
+<a name='L292'></a><a href='#L292'>292</a></td><td class="line-coverage quiet"><span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">1x</span>
@@ -593,8 +589,6 @@
 <span class="cline-any cline-yes">8x</span>
 <span class="cline-any cline-yes">8x</span>
 <span class="cline-any cline-yes">8x</span>
-<span class="cline-any cline-yes">8x</span>
-<span class="cline-any cline-yes">8x</span>
 <span class="cline-any cline-yes">2x</span>
 <span class="cline-any cline-yes">6x</span>
 <span class="cline-any cline-yes">6x</span>
@@ -606,9 +600,6 @@
 <span class="cline-any cline-yes">8x</span>
 <span class="cline-any cline-yes">8x</span>
 <span class="cline-any cline-yes">8x</span>
-<span class="cline-any cline-yes">8x</span>
-<span class="cline-any cline-yes">8x</span>
-<span class="cline-any cline-yes">8x</span>
 <span class="cline-any cline-yes">2x</span>
 <span class="cline-any cline-yes">2x</span>
 <span class="cline-any cline-yes">2x</span>
@@ -647,7 +638,6 @@
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-yes">2x</span>
 <span class="cline-any cline-yes">2x</span>
-<span class="cline-any cline-yes">8x</span>
 <span class="cline-any cline-yes">8x</span>
 <span class="cline-any cline-yes">8x</span>
 <span class="cline-any cline-yes">13x</span>
@@ -655,9 +645,10 @@
 <span class="cline-any cline-yes">13x</span>
 <span class="cline-any cline-yes">13x</span>
 <span class="cline-any cline-yes">13x</span>
-<span class="cline-any cline-yes">13x</span></td><td class="text"><pre class="prettyprint lang-js">import { FC, useEffect, useState, useRef } from 'react';
+<span class="cline-any cline-yes">13x</span></td><td class="text"><pre class="prettyprint lang-js">import React, { FC, useEffect, useState, useRef } from 'react';
 import { Pokemon } from './types';
 import { useTranslation } from 'react-i18next';
+import { PokemonSprite } from './PokemonSprite';
 &nbsp;
 // Detect iOS device
 const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || 
@@ -740,12 +731,12 @@ export const PokemonDisplay: FC&lt;PokemonDisplayProps&gt; = ({
         setDisplayedPokemon(currentPokemon);
       } else {
         // Set new state only if it's a different Pokemon or not revealed
-        const newState = isCorrect === true ? 'revealed' : 'ready';
+        const newState = isCorrect === true || guessTimeLeft === 0 ? 'revealed' : 'ready';
         setDisplayState(newState);
         setDisplayedPokemon(currentPokemon);
       }
     }
-  }, [currentPokemon, isPokemonLoading, isCorrect, displayState, displayedPokemon]);
+  }, [currentPokemon, isPokemonLoading, isCorrect, displayState, displayedPokemon, guessTimeLeft]);
 &nbsp;
   // Handle Pokemon cry sound
   useEffect(() =&gt; {
@@ -844,7 +835,7 @@ export const PokemonDisplay: FC&lt;PokemonDisplayProps&gt; = ({
   }, [displayState, displayedPokemon, isMuted]);
 &nbsp;
   return (
-    &lt;div className="mt-12 mx-2 bg-gradient-to-b from-gray-800 to-gray-900 rounded-t-lg p-2 shadow-lg"&gt;
+    &lt;div className="w-full max-w-2xl mx-auto px-4"&gt;
       {/* Counter display */}
       &lt;div className="flex justify-center mb-2"&gt;
         &lt;div className="bg-black/80 text-white px-4 py-1 rounded-full text-sm font-medium"&gt;
@@ -885,66 +876,60 @@ export const PokemonDisplay: FC&lt;PokemonDisplayProps&gt; = ({
                   &lt;/div&gt;
                 &lt;/div&gt;
               )}
-              &lt;div className="relative w-full h-full flex items-center justify-center"&gt;
-                &lt;img
-                  src={displayedPokemon.sprite}
-                  alt={i18n.language === 'fr' ? displayedPokemon.<span class="branch-0 cbranch-no" title="branch not covered" >frenchName : displayedPokemon.englishName}</span>
-                  className={`w-auto h-[80%] max-w-full object-contain ${
-                    displayState === 'revealed' 
-                      ? 'animate-reveal-pokemon' 
-                      : displayState === 'ready' 
-                        ? <span class="branch-0 cbranch-no" title="branch not covered" >'animate-appear-pokemon'</span>
-<span class="cstat-no" title="statement not covered" >                        : 'opacity-0'</span>
-                  } ${displayState !== 'revealed' ? 'brightness-0' : ''}`}
-                  style={{
-                    willChange: 'transform, filter',
-                    transformOrigin: 'center bottom',
-                    '--float-y': '-5px'
-                  } as React.CSSProperties}
-                /&gt;
-&nbsp;
-                {/* Pokemon name reveal */}
-                {displayState === 'revealed' &amp;&amp; guessTimeLeft === 0 &amp;&amp; (
-                  &lt;div className="absolute bottom-4 left-0 right-0 text-center"&gt;
-                    &lt;div className="bg-gradient-to-r from-blue-500/50 via-blue-600/50 to-blue-500/50 text-white px-6 py-3 rounded-full mx-auto inline-block backdrop-blur-sm font-bold text-xl animate-fade-in drop-shadow-[0_2px_2px_rgba(0,0,0,0.5)]"&gt;
-                      {i18n.language === 'fr' ? displayedPokemon.<span class="branch-0 cbranch-no" title="branch not covered" >frenchName : displayedPokemon.englishName}</span>
-                    &lt;/div&gt;
+              &lt;PokemonSprite
+                pokemonId={displayedPokemon.id}
+                className={`w-auto h-[80%] max-w-full ${
+                  displayState === 'revealed' 
+                    ? 'animate-reveal-pokemon' 
+                    : displayState === 'ready' 
+                      ? <span class="branch-0 cbranch-no" title="branch not covered" >'animate-appear-pokemon'</span>
+<span class="cstat-no" title="statement not covered" >                      : 'opacity-0'</span>
+                }`}
+                isRevealed={displayState === 'revealed'}
+                name={i18n.language === 'fr' ? displayedPokemon.<span class="branch-0 cbranch-no" title="branch not covered" >frenchName : displayedPokemon.englishName}</span>
+              /&gt;
+              
+              {/* Pokemon name reveal */}
+              {displayState === 'revealed' &amp;&amp; guessTimeLeft === 0 &amp;&amp; (
+                &lt;div className="absolute bottom-4 left-0 right-0 text-center"&gt;
+                  &lt;div className="bg-gradient-to-r from-blue-500/50 via-blue-600/50 to-blue-500/50 text-white px-6 py-3 rounded-full mx-auto inline-block backdrop-blur-sm font-bold text-xl animate-fade-in drop-shadow-[0_2px_2px_rgba(0,0,0,0.5)]"&gt;
+                    {i18n.language === 'fr' ? displayedPokemon.<span class="branch-0 cbranch-no" title="branch not covered" >frenchName : displayedPokemon.englishName}</span>
                   &lt;/div&gt;
-                )}
+                &lt;/div&gt;
+              )}
 &nbsp;
-                {/* Reveal effects */}
-                {displayState === 'revealed' &amp;&amp; (
-                  &lt;div className="absolute inset-0 pointer-events-none"&gt;
-                    {/* Inner expanding ring */}
-                    &lt;div className="absolute inset-0 animate-ring-expand"&gt;
-                      &lt;div className={`absolute inset-0 border-4 ${displayedPokemon.<span class="branch-0 cbranch-no" title="branch not covered" >isShiny ? 'border-yellow-400/50' : '</span>border-yellow-400/30'} rounded-full`}&gt;&lt;/div&gt;
-                    &lt;/div&gt;
-                    {/* Outer expanding ring (delayed) */}
-                    &lt;div className="absolute inset-0 animate-ring-expand-delayed"&gt;
-                      &lt;div className={`absolute inset-0 border-4 ${displayedPokemon.<span class="branch-0 cbranch-no" title="branch not covered" >isShiny ? 'border-yellow-400/40' : '</span>border-yellow-400/20'} rounded-full`}&gt;&lt;/div&gt;
-                    &lt;/div&gt;
-                    {/* Sparkles */}
-                    &lt;div className="absolute w-2 h-2 bg-yellow-300 rounded-full animate-ping" 
-                         style={{ top: '20%', left: '30%', animationDuration: '1s' }}&gt;&lt;/div&gt;
-                    &lt;div className="absolute w-2 h-2 bg-yellow-300 rounded-full animate-ping" 
-                         style={{ top: '70%', left: '80%', animationDuration: '1.2s' }}&gt;&lt;/div&gt;
-                    &lt;div className="absolute w-2 h-2 bg-yellow-300 rounded-full animate-ping" 
-                         style={{ top: '40%', left: '60%', animationDuration: '0.8s' }}&gt;&lt;/div&gt;
-                    
-                    {/* Extra sparkles for shiny Pokemon */}
-                    {displayedPokemon.<span class="branch-0 cbranch-no" title="branch not covered" >isShiny &amp;&amp; (</span>
-<span class="cstat-no" title="statement not covered" >                      &lt;&gt;</span>
-<span class="cstat-no" title="statement not covered" >                        &lt;div className="absolute w-3 h-3 bg-yellow-300 rounded-full animate-ping" </span>
-<span class="cstat-no" title="statement not covered" >                             style={{ top: '30%', left: '20%', animationDuration: '1.3s' }}&gt;&lt;/div&gt;</span>
-<span class="cstat-no" title="statement not covered" >                        &lt;div className="absolute w-3 h-3 bg-yellow-300 rounded-full animate-ping" </span>
-<span class="cstat-no" title="statement not covered" >                             style={{ top: '60%', left: '70%', animationDuration: '0.9s' }}&gt;&lt;/div&gt;</span>
-<span class="cstat-no" title="statement not covered" >                        &lt;div className="absolute w-3 h-3 bg-yellow-300 rounded-full animate-ping" </span>
-<span class="cstat-no" title="statement not covered" >                             style={{ top: '45%', left: '40%', animationDuration: '1.1s' }}&gt;&lt;/div&gt;</span>
-<span class="cstat-no" title="statement not covered" >                      &lt;/&gt;</span>
-                    )}
+              {/* Reveal effects */}
+              {displayState === 'revealed' &amp;&amp; (
+                &lt;div className="absolute inset-0 pointer-events-none"&gt;
+                  {/* Inner expanding ring */}
+                  &lt;div className="absolute inset-0 animate-ring-expand"&gt;
+                    &lt;div className={`absolute inset-0 border-4 ${displayedPokemon.<span class="branch-0 cbranch-no" title="branch not covered" >isShiny ? 'border-yellow-400/50' : '</span>border-blue-400/30'} rounded-full`}&gt;&lt;/div&gt;
                   &lt;/div&gt;
-                )}
-              &lt;/div&gt;
+                  {/* Outer expanding ring (delayed) */}
+                  &lt;div className="absolute inset-0 animate-ring-expand-delayed"&gt;
+                    &lt;div className={`absolute inset-0 border-4 ${displayedPokemon.<span class="branch-0 cbranch-no" title="branch not covered" >isShiny ? 'border-yellow-400/40' : '</span>border-blue-400/20'} rounded-full`}&gt;&lt;/div&gt;
+                  &lt;/div&gt;
+                  {/* Sparkles */}
+                  &lt;div className="absolute w-2 h-2 bg-yellow-300 rounded-full animate-ping" 
+                       style={{ top: '20%', left: '30%', animationDuration: '1s' }}&gt;&lt;/div&gt;
+                  &lt;div className="absolute w-2 h-2 bg-yellow-300 rounded-full animate-ping" 
+                       style={{ top: '70%', left: '80%', animationDuration: '1.2s' }}&gt;&lt;/div&gt;
+                  &lt;div className="absolute w-2 h-2 bg-yellow-300 rounded-full animate-ping" 
+                       style={{ top: '40%', left: '60%', animationDuration: '0.8s' }}&gt;&lt;/div&gt;
+                  
+                  {/* Extra sparkles for shiny Pokemon */}
+                  {displayedPokemon.<span class="branch-0 cbranch-no" title="branch not covered" >isShiny &amp;&amp; (</span>
+<span class="cstat-no" title="statement not covered" >                    &lt;&gt;</span>
+<span class="cstat-no" title="statement not covered" >                      &lt;div className="absolute w-3 h-3 bg-yellow-300 rounded-full animate-ping" </span>
+<span class="cstat-no" title="statement not covered" >                           style={{ top: '30%', left: '20%', animationDuration: '1.3s' }}&gt;&lt;/div&gt;</span>
+<span class="cstat-no" title="statement not covered" >                      &lt;div className="absolute w-3 h-3 bg-yellow-300 rounded-full animate-ping" </span>
+<span class="cstat-no" title="statement not covered" >                           style={{ top: '60%', left: '70%', animationDuration: '0.9s' }}&gt;&lt;/div&gt;</span>
+<span class="cstat-no" title="statement not covered" >                      &lt;div className="absolute w-3 h-3 bg-yellow-300 rounded-full animate-ping" </span>
+<span class="cstat-no" title="statement not covered" >                           style={{ top: '45%', left: '40%', animationDuration: '1.1s' }}&gt;&lt;/div&gt;</span>
+<span class="cstat-no" title="statement not covered" >                    &lt;/&gt;</span>
+                  )}
+                &lt;/div&gt;
+              )}
             &lt;/div&gt;
           )}
         &lt;/div&gt;
@@ -958,7 +943,7 @@ export const PokemonDisplay: FC&lt;PokemonDisplayProps&gt; = ({
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2025-01-03T01:05:45.938Z
+                at 2025-01-03T14:39:50.441Z
             </div>
         <script src="../../../prettify.js"></script>
         <script>

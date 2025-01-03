@@ -7,8 +7,21 @@ export default defineConfig({
   plugins: [
     react(),
     VitePWA({
-      registerType: 'autoUpdate',
-      includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'masked-icon.svg'],
+      registerType: 'prompt',
+      devOptions: {
+        enabled: true
+      },
+      includeAssets: [
+        'favicon.ico', 
+        'apple-touch-icon.png', 
+        'masked-icon.svg',
+        'sounds/pkm_level_up.mp3',
+        'sounds/bump_wall.mp3',
+        'sounds/battle_win.mp3',
+        'sounds/train_horn_bell.mp3',
+        'sounds/low_life.mp3',
+        'sounds/shiny_effect.mp3'
+      ],
       manifest: {
         name: 'Pokemon Guess Game',
         short_name: 'PokemonGame',
@@ -31,6 +44,7 @@ export default defineConfig({
         ]
       },
       workbox: {
+        globPatterns: ['**/*.{js,css,html,ico,png,svg,mp3,ogg}'],
         runtimeCaching: [
           {
             urlPattern: /^https:\/\/raw\.githubusercontent\.com\/PokeAPI\/sprites\/master\/sprites\/pokemon\/.*/i,
@@ -50,6 +64,17 @@ export default defineConfig({
               cacheName: 'pokemon-cries',
               expiration: {
                 maxEntries: 1000,
+                maxAgeSeconds: 60 * 60 * 24 * 30 // 30 days
+              }
+            }
+          },
+          {
+            urlPattern: /^\/sounds\/.*/i,
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'game-sounds',
+              expiration: {
+                maxEntries: 10,
                 maxAgeSeconds: 60 * 60 * 24 * 30 // 30 days
               }
             }

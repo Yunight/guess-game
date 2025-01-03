@@ -3,7 +3,7 @@
 <html lang="en">
 
 <head>
-    <title>Code coverage report for src/components/pokemon-game/AuthButtons.tsx</title>
+    <title>Code coverage report for src/components/pokemon-game/ResourcePreloader.tsx</title>
     <meta charset="utf-8" />
     <link rel="stylesheet" href="../../../prettify.css" />
     <link rel="stylesheet" href="../../../base.css" />
@@ -19,13 +19,13 @@
 <body>
 <div class='wrapper'>
     <div class='pad1'>
-        <h1><a href="../../../index.html">All files</a> / <a href="index.html">src/components/pokemon-game</a> AuthButtons.tsx</h1>
+        <h1><a href="../../../index.html">All files</a> / <a href="index.html">src/components/pokemon-game</a> ResourcePreloader.tsx</h1>
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
                 <span class="strong">0% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>0/110</span>
+                <span class='fraction'>0/124</span>
             </div>
         
             
@@ -46,7 +46,7 @@
             <div class='fl pad1y space-right2'>
                 <span class="strong">0% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>0/110</span>
+                <span class='fraction'>0/124</span>
             </div>
         
             
@@ -172,7 +172,21 @@
 <a name='L107'></a><a href='#L107'>107</a>
 <a name='L108'></a><a href='#L108'>108</a>
 <a name='L109'></a><a href='#L109'>109</a>
-<a name='L110'></a><a href='#L110'>110</a></td><td class="line-coverage quiet"><span class="cline-any cline-no">&nbsp;</span>
+<a name='L110'></a><a href='#L110'>110</a>
+<a name='L111'></a><a href='#L111'>111</a>
+<a name='L112'></a><a href='#L112'>112</a>
+<a name='L113'></a><a href='#L113'>113</a>
+<a name='L114'></a><a href='#L114'>114</a>
+<a name='L115'></a><a href='#L115'>115</a>
+<a name='L116'></a><a href='#L116'>116</a>
+<a name='L117'></a><a href='#L117'>117</a>
+<a name='L118'></a><a href='#L118'>118</a>
+<a name='L119'></a><a href='#L119'>119</a>
+<a name='L120'></a><a href='#L120'>120</a>
+<a name='L121'></a><a href='#L121'>121</a>
+<a name='L122'></a><a href='#L122'>122</a>
+<a name='L123'></a><a href='#L123'>123</a>
+<a name='L124'></a><a href='#L124'>124</a></td><td class="line-coverage quiet"><span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
@@ -281,115 +295,143 @@
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js"><span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" ><span class="branch-0 cbranch-no" title="branch not covered" >import { FC, useState } from 'react';</span></span></span>
-<span class="cstat-no" title="statement not covered" >import { signInWithPopup, signOut } from 'firebase/auth';</span>
-<span class="cstat-no" title="statement not covered" >import { auth, googleProvider } from '../../firebase';</span>
-<span class="cstat-no" title="statement not covered" >import { Button } from '@/components/ui/button';</span>
-<span class="cstat-no" title="statement not covered" >import { useTranslation } from 'react-i18next';</span>
-<span class="cstat-no" title="statement not covered" >import { LogOut, Mail } from 'lucide-react';</span>
-<span class="cstat-no" title="statement not covered" >import { EmailAuthDialog } from './EmailAuthDialog';</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js"><span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" ><span class="branch-0 cbranch-no" title="branch not covered" >import { useEffect, useState } from 'react';</span></span></span>
+<span class="cstat-no" title="statement not covered" >import { useAppSelector } from '../../hooks/store';</span>
+<span class="cstat-no" title="statement not covered" >import { Generation } from './types';</span>
+<span class="cstat-no" title="statement not covered" >import type { RootState } from '../../store/store';</span>
 <span class="cstat-no" title="statement not covered" ></span>
-<span class="cstat-no" title="statement not covered" >interface AuthButtonsProps {</span>
-<span class="cstat-no" title="statement not covered" >  isAuthenticated: boolean;</span>
-<span class="cstat-no" title="statement not covered" >  userName: string | null;</span>
-<span class="cstat-no" title="statement not covered" >  checkNameAvailability: (name: string) =&gt; Promise&lt;boolean&gt;;</span>
+<span class="cstat-no" title="statement not covered" >interface PreloaderProps {</span>
+<span class="cstat-no" title="statement not covered" >  onComplete?: () =&gt; void;</span>
+<span class="cstat-no" title="statement not covered" >  children: React.ReactNode;</span>
 <span class="cstat-no" title="statement not covered" >}</span>
 <span class="cstat-no" title="statement not covered" ></span>
-<span class="cstat-no" title="statement not covered" >const formatGmailDisplayName = (name: string | null): string =&gt; {</span>
-<span class="cstat-no" title="statement not covered" >  if (!name) return '';</span>
-<span class="cstat-no" title="statement not covered" >  </span>
-<span class="cstat-no" title="statement not covered" >  // Check if it's a Gmail user (has Gmail in email)</span>
-<span class="cstat-no" title="statement not covered" >  const isGmailUser = auth.currentUser?.email?.includes('@gmail.com');</span>
-<span class="cstat-no" title="statement not covered" >  </span>
-<span class="cstat-no" title="statement not covered" >  if (isGmailUser) {</span>
-<span class="cstat-no" title="statement not covered" >    // Split the full name into parts</span>
-<span class="cstat-no" title="statement not covered" >    const nameParts = name.split(' ');</span>
-<span class="cstat-no" title="statement not covered" >    if (nameParts.length &gt;= 2) {</span>
-<span class="cstat-no" title="statement not covered" >      // Get first name and first letter of last name</span>
-<span class="cstat-no" title="statement not covered" >      const firstName = nameParts[0];</span>
-<span class="cstat-no" title="statement not covered" >      const lastNameInitial = nameParts[nameParts.length - 1][0].toUpperCase();</span>
-<span class="cstat-no" title="statement not covered" >      return `${firstName} .${lastNameInitial}`;</span>
-<span class="cstat-no" title="statement not covered" >    }</span>
-<span class="cstat-no" title="statement not covered" >  }</span>
-<span class="cstat-no" title="statement not covered" >  </span>
-<span class="cstat-no" title="statement not covered" >  return name;</span>
+<span class="cstat-no" title="statement not covered" >const DEFAULT_GENERATION: Generation = {</span>
+<span class="cstat-no" title="statement not covered" >  name: 'Kanto',</span>
+<span class="cstat-no" title="statement not covered" >  startId: 1,</span>
+<span class="cstat-no" title="statement not covered" >  endId: 151</span>
 <span class="cstat-no" title="statement not covered" >};</span>
 <span class="cstat-no" title="statement not covered" ></span>
-<span class="cstat-no" title="statement not covered" >export const AuthButtons: FC&lt;AuthButtonsProps&gt; = ({ isAuthenticated, userName, checkNameAvailability }) =&gt; {</span>
-<span class="cstat-no" title="statement not covered" >  const { t } = useTranslation();</span>
-<span class="cstat-no" title="statement not covered" >  const [showEmailDialog, setShowEmailDialog] = useState(false);</span>
+<span class="cstat-no" title="statement not covered" >const BATCH_SIZE = 20; // Load resources in batches of 20</span>
 <span class="cstat-no" title="statement not covered" ></span>
-<span class="cstat-no" title="statement not covered" >  const handleGoogleSignIn = async () =&gt; {</span>
-<span class="cstat-no" title="statement not covered" >    try {</span>
-<span class="cstat-no" title="statement not covered" >      const result = await signInWithPopup(auth, googleProvider);</span>
-<span class="cstat-no" title="statement not covered" >      if (result.user.displayName) {</span>
-<span class="cstat-no" title="statement not covered" >        localStorage.setItem('pokemonGamePlayerName', result.user.displayName);</span>
+<span class="cstat-no" title="statement not covered" >export const ResourcePreloader = ({ onComplete, children }: PreloaderProps) =&gt; {</span>
+<span class="cstat-no" title="statement not covered" >  const [isLoading, setIsLoading] = useState(true);</span>
+<span class="cstat-no" title="statement not covered" >  const [progress, setProgress] = useState(0);</span>
+<span class="cstat-no" title="statement not covered" >  const generation = useAppSelector((state: RootState) =&gt; state.game?.selectedGeneration) || DEFAULT_GENERATION;</span>
+<span class="cstat-no" title="statement not covered" ></span>
+<span class="cstat-no" title="statement not covered" >  useEffect(() =&gt; {</span>
+<span class="cstat-no" title="statement not covered" >    const preloadResources = async () =&gt; {</span>
+<span class="cstat-no" title="statement not covered" >      try {</span>
+<span class="cstat-no" title="statement not covered" >        const startId = generation.startId;</span>
+<span class="cstat-no" title="statement not covered" >        const endId = generation.endId;</span>
+<span class="cstat-no" title="statement not covered" >        const totalResources = (endId - startId + 1) * 2; // sprites + cries</span>
+<span class="cstat-no" title="statement not covered" >        let loadedResources = 0;</span>
+<span class="cstat-no" title="statement not covered" >        </span>
+<span class="cstat-no" title="statement not covered" >        // Create array of Pokemon IDs</span>
+<span class="cstat-no" title="statement not covered" >        const pokemonIds = Array.from(</span>
+<span class="cstat-no" title="statement not covered" >          { length: endId - startId + 1 },</span>
+<span class="cstat-no" title="statement not covered" >          (_, i) =&gt; startId + i</span>
+<span class="cstat-no" title="statement not covered" >        );</span>
+<span class="cstat-no" title="statement not covered" ></span>
+<span class="cstat-no" title="statement not covered" >        // Split IDs into batches</span>
+<span class="cstat-no" title="statement not covered" >        const batches = [];</span>
+<span class="cstat-no" title="statement not covered" >        for (let i = 0; i &lt; pokemonIds.length; i += BATCH_SIZE) {</span>
+<span class="cstat-no" title="statement not covered" >          batches.push(pokemonIds.slice(i, i + BATCH_SIZE));</span>
+<span class="cstat-no" title="statement not covered" >        }</span>
+<span class="cstat-no" title="statement not covered" ></span>
+<span class="cstat-no" title="statement not covered" >        // Process batches sequentially</span>
+<span class="cstat-no" title="statement not covered" >        for (const batch of batches) {</span>
+<span class="cstat-no" title="statement not covered" >          // Preload sprites for this batch</span>
+<span class="cstat-no" title="statement not covered" >          const spritePromises = batch.map(id =&gt; {</span>
+<span class="cstat-no" title="statement not covered" >            const spriteUrl = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${id}.png`;</span>
+<span class="cstat-no" title="statement not covered" >            return new Promise&lt;boolean&gt;((resolve) =&gt; {</span>
+<span class="cstat-no" title="statement not covered" >              const img = new Image();</span>
+<span class="cstat-no" title="statement not covered" >              img.onload = () =&gt; {</span>
+<span class="cstat-no" title="statement not covered" >                loadedResources++;</span>
+<span class="cstat-no" title="statement not covered" >                setProgress(Math.round((loadedResources / totalResources) * 100));</span>
+<span class="cstat-no" title="statement not covered" >                resolve(true);</span>
+<span class="cstat-no" title="statement not covered" >              };</span>
+<span class="cstat-no" title="statement not covered" >              img.onerror = () =&gt; {</span>
+<span class="cstat-no" title="statement not covered" >                loadedResources++;</span>
+<span class="cstat-no" title="statement not covered" >                setProgress(Math.round((loadedResources / totalResources) * 100));</span>
+<span class="cstat-no" title="statement not covered" >                resolve(false);</span>
+<span class="cstat-no" title="statement not covered" >              };</span>
+<span class="cstat-no" title="statement not covered" >              img.src = spriteUrl;</span>
+<span class="cstat-no" title="statement not covered" >            });</span>
+<span class="cstat-no" title="statement not covered" >          });</span>
+<span class="cstat-no" title="statement not covered" ></span>
+<span class="cstat-no" title="statement not covered" >          // Preload cries for this batch</span>
+<span class="cstat-no" title="statement not covered" >          const cryPromises = batch.map(id =&gt; {</span>
+<span class="cstat-no" title="statement not covered" >            const cryUrl = `https://raw.githubusercontent.com/PokeAPI/cries/main/cries/pokemon/latest/${id}.ogg`;</span>
+<span class="cstat-no" title="statement not covered" >            return new Promise&lt;boolean&gt;((resolve) =&gt; {</span>
+<span class="cstat-no" title="statement not covered" >              const audio = new Audio();</span>
+<span class="cstat-no" title="statement not covered" >              audio.oncanplaythrough = () =&gt; {</span>
+<span class="cstat-no" title="statement not covered" >                loadedResources++;</span>
+<span class="cstat-no" title="statement not covered" >                setProgress(Math.round((loadedResources / totalResources) * 100));</span>
+<span class="cstat-no" title="statement not covered" >                resolve(true);</span>
+<span class="cstat-no" title="statement not covered" >              };</span>
+<span class="cstat-no" title="statement not covered" >              audio.onerror = () =&gt; {</span>
+<span class="cstat-no" title="statement not covered" >                loadedResources++;</span>
+<span class="cstat-no" title="statement not covered" >                setProgress(Math.round((loadedResources / totalResources) * 100));</span>
+<span class="cstat-no" title="statement not covered" >                resolve(false);</span>
+<span class="cstat-no" title="statement not covered" >              };</span>
+<span class="cstat-no" title="statement not covered" >              audio.src = cryUrl;</span>
+<span class="cstat-no" title="statement not covered" >              audio.preload = 'auto';</span>
+<span class="cstat-no" title="statement not covered" >            });</span>
+<span class="cstat-no" title="statement not covered" >          });</span>
+<span class="cstat-no" title="statement not covered" ></span>
+<span class="cstat-no" title="statement not covered" >          // Wait for current batch to complete before moving to next</span>
+<span class="cstat-no" title="statement not covered" >          await Promise.all([...spritePromises, ...cryPromises]);</span>
+<span class="cstat-no" title="statement not covered" >        }</span>
+<span class="cstat-no" title="statement not covered" >        </span>
+<span class="cstat-no" title="statement not covered" >        setIsLoading(false);</span>
+<span class="cstat-no" title="statement not covered" >        onComplete?.();</span>
+<span class="cstat-no" title="statement not covered" >      } catch (error) {</span>
+<span class="cstat-no" title="statement not covered" >        console.error('Error preloading resources:', error);</span>
+<span class="cstat-no" title="statement not covered" >        // Continue even if preloading fails</span>
+<span class="cstat-no" title="statement not covered" >        setIsLoading(false);</span>
+<span class="cstat-no" title="statement not covered" >        onComplete?.();</span>
 <span class="cstat-no" title="statement not covered" >      }</span>
-<span class="cstat-no" title="statement not covered" >    } catch (error) {</span>
-<span class="cstat-no" title="statement not covered" >      console.error('Error signing in with Google:', error);</span>
-<span class="cstat-no" title="statement not covered" >    }</span>
-<span class="cstat-no" title="statement not covered" >  };</span>
+<span class="cstat-no" title="statement not covered" >    };</span>
 <span class="cstat-no" title="statement not covered" ></span>
-<span class="cstat-no" title="statement not covered" >  const handleEmailSignIn = () =&gt; {</span>
-<span class="cstat-no" title="statement not covered" >    setShowEmailDialog(true);</span>
-<span class="cstat-no" title="statement not covered" >  };</span>
+<span class="cstat-no" title="statement not covered" >    preloadResources();</span>
+<span class="cstat-no" title="statement not covered" >  }, [generation, onComplete]);</span>
 <span class="cstat-no" title="statement not covered" ></span>
-<span class="cstat-no" title="statement not covered" >  const handleSignOut = async () =&gt; {</span>
-<span class="cstat-no" title="statement not covered" >    try {</span>
-<span class="cstat-no" title="statement not covered" >      await signOut(auth);</span>
-<span class="cstat-no" title="statement not covered" >      localStorage.removeItem('pokemonGamePlayerName');</span>
-<span class="cstat-no" title="statement not covered" >      window.location.reload(); // Force a reload to ensure all states are reset</span>
-<span class="cstat-no" title="statement not covered" >    } catch (error) {</span>
-<span class="cstat-no" title="statement not covered" >      console.error('Erreur de déconnexion:', error);</span>
-<span class="cstat-no" title="statement not covered" >    }</span>
-<span class="cstat-no" title="statement not covered" >  };</span>
-<span class="cstat-no" title="statement not covered" ></span>
-<span class="cstat-no" title="statement not covered" >  if (isAuthenticated) {</span>
+<span class="cstat-no" title="statement not covered" >  if (isLoading) {</span>
 <span class="cstat-no" title="statement not covered" >    return (</span>
-<span class="cstat-no" title="statement not covered" >      &lt;div className="flex items-center gap-2 bg-gray-100 rounded-lg p-2"&gt;</span>
-<span class="cstat-no" title="statement not covered" >        &lt;span className="text-sm text-gray-700 font-medium"&gt;{formatGmailDisplayName(userName) || t('trainerName')}&lt;/span&gt;</span>
-<span class="cstat-no" title="statement not covered" >        &lt;Button</span>
-<span class="cstat-no" title="statement not covered" >          variant="ghost"</span>
-<span class="cstat-no" title="statement not covered" >          size="sm"</span>
-<span class="cstat-no" title="statement not covered" >          onClick={handleSignOut}</span>
-<span class="cstat-no" title="statement not covered" >          className="hover:bg-red-100 text-red-600 hover:text-red-700 transition-colors"</span>
-<span class="cstat-no" title="statement not covered" >        &gt;</span>
-<span class="cstat-no" title="statement not covered" >          &lt;LogOut className="h-4 w-4 mr-1" /&gt;</span>
-<span class="cstat-no" title="statement not covered" >          {t('logout')}</span>
-<span class="cstat-no" title="statement not covered" >        &lt;/Button&gt;</span>
+<span class="cstat-no" title="statement not covered" >      &lt;div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50"&gt;</span>
+<span class="cstat-no" title="statement not covered" >        &lt;div className="text-center"&gt;</span>
+<span class="cstat-no" title="statement not covered" >          &lt;div className="pokeball-loading mx-auto"&gt;</span>
+<span class="cstat-no" title="statement not covered" >            &lt;div className="outer-circle" /&gt;</span>
+<span class="cstat-no" title="statement not covered" >            &lt;div className="center-circle" /&gt;</span>
+<span class="cstat-no" title="statement not covered" >          &lt;/div&gt;</span>
+<span class="cstat-no" title="statement not covered" >          &lt;p className="text-white mt-4 font-medium"&gt;Loading Pokémon resources...&lt;/p&gt;</span>
+<span class="cstat-no" title="statement not covered" >          &lt;div className="mt-2 w-64 h-2 bg-gray-700 rounded-full overflow-hidden"&gt;</span>
+<span class="cstat-no" title="statement not covered" >            &lt;div </span>
+<span class="cstat-no" title="statement not covered" >              className="h-full bg-blue-500 transition-all duration-300 ease-out"</span>
+<span class="cstat-no" title="statement not covered" >              style={{ width: `${progress}%` }}</span>
+<span class="cstat-no" title="statement not covered" >            /&gt;</span>
+<span class="cstat-no" title="statement not covered" >          &lt;/div&gt;</span>
+<span class="cstat-no" title="statement not covered" >          &lt;p className="text-white/80 text-sm mt-1"&gt;{progress}%&lt;/p&gt;</span>
+<span class="cstat-no" title="statement not covered" >        &lt;/div&gt;</span>
 <span class="cstat-no" title="statement not covered" >      &lt;/div&gt;</span>
 <span class="cstat-no" title="statement not covered" >    );</span>
 <span class="cstat-no" title="statement not covered" >  }</span>
 <span class="cstat-no" title="statement not covered" ></span>
-<span class="cstat-no" title="statement not covered" >  return (</span>
-<span class="cstat-no" title="statement not covered" >    &lt;&gt;</span>
-<span class="cstat-no" title="statement not covered" >      &lt;div className="flex gap-2"&gt;</span>
-<span class="cstat-no" title="statement not covered" >        &lt;Button</span>
-<span class="cstat-no" title="statement not covered" >          variant="ghost"</span>
-<span class="cstat-no" title="statement not covered" >          size="icon"</span>
-<span class="cstat-no" title="statement not covered" >          onClick={handleGoogleSignIn}</span>
-<span class="cstat-no" title="statement not covered" >          className="h-8 w-8 bg-black hover:bg-gray-800 text-white hover:text-white"</span>
-<span class="cstat-no" title="statement not covered" >          title={t('connectWithGoogle')}</span>
-<span class="cstat-no" title="statement not covered" >        &gt;</span>
-<span class="cstat-no" title="statement not covered" >          G</span>
-<span class="cstat-no" title="statement not covered" >        &lt;/Button&gt;</span>
-<span class="cstat-no" title="statement not covered" >        &lt;Button</span>
-<span class="cstat-no" title="statement not covered" >          variant="ghost"</span>
-<span class="cstat-no" title="statement not covered" >          size="icon"</span>
-<span class="cstat-no" title="statement not covered" >          onClick={handleEmailSignIn}</span>
-<span class="cstat-no" title="statement not covered" >          className="h-8 w-8 bg-black hover:bg-gray-800 text-white hover:text-white"</span>
-<span class="cstat-no" title="statement not covered" >          title={t('connectWithEmail')}</span>
-<span class="cstat-no" title="statement not covered" >        &gt;</span>
-<span class="cstat-no" title="statement not covered" >          &lt;Mail className="h-4 w-4" /&gt;</span>
-<span class="cstat-no" title="statement not covered" >        &lt;/Button&gt;</span>
-<span class="cstat-no" title="statement not covered" >      &lt;/div&gt;</span>
-<span class="cstat-no" title="statement not covered" >      &lt;EmailAuthDialog</span>
-<span class="cstat-no" title="statement not covered" >        isOpen={showEmailDialog}</span>
-<span class="cstat-no" title="statement not covered" >        onClose={() =&gt; setShowEmailDialog(false)}</span>
-<span class="cstat-no" title="statement not covered" >        checkNameAvailability={checkNameAvailability}</span>
-<span class="cstat-no" title="statement not covered" >      /&gt;</span>
-<span class="cstat-no" title="statement not covered" >    &lt;/&gt;</span>
-<span class="cstat-no" title="statement not covered" >  );</span>
+<span class="cstat-no" title="statement not covered" >  return &lt;&gt;{children}&lt;/&gt;;</span>
 <span class="cstat-no" title="statement not covered" >}; </span></pre></td></tr></table></pre>
 
                 <div class='push'></div><!-- for sticky footer -->

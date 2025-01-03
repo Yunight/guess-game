@@ -3,15 +3,15 @@
 <html lang="en">
 
 <head>
-    <title>Code coverage report for src/components/pokemon-game/AuthButtons.tsx</title>
+    <title>Code coverage report for dev-dist/sw.js</title>
     <meta charset="utf-8" />
-    <link rel="stylesheet" href="../../../prettify.css" />
-    <link rel="stylesheet" href="../../../base.css" />
-    <link rel="shortcut icon" type="image/x-icon" href="../../../favicon.png" />
+    <link rel="stylesheet" href="../prettify.css" />
+    <link rel="stylesheet" href="../base.css" />
+    <link rel="shortcut icon" type="image/x-icon" href="../favicon.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <style type='text/css'>
         .coverage-summary .sorter {
-            background-image: url(../../../sort-arrow-sprite.png);
+            background-image: url(../sort-arrow-sprite.png);
         }
     </style>
 </head>
@@ -19,13 +19,13 @@
 <body>
 <div class='wrapper'>
     <div class='pad1'>
-        <h1><a href="../../../index.html">All files</a> / <a href="index.html">src/components/pokemon-game</a> AuthButtons.tsx</h1>
+        <h1><a href="../index.html">All files</a> / <a href="index.html">dev-dist</a> sw.js</h1>
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
                 <span class="strong">0% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>0/110</span>
+                <span class='fraction'>0/116</span>
             </div>
         
             
@@ -46,7 +46,7 @@
             <div class='fl pad1y space-right2'>
                 <span class="strong">0% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>0/110</span>
+                <span class='fraction'>0/116</span>
             </div>
         
             
@@ -172,7 +172,14 @@
 <a name='L107'></a><a href='#L107'>107</a>
 <a name='L108'></a><a href='#L108'>108</a>
 <a name='L109'></a><a href='#L109'>109</a>
-<a name='L110'></a><a href='#L110'>110</a></td><td class="line-coverage quiet"><span class="cline-any cline-no">&nbsp;</span>
+<a name='L110'></a><a href='#L110'>110</a>
+<a name='L111'></a><a href='#L111'>111</a>
+<a name='L112'></a><a href='#L112'>112</a>
+<a name='L113'></a><a href='#L113'>113</a>
+<a name='L114'></a><a href='#L114'>114</a>
+<a name='L115'></a><a href='#L115'>115</a>
+<a name='L116'></a><a href='#L116'>116</a>
+<a name='L117'></a><a href='#L117'>117</a></td><td class="line-coverage quiet"><span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
@@ -281,116 +288,130 @@
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js"><span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" ><span class="branch-0 cbranch-no" title="branch not covered" >import { FC, useState } from 'react';</span></span></span>
-<span class="cstat-no" title="statement not covered" >import { signInWithPopup, signOut } from 'firebase/auth';</span>
-<span class="cstat-no" title="statement not covered" >import { auth, googleProvider } from '../../firebase';</span>
-<span class="cstat-no" title="statement not covered" >import { Button } from '@/components/ui/button';</span>
-<span class="cstat-no" title="statement not covered" >import { useTranslation } from 'react-i18next';</span>
-<span class="cstat-no" title="statement not covered" >import { LogOut, Mail } from 'lucide-react';</span>
-<span class="cstat-no" title="statement not covered" >import { EmailAuthDialog } from './EmailAuthDialog';</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js"><span class="cstat-no" title="statement not covered" >/**<span class="fstat-no" title="function not covered" ><span class="branch-0 cbranch-no" title="branch not covered" ></span></span></span>
+<span class="cstat-no" title="statement not covered" > * Copyright 2018 Google Inc. All Rights Reserved.</span>
+<span class="cstat-no" title="statement not covered" > * Licensed under the Apache License, Version 2.0 (the "License");</span>
+<span class="cstat-no" title="statement not covered" > * you may not use this file except in compliance with the License.</span>
+<span class="cstat-no" title="statement not covered" > * You may obtain a copy of the License at</span>
+<span class="cstat-no" title="statement not covered" > *     http://www.apache.org/licenses/LICENSE-2.0</span>
+<span class="cstat-no" title="statement not covered" > * Unless required by applicable law or agreed to in writing, software</span>
+<span class="cstat-no" title="statement not covered" > * distributed under the License is distributed on an "AS IS" BASIS,</span>
+<span class="cstat-no" title="statement not covered" > * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.</span>
+<span class="cstat-no" title="statement not covered" > * See the License for the specific language governing permissions and</span>
+<span class="cstat-no" title="statement not covered" > * limitations under the License.</span>
+<span class="cstat-no" title="statement not covered" > */</span>
 <span class="cstat-no" title="statement not covered" ></span>
-<span class="cstat-no" title="statement not covered" >interface AuthButtonsProps {</span>
-<span class="cstat-no" title="statement not covered" >  isAuthenticated: boolean;</span>
-<span class="cstat-no" title="statement not covered" >  userName: string | null;</span>
-<span class="cstat-no" title="statement not covered" >  checkNameAvailability: (name: string) =&gt; Promise&lt;boolean&gt;;</span>
-<span class="cstat-no" title="statement not covered" >}</span>
+<span class="cstat-no" title="statement not covered" >// If the loader is already loaded, just stop.</span>
+<span class="cstat-no" title="statement not covered" >if (!self.define) {</span>
+<span class="cstat-no" title="statement not covered" >  let registry = {};</span>
 <span class="cstat-no" title="statement not covered" ></span>
-<span class="cstat-no" title="statement not covered" >const formatGmailDisplayName = (name: string | null): string =&gt; {</span>
-<span class="cstat-no" title="statement not covered" >  if (!name) return '';</span>
-<span class="cstat-no" title="statement not covered" >  </span>
-<span class="cstat-no" title="statement not covered" >  // Check if it's a Gmail user (has Gmail in email)</span>
-<span class="cstat-no" title="statement not covered" >  const isGmailUser = auth.currentUser?.email?.includes('@gmail.com');</span>
-<span class="cstat-no" title="statement not covered" >  </span>
-<span class="cstat-no" title="statement not covered" >  if (isGmailUser) {</span>
-<span class="cstat-no" title="statement not covered" >    // Split the full name into parts</span>
-<span class="cstat-no" title="statement not covered" >    const nameParts = name.split(' ');</span>
-<span class="cstat-no" title="statement not covered" >    if (nameParts.length &gt;= 2) {</span>
-<span class="cstat-no" title="statement not covered" >      // Get first name and first letter of last name</span>
-<span class="cstat-no" title="statement not covered" >      const firstName = nameParts[0];</span>
-<span class="cstat-no" title="statement not covered" >      const lastNameInitial = nameParts[nameParts.length - 1][0].toUpperCase();</span>
-<span class="cstat-no" title="statement not covered" >      return `${firstName} .${lastNameInitial}`;</span>
-<span class="cstat-no" title="statement not covered" >    }</span>
-<span class="cstat-no" title="statement not covered" >  }</span>
-<span class="cstat-no" title="statement not covered" >  </span>
-<span class="cstat-no" title="statement not covered" >  return name;</span>
-<span class="cstat-no" title="statement not covered" >};</span>
+<span class="cstat-no" title="statement not covered" >  // Used for `eval` and `importScripts` where we can't get script URL by other means.</span>
+<span class="cstat-no" title="statement not covered" >  // In both cases, it's safe to use a global var because those functions are synchronous.</span>
+<span class="cstat-no" title="statement not covered" >  let nextDefineUri;</span>
 <span class="cstat-no" title="statement not covered" ></span>
-<span class="cstat-no" title="statement not covered" >export const AuthButtons: FC&lt;AuthButtonsProps&gt; = ({ isAuthenticated, userName, checkNameAvailability }) =&gt; {</span>
-<span class="cstat-no" title="statement not covered" >  const { t } = useTranslation();</span>
-<span class="cstat-no" title="statement not covered" >  const [showEmailDialog, setShowEmailDialog] = useState(false);</span>
-<span class="cstat-no" title="statement not covered" ></span>
-<span class="cstat-no" title="statement not covered" >  const handleGoogleSignIn = async () =&gt; {</span>
-<span class="cstat-no" title="statement not covered" >    try {</span>
-<span class="cstat-no" title="statement not covered" >      const result = await signInWithPopup(auth, googleProvider);</span>
-<span class="cstat-no" title="statement not covered" >      if (result.user.displayName) {</span>
-<span class="cstat-no" title="statement not covered" >        localStorage.setItem('pokemonGamePlayerName', result.user.displayName);</span>
-<span class="cstat-no" title="statement not covered" >      }</span>
-<span class="cstat-no" title="statement not covered" >    } catch (error) {</span>
-<span class="cstat-no" title="statement not covered" >      console.error('Error signing in with Google:', error);</span>
-<span class="cstat-no" title="statement not covered" >    }</span>
-<span class="cstat-no" title="statement not covered" >  };</span>
-<span class="cstat-no" title="statement not covered" ></span>
-<span class="cstat-no" title="statement not covered" >  const handleEmailSignIn = () =&gt; {</span>
-<span class="cstat-no" title="statement not covered" >    setShowEmailDialog(true);</span>
-<span class="cstat-no" title="statement not covered" >  };</span>
-<span class="cstat-no" title="statement not covered" ></span>
-<span class="cstat-no" title="statement not covered" >  const handleSignOut = async () =&gt; {</span>
-<span class="cstat-no" title="statement not covered" >    try {</span>
-<span class="cstat-no" title="statement not covered" >      await signOut(auth);</span>
-<span class="cstat-no" title="statement not covered" >      localStorage.removeItem('pokemonGamePlayerName');</span>
-<span class="cstat-no" title="statement not covered" >      window.location.reload(); // Force a reload to ensure all states are reset</span>
-<span class="cstat-no" title="statement not covered" >    } catch (error) {</span>
-<span class="cstat-no" title="statement not covered" >      console.error('Erreur de déconnexion:', error);</span>
-<span class="cstat-no" title="statement not covered" >    }</span>
-<span class="cstat-no" title="statement not covered" >  };</span>
-<span class="cstat-no" title="statement not covered" ></span>
-<span class="cstat-no" title="statement not covered" >  if (isAuthenticated) {</span>
-<span class="cstat-no" title="statement not covered" >    return (</span>
-<span class="cstat-no" title="statement not covered" >      &lt;div className="flex items-center gap-2 bg-gray-100 rounded-lg p-2"&gt;</span>
-<span class="cstat-no" title="statement not covered" >        &lt;span className="text-sm text-gray-700 font-medium"&gt;{formatGmailDisplayName(userName) || t('trainerName')}&lt;/span&gt;</span>
-<span class="cstat-no" title="statement not covered" >        &lt;Button</span>
-<span class="cstat-no" title="statement not covered" >          variant="ghost"</span>
-<span class="cstat-no" title="statement not covered" >          size="sm"</span>
-<span class="cstat-no" title="statement not covered" >          onClick={handleSignOut}</span>
-<span class="cstat-no" title="statement not covered" >          className="hover:bg-red-100 text-red-600 hover:text-red-700 transition-colors"</span>
-<span class="cstat-no" title="statement not covered" >        &gt;</span>
-<span class="cstat-no" title="statement not covered" >          &lt;LogOut className="h-4 w-4 mr-1" /&gt;</span>
-<span class="cstat-no" title="statement not covered" >          {t('logout')}</span>
-<span class="cstat-no" title="statement not covered" >        &lt;/Button&gt;</span>
-<span class="cstat-no" title="statement not covered" >      &lt;/div&gt;</span>
+<span class="cstat-no" title="statement not covered" >  const singleRequire = (uri, parentUri) =&gt; {</span>
+<span class="cstat-no" title="statement not covered" >    uri = new URL(uri + ".js", parentUri).href;</span>
+<span class="cstat-no" title="statement not covered" >    return registry[uri] || (</span>
+<span class="cstat-no" title="statement not covered" >      </span>
+<span class="cstat-no" title="statement not covered" >        new Promise(resolve =&gt; {</span>
+<span class="cstat-no" title="statement not covered" >          if ("document" in self) {</span>
+<span class="cstat-no" title="statement not covered" >            const script = document.createElement("script");</span>
+<span class="cstat-no" title="statement not covered" >            script.src = uri;</span>
+<span class="cstat-no" title="statement not covered" >            script.onload = resolve;</span>
+<span class="cstat-no" title="statement not covered" >            document.head.appendChild(script);</span>
+<span class="cstat-no" title="statement not covered" >          } else {</span>
+<span class="cstat-no" title="statement not covered" >            nextDefineUri = uri;</span>
+<span class="cstat-no" title="statement not covered" >            importScripts(uri);</span>
+<span class="cstat-no" title="statement not covered" >            resolve();</span>
+<span class="cstat-no" title="statement not covered" >          }</span>
+<span class="cstat-no" title="statement not covered" >        })</span>
+<span class="cstat-no" title="statement not covered" >      </span>
+<span class="cstat-no" title="statement not covered" >      .then(() =&gt; {</span>
+<span class="cstat-no" title="statement not covered" >        let promise = registry[uri];</span>
+<span class="cstat-no" title="statement not covered" >        if (!promise) {</span>
+<span class="cstat-no" title="statement not covered" >          throw new Error(`Module ${uri} didn’t register its module`);</span>
+<span class="cstat-no" title="statement not covered" >        }</span>
+<span class="cstat-no" title="statement not covered" >        return promise;</span>
+<span class="cstat-no" title="statement not covered" >      })</span>
 <span class="cstat-no" title="statement not covered" >    );</span>
-<span class="cstat-no" title="statement not covered" >  }</span>
+<span class="cstat-no" title="statement not covered" >  };</span>
 <span class="cstat-no" title="statement not covered" ></span>
-<span class="cstat-no" title="statement not covered" >  return (</span>
-<span class="cstat-no" title="statement not covered" >    &lt;&gt;</span>
-<span class="cstat-no" title="statement not covered" >      &lt;div className="flex gap-2"&gt;</span>
-<span class="cstat-no" title="statement not covered" >        &lt;Button</span>
-<span class="cstat-no" title="statement not covered" >          variant="ghost"</span>
-<span class="cstat-no" title="statement not covered" >          size="icon"</span>
-<span class="cstat-no" title="statement not covered" >          onClick={handleGoogleSignIn}</span>
-<span class="cstat-no" title="statement not covered" >          className="h-8 w-8 bg-black hover:bg-gray-800 text-white hover:text-white"</span>
-<span class="cstat-no" title="statement not covered" >          title={t('connectWithGoogle')}</span>
-<span class="cstat-no" title="statement not covered" >        &gt;</span>
-<span class="cstat-no" title="statement not covered" >          G</span>
-<span class="cstat-no" title="statement not covered" >        &lt;/Button&gt;</span>
-<span class="cstat-no" title="statement not covered" >        &lt;Button</span>
-<span class="cstat-no" title="statement not covered" >          variant="ghost"</span>
-<span class="cstat-no" title="statement not covered" >          size="icon"</span>
-<span class="cstat-no" title="statement not covered" >          onClick={handleEmailSignIn}</span>
-<span class="cstat-no" title="statement not covered" >          className="h-8 w-8 bg-black hover:bg-gray-800 text-white hover:text-white"</span>
-<span class="cstat-no" title="statement not covered" >          title={t('connectWithEmail')}</span>
-<span class="cstat-no" title="statement not covered" >        &gt;</span>
-<span class="cstat-no" title="statement not covered" >          &lt;Mail className="h-4 w-4" /&gt;</span>
-<span class="cstat-no" title="statement not covered" >        &lt;/Button&gt;</span>
-<span class="cstat-no" title="statement not covered" >      &lt;/div&gt;</span>
-<span class="cstat-no" title="statement not covered" >      &lt;EmailAuthDialog</span>
-<span class="cstat-no" title="statement not covered" >        isOpen={showEmailDialog}</span>
-<span class="cstat-no" title="statement not covered" >        onClose={() =&gt; setShowEmailDialog(false)}</span>
-<span class="cstat-no" title="statement not covered" >        checkNameAvailability={checkNameAvailability}</span>
-<span class="cstat-no" title="statement not covered" >      /&gt;</span>
-<span class="cstat-no" title="statement not covered" >    &lt;/&gt;</span>
-<span class="cstat-no" title="statement not covered" >  );</span>
-<span class="cstat-no" title="statement not covered" >}; </span></pre></td></tr></table></pre>
+<span class="cstat-no" title="statement not covered" >  self.define = (depsNames, factory) =&gt; {</span>
+<span class="cstat-no" title="statement not covered" >    const uri = nextDefineUri || ("document" in self ? document.currentScript.src : "") || location.href;</span>
+<span class="cstat-no" title="statement not covered" >    if (registry[uri]) {</span>
+<span class="cstat-no" title="statement not covered" >      // Module is already loading or loaded.</span>
+<span class="cstat-no" title="statement not covered" >      return;</span>
+<span class="cstat-no" title="statement not covered" >    }</span>
+<span class="cstat-no" title="statement not covered" >    let exports = {};</span>
+<span class="cstat-no" title="statement not covered" >    const require = depUri =&gt; singleRequire(depUri, uri);</span>
+<span class="cstat-no" title="statement not covered" >    const specialDeps = {</span>
+<span class="cstat-no" title="statement not covered" >      module: { uri },</span>
+<span class="cstat-no" title="statement not covered" >      exports,</span>
+<span class="cstat-no" title="statement not covered" >      require</span>
+<span class="cstat-no" title="statement not covered" >    };</span>
+<span class="cstat-no" title="statement not covered" >    registry[uri] = Promise.all(depsNames.map(</span>
+<span class="cstat-no" title="statement not covered" >      depName =&gt; specialDeps[depName] || require(depName)</span>
+<span class="cstat-no" title="statement not covered" >    )).then(deps =&gt; {</span>
+<span class="cstat-no" title="statement not covered" >      factory(...deps);</span>
+<span class="cstat-no" title="statement not covered" >      return exports;</span>
+<span class="cstat-no" title="statement not covered" >    });</span>
+<span class="cstat-no" title="statement not covered" >  };</span>
+<span class="cstat-no" title="statement not covered" >}</span>
+<span class="cstat-no" title="statement not covered" >define(['./workbox-3af34037'], (function (workbox) { 'use strict';</span>
+<span class="cstat-no" title="statement not covered" ></span>
+<span class="cstat-no" title="statement not covered" >  self.addEventListener('message', event =&gt; {</span>
+<span class="cstat-no" title="statement not covered" >    if (event.data &amp;&amp; event.data.type === 'SKIP_WAITING') {</span>
+<span class="cstat-no" title="statement not covered" >      self.skipWaiting();</span>
+<span class="cstat-no" title="statement not covered" >    }</span>
+<span class="cstat-no" title="statement not covered" >  });</span>
+<span class="cstat-no" title="statement not covered" ></span>
+<span class="cstat-no" title="statement not covered" >  /**</span>
+<span class="cstat-no" title="statement not covered" >   * The precacheAndRoute() method efficiently caches and responds to</span>
+<span class="cstat-no" title="statement not covered" >   * requests for URLs in the manifest.</span>
+<span class="cstat-no" title="statement not covered" >   * See https://goo.gl/S9QRab</span>
+<span class="cstat-no" title="statement not covered" >   */</span>
+<span class="cstat-no" title="statement not covered" >  workbox.precacheAndRoute([{</span>
+<span class="cstat-no" title="statement not covered" >    "url": "registerSW.js",</span>
+<span class="cstat-no" title="statement not covered" >    "revision": "3ca0b8505b4bec776b69afdba2768812"</span>
+<span class="cstat-no" title="statement not covered" >  }, {</span>
+<span class="cstat-no" title="statement not covered" >    "url": "index.html",</span>
+<span class="cstat-no" title="statement not covered" >    "revision": "0.6ibnajneao"</span>
+<span class="cstat-no" title="statement not covered" >  }], {});</span>
+<span class="cstat-no" title="statement not covered" >  workbox.cleanupOutdatedCaches();</span>
+<span class="cstat-no" title="statement not covered" >  workbox.registerRoute(new workbox.NavigationRoute(workbox.createHandlerBoundToURL("index.html"), {</span>
+<span class="cstat-no" title="statement not covered" >    allowlist: [/^\/$/]</span>
+<span class="cstat-no" title="statement not covered" >  }));</span>
+<span class="cstat-no" title="statement not covered" >  workbox.registerRoute(/^https:\/\/raw\.githubusercontent\.com\/PokeAPI\/sprites\/master\/sprites\/pokemon\/.*/i, new workbox.CacheFirst({</span>
+<span class="cstat-no" title="statement not covered" >    "cacheName": "pokemon-sprites",</span>
+<span class="cstat-no" title="statement not covered" >    plugins: [new workbox.ExpirationPlugin({</span>
+<span class="cstat-no" title="statement not covered" >      maxEntries: 1000,</span>
+<span class="cstat-no" title="statement not covered" >      maxAgeSeconds: 2592000</span>
+<span class="cstat-no" title="statement not covered" >    })]</span>
+<span class="cstat-no" title="statement not covered" >  }), 'GET');</span>
+<span class="cstat-no" title="statement not covered" >  workbox.registerRoute(/^https:\/\/raw\.githubusercontent\.com\/PokeAPI\/cries\/main\/cries\/pokemon\/latest\/.*/i, new workbox.CacheFirst({</span>
+<span class="cstat-no" title="statement not covered" >    "cacheName": "pokemon-cries",</span>
+<span class="cstat-no" title="statement not covered" >    plugins: [new workbox.ExpirationPlugin({</span>
+<span class="cstat-no" title="statement not covered" >      maxEntries: 1000,</span>
+<span class="cstat-no" title="statement not covered" >      maxAgeSeconds: 2592000</span>
+<span class="cstat-no" title="statement not covered" >    })]</span>
+<span class="cstat-no" title="statement not covered" >  }), 'GET');</span>
+<span class="cstat-no" title="statement not covered" >  workbox.registerRoute(/^\/sounds\/.*/i, new workbox.CacheFirst({</span>
+<span class="cstat-no" title="statement not covered" >    "cacheName": "game-sounds",</span>
+<span class="cstat-no" title="statement not covered" >    plugins: [new workbox.ExpirationPlugin({</span>
+<span class="cstat-no" title="statement not covered" >      maxEntries: 10,</span>
+<span class="cstat-no" title="statement not covered" >      maxAgeSeconds: 2592000</span>
+<span class="cstat-no" title="statement not covered" >    })]</span>
+<span class="cstat-no" title="statement not covered" >  }), 'GET');</span>
+<span class="cstat-no" title="statement not covered" ></span>
+<span class="cstat-no" title="statement not covered" >}));</span>
+&nbsp;</pre></td></tr></table></pre>
 
                 <div class='push'></div><!-- for sticky footer -->
             </div><!-- /wrapper -->
@@ -399,14 +420,14 @@
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
                 at 2025-01-03T14:39:50.441Z
             </div>
-        <script src="../../../prettify.js"></script>
+        <script src="../prettify.js"></script>
         <script>
             window.onload = function () {
                 prettyPrint();
             };
         </script>
-        <script src="../../../sorter.js"></script>
-        <script src="../../../block-navigation.js"></script>
+        <script src="../sorter.js"></script>
+        <script src="../block-navigation.js"></script>
     </body>
 </html>
     

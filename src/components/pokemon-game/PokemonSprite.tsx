@@ -5,9 +5,10 @@ interface PokemonSpriteProps {
   pokemonId: number;
   className?: string;
   isRevealed?: boolean;
+  name?: string;
 }
 
-export const PokemonSprite = ({ pokemonId, className, isRevealed = true }: PokemonSpriteProps) => {
+export const PokemonSprite = ({ pokemonId, className, isRevealed = true, name = 'Pokemon' }: PokemonSpriteProps) => {
   const [imageError, setImageError] = useState(false);
   const spriteUrl = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${pokemonId}.png`;
   
@@ -18,7 +19,7 @@ export const PokemonSprite = ({ pokemonId, className, isRevealed = true }: Pokem
     <div className={cn('relative w-32 h-32 flex items-center justify-center', className)}>
       <img
         src={imageError ? fallbackSprite : spriteUrl}
-        alt="Pokemon sprite"
+        alt={name}
         className={cn(
           'w-full h-full object-contain transition-opacity duration-300',
           !isRevealed && 'brightness-0',
