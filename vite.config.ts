@@ -23,8 +23,8 @@ export default defineConfig({
         'sounds/shiny_effect.mp3'
       ],
       manifest: {
-        name: 'Pokemon Guess Game',
-        short_name: 'PokemonGame',
+        name: 'PokeGuesser',
+        short_name: 'PokeGuesser',
         description: 'A fun Pokemon guessing game',
         theme_color: '#ffffff',
         background_color: '#ffffff',

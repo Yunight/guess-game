@@ -67,7 +67,7 @@ if (!self.define) {
     });
   };
 }
-define(['./workbox-3af34037'], (function (workbox) { 'use strict';
+define(['./workbox-f6195dc0'], (function (workbox) { 'use strict';
 
   self.addEventListener('message', event => {
     if (event.data && event.data.type === 'SKIP_WAITING') {
@@ -85,24 +85,46 @@ define(['./workbox-3af34037'], (function (workbox) { 'use strict';
     "revision": "3ca0b8505b4bec776b69afdba2768812"
   }, {
     "url": "index.html",
-    "revision": "0.6ibnajneao"
+    "revision": "0.a4iubthra78"
   }], {});
   workbox.cleanupOutdatedCaches();
   workbox.registerRoute(new workbox.NavigationRoute(workbox.createHandlerBoundToURL("index.html"), {
     allowlist: [/^\/$/]
   }));
-  workbox.registerRoute(/^https:\/\/raw\.githubusercontent\.com\/PokeAPI\/sprites\/master\/sprites\/pokemon\/.*/i, new workbox.CacheFirst({
-    "cacheName": "pokemon-sprites",
+  workbox.registerRoute(/^https:\/\/raw\.githubusercontent\.com\/PokeAPI\/sprites\/master\/sprites\/pokemon\/versions\/generation-v\/black-white\/animated\/.*/i, new workbox.CacheFirst({
+    "cacheName": "pokemon-animated-sprites",
+    "matchOptions": {
+      "ignoreSearch": true
+    },
     plugins: [new workbox.ExpirationPlugin({
       maxEntries: 1000,
       maxAgeSeconds: 2592000
+    }), new workbox.CacheableResponsePlugin({
+      statuses: [0, 200]
+    })]
+  }), 'GET');
+  workbox.registerRoute(/^https:\/\/raw\.githubusercontent\.com\/PokeAPI\/sprites\/master\/sprites\/pokemon\/.*/i, new workbox.CacheFirst({
+    "cacheName": "pokemon-sprites",
+    "matchOptions": {
+      "ignoreSearch": true
+    },
+    plugins: [new workbox.ExpirationPlugin({
+      maxEntries: 1000,
+      maxAgeSeconds: 2592000
+    }), new workbox.CacheableResponsePlugin({
+      statuses: [0, 200]
     })]
   }), 'GET');
   workbox.registerRoute(/^https:\/\/raw\.githubusercontent\.com\/PokeAPI\/cries\/main\/cries\/pokemon\/latest\/.*/i, new workbox.CacheFirst({
     "cacheName": "pokemon-cries",
+    "matchOptions": {
+      "ignoreSearch": true
+    },
     plugins: [new workbox.ExpirationPlugin({
       maxEntries: 1000,
       maxAgeSeconds: 2592000
+    }), new workbox.CacheableResponsePlugin({
+      statuses: [0, 200]
     })]
   }), 'GET');
   workbox.registerRoute(/^\/sounds\/.*/i, new workbox.CacheFirst({
@@ -110,6 +132,32 @@ define(['./workbox-3af34037'], (function (workbox) { 'use strict';
     plugins: [new workbox.ExpirationPlugin({
       maxEntries: 10,
       maxAgeSeconds: 2592000
+    }), new workbox.CacheableResponsePlugin({
+      statuses: [0, 200]
+    })]
+  }), 'GET');
+  workbox.registerRoute(/^https:\/\/pokeapi\.co\/api\/v2\/pokemon\/.*/i, new workbox.CacheFirst({
+    "cacheName": "pokemon-data",
+    "matchOptions": {
+      "ignoreSearch": true
+    },
+    plugins: [new workbox.ExpirationPlugin({
+      maxEntries: 1000,
+      maxAgeSeconds: 2592000
+    }), new workbox.CacheableResponsePlugin({
+      statuses: [0, 200]
+    })]
+  }), 'GET');
+  workbox.registerRoute(/^https:\/\/pokeapi\.co\/api\/v2\/pokemon-species\/.*/i, new workbox.CacheFirst({
+    "cacheName": "pokemon-species-data",
+    "matchOptions": {
+      "ignoreSearch": true
+    },
+    plugins: [new workbox.ExpirationPlugin({
+      maxEntries: 1000,
+      maxAgeSeconds: 2592000
+    }), new workbox.CacheableResponsePlugin({
+      statuses: [0, 200]
     })]
   }), 'GET');
 

@@ -2,6 +2,7 @@ import { Provider } from 'react-redux';
 import { store } from './store/store';
 import PokemonGame from '@/components/pokemon-game/PokemonGame';
 import { ResourcePreloader } from '@/components/pokemon-game/ResourcePreloader';
+import { PWAInstallPrompt } from '@/components/ui/PWAInstallPrompt';
 import './App.css';
 
 function App() {
@@ -12,6 +13,7 @@ function App() {
           <PokemonGame />
         </ResourcePreloader>
       </Provider>
+      <PWAInstallPrompt />
     </div>
   );
 }
