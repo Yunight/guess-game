@@ -10,12 +10,10 @@ interface PokemonSpriteProps {
 }
 
 export const PokemonSprite = ({ pokemonId, className, isRevealed = true, name = 'Pokemon', isShiny = false }: PokemonSpriteProps) => {
-  const [sugimoriError, setSugimoriError] = useState(false);
   const [homeError, setHomeError] = useState(false);
   const [regularError, setRegularError] = useState(false);
   
-  // Try Sugimori artwork first, then Pokemon Home 3D model, then regular sprite
-  const sugimoriUrl = `https://img.pokemondb.net/artwork/large/${name.toLowerCase().replace(/[^a-z0-9-]/g, '')}.jpg`;
+  // Try Pokemon Home 3D model first, then regular sprite
   const homeUrl = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/home/${isShiny ? 'shiny/' : ''}${pokemonId}.png`;
   const regularSpriteUrl = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${isShiny ? 'shiny/' : ''}${pokemonId}.png`;
   
@@ -24,8 +22,7 @@ export const PokemonSprite = ({ pokemonId, className, isRevealed = true, name = 
 
   // Determine which sprite URL to use
   const spriteUrl = regularError ? fallbackSprite : 
-                   (homeError ? regularSpriteUrl :
-                   (sugimoriError ? homeUrl : sugimoriUrl));
+                   (homeError ? regularSpriteUrl : homeUrl);
 
   return (
     <div className={cn('relative w-32 h-32 flex items-center justify-center', className)}>
@@ -44,10 +41,7 @@ export const PokemonSprite = ({ pokemonId, className, isRevealed = true, name = 
           filter: !regularError ? 'drop-shadow(0 0 2px black) drop-shadow(0 0 2px black) drop-shadow(0 0 2px black) drop-shadow(0 0 2px black)' : 'none' // Quadruple drop-shadow for thicker black outline
         }}
         onError={(e) => {
-          if (!sugimoriError) {
-            setSugimoriError(true);
-            e.currentTarget.src = homeUrl;
-          } else if (!homeError) {
+          if (!homeError) {
             setHomeError(true);
             e.currentTarget.src = regularSpriteUrl;
           } else if (!regularError) {
