@@ -44,8 +44,25 @@ export default defineConfig({
         ]
       },
       workbox: {
-        globPatterns: ['**/*.{js,css,html,ico,png,svg,mp3,ogg}'],
+        globPatterns: ['**/*.{js,css,html,ico,png,svg,mp3,ogg,gif}'],
         runtimeCaching: [
+          {
+            urlPattern: /^https:\/\/raw\.githubusercontent\.com\/PokeAPI\/sprites\/master\/sprites\/pokemon\/versions\/generation-v\/black-white\/animated\/.*/i,
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'pokemon-animated-sprites',
+              expiration: {
+                maxEntries: 1000,
+                maxAgeSeconds: 60 * 60 * 24 * 30 // 30 days
+              },
+              cacheableResponse: {
+                statuses: [0, 200]
+              },
+              matchOptions: {
+                ignoreSearch: true
+              }
+            }
+          },
           {
             urlPattern: /^https:\/\/raw\.githubusercontent\.com\/PokeAPI\/sprites\/master\/sprites\/pokemon\/.*/i,
             handler: 'CacheFirst',
@@ -54,6 +71,12 @@ export default defineConfig({
               expiration: {
                 maxEntries: 1000,
                 maxAgeSeconds: 60 * 60 * 24 * 30 // 30 days
+              },
+              cacheableResponse: {
+                statuses: [0, 200]
+              },
+              matchOptions: {
+                ignoreSearch: true
               }
             }
           },
@@ -65,6 +88,12 @@ export default defineConfig({
               expiration: {
                 maxEntries: 1000,
                 maxAgeSeconds: 60 * 60 * 24 * 30 // 30 days
+              },
+              cacheableResponse: {
+                statuses: [0, 200]
+              },
+              matchOptions: {
+                ignoreSearch: true
               }
             }
           },
@@ -76,6 +105,43 @@ export default defineConfig({
               expiration: {
                 maxEntries: 10,
                 maxAgeSeconds: 60 * 60 * 24 * 30 // 30 days
+              },
+              cacheableResponse: {
+                statuses: [0, 200]
+              }
+            }
+          },
+          {
+            urlPattern: /^https:\/\/pokeapi\.co\/api\/v2\/pokemon\/.*/i,
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'pokemon-data',
+              expiration: {
+                maxEntries: 1000,
+                maxAgeSeconds: 60 * 60 * 24 * 30 // 30 days
+              },
+              cacheableResponse: {
+                statuses: [0, 200]
+              },
+              matchOptions: {
+                ignoreSearch: true
+              }
+            }
+          },
+          {
+            urlPattern: /^https:\/\/pokeapi\.co\/api\/v2\/pokemon-species\/.*/i,
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'pokemon-species-data',
+              expiration: {
+                maxEntries: 1000,
+                maxAgeSeconds: 60 * 60 * 24 * 30 // 30 days
+              },
+              cacheableResponse: {
+                statuses: [0, 200]
+              },
+              matchOptions: {
+                ignoreSearch: true
               }
             }
           }
