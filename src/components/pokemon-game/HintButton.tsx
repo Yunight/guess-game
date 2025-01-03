@@ -20,10 +20,22 @@ export const HintButton: FC<HintButtonProps> = ({
 }) => {
   const { t, i18n } = useTranslation();
 
-  // Get the appropriate hint text based on current language
-  const hintText = i18n.language === 'fr' 
-    ? currentPokemon?.frenchFlavorText 
-    : currentPokemon?.englishFlavorText;
+  // Get the appropriate hint text based on current language and remove Pokemon name
+  const getFilteredHintText = () => {
+    if (!currentPokemon) return '';
+
+    const rawHintText = i18n.language === 'fr' 
+      ? currentPokemon.frenchFlavorText 
+      : currentPokemon.englishFlavorText;
+
+    const pokemonName = i18n.language === 'fr' 
+      ? currentPokemon.frenchName 
+      : currentPokemon.englishName;
+
+    // Create a case-insensitive regular expression to match the Pokemon name
+    const nameRegex = new RegExp(pokemonName, 'gi');
+    return rawHintText.replace(nameRegex, '___');
+  };
 
   // Get first letter of Pokemon name based on current language
   const getFirstLetter = () => {
@@ -70,7 +82,7 @@ export const HintButton: FC<HintButtonProps> = ({
                   <div className="text-base font-bold">
                     {t('firstLetter')} : {getFirstLetter()}
                   </div>
-                  <p className="text-center px-4 text-sm">{hintText}</p>
+                  <p className="text-center px-4 text-sm">{getFilteredHintText()}</p>
                 </div>
               </div>
             )}

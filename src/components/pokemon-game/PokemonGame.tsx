@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
-import { collection, getDocs, addDoc, query, orderBy, limit, serverTimestamp, where, updateDoc, Timestamp, DocumentData } from 'firebase/firestore';
+import { collection, getDocs, addDoc, query, orderBy, limit, serverTimestamp, where, updateDoc, Timestamp, DocumentData, QueryDocumentSnapshot } from 'firebase/firestore';
+import { User } from 'firebase/auth';
 import { db } from '../../firebase';
 import '../../styles/PokemonGame.css';
 import { useGetAllPokemonNamesQuery, useGetPokemonByIdQuery } from '../../services/pokemonApi';
@@ -728,7 +729,7 @@ const PokemonGame = () => {
       const q = query(rankingsRef, orderBy('score', 'desc'), limit(50)); // Fetch top 50 players
       const querySnapshot = await getDocs(q);
       const rankingsData: Rankings[] = [];
-      querySnapshot.forEach((doc) => {
+      querySnapshot.forEach((doc: QueryDocumentSnapshot) => {
         const data = doc.data() as DocumentData;
         // Convert the stored name to display format
         const storedName = data.name;
@@ -1002,8 +1003,8 @@ const PokemonGame = () => {
     
     const exactName = playerName.trim(); // Store exact input name
     
-    // If user is authenticated, skip name validation
-    if (!auth.currentUser) {
+    // If user is authenticated or we're restarting, skip name validation
+    if (!auth.currentUser && !isRestarting) {
       const isAvailable = await checkNameAvailability(exactName);
       if (!isAvailable) return;
     }
@@ -1249,15 +1250,13 @@ const PokemonGame = () => {
     setGuess('');
     setSuggestions([]);
     setShowHint(false);
+    setGameOver(false);
     
     // Set restarting state to true
     setIsRestarting(true);
     
-    // Add a small delay to ensure states are cleared before starting new game
-    setTimeout(() => {
-      // Start a new game with the same mode
-      startGame(isHardMode);
-    }, 100);
+    // Start a new game with the same mode immediately
+    startGame(isHardMode);
   };
 
   const handleBackToMenu = () => {
@@ -1370,7 +1369,7 @@ const PokemonGame = () => {
 
   // Add effect to handle auth state changes
   useEffect(() => {
-    const unsubscribe = auth.onAuthStateChanged((user) => {
+    const unsubscribe = auth.onAuthStateChanged((user: User | null) => {
       if (user?.displayName) {
         const formattedName = formatDisplayName(user.displayName, user.email);
         setPlayerName(formattedName);
