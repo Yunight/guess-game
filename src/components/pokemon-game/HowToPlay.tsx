@@ -23,7 +23,7 @@ export const HowToPlay: FC<HowToPlayProps> = ({ isOpen, onClose }) => {
           <div className="fixed inset-0 bg-gradient-to-br from-white/5 to-transparent pointer-events-none"></div>
           
           <div className="relative mb-8 pt-8">
-            <h2 className="text-4xl font-bold text-center mb-2 drop-shadow-lg">{t('howToPlay')}</h2>
+            <h2 className="text-4xl font-bold text-center mb-2 drop-shadow-lg" data-testid="visible-title">{t('howToPlay')}</h2>
             <div className="flex justify-center gap-2">
               <div className="w-3 h-3 rounded-full bg-red-400 animate-pulse"></div>
               <div className="w-3 h-3 rounded-full bg-yellow-400 animate-pulse delay-100"></div>
