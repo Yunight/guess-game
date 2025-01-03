@@ -1,8 +1,10 @@
 import { configureStore } from '@reduxjs/toolkit';
 import { pokemonApi } from '../services/pokemonApi';
+import gameReducer from './gameSlice';
 
 export const store = configureStore({
   reducer: {
+    game: gameReducer,
     [pokemonApi.reducerPath]: pokemonApi.reducer,
   },
   middleware: (getDefaultMiddleware) =>

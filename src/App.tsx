@@ -1,17 +1,19 @@
 import { Provider } from 'react-redux';
 import { store } from './store/store';
-import PokemonGame from './components/pokemon-game/PokemonGame'
-import './App.css'
+import PokemonGame from '@/components/pokemon-game/PokemonGame';
+import { ResourcePreloader } from '@/components/pokemon-game/ResourcePreloader';
+import './App.css';
 
 function App() {
-
   return (
     <div className="App">
       <Provider store={store}>
-        <PokemonGame />
+        <ResourcePreloader>
+          <PokemonGame />
+        </ResourcePreloader>
       </Provider>
     </div>
-  )
+  );
 }
 
-export default App
+export default App;
