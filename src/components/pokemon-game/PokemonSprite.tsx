@@ -1,5 +1,5 @@
-import { useState } from "react";
 import { cn } from "@/lib/utils";
+import { useEffect, useState } from "react";
 
 interface PokemonSpriteProps {
 	pokemonId: number;
@@ -8,6 +8,9 @@ interface PokemonSpriteProps {
 	name?: string;
 	isShiny?: boolean;
 }
+
+// Cache for preloaded images
+const imageCache = new Map<string, HTMLImageElement>();
 
 export const PokemonSprite = ({
 	pokemonId,
@@ -19,12 +22,34 @@ export const PokemonSprite = ({
 	const [homeError, setHomeError] = useState(false);
 	const [regularError, setRegularError] = useState(false);
 
-	// Try Pokemon Home 3D model first, then regular sprite
+	// URLs for different sprite versions
 	const homeUrl = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/home/${isShiny ? "shiny/" : ""}${pokemonId}.png`;
 	const regularSpriteUrl = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${isShiny ? "shiny/" : ""}${pokemonId}.png`;
-
-	// Fallback sprite (Pokeball)
 	const fallbackSprite = "/pokeball.svg";
+
+	// Preload images
+	useEffect(() => {
+		const preloadImage = async (url: string) => {
+			if (imageCache.has(url)) return;
+
+			try {
+				const img = new Image();
+				const loadPromise = new Promise((resolve, reject) => {
+					img.onload = resolve;
+					img.onerror = reject;
+				});
+				img.src = url;
+				await loadPromise;
+				imageCache.set(url, img);
+			} catch (error) {
+				console.error(`Failed to preload image: ${url}`, error);
+			}
+		};
+
+		// Preload both home and regular sprites
+		preloadImage(homeUrl);
+		preloadImage(regularSpriteUrl);
+	}, [homeUrl, regularSpriteUrl]);
 
 	// Determine which sprite URL to use
 	const spriteUrl = regularError
@@ -65,7 +90,7 @@ export const PokemonSprite = ({
 						e.currentTarget.src = fallbackSprite;
 					}
 				}}
-				loading="lazy"
+				loading="eager" // Changed from lazy to eager for immediate loading
 			/>
 		</div>
 	);

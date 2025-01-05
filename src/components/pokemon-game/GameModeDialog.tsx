@@ -37,7 +37,7 @@ export const GameModeDialog: FC<GameModeDialogProps> = ({
 
 	return (
 		<Dialog open={isOpen} onOpenChange={onClose}>
-			<DialogContent className="sm:max-w-[600px] bg-white/95 backdrop-blur-sm border-4 border-blue-500 rounded-xl shadow-2xl max-h-[90vh] overflow-y-auto scrollbar-thin scrollbar-thumb-blue-500 scrollbar-track-transparent">
+			<DialogContent className="sm:max-w-[600px] w-[95vw] bg-white/95 backdrop-blur-sm border-4 border-blue-500 rounded-xl shadow-2xl max-h-[90vh] overflow-y-auto overflow-x-hidden scrollbar-thin scrollbar-thumb-blue-500 scrollbar-track-transparent">
 				<DialogHeader className="relative">
 					<div className="absolute -top-2 -left-2 w-24 h-24 bg-blue-400/20 rounded-full blur-2xl animate-pulse-slow pointer-events-none" />
 					<div className="absolute -top-2 -right-2 w-24 h-24 bg-red-400/20 rounded-full blur-2xl animate-pulse-slow delay-500 pointer-events-none" />
@@ -49,7 +49,7 @@ export const GameModeDialog: FC<GameModeDialogProps> = ({
 					</DialogDescription>
 				</DialogHeader>
 
-				<div className="flex flex-col gap-4 overflow-y-auto max-h-[60vh] scrollbar-thin scrollbar-thumb-blue-500 scrollbar-track-transparent p-1">
+				<div className="flex flex-col gap-4 overflow-y-auto max-h-[60vh] scrollbar-thin scrollbar-thumb-blue-500 scrollbar-track-transparent px-2">
 					{/* Pro Tips Section */}
 					<div className="bg-yellow-50/90 p-4 rounded-xl border-2 border-yellow-400">
 						<div className="flex items-center gap-2 mb-3">
@@ -104,14 +104,14 @@ export const GameModeDialog: FC<GameModeDialogProps> = ({
 					<div className="flex flex-col sm:flex-row gap-2">
 						<Button
 							onClick={() => onSelectMode(false)}
-							className="group relative h-auto p-6 bg-gradient-to-br from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white border-4 border-white hover:border-blue-300 transition-all duration-300 flex-1"
+							className="group relative h-auto p-4 sm:p-6 bg-gradient-to-br from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white border-4 border-white hover:border-blue-300 transition-all duration-300 flex-1"
 						>
 							<div className="flex flex-col items-center gap-2">
-								<div className="flex items-center gap-2 text-xl font-bold">
-									<Gamepad2 className="w-6 h-6" />
+								<div className="flex items-center gap-2 text-lg sm:text-xl font-bold">
+									<Gamepad2 className="w-5 h-5 sm:w-6 sm:h-6" />
 									{t("chillMode")}
 								</div>
-								<div className="flex flex-col items-center text-sm text-blue-100 gap-1">
+								<div className="flex flex-col items-center text-xs sm:text-sm text-blue-100 gap-1">
 									<div className="flex items-center gap-1">
 										<Lightbulb className="w-4 h-4" />
 										<span>{t("hintsAvailable")}</span>
@@ -127,14 +127,14 @@ export const GameModeDialog: FC<GameModeDialogProps> = ({
 
 						<Button
 							onClick={() => onSelectMode(true)}
-							className="group relative h-auto p-6 bg-gradient-to-br from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white border-4 border-white hover:border-red-300 transition-all duration-300 flex-1"
+							className="group relative h-auto p-4 sm:p-6 bg-gradient-to-br from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white border-4 border-white hover:border-red-300 transition-all duration-300 flex-1"
 						>
 							<div className="flex flex-col items-center gap-2">
-								<div className="flex items-center gap-2 text-xl font-bold">
-									<Gamepad2 className="w-6 h-6" />
+								<div className="flex items-center gap-2 text-lg sm:text-xl font-bold">
+									<Gamepad2 className="w-5 h-5 sm:w-6 sm:h-6" />
 									{t("tryHardMode")}
 								</div>
-								<div className="flex flex-col items-center text-sm text-red-100 gap-1">
+								<div className="flex flex-col items-center text-xs sm:text-sm text-red-100 gap-1">
 									<div className="flex items-center gap-1">
 										<Lightbulb className="w-4 h-4" />
 										<span>{t("noHints")}</span>

@@ -1,7 +1,7 @@
-import React, { FC, useEffect, useState, useRef } from "react";
-import { Pokemon } from "./types";
+import React, { type FC, useEffect, useState, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { PokemonSprite } from "./PokemonSprite";
+import type { Pokemon } from "./types";
 
 // Detect iOS device
 const isIOS =
@@ -32,6 +32,9 @@ const playShinyEffect = async () => {
 		// Ignore audio play errors
 	}
 };
+
+// Audio cache at component level
+const audioCache = new Map<string, HTMLAudioElement>();
 
 export const PokemonDisplay: FC<PokemonDisplayProps> = ({
 	currentPokemon,
@@ -149,32 +152,46 @@ export const PokemonDisplay: FC<PokemonDisplayProps> = ({
 			return specialCases[name] || pokemonName.replace(/[^a-z0-9]/g, "");
 		};
 
+		const preloadAudio = async (
+			url: string,
+		): Promise<HTMLAudioElement | null> => {
+			if (audioCache.has(url)) {
+				const cachedAudio = audioCache.get(url);
+				return cachedAudio ?? null;
+			}
+
+			try {
+				const audio = new Audio();
+				const loadPromise = new Promise<void>((resolve, reject) => {
+					audio.oncanplaythrough = () => resolve();
+					audio.onerror = () => reject();
+				});
+
+				audio.src = url;
+				audio.preload = "auto";
+				await loadPromise;
+
+				audioCache.set(url, audio);
+				return audio;
+			} catch (error) {
+				console.error(`Failed to preload audio: ${url}`, error);
+				return null;
+			}
+		};
+
 		const playPokemonCry = async () => {
 			if (audioRef.current) {
 				audioRef.current.pause();
 				audioRef.current.currentTime = 0;
-				audioRef.current.remove();
 				audioRef.current = null;
 			}
 
 			// Play shiny effect first if it's a shiny Pokemon
-			if (displayedPokemon.isShiny && !isIOS) {
+			if (displayedPokemon?.isShiny && !isIOS) {
 				await playShinyEffect();
 			}
 
-			const tryPlayAudio = async (
-				url: string,
-			): Promise<HTMLAudioElement | null> => {
-				const audio = new Audio(url);
-				try {
-					await audio.load();
-					await audio.play();
-					return audio;
-				} catch {
-					audio.remove();
-					return null;
-				}
-			};
+			if (!displayedPokemon) return;
 
 			try {
 				let audio: HTMLAudioElement | null = null;
@@ -185,23 +202,29 @@ export const PokemonDisplay: FC<PokemonDisplayProps> = ({
 						displayedPokemon.englishName,
 					);
 					const showdownUrl = `https://play.pokemonshowdown.com/audio/cries/${formattedName}.mp3`;
-					audio = await tryPlayAudio(showdownUrl);
+
+					// Try to get from cache or preload
+					audio = await preloadAudio(showdownUrl);
 				} else {
 					// Use regular cries for other devices
 					const urls = displayedPokemon.cryUrl.split("|");
 					for (const url of urls) {
-						audio = await tryPlayAudio(url);
+						// Try to get from cache or preload
+						audio = await preloadAudio(url);
 						if (audio) break;
 					}
 				}
 
 				if (audio) {
-					audioRef.current = audio;
+					// Clone the audio for playing to avoid cache issues
+					const playingAudio = audio.cloneNode() as HTMLAudioElement;
+					audioRef.current = playingAudio;
+					await playingAudio.play();
 					soundPlayedRef.current = true;
 				}
-			} catch {
+			} catch (error) {
+				console.error("Error playing Pokemon cry:", error);
 				if (audioRef.current) {
-					audioRef.current.remove();
 					audioRef.current = null;
 				}
 			}
@@ -211,6 +234,17 @@ export const PokemonDisplay: FC<PokemonDisplayProps> = ({
 			playPokemonCry();
 		}
 	}, [displayState, displayedPokemon, isMuted]);
+
+	// Cleanup function for audio cache
+	useEffect(() => {
+		return () => {
+			for (const audio of audioCache.values()) {
+				audio.pause();
+				audio.src = "";
+			}
+			audioCache.clear();
+		};
+	}, []);
 
 	return (
 		<div className="w-full max-w-2xl mx-auto px-4">
@@ -224,33 +258,34 @@ export const PokemonDisplay: FC<PokemonDisplayProps> = ({
 				className="bg-gradient-to-br from-blue-100 to-blue-200 rounded-lg flex items-center justify-center p-2 
         aspect-[4/3] mb-2 relative overflow-hidden shadow-inner"
 			>
-				<div className="absolute inset-0 bg-[radial-gradient(circle,_transparent_20%,_rgba(255,255,255,0.5)_20%)] bg-[length:10px_10px] animate-grid-shine"></div>
-				<div className="absolute inset-0 bg-gradient-to-br from-white/40 to-transparent opacity-50 animate-screen-glare"></div>
-				<div className="absolute top-2 left-2 w-4 h-4 border-t-2 border-l-2 border-blue-400 rounded-tl-lg animate-corner-pulse"></div>
-				<div className="absolute top-2 right-2 w-4 h-4 border-t-2 border-r-2 border-blue-400 rounded-tr-lg animate-corner-pulse-delay-1"></div>
-				<div className="absolute bottom-2 left-2 w-4 h-4 border-b-2 border-l-2 border-blue-400 rounded-bl-lg animate-corner-pulse-delay-2"></div>
-				<div className="absolute bottom-2 right-2 w-4 h-4 border-b-2 border-r-2 border-blue-400 rounded-br-lg animate-corner-pulse-delay-3"></div>
+				<div className="absolute inset-0 bg-[radial-gradient(circle,_transparent_20%,_rgba(255,255,255,0.5)_20%)] bg-[length:10px_10px] animate-grid-shine" />
+				<div className="absolute inset-0 bg-gradient-to-br from-white/40 to-transparent opacity-50 animate-screen-glare" />
+				<div className="absolute top-2 left-2 w-4 h-4 border-t-2 border-l-2 border-blue-400 rounded-tl-lg animate-corner-pulse" />
+				<div className="absolute top-2 right-2 w-4 h-4 border-t-2 border-r-2 border-blue-400 rounded-tr-lg animate-corner-pulse-delay-1" />
+				<div className="absolute bottom-2 left-2 w-4 h-4 border-b-2 border-l-2 border-blue-400 rounded-bl-lg animate-corner-pulse-delay-2" />
+				<div className="absolute bottom-2 right-2 w-4 h-4 border-b-2 border-r-2 border-blue-400 rounded-br-lg animate-corner-pulse-delay-3" />
 
 				{/* Add sparkle effects */}
 				<div className="absolute inset-0 pointer-events-none">
 					<div
 						className="absolute w-2 h-2 bg-yellow-300 rounded-full animate-sparkle-1"
 						style={{ top: "20%", left: "30%" }}
-					></div>
+					/>
 					<div
 						className="absolute w-2 h-2 bg-yellow-300 rounded-full animate-sparkle-2"
 						style={{ top: "70%", left: "80%" }}
-					></div>
+					/>
 					<div
 						className="absolute w-2 h-2 bg-yellow-300 rounded-full animate-sparkle-3"
 						style={{ top: "40%", left: "60%" }}
-					></div>
+					/>
 				</div>
 
 				<div className="relative z-10 w-full h-full flex items-center justify-center">
 					{!displayedPokemon || !displayedPokemon.sprite ? (
 						<div className="pokeball-loading">
 							<div className="outer-circle" />
+							<div className="middle-line" />
 							<div className="center-circle" />
 						</div>
 					) : (
@@ -304,20 +339,28 @@ export const PokemonDisplay: FC<PokemonDisplayProps> = ({
 									{/* Inner expanding ring */}
 									<div className="absolute inset-0 animate-ring-expand">
 										<div
-											className={`absolute inset-0 border-4 ${displayedPokemon.isShiny ? "border-yellow-400/50" : "border-blue-400/30"} rounded-full`}
-										></div>
+											className={`absolute inset-0 border-4 ${
+												displayedPokemon.isShiny
+													? "border-yellow-400/50"
+													: "border-blue-400/30"
+											} rounded-full`}
+										/>
 									</div>
 									{/* Outer expanding ring (delayed) */}
 									<div className="absolute inset-0 animate-ring-expand-delayed">
 										<div
-											className={`absolute inset-0 border-4 ${displayedPokemon.isShiny ? "border-yellow-400/40" : "border-blue-400/20"} rounded-full`}
-										></div>
+											className={`absolute inset-0 border-4 ${
+												displayedPokemon.isShiny
+													? "border-yellow-400/40"
+													: "border-blue-400/20"
+											} rounded-full`}
+										/>
 									</div>
 									{/* Sparkles */}
 									<div
 										className="absolute w-2 h-2 bg-yellow-300 rounded-full animate-ping"
 										style={{ top: "20%", left: "30%", animationDuration: "1s" }}
-									></div>
+									/>
 									<div
 										className="absolute w-2 h-2 bg-yellow-300 rounded-full animate-ping"
 										style={{
@@ -325,7 +368,7 @@ export const PokemonDisplay: FC<PokemonDisplayProps> = ({
 											left: "80%",
 											animationDuration: "1.2s",
 										}}
-									></div>
+									/>
 									<div
 										className="absolute w-2 h-2 bg-yellow-300 rounded-full animate-ping"
 										style={{
@@ -333,7 +376,7 @@ export const PokemonDisplay: FC<PokemonDisplayProps> = ({
 											left: "60%",
 											animationDuration: "0.8s",
 										}}
-									></div>
+									/>
 
 									{/* Extra sparkles for shiny Pokemon */}
 									{displayedPokemon.isShiny && (
@@ -345,7 +388,7 @@ export const PokemonDisplay: FC<PokemonDisplayProps> = ({
 													left: "20%",
 													animationDuration: "1.3s",
 												}}
-											></div>
+											/>
 											<div
 												className="absolute w-3 h-3 bg-yellow-300 rounded-full animate-ping"
 												style={{
@@ -353,7 +396,7 @@ export const PokemonDisplay: FC<PokemonDisplayProps> = ({
 													left: "70%",
 													animationDuration: "0.9s",
 												}}
-											></div>
+											/>
 											<div
 												className="absolute w-3 h-3 bg-yellow-300 rounded-full animate-ping"
 												style={{
@@ -361,7 +404,7 @@ export const PokemonDisplay: FC<PokemonDisplayProps> = ({
 													left: "40%",
 													animationDuration: "1.1s",
 												}}
-											></div>
+											/>
 										</>
 									)}
 								</div>
