@@ -1,6 +1,7 @@
 <h1 align="center" style="font-size: 3em">Pokemon Guessing Game 🎮</h1>
 
-A modern web-based Pokemon guessing game where you test your Pokemon knowledge by identifying Pokemon from their silhouettes. | Un jeu moderne de devinettes Pokémon où vous testez vos connaissances en identifiant les Pokémon à partir de leurs silhouettes.
+A modern web-based Pokemon guessing game where you test your Pokemon knowledge by identifying Pokemon from their silhouettes. 
+Un jeu moderne de devinettes Pokémon où vous testez vos connaissances en identifiant les Pokémon à partir de leurs silhouettes.
 
 <table>
 <tr><td width="50%" valign="top">
