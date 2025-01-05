@@ -1,14 +1,14 @@
-import { FC, useState } from "react";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Volume2, VolumeX, HelpCircle, Github, Twitter } from "lucide-react";
-import { Generation, Rankings } from "@/components/pokemon-game/types";
-import { HowToPlay } from "./HowToPlay";
 import { GameModeDialog } from "@/components/pokemon-game/GameModeDialog";
-import { useTranslation } from "react-i18next";
+import type { Generation, Rankings } from "@/components/pokemon-game/types";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { LanguageToggle } from "@/components/ui/language-toggle";
-import { AuthButtons } from "./AuthButtons";
+import { Github, HelpCircle, Twitter, Volume2, VolumeX } from "lucide-react";
+import { type FC, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { auth } from "../../firebase";
+import { AuthButtons } from "./AuthButtons";
+import { HowToPlay } from "./HowToPlay";
 
 interface MenuScreenProps {
 	playerName: string;
@@ -71,31 +71,31 @@ export const MenuScreen: FC<MenuScreenProps> = ({
 				<div className="flex justify-center gap-4 mt-6">
 					{/* Pokéball */}
 					<div className="w-8 h-8 rounded-full relative shadow-md">
-						<div className="absolute inset-0 bg-gradient-to-b from-red-600 to-red-500 rounded-t-full h-[50%]"></div>
-						<div className="absolute inset-0 bg-white rounded-b-full top-[50%]"></div>
-						<div className="absolute inset-x-0 top-[46%] h-[3px] bg-gray-800"></div>
-						<div className="absolute inset-[25%] bg-white rounded-full border-[3px] border-gray-800"></div>
-						<div className="absolute inset-[35%] bg-white rounded-full border-2 border-gray-800"></div>
+						<div className="absolute inset-0 bg-gradient-to-b from-red-600 to-red-500 rounded-t-full h-[50%]" />
+						<div className="absolute inset-0 bg-white rounded-b-full top-[50%]" />
+						<div className="absolute inset-x-0 top-[46%] h-[3px] bg-gray-800" />
+						<div className="absolute inset-[25%] bg-white rounded-full border-[3px] border-gray-800" />
+						<div className="absolute inset-[35%] bg-white rounded-full border-2 border-gray-800" />
 					</div>
 					{/* Great Ball */}
 					<div className="w-8 h-8 rounded-full relative shadow-md">
-						<div className="absolute inset-0 bg-gradient-to-b from-blue-600 to-blue-500 rounded-t-full h-[50%]"></div>
-						<div className="absolute inset-0 bg-white rounded-b-full top-[50%]"></div>
-						<div className="absolute inset-x-0 top-[46%] h-[3px] bg-gray-800"></div>
-						<div className="absolute inset-[25%] bg-white rounded-full border-[3px] border-gray-800"></div>
-						<div className="absolute inset-[35%] bg-white rounded-full border-2 border-gray-800"></div>
+						<div className="absolute inset-0 bg-gradient-to-b from-blue-600 to-blue-500 rounded-t-full h-[50%]" />
+						<div className="absolute inset-0 bg-white rounded-b-full top-[50%]" />
+						<div className="absolute inset-x-0 top-[46%] h-[3px] bg-gray-800" />
+						<div className="absolute inset-[25%] bg-white rounded-full border-[3px] border-gray-800" />
+						<div className="absolute inset-[35%] bg-white rounded-full border-2 border-gray-800" />
 					</div>
 					{/* Ultra Ball */}
 					<div className="w-8 h-8 rounded-full relative shadow-md">
-						<div className="absolute inset-0 bg-gradient-to-b from-yellow-500 to-yellow-400 rounded-t-full h-[50%]"></div>
-						<div className="absolute inset-0 bg-white rounded-b-full top-[50%]"></div>
-						<div className="absolute inset-x-0 top-[46%] h-[3px] bg-gray-800"></div>
-						<div className="absolute inset-[25%] bg-white rounded-full border-[3px] border-gray-800"></div>
-						<div className="absolute inset-[35%] bg-white rounded-full border-2 border-gray-800"></div>
+						<div className="absolute inset-0 bg-gradient-to-b from-yellow-500 to-yellow-400 rounded-t-full h-[50%]" />
+						<div className="absolute inset-0 bg-white rounded-b-full top-[50%]" />
+						<div className="absolute inset-x-0 top-[46%] h-[3px] bg-gray-800" />
+						<div className="absolute inset-[25%] bg-white rounded-full border-[3px] border-gray-800" />
+						<div className="absolute inset-[35%] bg-white rounded-full border-2 border-gray-800" />
 					</div>
 				</div>
-				<div className="absolute -top-4 -right-4 w-24 h-24 bg-yellow-400/20 rounded-full blur-2xl animate-pulse-slow pointer-events-none"></div>
-				<div className="absolute -top-4 -left-4 w-24 h-24 bg-blue-400/20 rounded-full blur-2xl animate-pulse-slow delay-500 pointer-events-none"></div>
+				<div className="absolute -top-4 -right-4 w-24 h-24 bg-yellow-400/20 rounded-full blur-2xl animate-pulse-slow pointer-events-none" />
+				<div className="absolute -top-4 -left-4 w-24 h-24 bg-blue-400/20 rounded-full blur-2xl animate-pulse-slow delay-500 pointer-events-none" />
 			</div>
 
 			<div className="flex flex-col lg:flex-row justify-between items-center gap-6">
@@ -103,13 +103,13 @@ export const MenuScreen: FC<MenuScreenProps> = ({
 				<div className="w-full lg:w-[550px] bg-red-500 rounded-3xl p-6 relative min-h-[600px]">
 					{/* Top dots */}
 					<div className="absolute top-4 left-4 flex gap-2">
-						<div className="w-3 h-3 rounded-full bg-gray-700"></div>
-						<div className="w-3 h-3 rounded-full bg-yellow-400"></div>
-						<div className="w-3 h-3 rounded-full bg-green-500"></div>
+						<div className="w-3 h-3 rounded-full bg-gray-700" />
+						<div className="w-3 h-3 rounded-full bg-yellow-400" />
+						<div className="w-3 h-3 rounded-full bg-green-500" />
 					</div>
 
 					{/* Blue circle light */}
-					<div className="absolute top-2 left-24 w-10 h-10 rounded-full bg-blue-400 border-4 border-white"></div>
+					<div className="absolute top-2 left-24 w-10 h-10 rounded-full bg-blue-400 border-4 border-white" />
 
 					{/* Sound, Help, and Language buttons */}
 					<div className="absolute top-4 right-4 flex items-center gap-2">
@@ -144,7 +144,7 @@ export const MenuScreen: FC<MenuScreenProps> = ({
 								<div className="flex items-center gap-4">
 									{!auth.currentUser && (
 										<div className="flex items-center gap-2">
-											<div className="w-6 h-6 bg-blue-500 rounded-full border-4 border-white shadow-md"></div>
+											<div className="w-6 h-6 bg-blue-500 rounded-full border-4 border-white shadow-md" />
 											<h2 className="text-lg font-semibold text-gray-800">
 												{t("connexion")}
 											</h2>
@@ -185,7 +185,7 @@ export const MenuScreen: FC<MenuScreenProps> = ({
 
 							<div className="space-y-2">
 								<h2 className="text-lg font-semibold text-gray-800 flex items-center gap-2">
-									<div className="w-6 h-6 bg-red-500 rounded-full border-4 border-white shadow-md"></div>
+									<div className="w-6 h-6 bg-red-500 rounded-full border-4 border-white shadow-md" />
 									{t("pokemonGeneration")}
 								</h2>
 								<div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
@@ -206,7 +206,7 @@ export const MenuScreen: FC<MenuScreenProps> = ({
 											>
 												<div className="flex items-center justify-center gap-1">
 													{selectedGeneration.name === gen.name && (
-														<div className="w-2 h-2 bg-white rounded-full animate-pulse-slow"></div>
+														<div className="w-2 h-2 bg-white rounded-full animate-pulse-slow" />
 													)}
 													{t(
 														`gen${
@@ -254,16 +254,16 @@ export const MenuScreen: FC<MenuScreenProps> = ({
 								<div className="w-16 h-16 bg-white/20 rounded-full relative backdrop-blur-sm border-4 border-white/40">
 									{/* Vertical line */}
 									<div className="absolute left-1/2 top-0 -translate-x-1/2 h-full w-4 flex flex-col justify-between">
-										<div className="h-4 bg-white/60 rounded-t-sm"></div>
-										<div className="h-4 bg-white/60 rounded-b-sm"></div>
+										<div className="h-4 bg-white/60 rounded-t-sm" />
+										<div className="h-4 bg-white/60 rounded-b-sm" />
 									</div>
 									{/* Horizontal line */}
 									<div className="absolute top-1/2 left-0 -translate-y-1/2 w-full h-4 flex justify-between">
-										<div className="w-4 bg-white/60 rounded-l-sm"></div>
-										<div className="w-4 bg-white/60 rounded-r-sm"></div>
+										<div className="w-4 bg-white/60 rounded-l-sm" />
+										<div className="w-4 bg-white/60 rounded-r-sm" />
 									</div>
 									{/* Center circle */}
-									<div className="absolute inset-1/2 -translate-x-1/2 -translate-y-1/2 w-4 h-4 bg-white rounded-full shadow-glow"></div>
+									<div className="absolute inset-1/2 -translate-x-1/2 -translate-y-1/2 w-4 h-4 bg-white rounded-full shadow-glow" />
 								</div>
 							</div>
 							<div className="flex items-center justify-center gap-4 py-2">
@@ -271,7 +271,7 @@ export const MenuScreen: FC<MenuScreenProps> = ({
 									{score > 0 ? t("replay") : t("play")}
 								</span>
 								{canStartGame && (
-									<div className="w-4 h-4 bg-white rounded-full animate-pulse"></div>
+									<div className="w-4 h-4 bg-white rounded-full animate-pulse" />
 								)}
 							</div>
 						</Button>
@@ -281,15 +281,15 @@ export const MenuScreen: FC<MenuScreenProps> = ({
 				{/* Right Panel - Rankings Display */}
 				<div className="w-full lg:w-[550px] bg-red-500 rounded-3xl p-6 relative min-h-[600px]">
 					<div className="bg-gray-800 rounded-xl p-4 mb-4 relative overflow-hidden">
-						<div className="absolute inset-0 bg-gradient-to-r from-blue-600/20 to-purple-600/20"></div>
-						<div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-400 to-purple-400"></div>
+						<div className="absolute inset-0 bg-gradient-to-r from-blue-600/20 to-purple-600/20" />
+						<div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-400 to-purple-400" />
 						<div className="relative flex flex-col items-center justify-center gap-1">
 							<div className="flex items-center gap-3">
-								<div className="w-6 h-6 bg-yellow-400 rounded-full border-2 border-white animate-spin-slow"></div>
+								<div className="w-6 h-6 bg-yellow-400 rounded-full border-2 border-white animate-spin-slow" />
 								<h2 className="text-2xl font-bold text-center text-white">
 									{t("bestScores")}
 								</h2>
-								<div className="w-6 h-6 bg-yellow-400 rounded-full border-2 border-white animate-spin-slow"></div>
+								<div className="w-6 h-6 bg-yellow-400 rounded-full border-2 border-white animate-spin-slow" />
 							</div>
 							<h3 className="text-xl font-bold text-center text-white/80">
 								{t(
@@ -320,7 +320,7 @@ export const MenuScreen: FC<MenuScreenProps> = ({
 					<div className="bg-white/90 backdrop-blur-sm rounded-xl shadow-inner overflow-hidden border-4 border-blue-500">
 						{/* Header */}
 						<div className="bg-gradient-to-r from-blue-500 to-blue-600 text-white p-3 grid grid-cols-12 gap-2 text-sm relative">
-							<div className="absolute inset-0 bg-grid-pattern opacity-10"></div>
+							<div className="absolute inset-0 bg-grid-pattern opacity-10" />
 							<div className="col-span-1 font-bold relative">
 								<span className="relative z-10">#</span>
 							</div>
@@ -340,64 +340,68 @@ export const MenuScreen: FC<MenuScreenProps> = ({
 
 						{/* Rankings list */}
 						<div className="divide-y divide-blue-100 h-[400px] overflow-y-auto scrollbar-thin scrollbar-thumb-blue-500 scrollbar-track-blue-100">
-							{rankings.map((player, index) => (
-								<div
-									key={index}
-									className={`grid grid-cols-12 gap-1 sm:gap-2 p-2 sm:p-3 items-center text-sm sm:text-base hover:bg-blue-50/80 transition-all duration-300 relative
+							{rankings.map((player, index) => {
+								const rankingKey = `${player.uid || player.name}-${player.score}-${player.timestamp.getTime()}`;
+								const isTopRanking = index < 3;
+								return (
+									<div
+										key={rankingKey}
+										className={`grid grid-cols-12 gap-1 sm:gap-2 p-2 sm:p-3 items-center text-sm sm:text-base hover:bg-blue-50/80 transition-all duration-300 relative
                     ${player.name === playerName ? "bg-yellow-50/90 hover:bg-yellow-100/90" : ""}
-                    ${index < 3 ? "font-semibold" : ""}`}
-								>
-									<div className="col-span-2 sm:col-span-1 text-gray-800 relative z-10 flex justify-center">
-										{index < 3 ? (
-											<div
-												className={`
+                    ${isTopRanking ? "font-semibold" : ""}`}
+									>
+										<div className="col-span-2 sm:col-span-1 text-gray-800 relative z-10 flex justify-center">
+											{isTopRanking ? (
+												<div
+													className={`
                         relative w-8 h-8 rounded-full flex items-center justify-center
                         ${index === 0 ? "bg-gradient-to-br from-yellow-300 to-yellow-500" : ""}
                         ${index === 1 ? "bg-gradient-to-br from-gray-300 to-gray-500" : ""}
                         ${index === 2 ? "bg-gradient-to-br from-orange-300 to-orange-700" : ""}
                         shadow-lg transform hover:scale-110 transition-transform duration-200
                       `}
-											>
-												<div className="absolute inset-0 rounded-full bg-white/20 animate-pulse-slow"></div>
-												<span className="relative text-white font-bold text-base z-10">
-													{index + 1}
+												>
+													<div className="absolute inset-0 rounded-full bg-white/20 animate-pulse-slow" />
+													<span className="relative text-white font-bold text-base z-10">
+														{index + 1}
+													</span>
+												</div>
+											) : (
+												<span className="text-gray-600 text-sm font-medium">
+													#{index + 1}
 												</span>
-											</div>
-										) : (
-											<span className="text-gray-600 text-sm font-medium">
-												#{index + 1}
-											</span>
-										)}
-									</div>
-									<div className="col-span-3 sm:col-span-4 truncate text-gray-800 text-sm sm:text-base pl-1 sm:pl-0">
-										{player.name === playerName ? (
-											<div className="flex items-center gap-2">
-												<span className="text-blue-600 font-bold truncate">
-													★ {player.name}
+											)}
+										</div>
+										<div className="col-span-3 sm:col-span-4 truncate text-gray-800 text-sm sm:text-base pl-1 sm:pl-0">
+											{player.name === playerName ? (
+												<div className="flex items-center gap-2">
+													<span className="text-blue-600 font-bold truncate">
+														★ {player.name}
+													</span>
+													<div className="w-2.5 h-2.5 bg-yellow-400 rounded-full animate-ping shrink-0" />
+												</div>
+											) : (
+												<span className="hover:text-blue-600 transition-colors duration-200">
+													{player.name}
 												</span>
-												<div className="w-2.5 h-2.5 bg-yellow-400 rounded-full animate-ping shrink-0"></div>
-											</div>
-										) : (
-											<span className="hover:text-blue-600 transition-colors duration-200">
-												{player.name}
-											</span>
-										)}
+											)}
+										</div>
+										<div className="col-span-2 text-center font-mono text-gray-800 font-bold text-sm sm:text-base">
+											{player.score}
+										</div>
+										<div className="col-span-2 text-center font-mono text-gray-700 text-sm sm:text-base">
+											{formatTimeForRanking(player.time)}
+										</div>
+										<div className="col-span-3 text-center text-xs sm:text-sm text-gray-500 hidden sm:block">
+											{formatDate(player.timestamp)}
+										</div>
 									</div>
-									<div className="col-span-2 text-center font-mono text-gray-800 font-bold text-sm sm:text-base">
-										{player.score}
-									</div>
-									<div className="col-span-2 text-center font-mono text-gray-700 text-sm sm:text-base">
-										{formatTimeForRanking(player.time)}
-									</div>
-									<div className="col-span-3 text-center text-xs sm:text-sm text-gray-500 hidden sm:block">
-										{formatDate(player.timestamp)}
-									</div>
-								</div>
-							))}
+								);
+							})}
 
 							{rankings.length === 0 && (
 								<div className="p-8 text-center text-gray-500 flex flex-col items-center gap-4">
-									<div className="w-16 h-16 bg-gray-200 rounded-full animate-bounce"></div>
+									<div className="w-16 h-16 bg-gray-200 rounded-full animate-bounce" />
 									<p className="text-lg">{t("noScores")}</p>
 								</div>
 							)}
@@ -406,8 +410,8 @@ export const MenuScreen: FC<MenuScreenProps> = ({
 
 					{/* Decorative elements moved below the rankings table */}
 					<div className="mt-4 flex justify-end gap-4">
-						<div className="w-12 h-6 bg-gray-800 rounded-lg"></div>
-						<div className="w-12 h-6 bg-gray-800 rounded-lg"></div>
+						<div className="w-12 h-6 bg-gray-800 rounded-lg" />
+						<div className="w-12 h-6 bg-gray-800 rounded-lg" />
 					</div>
 				</div>
 			</div>

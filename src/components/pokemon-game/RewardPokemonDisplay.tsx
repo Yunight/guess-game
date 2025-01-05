@@ -133,6 +133,7 @@ export const RewardPokemonDisplay: FC<RewardPokemonDisplayProps> = ({
 								pokemonId={pokemon.id}
 								className="w-52 h-52 relative z-10 mx-auto"
 								isRevealed={true}
+								isShiny={pokemon.isShiny}
 								name={
 									i18n.language === "fr"
 										? pokemon.frenchName

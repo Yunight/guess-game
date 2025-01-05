@@ -1,33 +1,37 @@
-import { useState, useEffect, useCallback, useRef, useMemo } from "react";
+import type { User } from "firebase/auth";
 import {
+	type DocumentData,
+	type QueryDocumentSnapshot,
+	type Timestamp,
+	addDoc,
 	collection,
 	getDocs,
-	addDoc,
-	query,
-	orderBy,
 	limit,
+	orderBy,
+	query,
 	serverTimestamp,
-	where,
 	updateDoc,
-	Timestamp,
-	DocumentData,
-	QueryDocumentSnapshot,
+	where,
 } from "firebase/firestore";
-import { User } from "firebase/auth";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { db } from "../../firebase";
 import "../../styles/PokemonGame.css";
+import type {
+	Generation,
+	Pokemon,
+	Rankings,
+} from "@/components/pokemon-game/types";
+import { useLocalStorage } from "@/hooks/useLocalStorage";
+import { skipToken } from "@reduxjs/toolkit/query";
+import { useTranslation } from "react-i18next";
+import { auth } from "../../firebase";
 import {
 	useGetAllPokemonNamesQuery,
 	useGetPokemonByIdQuery,
 } from "../../services/pokemonApi";
-import { skipToken } from "@reduxjs/toolkit/query";
+import { GameOverDialog } from "./GameOverDialog";
 import { GameScreen } from "./GameScreen";
 import { MenuScreen } from "./MenuScreen";
-import { GameOverDialog } from "./GameOverDialog";
-import { Generation, Pokemon, Rankings } from "@/components/pokemon-game/types";
-import { useLocalStorage } from "@/hooks/useLocalStorage";
-import { useTranslation } from "react-i18next";
-import { auth } from "../../firebase";
 
 const GENERATIONS: Generation[] = [
 	{ name: "1ère Génération", startId: 1, endId: 151 },
@@ -104,11 +108,11 @@ const debounce = <T extends (...args: Parameters<T>) => ReturnType<T>>(
 
 const PokemonGame = () => {
 	const { i18n } = useTranslation();
-	const [bestScore, setBestScore] = useLocalStorage<number>("bestScore", 0);
-	const [bestTime, setBestTime] = useLocalStorage<number>("bestTime", 0);
+	const [score, setScore] = useState(0);
+	const [bestScore, setBestScore] = useState(0);
+	const [bestTime, setBestTime] = useState(0);
 	const [guess, setGuess] = useState("");
 	const [isCorrect, setIsCorrect] = useState<boolean | null>(null);
-	const [score, setScore] = useState(0);
 	const [showHint, setShowHint] = useState(false);
 	const [hintsLeft, setHintsLeft] = useState(MAX_HINTS);
 	const [isGameActive, setIsGameActive] = useState(false);
@@ -377,7 +381,7 @@ const PokemonGame = () => {
 			sirfetchd: "sirfetchd",
 			"type: null": "typenull",
 			"type null": "typenull",
-			"flabéb��": "flabebe",
+			flabéb: "flabebe",
 			flabebe: "flabebe",
 			"jangmo-o": "jangmoo",
 			jangmoo: "jangmoo",
@@ -521,18 +525,20 @@ const PokemonGame = () => {
 
 	// Update cleanupAllAudio
 	const cleanupAllAudio = () => {
-		[
+		const audioRefs = [
 			victoryAudioRef,
 			correctAudioRef,
 			wrongAudioRef,
 			trainHornRef,
 			lowLifeRef,
-		].forEach((ref) => {
+		];
+
+		for (const ref of audioRefs) {
 			if (ref.current) {
 				ref.current.pause();
 				ref.current.currentTime = 0;
 			}
-		});
+		}
 	};
 
 	// Add cleanup effect for train horn sound when component unmounts
@@ -580,6 +586,28 @@ const PokemonGame = () => {
 		}
 	}, [showHypeTrain]);
 
+	const startGuessTimer = useCallback(() => {
+		if (timerInterval.current) {
+			clearInterval(timerInterval.current);
+			timerInterval.current = null;
+		}
+
+		setGuessTimeLeft(currentPokemon?.isShiny ? 10 : 15);
+		timerInterval.current = setInterval(() => {
+			setGuessTimeLeft((prev) => {
+				if (prev <= 1) {
+					if (timerInterval.current) {
+						clearInterval(timerInterval.current);
+						timerInterval.current = null;
+					}
+					setIsCorrect(false);
+					return 0;
+				}
+				return prev - 1;
+			});
+		}, 1000);
+	}, [currentPokemon?.isShiny]);
+
 	// Add effect to handle timer
 	useEffect(() => {
 		if (!isHardMode || !isGameActive) {
@@ -590,33 +618,14 @@ const PokemonGame = () => {
 			return;
 		}
 
-		// Start or restart timer
-		if (!timerInterval.current) {
-			// Set initial time based on whether the Pokemon is shiny
-			setGuessTimeLeft(currentPokemon?.isShiny ? 10 : 15);
-			timerInterval.current = setInterval(() => {
-				setGuessTimeLeft((prev) => {
-					if (prev <= 1) {
-						if (timerInterval.current) {
-							clearInterval(timerInterval.current);
-							timerInterval.current = null;
-						}
-						setIsCorrect(false);
-						return 0;
-					}
-					return prev - 1;
-				});
-			}, 1000);
-		}
-
-		// Cleanup on unmount or when game mode changes
+		startGuessTimer();
 		return () => {
 			if (timerInterval.current) {
 				clearInterval(timerInterval.current);
 				timerInterval.current = null;
 			}
 		};
-	}, [isHardMode, isGameActive, currentPokemonId, currentPokemon?.isShiny]);
+	}, [isHardMode, isGameActive, startGuessTimer]);
 
 	const handleCorrectAnswer = async () => {
 		setIsCorrect(true);
@@ -840,15 +849,13 @@ const PokemonGame = () => {
 	]);
 
 	// Add name format conversion functions
-	const convertToStoredFormat = (displayName: string): string => {
-		// Keep only the part before the first space
-		return displayName.trim().split(/\s+/)[0];
-	};
+	const convertToDisplayFormat = useCallback((name: string) => {
+		return name.replace(/_/g, " ");
+	}, []);
 
-	const convertToDisplayFormat = (storedName: string): string => {
-		// Display name is the same as stored name since we only keep the first part
-		return storedName;
-	};
+	const convertToStoredFormat = useCallback((name: string) => {
+		return name.trim().toLowerCase().replace(/\s+/g, "_");
+	}, []);
 
 	const fetchSelectedRankings = useCallback(async () => {
 		try {
@@ -856,12 +863,11 @@ const PokemonGame = () => {
 				db,
 				`rankings_gen${selectedGeneration.startId}_${selectedGeneration.endId}`,
 			);
-			const q = query(rankingsRef, orderBy("score", "desc"), limit(50)); // Fetch top 50 players
+			const q = query(rankingsRef, orderBy("score", "desc"), limit(50));
 			const querySnapshot = await getDocs(q);
 			const rankingsData: Rankings[] = [];
-			querySnapshot.forEach((doc: QueryDocumentSnapshot) => {
+			for (const doc of querySnapshot.docs) {
 				const data = doc.data() as DocumentData;
-				// Convert the stored name to display format
 				const storedName = data.name;
 				const displayName = convertToDisplayFormat(storedName);
 
@@ -871,13 +877,12 @@ const PokemonGame = () => {
 					time: data.time,
 					timestamp:
 						(data.timestamp as Timestamp)?.toDate() || new Date(data.timestamp),
-					uid: data.uid || null, // Include uid in rankings data
+					uid: data.uid || null,
 				});
-			});
+			}
 			setRankings(rankingsData);
 
-			// Find user's best record and update best time
-			// Use uid for comparison if authenticated, otherwise use name
+			// Find user's best record and update best score/time
 			const userBestRecord = rankingsData.find((record) =>
 				auth.currentUser
 					? record.uid === auth.currentUser.uid
@@ -885,12 +890,29 @@ const PokemonGame = () => {
 						convertToStoredFormat(playerName),
 			);
 			if (userBestRecord) {
+				setBestScore(userBestRecord.score);
 				setBestTime(userBestRecord.time);
+			} else {
+				setBestScore(0);
+				setBestTime(0);
 			}
 		} catch {
 			// Ignore database errors
 		}
-	}, [selectedGeneration, playerName, setBestTime]);
+	}, [
+		selectedGeneration.startId,
+		selectedGeneration.endId,
+		convertToDisplayFormat,
+		convertToStoredFormat,
+		playerName,
+	]);
+
+	// Add this effect to fetch rankings and best scores when generation or player changes
+	useEffect(() => {
+		if (!isGameActive) {
+			fetchSelectedRankings();
+		}
+	}, [selectedGeneration, playerName, isGameActive, fetchSelectedRankings]);
 
 	const handleGameOver = useCallback(async () => {
 		console.log("🎮 handleGameOver called, gameOver state:", gameOver);
@@ -989,10 +1011,6 @@ const PokemonGame = () => {
 
 			// Only update best score and save to rankings in Hard mode
 			if (isHardMode) {
-				if (score > bestScore) {
-					setBestScore(score);
-				}
-
 				if (score > 0 && playerName) {
 					try {
 						const storedName = convertToStoredFormat(playerName.trim());
@@ -1218,9 +1236,9 @@ const PokemonGame = () => {
 			// Reset all game states
 			setScore(0);
 			// In Chill mode, set hints to Infinity, in Hard mode set to 0
-			setHintsLeft(isHardMode ? 0 : Infinity);
+			setHintsLeft(isHardMode ? 0 : Number.POSITIVE_INFINITY);
 			// In Chill mode, no timer (set to Infinity), in Hard mode set to 15
-			setGuessTimeLeft(isHardMode ? 15 : Infinity);
+			setGuessTimeLeft(isHardMode ? 15 : Number.POSITIVE_INFINITY);
 			setTotalTimeElapsed(0);
 			setGameOver(false);
 			setUserRanking(null);
@@ -1286,31 +1304,6 @@ const PokemonGame = () => {
 		const month = String(date.getMonth() + 1).padStart(2, "0");
 		return `${day}/${month}/${date.getFullYear()}`;
 	};
-
-	// Modify the startGuessTimer function
-	const startGuessTimer = useCallback(() => {
-		// Only start the timer in hard mode
-		if (!isHardMode) return;
-
-		if (timerInterval.current) {
-			clearInterval(timerInterval.current);
-		}
-
-		setGuessTimeLeft(15);
-		timerInterval.current = setInterval(() => {
-			setGuessTimeLeft((prev) => {
-				if (prev <= 1) {
-					if (timerInterval.current) {
-						clearInterval(timerInterval.current);
-						timerInterval.current = null;
-					}
-					setIsCorrect(false);
-					return 0;
-				}
-				return prev - 1;
-			});
-		}, 1000);
-	}, [isHardMode]);
 
 	const startTotalTimer = () => {
 		if (totalTimeInterval.current) {

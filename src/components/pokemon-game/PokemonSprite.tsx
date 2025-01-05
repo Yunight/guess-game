@@ -22,10 +22,18 @@ export const PokemonSprite = ({
 	const [homeError, setHomeError] = useState(false);
 	const [regularError, setRegularError] = useState(false);
 
-	// URLs for different sprite versions
-	const homeUrl = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/home/${isShiny ? "shiny/" : ""}${pokemonId}.png`;
-	const regularSpriteUrl = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${isShiny ? "shiny/" : ""}${pokemonId}.png`;
-	const fallbackSprite = "/pokeball.svg";
+	// Use shiny sprite URL if isShiny is true
+	const homeArtworkUrl = isShiny
+		? `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/home/shiny/${pokemonId}.png`
+		: `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/home/${pokemonId}.png`;
+
+	const regularSpriteUrl = isShiny
+		? `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/shiny/${pokemonId}.png`
+		: `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${pokemonId}.png`;
+
+	const fallbackSprite = "/pokeball.png";
+
+	const spriteUrl = homeError ? regularSpriteUrl : homeArtworkUrl;
 
 	// Preload images
 	useEffect(() => {
@@ -47,16 +55,9 @@ export const PokemonSprite = ({
 		};
 
 		// Preload both home and regular sprites
-		preloadImage(homeUrl);
+		preloadImage(homeArtworkUrl);
 		preloadImage(regularSpriteUrl);
-	}, [homeUrl, regularSpriteUrl]);
-
-	// Determine which sprite URL to use
-	const spriteUrl = regularError
-		? fallbackSprite
-		: homeError
-			? regularSpriteUrl
-			: homeUrl;
+	}, [homeArtworkUrl, regularSpriteUrl]);
 
 	return (
 		<div
