@@ -68,7 +68,7 @@ export const PokemonSprite = ({
 		>
 			<img
 				src={spriteUrl}
-				alt={name}
+				alt="Pokemon sprite"
 				className={cn(
 					"w-full h-full object-contain transition-opacity duration-300",
 					!isRevealed && "brightness-0",

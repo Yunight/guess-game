@@ -97,6 +97,10 @@ export const PokemonDisplay: FC<PokemonDisplayProps> = ({
 				// Set new state only if it's a different Pokemon or not revealed
 				const newState =
 					isCorrect === true || guessTimeLeft === 0 ? "revealed" : "ready";
+				// Reset sound played flag when setting a new Pokemon
+				if (currentPokemon.id !== displayedPokemon?.id) {
+					soundPlayedRef.current = false;
+				}
 				setDisplayState(newState);
 				setDisplayedPokemon(currentPokemon);
 			}
@@ -112,17 +116,21 @@ export const PokemonDisplay: FC<PokemonDisplayProps> = ({
 
 	// Handle Pokemon cry sound
 	useEffect(() => {
+		// Only play sound if:
+		// 1. We have a Pokemon
+		// 2. It has a cry URL
+		// 3. Sound is not muted
+		// 4. Sound hasn't been played yet
+		// 5. We're in ready state (not loading or revealed)
+		// 6. The Pokemon ID matches our current reference (no race conditions)
 		if (
 			!displayedPokemon ||
 			!displayedPokemon.cryUrl ||
 			isMuted ||
-			soundPlayedRef.current
+			soundPlayedRef.current ||
+			displayState !== "ready" ||
+			displayedPokemon.id !== currentPokemonIdRef.current
 		) {
-			return;
-		}
-
-		const initialPokemonId = displayedPokemon.id;
-		if (initialPokemonId !== currentPokemonIdRef.current) {
 			return;
 		}
 
@@ -180,20 +188,21 @@ export const PokemonDisplay: FC<PokemonDisplayProps> = ({
 		};
 
 		const playPokemonCry = async () => {
+			// Clean up any existing audio first
 			if (audioRef.current) {
 				audioRef.current.pause();
 				audioRef.current.currentTime = 0;
 				audioRef.current = null;
 			}
 
-			// Play shiny effect first if it's a shiny Pokemon
-			if (displayedPokemon?.isShiny && !isIOS) {
-				await playShinyEffect();
-			}
-
 			if (!displayedPokemon) return;
 
 			try {
+				// Play shiny effect first if it's a shiny Pokemon
+				if (displayedPokemon.isShiny && !isIOS) {
+					await playShinyEffect();
+				}
+
 				let audio: HTMLAudioElement | null = null;
 
 				if (isIOS) {
@@ -202,21 +211,18 @@ export const PokemonDisplay: FC<PokemonDisplayProps> = ({
 						displayedPokemon.englishName,
 					);
 					const showdownUrl = `https://play.pokemonshowdown.com/audio/cries/${formattedName}.mp3`;
-
-					// Try to get from cache or preload
 					audio = await preloadAudio(showdownUrl);
 				} else {
 					// Use regular cries for other devices
 					const urls = displayedPokemon.cryUrl.split("|");
 					for (const url of urls) {
-						// Try to get from cache or preload
 						audio = await preloadAudio(url);
 						if (audio) break;
 					}
 				}
 
-				if (audio) {
-					// Clone the audio for playing to avoid cache issues
+				// Only play if we're still showing the same Pokemon
+				if (audio && displayedPokemon.id === currentPokemonIdRef.current) {
 					const playingAudio = audio.cloneNode() as HTMLAudioElement;
 					audioRef.current = playingAudio;
 					await playingAudio.play();
@@ -230,9 +236,8 @@ export const PokemonDisplay: FC<PokemonDisplayProps> = ({
 			}
 		};
 
-		if (displayState === "ready") {
-			playPokemonCry();
-		}
+		// Play the sounds
+		playPokemonCry();
 	}, [displayState, displayedPokemon, isMuted]);
 
 	// Cleanup function for audio cache
@@ -248,15 +253,26 @@ export const PokemonDisplay: FC<PokemonDisplayProps> = ({
 
 	return (
 		<div className="w-full max-w-2xl mx-auto px-4">
-			{/* Counter display */}
-			<div className="flex justify-center mb-2">
+			{/* Counter display with flex container for alignment */}
+			<div className="flex justify-between items-center mb-2">
+				{/* Quit button slot - will be filled by parent component */}
+				<div className="w-24">
+					{" "}
+					{/* Fixed width to maintain layout */}
+					<slot name="quit-button" />
+				</div>
+
+				{/* Pokemon counter - centered */}
 				<div className="bg-black/80 text-white px-4 py-1 rounded-full text-sm font-medium">
 					{remainingCount}/{totalCount}
 				</div>
+
+				{/* Empty div for symmetry */}
+				<div className="w-24" />
 			</div>
 			<div
 				className="bg-gradient-to-br from-blue-100 to-blue-200 rounded-lg flex items-center justify-center p-2 
-        aspect-[4/3] mb-2 relative overflow-hidden shadow-inner"
+				aspect-[4/3] mb-2 relative overflow-hidden shadow-inner"
 			>
 				<div className="absolute inset-0 bg-[radial-gradient(circle,_transparent_20%,_rgba(255,255,255,0.5)_20%)] bg-[length:10px_10px] animate-grid-shine" />
 				<div className="absolute inset-0 bg-gradient-to-br from-white/40 to-transparent opacity-50 animate-screen-glare" />
@@ -323,7 +339,7 @@ export const PokemonDisplay: FC<PokemonDisplayProps> = ({
 							/>
 
 							{/* Pokemon name reveal */}
-							{displayState === "revealed" && guessTimeLeft === 0 && (
+							{displayState === "revealed" && (
 								<div className="absolute bottom-4 left-0 right-0 text-center">
 									<div className="bg-gradient-to-r from-blue-500/50 via-blue-600/50 to-blue-500/50 text-white px-6 py-3 rounded-full mx-auto inline-block backdrop-blur-sm font-bold text-xl animate-fade-in drop-shadow-[0_2px_2px_rgba(0,0,0,0.5)]">
 										{i18n.language === "fr"

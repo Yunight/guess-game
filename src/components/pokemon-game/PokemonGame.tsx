@@ -1412,20 +1412,37 @@ const PokemonGame = () => {
 
 	// Add back the necessary functions
 	const handleQuit = useCallback(() => {
-		handleGameOver();
+		// Set timer to 0 to trigger name reveal
+		setGuessTimeLeft(0);
+		// Set isCorrect to false to show the name
+		setIsCorrect(false);
+		// Wait a moment to show the name before game over
+		setTimeout(() => {
+			handleGameOver();
+		}, 2000);
 	}, [handleGameOver]);
 
 	const handleRestart = () => {
 		// Clean up all audio first
 		cleanupAllAudio();
 
-		// Reset Pokemon-related states first
+		// Reset all Pokemon-related states first
 		setCurrentPokemonId(null);
 		setIsCorrect(null);
 		setGuess("");
 		setSuggestions([]);
 		setShowHint(false);
 		setGameOver(false);
+		setRewardPokemon({ pokemon: undefined, isLoading: false });
+		setPointsEarned(0);
+		setShowCriticalSuccess(false);
+		setShowCriticalHit(false);
+		setShowHypeTrain(false);
+		setConsecutiveFastAnswers(0);
+		setCriticalHitCount(0);
+		setCriticalSuccessCount(0);
+		setHyperTrainCount(0);
+		setMaxHypeChain(0);
 
 		// Set restarting state to true
 		setIsRestarting(true);
@@ -1448,7 +1465,7 @@ const PokemonGame = () => {
 		// Clean up all audio
 		cleanupAllAudio();
 
-		// Reset game state
+		// Reset all game states
 		setIsGameActive(false);
 		setGameOver(false);
 		setScore(0);
@@ -1464,6 +1481,11 @@ const PokemonGame = () => {
 		setHyperTrainCount(0);
 		setMaxHypeChain(0);
 		setTotalTimeElapsed(0);
+		setCurrentPokemonId(null);
+		setRewardPokemon({ pokemon: undefined, isLoading: false });
+		setPointsEarned(0);
+		setShowCriticalSuccess(false);
+		setShowCriticalHit(false);
 	};
 
 	// Add effect to log Pokemon data when it loads
@@ -1580,6 +1602,21 @@ const PokemonGame = () => {
 
 		return () => unsubscribe();
 	}, [formatDisplayName]);
+
+	// Add effect to handle Pokemon loading and sound playing
+	useEffect(() => {
+		// Only play sounds when Pokemon is loaded and game is active
+		if (currentPokemon && !isPokemonLoading && isGameActive && !isRestarting) {
+			// Play Pokemon cry if not muted
+			if (!isMuted && currentPokemon.cry) {
+				const audio = new Audio(currentPokemon.cry);
+				audio.volume = 0.2;
+				audio.play().catch(() => {
+					// Ignore errors
+				});
+			}
+		}
+	}, [currentPokemon, isPokemonLoading, isGameActive, isMuted, isRestarting]);
 
 	return (
 		<div className="min-h-screen bg-gradient-to-b from-blue-100 to-blue-50 p-4 flex items-start sm:items-center justify-center font-oswald">

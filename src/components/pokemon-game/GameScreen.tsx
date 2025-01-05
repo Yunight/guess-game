@@ -124,7 +124,7 @@ export const GameScreen: FC<GameScreenProps> = ({
 				<Button
 					variant="ghost"
 					onClick={onQuit}
-					className="absolute left-1/2 -translate-x-1/2 top-14 text-white hover:text-red-200 hover:bg-white/10 transition-colors font-medium"
+					className="absolute left-4 top-14 text-white hover:text-red-200 hover:bg-white/10 transition-colors font-medium z-10"
 				>
 					Quitter
 				</Button>
