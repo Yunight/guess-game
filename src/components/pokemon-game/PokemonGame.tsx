@@ -537,6 +537,7 @@ const PokemonGame = () => {
 			if (ref.current) {
 				ref.current.pause();
 				ref.current.currentTime = 0;
+				ref.current = null;
 			}
 		}
 	};

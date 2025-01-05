@@ -310,19 +310,25 @@ export const PokemonDisplay: FC<PokemonDisplayProps> = ({
 								displayState === "revealed" ? "animate-reveal-pokemon" : ""
 							}`}
 						>
-							{/* Show shiny message even during silhouette */}
-							{displayedPokemon.isShiny && (
-								<div className="absolute top-4 left-0 right-0 flex justify-center z-20">
+							{/* Show shiny message and Pokemon name on the same line */}
+							<div className="absolute top-2 left-0 right-0 flex justify-center items-center gap-2 z-20">
+								{displayedPokemon.isShiny && (
 									<div className="bg-yellow-400/90 text-black px-4 py-1 rounded-full font-bold text-sm">
-										{i18n.language === "fr"
-											? "✨ CHROMATIQUE ✨"
-											: "✨ SHINY ✨"}
+										{i18n.language === "fr" ? "✨ CHROMATIQUE" : "✨ SHINY"}
 									</div>
-								</div>
-							)}
+								)}
+								{displayState === "revealed" && (
+									<div className="bg-gradient-to-r from-blue-500/50 via-blue-600/50 to-blue-500/50 text-white px-6 py-2 rounded-full backdrop-blur-sm font-bold text-xl animate-fade-in drop-shadow-[0_2px_2px_rgba(0,0,0,0.5)]">
+										{i18n.language === "fr"
+											? displayedPokemon.frenchName
+											: displayedPokemon.englishName}
+									</div>
+								)}
+							</div>
+
 							<PokemonSprite
 								pokemonId={displayedPokemon.id}
-								className={`w-auto h-[80%] max-w-full ${
+								className={`w-auto h-[65%] max-w-full mt-14 mb-4 ${
 									displayState === "revealed"
 										? "animate-reveal-pokemon"
 										: displayState === "ready"
@@ -337,17 +343,6 @@ export const PokemonDisplay: FC<PokemonDisplayProps> = ({
 								}
 								isShiny={displayedPokemon.isShiny}
 							/>
-
-							{/* Pokemon name reveal */}
-							{displayState === "revealed" && (
-								<div className="absolute bottom-4 left-0 right-0 text-center">
-									<div className="bg-gradient-to-r from-blue-500/50 via-blue-600/50 to-blue-500/50 text-white px-6 py-3 rounded-full mx-auto inline-block backdrop-blur-sm font-bold text-xl animate-fade-in drop-shadow-[0_2px_2px_rgba(0,0,0,0.5)]">
-										{i18n.language === "fr"
-											? displayedPokemon.frenchName
-											: displayedPokemon.englishName}
-									</div>
-								</div>
-							)}
 
 							{/* Reveal effects */}
 							{displayState === "revealed" && (
