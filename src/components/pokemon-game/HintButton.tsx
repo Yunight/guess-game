@@ -1,7 +1,7 @@
-import { FC } from "react";
 import { Button } from "@/components/ui/button";
-import { Pokemon } from "./types";
+import type { FC } from "react";
 import { useTranslation } from "react-i18next";
+import type { Pokemon } from "./types";
 
 interface HintButtonProps {
 	hintsLeft: number;
@@ -65,13 +65,14 @@ export const HintButton: FC<HintButtonProps> = ({
 					disabled={hintsLeft === 0 || showHint || isPokemonLoading}
 				>
 					<div className="absolute left-3 top-1/2 -translate-y-1/2 flex gap-1.5">
-						<div className="w-1.5 h-1.5 rounded-full bg-yellow-300 animate-pulse"></div>
-						<div className="w-1.5 h-1.5 rounded-full bg-yellow-300 animate-pulse delay-75"></div>
+						<div className="w-1.5 h-1.5 rounded-full bg-yellow-300 animate-pulse" />
+						<div className="w-1.5 h-1.5 rounded-full bg-yellow-300 animate-pulse delay-75" />
 					</div>
-					{t("hint")} ({hintsLeft === Infinity ? "∞" : hintsLeft})
+					{t("hint")} (
+					{hintsLeft === Number.POSITIVE_INFINITY ? "∞" : hintsLeft})
 					<div className="absolute right-3 top-1/2 -translate-y-1/2 flex gap-1.5">
-						<div className="w-1.5 h-1.5 rounded-full bg-yellow-300 animate-pulse"></div>
-						<div className="w-1.5 h-1.5 rounded-full bg-yellow-300 animate-pulse delay-75"></div>
+						<div className="w-1.5 h-1.5 rounded-full bg-yellow-300 animate-pulse" />
+						<div className="w-1.5 h-1.5 rounded-full bg-yellow-300 animate-pulse delay-75" />
 					</div>
 				</Button>
 
@@ -85,8 +86,8 @@ export const HintButton: FC<HintButtonProps> = ({
                 rounded-xl text-gray-700 text-sm
                 shadow-inner font-oswald relative"
 							>
-								<div className="absolute left-2 top-2 w-1.5 h-1.5 rounded-full bg-red-500"></div>
-								<div className="absolute right-2 top-2 w-1.5 h-1.5 rounded-full bg-red-500"></div>
+								<div className="absolute left-2 top-2 w-1.5 h-1.5 rounded-full bg-red-500" />
+								<div className="absolute right-2 top-2 w-1.5 h-1.5 rounded-full bg-red-500" />
 								<div className="flex flex-col gap-1 items-center">
 									<div className="text-base font-bold">
 										{t("firstLetter")} : {getFirstLetter()}

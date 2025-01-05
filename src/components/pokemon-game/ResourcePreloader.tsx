@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useAppSelector } from "../../hooks/store";
-import { Generation } from "./types";
 import type { RootState } from "../../store/store";
+import type { Generation } from "./types";
 
 interface PreloaderProps {
 	onComplete?: () => void;

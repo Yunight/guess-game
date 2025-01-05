@@ -396,8 +396,8 @@ const PokemonGame = () => {
 		}
 
 		return lowerText
-			.normalize("NFD")
-			.replace(/[\u0300-\u036f]/g, "") // Remove diacritics
+			.normalize("NFKD")
+			.replace(/[\p{Diacritic}]/gu, "")
 			.replace(/[^a-z0-9]/g, ""); // Remove special characters
 	};
 
