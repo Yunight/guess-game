@@ -587,12 +587,16 @@ const PokemonGame = () => {
 	}, [showHypeTrain]);
 
 	const startGuessTimer = useCallback(() => {
+		// Clear any existing timer first
 		if (timerInterval.current) {
 			clearInterval(timerInterval.current);
 			timerInterval.current = null;
 		}
 
+		// Set initial time based on whether Pokemon is shiny
 		setGuessTimeLeft(currentPokemon?.isShiny ? 10 : 15);
+
+		// Start new timer
 		timerInterval.current = setInterval(() => {
 			setGuessTimeLeft((prev) => {
 				if (prev <= 1) {
@@ -628,13 +632,21 @@ const PokemonGame = () => {
 	}, [isHardMode, isGameActive, startGuessTimer]);
 
 	const handleCorrectAnswer = async () => {
-		setIsCorrect(true);
+		if (!currentPokemon) return;
 
-		// Stop the timer immediately to preserve the current time for points calculation
+		// Play correct sound effect
+		if (correctAudioRef.current && !isMuted) {
+			correctAudioRef.current.currentTime = 0;
+			correctAudioRef.current.play();
+		}
+
+		// Stop the current timer immediately
 		if (timerInterval.current) {
 			clearInterval(timerInterval.current);
 			timerInterval.current = null;
 		}
+
+		setIsCorrect(true);
 
 		// Clean up all audio immediately when correct answer is given
 		cleanupAllAudio();
@@ -648,7 +660,6 @@ const PokemonGame = () => {
 		if (isHardMode && guessTimeLeft >= 10) {
 			setConsecutiveFastAnswers((prev) => {
 				const newCount = prev + 1;
-
 				// Start Hype Train when reaching 3 or more
 				if (newCount >= 3) {
 					setShowHypeTrain(true);
@@ -656,9 +667,6 @@ const PokemonGame = () => {
 				}
 				return newCount;
 			});
-		} else {
-			setConsecutiveFastAnswers(0);
-			setShowHypeTrain(false);
 		}
 
 		let earnedPoints = 0;
@@ -771,7 +779,12 @@ const PokemonGame = () => {
 			// 6. Set new Pokemon
 			setCurrentPokemonId(nextPokemonId);
 
-			// 7. Focus input
+			// 7. Reset timer to 15 seconds (we'll let startGuessTimer handle the shiny check)
+			if (isHardMode) {
+				startGuessTimer();
+			}
+
+			// 8. Focus input
 			inputRef.current?.focus();
 		}
 	};
