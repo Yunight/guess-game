@@ -1,4 +1,4 @@
-import path from "path"
+import path from "node:path"
 import react from "@vitejs/plugin-react"
 import { defineConfig } from "vite"
 import { VitePWA } from 'vite-plugin-pwa'
@@ -7,10 +7,7 @@ export default defineConfig({
   plugins: [
     react(),
     VitePWA({
-      registerType: 'prompt',
-      devOptions: {
-        enabled: true
-      },
+      registerType: "autoUpdate",
       includeAssets: [
         'favicon.ico', 
         'apple-touch-icon.png', 
@@ -22,28 +19,10 @@ export default defineConfig({
         'sounds/low_life.mp3',
         'sounds/shiny_effect.mp3'
       ],
-      manifest: {
-        name: 'PokeGuesser',
-        short_name: 'PokeGuesser',
-        description: 'A fun Pokemon guessing game',
-        theme_color: '#ffffff',
-        background_color: '#ffffff',
-        display: 'standalone',
-        icons: [
-          {
-            src: 'pwa-192x192.png',
-            sizes: '192x192',
-            type: 'image/png'
-          },
-          {
-            src: 'pwa-512x512.png',
-            sizes: '512x512',
-            type: 'image/png',
-            purpose: 'any maskable'
-          }
-        ]
-      },
       workbox: {
+        cleanupOutdatedCaches: true,
+        skipWaiting: true,
+        clientsClaim: true,
         globPatterns: ['**/*.{js,css,html,ico,png,svg,mp3,ogg,gif}'],
         runtimeCaching: [
           {
@@ -144,6 +123,27 @@ export default defineConfig({
                 ignoreSearch: true
               }
             }
+          }
+        ]
+      },
+      manifest: {
+        name: "Pokemon Guesser",
+        short_name: "PokemonGuesser",
+        description: "A fun Pokemon guessing game",
+        theme_color: "#ffffff",
+        background_color: "#ffffff",
+        display: "standalone",
+        icons: [
+          {
+            src: "pwa-192x192.png",
+            sizes: "192x192",
+            type: "image/png"
+          },
+          {
+            src: "pwa-512x512.png",
+            sizes: "512x512",
+            type: "image/png",
+            purpose: "any maskable"
           }
         ]
       }
