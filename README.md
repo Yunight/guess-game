@@ -1,4 +1,6 @@
-# Pokemon Guessing Game 🎮
+<h1 align="center" style="font-size: 3em">Pokemon Guessing Game 🎮</h1>
+
+A modern web-based Pokemon guessing game where you test your Pokemon knowledge by identifying Pokemon from their silhouettes. | Un jeu moderne de devinettes Pokémon où vous testez vos connaissances en identifiant les Pokémon à partir de leurs silhouettes.
 
 <table>
 <tr><td width="50%" valign="top">
@@ -6,27 +8,30 @@
 ## Features 🌟
 
 ### Game Modes
-- **Chill Mode**: Relaxed gameplay with unlimited time and hints
-- **Hard Mode**: Competitive mode with time limits and special mechanics
+- **Chill Mode**: 
+  Relaxed gameplay with unlimited time and hints
+- **Hard Mode**: 
+  Competitive mode with time limits and special mechanics
 
 ### Core Features
-- Pokemon silhouette identification
-- Support for all 9 generations
-- Bilingual support (French/English)
-- Real Pokemon cries and sound effects
-- Responsive design for all devices
-- Local and global leaderboards
-- Shiny Pokemon encounters
+- **Silhouettes**: Pokemon identification challenge
+- **Generations**: All 9 Pokemon generations
+- **Languages**: English and French support
+- **Audio**: Real Pokemon cries and effects
+- **Design**: Fully responsive for all devices
+- **Rankings**: Local and global leaderboards
+- **Special**: Shiny Pokemon encounters
 
 ### Special Mechanics (Hard Mode)
 - **Time Limit**: 15s per Pokemon (10s for Shiny)
 - **Hype Train**: Chain 3+ fast answers for bonus
 - **Critical Hit**: 20% chance for bonus points
 - **Critical Success**: Last-second correct answers
-- **Points**:
-  - Regular: 1-3 points based on speed
-  - Shiny: Always 5 points
-  - Hype Train: Chain bonus points
+
+### Points System 🏆
+- **Regular**: 1-3 points based on speed
+- **Shiny**: Always 5 points
+- **Hype Train**: Chain bonus points
 
 ### How to Play 🎯
 1. Enter name & select generation
@@ -36,45 +41,47 @@
 5. Use hints in Chill Mode (→)
 
 ### Controls ⌨️
-- Enter: Submit guess
-- ↑/↓: Navigate suggestions
-- →: Use hint (Chill Mode)
-- "Quit": End game early
+- **Enter**: Submit guess
+- **↑/↓**: Navigate suggestions
+- **→**: Use hint (Chill Mode)
+- **Quit**: End game early
 
 ### Sound Effects 🎵
-- Pokemon cries
-- Shiny effects
-- Correct/wrong answers
-- Victory fanfare
-- Hype train effects
-- Critical hit sounds
+- **Pokemon**: Unique cries for each Pokemon
+- **Special**: Shiny encounter effects
+- **Feedback**: Correct/wrong answer sounds
+- **Victory**: Win celebration fanfare
+- **Bonus**: Hype train and critical hit effects
 
 </td><td width="50%" valign="top">
 
 ## Fonctionnalités 🌟
 
 ### Modes de Jeu
-- **Mode Détente**: Gameplay détendu, temps et indices illimités
-- **Mode Difficile**: Mode compétitif chronométré avec mécaniques spéciales
+- **Mode Détente**: 
+  Gameplay détendu avec temps et indices illimités
+- **Mode Difficile**: 
+  Mode compétitif avec limites de temps et mécaniques spéciales
 
 ### Fonctionnalités Principales
-- Identification des silhouettes Pokémon
-- Support des 9 générations
-- Support bilingue (Français/Anglais)
-- Cris Pokémon et effets sonores réels
-- Design adaptatif pour tous appareils
-- Classements locaux et mondiaux
-- Rencontres de Pokémon Chromatiques
+- **Silhouettes**: Défi d'identification Pokémon
+- **Générations**: Les 9 générations Pokémon
+- **Langues**: Support français et anglais
+- **Audio**: Cris et effets Pokémon réels
+- **Design**: Adaptatif pour tous les appareils
+- **Classements**: Locaux et mondiaux
+- **Spécial**: Rencontres de Pokémon Chromatiques
 
 ### Mécaniques Spéciales (Mode Difficile)
 - **Limite de Temps**: 15s par Pokémon (10s pour Chromatique)
 - **Hype Train**: Chaîne de 3+ réponses rapides pour bonus
 - **Coup Critique**: 20% de chance de points bonus
 - **Succès Critique**: Réponses correctes dernière seconde
-- **Points**:
-  - Normal: 1-3 points selon vitesse
-  - Chromatique: Toujours 5 points
-  - Hype Train: Points bonus en chaîne
+
+### Système de Points 🏆
+- **Normal**: 1-3 points selon la vitesse
+- **Chromatique**: Toujours 5 points
+- **Hype Train**: Points bonus en chaîne
 
 ### Comment Jouer 🎯
 1. Entrer nom & sélectionner génération
@@ -84,18 +91,17 @@
 5. Utiliser indices en Mode Détente (→)
 
 ### Contrôles ⌨️
-- Entrée: Soumettre réponse
-- ↑/↓: Naviguer suggestions
-- →: Utiliser indice (Mode Détente)
-- "Quitter": Terminer partie
+- **Entrée**: Soumettre réponse
+- **↑/↓**: Naviguer suggestions
+- **→**: Utiliser indice (Mode Détente)
+- **Quitter**: Terminer partie
 
 ### Effets Sonores 🎵
-- Cris des Pokémon
-- Effets Chromatiques
-- Réponses correctes/fausses
-- Fanfare de victoire
-- Effets Hype Train
-- Sons Coup Critique
+- **Pokémon**: Cris uniques pour chaque Pokémon
+- **Spécial**: Effets de rencontre Chromatique
+- **Retour**: Sons réponses correctes/fausses
+- **Victoire**: Fanfare de célébration
+- **Bonus**: Effets Hype Train et coup critique
 
 </td></tr>
 </table>
@@ -103,23 +109,19 @@
 ## Technical Stack 🛠️ | Stack Technique 🛠️
 
 <table>
-<tr><td width="50%">
+<tr><td width="50%" valign="top">
 
-- React
-- TypeScript
-- Tailwind CSS
-- Vite
-- Firebase (Leaderboards)
-- PWA Support
+- **Frontend**: React, TypeScript, Tailwind CSS
+- **Build**: Vite
+- **Backend**: Firebase (Leaderboards)
+- **Features**: PWA Support, Offline Mode
 
-</td><td width="50%">
+</td><td width="50%" valign="top">
 
-- React
-- TypeScript
-- Tailwind CSS
-- Vite
-- Firebase (Classements)
-- Support PWA
+- **Frontend**: React, TypeScript, Tailwind CSS
+- **Build**: Vite
+- **Backend**: Firebase (Classements)
+- **Fonctionnalités**: Support PWA, Mode Hors-ligne
 
 </td></tr>
 </table>
