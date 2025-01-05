@@ -1,4 +1,4 @@
-# Pokemon Guessing Game 🎮 | Jeu de Devinettes Pokémon 🎮
+# Pokemon Guessing Game 🎮
 
 <table>
 <tr><td width="50%">
