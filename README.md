@@ -1,7 +1,17 @@
-<h1 align="center" style="font-size: 3em">Pokemon Guessing Game 🎮</h1>
+# Pokemon Guessing Game 🎮 | Jeu de Devinettes Pokémon 🎮
 
-A modern web-based Pokemon guessing game where you test your Pokemon knowledge by identifying Pokemon from their silhouettes. 
-Un jeu moderne de devinettes Pokémon où vous testez vos connaissances en identifiant les Pokémon à partir de leurs silhouettes.
+A modern web-based Pokemon guessing game where you test your Pokemon knowledge by identifying Pokemon from their silhouettes. | Un jeu moderne de devinettes Pokémon où vous testez vos connaissances en identifiant les Pokémon à partir de leurs silhouettes.
+
+<table>
+<tr>
+<td width="50%" align="center">
+<img src="english_display.png" alt="Pokemon Game Features and Gameplay Sequence" width="100%">
+</td>
+<td width="50%" align="center">
+<img src="french_display.png" alt="Séquence de Jeu de Devine le Pokémon" width="100%">
+</td>
+</tr>
+</table>
 
 <table>
 <tr><td width="50%" valign="top">
