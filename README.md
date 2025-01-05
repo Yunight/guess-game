@@ -5,10 +5,10 @@ A modern web-based Pokemon guessing game where you test your Pokemon knowledge b
 <table>
 <tr>
 <td width="50%" align="center">
-<img src="english_display.png" alt="Pokemon Game Features and Gameplay Sequence" width="100%">
+<img src="public/images/howtoplay/english_display.svg" alt="Pokemon Game Features and Gameplay Sequence" width="100%">
 </td>
 <td width="50%" align="center">
-<img src="french_display.png" alt="Séquence de Jeu de Devine le Pokémon" width="100%">
+<img src="public/images/howtoplay/french_display.svg" alt="Séquence de Jeu de Devine le Pokémon" width="100%">
 </td>
 </tr>
 </table>
