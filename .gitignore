@@ -9,6 +9,8 @@ node_modules/
 # Build output
 dist/
 build/
+coverage/
+dev-dist/
 
 # IDE files
 .vscode/
@@ -30,3 +32,10 @@ pnpm-debug.log*
 # System files
 .DS_Store
 Thumbs.db
+
+# Temporary files
+assistant_snippet_*.txt
+*.cjs
+
+# Default Vite assets
+public/vite.svg
