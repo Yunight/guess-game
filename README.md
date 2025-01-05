@@ -1,7 +1,7 @@
 # Pokemon Guessing Game 🎮
 
 <table>
-<tr><td width="50%">
+<tr><td width="50%" valign="top">
 
 ## Features 🌟
 
@@ -49,7 +49,7 @@
 - Hype train effects
 - Critical hit sounds
 
-</td><td width="50%">
+</td><td width="50%" valign="top">
 
 ## Fonctionnalités 🌟
 
