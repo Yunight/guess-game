@@ -347,7 +347,7 @@ export const MenuScreen: FC<MenuScreenProps> = ({
 									<div
 										key={rankingKey}
 										className={`grid grid-cols-12 gap-1 sm:gap-2 p-2 sm:p-3 items-center text-sm sm:text-base hover:bg-blue-50/80 transition-all duration-300 relative
-                    ${player.name === playerName ? "bg-yellow-50/90 hover:bg-yellow-100/90" : ""}
+                    ${player.name.toLowerCase() === playerName.toLowerCase() ? "bg-yellow-50/90 hover:bg-yellow-100/90" : ""}
                     ${isTopRanking ? "font-semibold" : ""}`}
 									>
 										<div className="col-span-2 sm:col-span-1 text-gray-800 relative z-10 flex justify-center">
@@ -373,7 +373,8 @@ export const MenuScreen: FC<MenuScreenProps> = ({
 											)}
 										</div>
 										<div className="col-span-3 sm:col-span-4 truncate text-gray-800 text-sm sm:text-base pl-1 sm:pl-0">
-											{player.name === playerName ? (
+											{player.name.toLowerCase() ===
+											playerName.toLowerCase() ? (
 												<div className="flex items-center gap-2">
 													<span className="text-blue-600 font-bold truncate">
 														★ {player.name}
