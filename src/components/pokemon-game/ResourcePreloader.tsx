@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useAppSelector } from "../../hooks/store";
 import { useLocalStorage } from "../../hooks/useLocalStorage";
 import type { RootState } from "../../store/store";
@@ -11,21 +11,34 @@ interface PreloaderProps {
 
 interface ResourceCache {
 	version: string;
-	generation: string;
 	lastUpdated: number;
 	loadedResources: {
-		sprites: number[];
-		cries: number[];
+		[generation: string]: {
+			sprites: number[];
+			cries: number[];
+		};
 	};
 }
 
 const CACHE_VERSION = "1.0.0";
-const CACHE_DURATION = 24 * 60 * 60 * 1000; // 24 hours
+const CACHE_DURATION = 12 * 60 * 60 * 1000; // 12 hours
 const DEFAULT_GENERATION: Generation = {
 	name: "Kanto",
 	startId: 1,
 	endId: 151,
 };
+
+const GENERATIONS: Generation[] = [
+	{ name: "1ère Génération", startId: 1, endId: 151 },
+	{ name: "2ème Génération", startId: 152, endId: 251 },
+	{ name: "3ème Génération", startId: 252, endId: 386 },
+	{ name: "4ème Génération", startId: 387, endId: 493 },
+	{ name: "5ème Génération", startId: 494, endId: 649 },
+	{ name: "6ème Génération", startId: 650, endId: 721 },
+	{ name: "7ème Génération", startId: 722, endId: 809 },
+	{ name: "8ème Génération", startId: 810, endId: 905 },
+	{ name: "9ème Génération", startId: 906, endId: 1010 },
+];
 
 const BATCH_SIZE = 20;
 
@@ -39,32 +52,26 @@ export const ResourcePreloader = ({ onComplete, children }: PreloaderProps) => {
 		"pokemon-resource-cache",
 		{
 			version: CACHE_VERSION,
-			generation: "",
 			lastUpdated: 0,
-			loadedResources: {
-				sprites: [],
-				cries: [],
-			},
+			loadedResources: {},
 		},
 	);
 
-	useEffect(() => {
-		const preloadResources = async () => {
+	const preloadGeneration = useCallback(
+		async (gen: Generation, isBackground = false) => {
 			try {
-				const startId = generation.startId;
-				const endId = generation.endId;
+				const startId = gen.startId;
+				const endId = gen.endId;
 				const totalResources = (endId - startId + 1) * 2;
 				let loadedResources = 0;
 
-				// Check if cache is valid
+				// Check if cache is valid for this generation
 				const isCacheValid =
 					resourceCache.version === CACHE_VERSION &&
-					resourceCache.generation === generation.name &&
+					resourceCache.loadedResources[gen.name] &&
 					Date.now() - resourceCache.lastUpdated < CACHE_DURATION;
 
 				if (isCacheValid) {
-					setIsLoading(false);
-					onComplete?.();
 					return;
 				}
 
@@ -79,12 +86,15 @@ export const ResourcePreloader = ({ onComplete, children }: PreloaderProps) => {
 				}
 
 				const newCache: ResourceCache = {
+					...resourceCache,
 					version: CACHE_VERSION,
-					generation: generation.name,
 					lastUpdated: Date.now(),
 					loadedResources: {
-						sprites: [],
-						cries: [],
+						...resourceCache.loadedResources,
+						[gen.name]: {
+							sprites: [] as number[],
+							cries: [] as number[],
+						},
 					},
 				};
 
@@ -95,17 +105,21 @@ export const ResourcePreloader = ({ onComplete, children }: PreloaderProps) => {
 							const img = new Image();
 							img.onload = () => {
 								loadedResources++;
-								setProgress(
-									Math.round((loadedResources / totalResources) * 100),
-								);
-								newCache.loadedResources.sprites.push(id);
+								if (!isBackground) {
+									setProgress(
+										Math.round((loadedResources / totalResources) * 100),
+									);
+								}
+								newCache.loadedResources[gen.name].sprites.push(id);
 								resolve(id);
 							};
 							img.onerror = () => {
 								loadedResources++;
-								setProgress(
-									Math.round((loadedResources / totalResources) * 100),
-								);
+								if (!isBackground) {
+									setProgress(
+										Math.round((loadedResources / totalResources) * 100),
+									);
+								}
 								resolve(id);
 							};
 							img.src = spriteUrl;
@@ -118,17 +132,21 @@ export const ResourcePreloader = ({ onComplete, children }: PreloaderProps) => {
 							const audio = new Audio();
 							audio.oncanplaythrough = () => {
 								loadedResources++;
-								setProgress(
-									Math.round((loadedResources / totalResources) * 100),
-								);
-								newCache.loadedResources.cries.push(id);
+								if (!isBackground) {
+									setProgress(
+										Math.round((loadedResources / totalResources) * 100),
+									);
+								}
+								newCache.loadedResources[gen.name].cries.push(id);
 								resolve(id);
 							};
 							audio.onerror = () => {
 								loadedResources++;
-								setProgress(
-									Math.round((loadedResources / totalResources) * 100),
-								);
+								if (!isBackground) {
+									setProgress(
+										Math.round((loadedResources / totalResources) * 100),
+									);
+								}
 								resolve(id);
 							};
 							audio.src = cryUrl;
@@ -140,17 +158,61 @@ export const ResourcePreloader = ({ onComplete, children }: PreloaderProps) => {
 				}
 
 				setResourceCache(newCache);
+			} catch (error) {
+				console.error(
+					"Error preloading resources for generation:",
+					gen.name,
+					error,
+				);
+			}
+		},
+		[resourceCache, setResourceCache],
+	);
+
+	const preloadAdjacentGenerations = useCallback(
+		async (currentGen: Generation) => {
+			const currentIndex = GENERATIONS.findIndex(
+				(gen) => gen.name === currentGen.name,
+			);
+			if (currentIndex === -1) return;
+
+			// Get previous and next generations if they exist
+			const prevGen = currentIndex > 0 ? GENERATIONS[currentIndex - 1] : null;
+			const nextGen =
+				currentIndex < GENERATIONS.length - 1
+					? GENERATIONS[currentIndex + 1]
+					: null;
+
+			// Preload adjacent generations in the background
+			if (prevGen) {
+				await preloadGeneration(prevGen, true);
+			}
+			if (nextGen) {
+				await preloadGeneration(nextGen, true);
+			}
+		},
+		[preloadGeneration],
+	);
+
+	useEffect(() => {
+		const loadResources = async () => {
+			try {
+				// First, load the current generation
+				await preloadGeneration(generation);
 				setIsLoading(false);
 				onComplete?.();
+
+				// Then, silently preload adjacent generations in the background
+				preloadAdjacentGenerations(generation);
 			} catch (error) {
-				console.error("Error preloading resources:", error);
+				console.error("Error in resource preloader:", error);
 				setIsLoading(false);
 				onComplete?.();
 			}
 		};
 
-		preloadResources();
-	}, [generation, onComplete, resourceCache, setResourceCache]);
+		loadResources();
+	}, [generation, onComplete, preloadGeneration, preloadAdjacentGenerations]);
 
 	if (isLoading) {
 		return (
