@@ -21,6 +21,7 @@ interface GameOverDialogProps {
 	bestScore: number;
 	bestTime: number;
 	userRanking: number | null;
+	bestRanking: number | null;
 	totalTimeElapsed: number;
 	formatTimeForRanking: (seconds: number) => string;
 	rewardPokemon: { pokemon: Pokemon | undefined; isLoading: boolean };
@@ -89,6 +90,7 @@ export const GameOverDialog: FC<GameOverDialogProps> = ({
 	bestScore,
 	bestTime,
 	userRanking,
+	bestRanking,
 	totalTimeElapsed,
 	formatTimeForRanking,
 	rewardPokemon,
@@ -551,15 +553,32 @@ https://pokemon-guesser-game.vercel.app/
 								</div>
 							</div>
 
-							{userRanking && (
+							{(userRanking || bestRanking) && (
 								<div className="col-span-2 bg-white/10 backdrop-blur-sm rounded-xl p-4 space-y-2">
 									<div className="flex items-center gap-2 text-yellow-300">
 										<Crown className="h-5 w-5" />
 										<p className="text-sm font-medium">{t("ranking")}</p>
 									</div>
-									<p className="text-2xl font-bold text-center">
-										#{userRanking}
-									</p>
+									<div className="space-y-1">
+										{userRanking && (
+											<div className="flex items-center justify-between">
+												<span className="text-sm text-gray-200">
+													{t("current")}:
+												</span>
+												<p className="text-2xl font-bold">#{userRanking}</p>
+											</div>
+										)}
+										{bestRanking && bestScore > score && (
+											<div className="flex items-center justify-between">
+												<span className="text-sm text-gray-200">
+													{t("best")}:
+												</span>
+												<p className="text-lg font-bold text-yellow-300">
+													#{bestRanking}
+												</p>
+											</div>
+										)}
+									</div>
 								</div>
 							)}
 

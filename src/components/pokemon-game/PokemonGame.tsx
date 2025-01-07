@@ -165,6 +165,9 @@ const PokemonGame = () => {
 			(playerName && isAuthName),
 	);
 
+	// Add bestRanking state
+	const [bestRanking, setBestRanking] = useState<number | null>(null);
+
 	// Add sound URLs as constants at the top of the component
 	const CORRECT_SOUND_URL = "/sounds/pkm_level_up.mp3";
 	const WRONG_SOUND_URL = "/sounds/bump_wall.mp3";
@@ -868,7 +871,7 @@ const PokemonGame = () => {
 	}, []);
 
 	const convertToStoredFormat = useCallback((name: string) => {
-		return name.trim().toLowerCase().replace(/\s+/g, "_");
+		return name.trim().replace(/\s+/g, "_");
 	}, []);
 
 	const fetchSelectedRankings = useCallback(async () => {
@@ -978,11 +981,55 @@ const PokemonGame = () => {
 			setGameOver(true);
 			console.log("🔄 Updated game states: isGameActive=false, gameOver=true");
 
+			// Calculate rankings
+			try {
+				const rankingsRef = collection(
+					db,
+					`rankings_gen${selectedGeneration.startId}_${selectedGeneration.endId}`,
+				);
+				const q = query(rankingsRef, orderBy("score", "desc"));
+				const querySnapshot = await getDocs(q);
+				const allRankings = querySnapshot.docs.map((doc) => doc.data());
+
+				// Calculate current ranking
+				let currentRank = 1;
+				for (const ranking of allRankings) {
+					if (
+						ranking.score > score ||
+						(ranking.score === score && ranking.time <= totalTimeElapsed)
+					) {
+						currentRank++;
+					}
+				}
+				setUserRanking(currentRank);
+
+				// Calculate best ranking if different from current
+				if (bestScore > 0 && bestScore !== score) {
+					let bestRank = 1;
+					for (const ranking of allRankings) {
+						if (
+							ranking.score > bestScore ||
+							(ranking.score === bestScore && ranking.time <= bestTime)
+						) {
+							bestRank++;
+						}
+					}
+					setBestRanking(bestRank);
+				} else {
+					setBestRanking(null);
+				}
+			} catch (error) {
+				console.error("Error calculating rankings:", error);
+				setUserRanking(null);
+				setBestRanking(null);
+			}
+
 			// Always calculate reward Pokemon, regardless of remaining Pokemon
 			console.log("🎁 Calculating reward Pokemon");
 			// Set loading state first
 			setRewardPokemon({ pokemon: undefined, isLoading: true });
 			console.log("⌛ Set reward Pokemon loading state");
+
 			// Calculate reward Pokemon
 			const rewardResult = await calculateRewardPokemon(score);
 			console.log(
@@ -1045,7 +1092,7 @@ const PokemonGame = () => {
 							score: score,
 							time: totalTimeElapsed,
 							timestamp: serverTimestamp(),
-							uid: auth.currentUser?.uid || null, // Add uid field
+							uid: auth.currentUser?.uid || null,
 						};
 
 						if (!querySnapshot.empty) {
@@ -1081,15 +1128,26 @@ const PokemonGame = () => {
 	}, [
 		gameOver,
 		score,
+		bestScore,
+		totalTimeElapsed,
+		bestTime,
 		isMuted,
-		calculateRewardPokemon,
+		isHardMode,
+		playerName,
 		selectedGeneration.startId,
 		selectedGeneration.endId,
-		bestScore,
-		playerName,
-		totalTimeElapsed,
-		setBestTime,
+		calculateRewardPokemon,
+		convertToStoredFormat,
 		fetchSelectedRankings,
+		cleanupAllAudio,
+		db,
+		setGameOver,
+		setIsGameActive,
+		setIsCorrect,
+		setRewardPokemon,
+		setUserRanking,
+		setBestRanking,
+		setBestTime,
 	]);
 
 	// Update the effect to use both functions
@@ -1690,6 +1748,7 @@ const PokemonGame = () => {
 				bestScore={bestScore}
 				bestTime={bestTime}
 				userRanking={userRanking}
+				bestRanking={bestRanking}
 				totalTimeElapsed={totalTimeElapsed}
 				formatTimeForRanking={formatTimeForRanking}
 				rewardPokemon={rewardPokemon}
