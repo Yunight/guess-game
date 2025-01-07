@@ -1199,15 +1199,21 @@ const PokemonGame = () => {
 		if (!playerName) return;
 
 		const exactName = playerName.trim(); // Store exact input name
+		const savedName = localStorage.getItem("pokemonGamePlayerName");
 
-		// If user is authenticated or we're restarting, skip name validation
-		if (!auth.currentUser && !isRestarting) {
+		// Skip name validation if:
+		// 1. User is authenticated OR
+		// 2. We're restarting OR
+		// 3. The name is the same as the saved name
+		const shouldSkipValidation =
+			auth.currentUser || isRestarting || exactName === savedName;
+
+		if (!shouldSkipValidation) {
 			const isAvailable = await checkNameAvailability(exactName);
 			if (!isAvailable) return;
 		}
 
 		// If it's a new user (different from saved name), clean up localStorage
-		const savedName = localStorage.getItem("pokemonGamePlayerName");
 		if (savedName !== exactName) {
 			localStorage.clear();
 			localStorage.setItem("pokemonGamePlayerName", exactName);
