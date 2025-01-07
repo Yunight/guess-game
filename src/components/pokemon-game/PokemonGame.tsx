@@ -900,12 +900,16 @@ const PokemonGame = () => {
 			setRankings(rankingsData);
 
 			// Find user's best record and update best score/time
-			const userBestRecord = rankingsData.find((record) =>
-				auth.currentUser
-					? record.uid === auth.currentUser.uid
-					: convertToStoredFormat(record.name) ===
-						convertToStoredFormat(playerName),
-			);
+			const userBestRecord = rankingsData.find((record) => {
+				if (auth.currentUser) {
+					// For authenticated users, match by UID
+					return record.uid === auth.currentUser.uid;
+				} else {
+					// For non-authenticated users, match by name
+					return record.name === playerName;
+				}
+			});
+
 			if (userBestRecord) {
 				setBestScore(userBestRecord.score);
 				setBestTime(userBestRecord.time);
@@ -920,7 +924,6 @@ const PokemonGame = () => {
 		selectedGeneration.startId,
 		selectedGeneration.endId,
 		convertToDisplayFormat,
-		convertToStoredFormat,
 		playerName,
 	]);
 

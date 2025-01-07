@@ -343,23 +343,27 @@ export const MenuScreen: FC<MenuScreenProps> = ({
 							{rankings.map((player, index) => {
 								const rankingKey = `${player.uid || player.name}-${player.score}-${player.timestamp.getTime()}`;
 								const isTopRanking = index < 3;
+								const isCurrentUser = auth.currentUser
+									? player.uid === auth.currentUser.uid
+									: player.name === playerName;
+
 								return (
 									<div
 										key={rankingKey}
 										className={`grid grid-cols-12 gap-1 sm:gap-2 p-2 sm:p-3 items-center text-sm sm:text-base hover:bg-blue-50/80 transition-all duration-300 relative
-                    ${player.name.toLowerCase() === playerName.toLowerCase() ? "bg-yellow-50/90 hover:bg-yellow-100/90" : ""}
-                    ${isTopRanking ? "font-semibold" : ""}`}
+											${isCurrentUser ? "bg-yellow-50/90 hover:bg-yellow-100/90" : ""}
+											${isTopRanking ? "font-semibold" : ""}`}
 									>
 										<div className="col-span-2 sm:col-span-1 text-gray-800 relative z-10 flex justify-center">
 											{isTopRanking ? (
 												<div
 													className={`
-                        relative w-8 h-8 rounded-full flex items-center justify-center
-                        ${index === 0 ? "bg-gradient-to-br from-yellow-300 to-yellow-500" : ""}
-                        ${index === 1 ? "bg-gradient-to-br from-gray-300 to-gray-500" : ""}
-                        ${index === 2 ? "bg-gradient-to-br from-orange-300 to-orange-700" : ""}
-                        shadow-lg transform hover:scale-110 transition-transform duration-200
-                      `}
+														relative w-8 h-8 rounded-full flex items-center justify-center
+														${index === 0 ? "bg-gradient-to-br from-yellow-300 to-yellow-500" : ""}
+														${index === 1 ? "bg-gradient-to-br from-gray-300 to-gray-500" : ""}
+														${index === 2 ? "bg-gradient-to-br from-orange-300 to-orange-700" : ""}
+														shadow-lg transform hover:scale-110 transition-transform duration-200
+													`}
 												>
 													<div className="absolute inset-0 rounded-full bg-white/20 animate-pulse-slow" />
 													<span className="relative text-white font-bold text-base z-10">
@@ -373,8 +377,7 @@ export const MenuScreen: FC<MenuScreenProps> = ({
 											)}
 										</div>
 										<div className="col-span-3 sm:col-span-4 truncate text-gray-800 text-sm sm:text-base pl-1 sm:pl-0">
-											{player.name.toLowerCase() ===
-											playerName.toLowerCase() ? (
+											{isCurrentUser ? (
 												<div className="flex items-center gap-2">
 													<span className="text-blue-600 font-bold truncate">
 														★ {player.name}
