@@ -1427,29 +1427,12 @@ const PokemonGame = () => {
 	// Update the initial useEffect for loading the username
 	useEffect(() => {
 		const savedName = localStorage.getItem("pokemonGamePlayerName");
-		if (savedName) {
+		if (savedName && !auth.currentUser) {
 			setPlayerName(savedName);
 			setNameError(null);
-			setIsAuthName(true); // Set auth name state for saved names
-			// For saved names, we don't need to set isCheckingName to true
-			// Just validate silently in the background
-			checkNameAvailability(savedName)
-				.then((isAvailable) => {
-					if (!isAvailable) {
-						localStorage.removeItem("pokemonGamePlayerName");
-						setPlayerName("");
-						setNameError(
-							"Ce nom est déjà utilisé. Veuillez en choisir un autre.",
-						);
-						setIsAuthName(false);
-					}
-				})
-				.catch(() => {
-					// If check fails, still allow using the saved name
-					setNameError(null);
-				});
+			setIsAuthName(false);
 		}
-	}, [checkNameAvailability]);
+	}, []);
 
 	// Modify the auth name effect to be more immediate
 	useEffect(() => {
@@ -1652,18 +1635,19 @@ const PokemonGame = () => {
 	useEffect(() => {
 		const unsubscribe = auth.onAuthStateChanged((user: User | null) => {
 			if (user?.displayName) {
+				// User is logged in with a display name
 				const formattedName = formatDisplayName(user.displayName, user.email);
 				setPlayerName(formattedName);
 				setIsAuthName(true);
 				setNameError(null);
 				setIsCheckingName(false);
 				localStorage.setItem("pokemonGamePlayerName", formattedName);
-			} else {
-				// If no user, only clear if we were using an auth name
-				if (isAuthName) {
-					setPlayerName("");
+			} else if (!user) {
+				// User logged out - restore saved name from localStorage if it exists
+				const savedName = localStorage.getItem("pokemonGamePlayerName");
+				if (savedName) {
+					setPlayerName(savedName);
 					setIsAuthName(false);
-					localStorage.removeItem("pokemonGamePlayerName");
 				}
 			}
 		});
