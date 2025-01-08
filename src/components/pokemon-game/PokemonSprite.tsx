@@ -16,7 +16,6 @@ export const PokemonSprite = ({
 	pokemonId,
 	className,
 	isRevealed = true,
-	name = "Pokemon",
 	isShiny = false,
 }: PokemonSpriteProps) => {
 	const [homeError, setHomeError] = useState(false);
@@ -68,7 +67,6 @@ export const PokemonSprite = ({
 		>
 			<img
 				src={spriteUrl}
-				alt="Pokemon sprite"
 				className={cn(
 					"w-full h-full object-contain transition-opacity duration-300",
 					!isRevealed && "brightness-0",

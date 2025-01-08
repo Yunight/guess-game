@@ -1655,21 +1655,6 @@ const PokemonGame = () => {
 		return () => unsubscribe();
 	}, [formatDisplayName]);
 
-	// Add effect to handle Pokemon loading and sound playing
-	useEffect(() => {
-		// Only play sounds when Pokemon is loaded and game is active
-		if (currentPokemon && !isPokemonLoading && isGameActive && !isRestarting) {
-			// Play Pokemon cry if not muted
-			if (!isMuted && currentPokemon.cry) {
-				const audio = new Audio(currentPokemon.cry);
-				audio.volume = 0.2;
-				audio.play().catch(() => {
-					// Ignore errors
-				});
-			}
-		}
-	}, [currentPokemon, isPokemonLoading, isGameActive, isMuted, isRestarting]);
-
 	return (
 		<div className="min-h-screen bg-gradient-to-b from-blue-100 to-blue-50 p-4 flex items-start sm:items-center justify-center font-oswald">
 			{isGameActive ? (
