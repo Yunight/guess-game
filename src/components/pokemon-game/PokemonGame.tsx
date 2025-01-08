@@ -1660,28 +1660,12 @@ const PokemonGame = () => {
 		// Only play sounds when Pokemon is loaded and game is active
 		if (currentPokemon && !isPokemonLoading && isGameActive && !isRestarting) {
 			// Play Pokemon cry if not muted
-			if (!isMuted && currentPokemon.cryUrl) {
-				// Try latest cry first, fallback to legacy if latest fails
-				const playPokemonCry = async () => {
-					try {
-						const audio = new Audio(currentPokemon.cryUrl.latest);
-						audio.volume = 0.2;
-						await audio.play();
-					} catch (error) {
-						// If latest cry fails and legacy cry exists, try legacy
-						if (currentPokemon.cryUrl.legacy) {
-							try {
-								const legacyAudio = new Audio(currentPokemon.cryUrl.legacy);
-								legacyAudio.volume = 0.2;
-								await legacyAudio.play();
-							} catch {
-								// Ignore errors from legacy cry
-							}
-						}
-					}
-				};
-
-				playPokemonCry();
+			if (!isMuted && currentPokemon.cry) {
+				const audio = new Audio(currentPokemon.cry);
+				audio.volume = 0.2;
+				audio.play().catch(() => {
+					// Ignore errors
+				});
 			}
 		}
 	}, [currentPokemon, isPokemonLoading, isGameActive, isMuted, isRestarting]);
