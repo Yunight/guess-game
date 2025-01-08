@@ -19,14 +19,17 @@ export interface Pokemon {
 	frenchFlavorText: string;
 	englishFlavorText: string;
 	sprite: string;
-	shinySprite: string | null;
+	shinySprite: string;
 	isShiny: boolean;
 	evolvesFromSpecies: string | null;
 	hasEvolution: boolean;
 	evolutionStage: number;
 	isLegendary: boolean;
 	isMythical: boolean;
-	cryUrl: string;
+	cryUrl: {
+		latest: string;
+		legacy?: string;
+	};
 }
 
 export interface Rankings {
@@ -34,5 +37,5 @@ export interface Rankings {
 	score: number;
 	time: number;
 	timestamp: Date;
-	uid?: string | null;
+	uid: string | null;
 }
