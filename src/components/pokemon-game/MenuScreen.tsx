@@ -396,7 +396,7 @@ export const MenuScreen: FC<MenuScreenProps> = ({
 										<div className="col-span-2 text-center font-mono text-gray-700 text-sm sm:text-base">
 											{formatTimeForRanking(player.time)}
 										</div>
-										<div className="col-span-3 text-center text-xs sm:text-sm text-gray-500 hidden sm:block">
+										<div className="col-span-3 text-center text-xs sm:text-sm text-gray-500">
 											{formatDate(player.timestamp)}
 										</div>
 									</div>
@@ -404,9 +404,8 @@ export const MenuScreen: FC<MenuScreenProps> = ({
 							})}
 
 							{rankings.length === 0 && (
-								<div className="p-8 text-center text-gray-500 flex flex-col items-center gap-4">
-									<div className="w-16 h-16 bg-gray-200 rounded-full animate-bounce" />
-									<p className="text-lg">{t("noScores")}</p>
+								<div className="text-center py-8 text-gray-500">
+									{t("noRankings")}
 								</div>
 							)}
 						</div>

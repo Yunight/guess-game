@@ -1,4 +1,4 @@
-import React, { type FC, useEffect, useState, useRef } from "react";
+import { type FC, useEffect, useState, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { PokemonSprite } from "./PokemonSprite";
 import type { Pokemon } from "./types";
@@ -298,7 +298,7 @@ export const PokemonDisplay: FC<PokemonDisplayProps> = ({
 				</div>
 
 				<div className="relative z-10 w-full h-full flex items-center justify-center">
-					{!displayedPokemon || !displayedPokemon.sprite ? (
+					{!displayedPokemon || !displayedPokemon.sprites.front_default ? (
 						<div className="pokeball-loading">
 							<div className="outer-circle" />
 							<div className="middle-line" />

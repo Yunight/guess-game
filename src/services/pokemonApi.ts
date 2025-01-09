@@ -140,7 +140,6 @@ const convertToPokemon = (
 ): Omit<Pokemon, "cryUrl"> => {
 	const pokemonId = tyradexPokemon.pokedex_id;
 	
-	// Use cached shiny state if available, otherwise calculate and cache it
 	let isShiny: boolean;
 	if (typeof forcedShinyState === "boolean") {
 		isShiny = forcedShinyState;
@@ -160,8 +159,10 @@ const convertToPokemon = (
 		frenchName: tyradexPokemon.name.fr,
 		frenchFlavorText: "",
 		englishFlavorText: "",
-		sprite: isShiny && tyradexPokemon.sprites.shiny ? tyradexPokemon.sprites.shiny : tyradexPokemon.sprites.regular,
-		shinySprite: tyradexPokemon.sprites.shiny,
+		sprites: {
+			front_default: tyradexPokemon.sprites.regular,
+			front_shiny: tyradexPokemon.sprites.shiny || tyradexPokemon.sprites.regular,
+		},
 		isShiny,
 		evolvesFromSpecies: null,
 		hasEvolution: false,
