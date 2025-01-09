@@ -1,30 +1,12 @@
-import type { User } from "firebase/auth";
-import {
-	type DocumentData,
-	type QueryDocumentSnapshot,
-	type Timestamp,
-	addDoc,
-	collection,
-	getDocs,
-	limit,
-	orderBy,
-	query,
-	serverTimestamp,
-	updateDoc,
-	where,
-} from "firebase/firestore";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { db } from "../../firebase";
-import "../../styles/PokemonGame.css";
-import type {
-	Generation,
-	Pokemon,
-	Rankings,
-} from "@/components/pokemon-game/types";
-import { useLocalStorage } from "@/hooks/useLocalStorage";
 import { skipToken } from "@reduxjs/toolkit/query";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { auth } from "../../firebase";
+import { useGameAudio } from "../../hooks/useGameAudio";
+import { useGameState } from "../../hooks/useGameState";
+import { useGameTimers } from "../../hooks/useGameTimers";
+import { usePlayerName } from "../../hooks/usePlayerName";
+import { useRankings } from "../../hooks/useRankings";
 import {
 	useGetAllPokemonNamesQuery,
 	useGetPokemonByIdQuery,
@@ -32,6 +14,8 @@ import {
 import { GameOverDialog } from "./GameOverDialog";
 import { GameScreen } from "./GameScreen";
 import { MenuScreen } from "./MenuScreen";
+import type { Generation } from "./types";
+import "../../styles/PokemonGame.css";
 
 const GENERATIONS: Generation[] = [
 	{ name: "1ère Génération", startId: 1, endId: 151 },
@@ -44,164 +28,147 @@ const GENERATIONS: Generation[] = [
 	{ name: "8ème Génération", startId: 810, endId: 905 },
 	{ name: "9ème Génération", startId: 906, endId: 1010 },
 ];
-const MAX_HINTS = 10;
-
-// Add rarity tiers for Pokémon rewards
-const POKEMON_REWARDS = [
-	{
-		minScore: 2000,
-		condition: (pokemon: Pokemon) =>
-			pokemon.isMythical && pokemon.name === "mew",
-	},
-	{ minScore: 1500, condition: (pokemon: Pokemon) => pokemon.isMythical },
-	{ minScore: 1000, condition: (pokemon: Pokemon) => pokemon.isLegendary },
-	{
-		minScore: 750,
-		condition: (pokemon: Pokemon) =>
-			pokemon.evolutionStage === 3 &&
-			!pokemon.isLegendary &&
-			!pokemon.isMythical,
-	},
-	{
-		minScore: 500,
-		condition: (pokemon: Pokemon) =>
-			pokemon.evolutionStage === 2 &&
-			!pokemon.isLegendary &&
-			!pokemon.isMythical,
-	},
-	{
-		minScore: 300,
-		condition: (pokemon: Pokemon) =>
-			pokemon.evolutionStage === 1 &&
-			!pokemon.hasEvolution &&
-			!pokemon.isLegendary &&
-			!pokemon.isMythical,
-	},
-	{
-		minScore: 0,
-		condition: (pokemon: Pokemon) =>
-			pokemon.evolutionStage === 1 &&
-			pokemon.hasEvolution &&
-			!pokemon.isLegendary &&
-			!pokemon.isMythical,
-	},
-];
-
-// Add this debounce utility function near other utility functions
-const debounce = <T extends (...args: Parameters<T>) => ReturnType<T>>(
-	func: T,
-	wait: number,
-): ((...args: Parameters<T>) => void) => {
-	let timeoutId: NodeJS.Timeout | undefined;
-
-	return (...args: Parameters<T>) => {
-		if (timeoutId) {
-			clearTimeout(timeoutId);
-		}
-
-		timeoutId = setTimeout(() => {
-			func(...args);
-			timeoutId = undefined;
-		}, wait);
-	};
-};
 
 const PokemonGame = () => {
 	const { i18n } = useTranslation();
-	const [score, setScore] = useState(0);
-	const [bestScore, setBestScore] = useState(0);
-	const [bestTime, setBestTime] = useState(0);
-	const [guess, setGuess] = useState("");
-	const [isCorrect, setIsCorrect] = useState<boolean | null>(null);
-	const [showHint, setShowHint] = useState(false);
-	const [hintsLeft, setHintsLeft] = useState(MAX_HINTS);
-	const [isGameActive, setIsGameActive] = useState(false);
-	const [isHardMode, setIsHardMode] = useState(false);
-	const [playerName, setPlayerName] = useState("");
-	const [selectedGeneration, setSelectedGeneration] = useState<Generation>(
-		GENERATIONS[0],
-	);
-	const [remainingPokemon, setRemainingPokemon] = useState<number[]>([]);
-	const [rankings, setRankings] = useState<Rankings[]>([]);
-	const [gameOver, setGameOver] = useState(false);
-	const [suggestions, setSuggestions] = useState<string[]>([]);
-	const [highlightedIndex, setHighlightedIndex] = useState(-1);
-	const [userRanking, setUserRanking] = useState<number | null>(null);
-	const [showCriticalSuccess, setShowCriticalSuccess] = useState(false);
-	const [showCriticalHit, setShowCriticalHit] = useState(false);
-	const [showHypeTrain, setShowHypeTrain] = useState(false);
-	const [consecutiveFastAnswers, setConsecutiveFastAnswers] = useState(0);
-	const [pointsEarned, setPointsEarned] = useState(0);
-	const [criticalHitCount, setCriticalHitCount] = useState(0);
-	const [criticalSuccessCount, setCriticalSuccessCount] = useState(0);
-	const [hyperTrainCount, setHyperTrainCount] = useState(0);
-	const [maxHypeChain, setMaxHypeChain] = useState(0);
 	const inputRef = useRef<HTMLInputElement>(null);
 	const suggestionsRef = useRef<HTMLDivElement>(null);
-
-	const timerInterval = useRef<NodeJS.Timeout | null>(null);
-	const totalTimeInterval = useRef<NodeJS.Timeout | null>(null);
-	const [guessTimeLeft, setGuessTimeLeft] = useState<number>(15);
-	const [totalTimeElapsed, setTotalTimeElapsed] = useState<number>(0);
-	const [nameError, setNameError] = useState<string | null>(null);
-	const [isCheckingName, setIsCheckingName] = useState(false);
-	const [currentPokemonId, setCurrentPokemonId] = useState<number | null>(null);
-	const [isMuted, setIsMuted] = useState(() => {
-		const savedMute = localStorage.getItem("pokemonGameMuted");
-		return savedMute ? JSON.parse(savedMute) : false;
-	});
-	const victoryAudioRef = useRef<HTMLAudioElement | null>(null);
-	const correctAudioRef = useRef<HTMLAudioElement | null>(null);
-	const wrongAudioRef = useRef<HTMLAudioElement | null>(null);
-	const trainHornRef = useRef<HTMLAudioElement | null>(null);
-	const lowLifeRef = useRef<HTMLAudioElement | null>(null);
-	const isHandlingGameOverRef = useRef<{ timestamp: number } | null>(null);
-	// Track if the name came from auth
-	const [isAuthName, setIsAuthName] = useState(false);
 	const savedName = localStorage.getItem("pokemonGamePlayerName");
-	const canStartGame = Boolean(
-		(playerName && !nameError && !isCheckingName) ||
-			(savedName && playerName === savedName) ||
-			(playerName && isAuthName),
+
+	// Slot machine effect state
+	const [isSlotMachineRunning, setIsSlotMachineRunning] = useState(false);
+	const slotMachineTimerRef = useRef<NodeJS.Timeout | null>(null);
+	const slotMachineCountRef = useRef(0);
+	const [potentialRewards, setPotentialRewards] = useState<number[]>([]);
+	const [spinningPokemonId, setSpinningPokemonId] = useState<number | null>(
+		null,
+	);
+	const [rewardPokemonId, setRewardPokemonId] = useState<number | null>(null);
+
+	// Use our custom hooks
+	const { state: gameState, setters: gameSetters } = useGameState(
+		GENERATIONS[0],
 	);
 
-	// Add bestRanking state
-	const [bestRanking, setBestRanking] = useState<number | null>(null);
+	const {
+		playerName,
+		nameError,
+		isCheckingName,
+		isAuthName,
+		handlePlayerNameChange,
+		checkNameAvailability,
+		convertToStoredFormat,
+		convertToDisplayFormat,
+	} = usePlayerName({ GENERATIONS });
 
-	// Add sound URLs as constants at the top of the component
-	const CORRECT_SOUND_URL = "/sounds/pkm_level_up.mp3";
-	const WRONG_SOUND_URL = "/sounds/bump_wall.mp3";
-	const VICTORY_SOUND_URL = "/sounds/battle_win.mp3";
-	const TRAIN_HORN_URL = "/sounds/train_horn_bell.mp3";
-	const LOW_LIFE_SOUND_URL = "/sounds/low_life.mp3";
+	const {
+		rankings,
+		bestScore,
+		bestTime,
+		userRanking,
+		bestRanking,
+		calculateRankings,
+		fetchRankings,
+	} = useRankings({
+		selectedGeneration: gameState.selectedGeneration,
+		playerName,
+		isGameActive: gameState.isGameActive,
+	});
 
-	// Use cached Pokemon data or fetch from API
-	const { data: apiPokemonNames = [] } = useGetAllPokemonNamesQuery(
-		{ maxHypeChain },
-		{
-			refetchOnMountOrArgChange: false, // Don't refetch on mount
-			refetchOnFocus: false, // Don't refetch when window regains focus
-			refetchOnReconnect: false, // Don't refetch when reconnecting
-		},
+	const {
+		playCorrectSound,
+		playWrongSound,
+		playVictorySound,
+		cleanupAllAudio,
+	} = useGameAudio(
+		gameState.isMuted,
+		gameState.showHypeTrain,
+		gameState.isHardMode,
+		gameState.guessTimeLeft,
 	);
 
-	const pokemonNames = useMemo<Pokemon[]>(() => {
-		return apiPokemonNames;
-	}, [apiPokemonNames]);
+	const handleWrongAnswer = useCallback(() => {
+		gameSetters.setIsCorrect(false);
+		playWrongSound();
+	}, [gameSetters, playWrongSound]);
 
-	const { data: currentPokemon, isLoading: isPokemonLoading } =
-		useGetPokemonByIdQuery(
-			currentPokemonId ? { id: currentPokemonId, maxHypeChain } : skipToken,
+	const { startGuessTimer, startTotalTimer, stopAllTimers, clearGuessTimer } =
+		useGameTimers(
+			gameState.isGameActive,
+			gameState.isHardMode,
+			gameState.currentPokemon?.isShiny,
 			{
-				skip: !currentPokemonId || !isGameActive,
-				refetchOnMountOrArgChange: false,
-				refetchOnFocus: false,
-				refetchOnReconnect: false,
+				onGuessTimeEnd: handleWrongAnswer,
+				onTotalTimeUpdate: (time) => {
+					gameSetters.setTotalTimeElapsed(time);
+				},
 			},
 		);
 
-	const { data: allPokemonData = [] } = useGetAllPokemonNamesQuery(
-		{ maxHypeChain },
+	// Initialize timers when game starts
+	useEffect(() => {
+		// Skip effect entirely if we're on menu screen (initial state) or game is not active
+		if (!gameState.isGameActive) {
+			if (
+				gameState.guessTimeLeft !== Number.POSITIVE_INFINITY ||
+				gameState.totalTimeElapsed !== 0
+			) {
+				console.log("[PokemonGame] Game not active, stopping all timers");
+				stopAllTimers();
+				// Reset timer states only if they're not already at initial values
+				if (gameState.guessTimeLeft !== Number.POSITIVE_INFINITY) {
+					gameSetters.setGuessTimeLeft(Number.POSITIVE_INFINITY);
+				}
+				if (gameState.totalTimeElapsed !== 0) {
+					gameSetters.setTotalTimeElapsed(0);
+				}
+			}
+			return;
+		}
+
+		// Start total timer if it hasn't started yet and game is active
+		if (gameState.totalTimeElapsed === 0) {
+			console.log("[PokemonGame] Starting total timer");
+			startTotalTimer(gameSetters.setTotalTimeElapsed);
+		}
+
+		// Handle guess timer in hard mode
+		if (gameState.isHardMode) {
+			const initialTime = gameState.currentPokemon?.isShiny ? 10 : 15;
+			if (gameState.guessTimeLeft === Number.POSITIVE_INFINITY) {
+				console.log(
+					"[PokemonGame] Starting guess timer with initial time:",
+					initialTime,
+				);
+				startGuessTimer(gameSetters.setGuessTimeLeft);
+			}
+		}
+
+		// Cleanup function
+		return () => {
+			if (!gameState.isGameActive) {
+				console.log(
+					"[PokemonGame] Cleanup: Game not active, stopping all timers",
+				);
+				stopAllTimers();
+			}
+		};
+	}, [
+		gameState.isGameActive,
+		gameState.isHardMode,
+		gameState.currentPokemon?.isShiny,
+		gameState.guessTimeLeft,
+		gameState.totalTimeElapsed,
+		startGuessTimer,
+		startTotalTimer,
+		stopAllTimers,
+		gameSetters.setGuessTimeLeft,
+		gameSetters.setTotalTimeElapsed,
+	]);
+
+	// Use Pokemon API queries
+	const { data: apiPokemonNames = [] } = useGetAllPokemonNamesQuery(
+		{ maxHypeChain: gameState.maxHypeChain },
 		{
 			refetchOnMountOrArgChange: false,
 			refetchOnFocus: false,
@@ -209,200 +176,28 @@ const PokemonGame = () => {
 		},
 	);
 
-	const [rewardPokemon, setRewardPokemon] = useState<{
-		pokemon: Pokemon | undefined;
-		isLoading: boolean;
-	}>({
-		pokemon: undefined,
-		isLoading: true,
-	});
-
-	const calculateRewardPokemon = useCallback(
-		async (score: number) => {
-			console.log("🎯 calculateRewardPokemon called with score:", score);
-			if (!allPokemonData || allPokemonData.length === 0) {
-				console.log("❌ No Pokemon data available");
-				return { pokemon: undefined, isLoading: false };
-			}
-
-			try {
-				// Find the appropriate tier based on score
-				const tier = POKEMON_REWARDS.find((tier) => score >= tier.minScore);
-				console.log(
-					"🏆 Found tier:",
-					tier ? `minScore: ${tier.minScore}` : "No tier found",
-				);
-
-				if (!tier) {
-					console.log("🎲 Selecting random basic Pokemon");
-					// If no tier found, return a random basic Pokémon
-					const basicPokemon = allPokemonData.filter(
-						(pokemon) =>
-							pokemon.id >= selectedGeneration.startId &&
-							pokemon.id <= selectedGeneration.endId &&
-							pokemon.evolvesFromSpecies === null &&
-							pokemon.hasEvolution,
-					);
-
-					if (basicPokemon.length === 0) {
-						console.log("❌ No basic Pokemon found");
-						return {
-							pokemon: undefined,
-							isLoading: false,
-						};
+	const { data: currentPokemon, isLoading: isPokemonLoading } =
+		useGetPokemonByIdQuery(
+			gameState.currentPokemonId
+				? {
+						id: gameState.currentPokemonId,
+						maxHypeChain: gameState.maxHypeChain,
 					}
+				: skipToken,
+			{
+				skip: !gameState.currentPokemonId || !gameState.isGameActive,
+				refetchOnMountOrArgChange: false,
+				refetchOnFocus: false,
+				refetchOnReconnect: false,
+			},
+		);
 
-					const randomBasic =
-						basicPokemon[Math.floor(Math.random() * basicPokemon.length)];
-					console.log("✅ Selected basic Pokemon:", randomBasic.englishName);
-
-					return {
-						pokemon: randomBasic,
-						isLoading: false,
-					};
-				}
-
-				console.log("🔍 Filtering eligible Pokemon for tier");
-				// Filter Pokémon based on the tier condition and selected generation
-				const eligiblePokemon = allPokemonData.filter(
-					(pokemon) =>
-						tier.condition(pokemon) &&
-						pokemon.id >= selectedGeneration.startId &&
-						pokemon.id <= selectedGeneration.endId,
-				);
-				console.log("📊 Found eligible Pokemon:", eligiblePokemon.length);
-
-				// If no eligible Pokémon found in the current tier, try the next lower tier
-				if (eligiblePokemon.length === 0) {
-					console.log(
-						"⬇️ No eligible Pokemon in current tier, trying lower tiers",
-					);
-					const lowerTiers = POKEMON_REWARDS.slice(
-						POKEMON_REWARDS.indexOf(tier) + 1,
-					);
-					for (const lowerTier of lowerTiers) {
-						console.log(
-							"🔄 Trying lower tier with minScore:",
-							lowerTier.minScore,
-						);
-						const lowerTierPokemon = allPokemonData.filter(
-							(pokemon) =>
-								lowerTier.condition(pokemon) &&
-								pokemon.id >= selectedGeneration.startId &&
-								pokemon.id <= selectedGeneration.endId,
-						);
-
-						if (lowerTierPokemon.length > 0) {
-							const randomPokemon =
-								lowerTierPokemon[
-									Math.floor(Math.random() * lowerTierPokemon.length)
-								];
-							console.log(
-								"✅ Selected Pokemon from lower tier:",
-								randomPokemon.englishName,
-							);
-
-							return {
-								pokemon: randomPokemon,
-								isLoading: false,
-							};
-						}
-					}
-
-					console.log(
-						"⚠️ No Pokemon found in lower tiers, selecting random from generation",
-					);
-					// If still no Pokémon found, return a random Pokémon from the generation
-					const generationPokemon = allPokemonData.filter(
-						(pokemon) =>
-							pokemon.id >= selectedGeneration.startId &&
-							pokemon.id <= selectedGeneration.endId,
-					);
-
-					const randomPokemon =
-						generationPokemon[
-							Math.floor(Math.random() * generationPokemon.length)
-						];
-					console.log(
-						"✅ Selected random Pokemon from generation:",
-						randomPokemon.englishName,
-					);
-
-					return {
-						pokemon: randomPokemon,
-						isLoading: false,
-					};
-				}
-
-				// Pick a random Pokémon from the eligible ones
-				const randomPokemon =
-					eligiblePokemon[Math.floor(Math.random() * eligiblePokemon.length)];
-				console.log(
-					"✅ Selected Pokemon from eligible tier:",
-					randomPokemon.englishName,
-				);
-
-				return {
-					pokemon: randomPokemon,
-					isLoading: false,
-				};
-			} catch (error) {
-				console.error("❌ Error calculating reward Pokemon:", error);
-				return {
-					pokemon: undefined,
-					isLoading: false,
-				};
-			}
-		},
-		[allPokemonData, selectedGeneration],
-	);
-
-	// Capitalize first letter of a string
-	const capitalize = (str: string): string => {
-		return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
-	};
-
-	// Normalize text to handle special characters
-	const normalizeText = (text: string | undefined | null): string => {
-		if (!text) return "";
-
-		const lowerText = text.toLowerCase().trim();
-
-		// Handle special cases first
-		const specialCases: { [key: string]: string } = {
-			"nidoran♂": "nidoranm",
-			"nidoran♀": "nidoranf",
-			nidoranm: "nidoranm",
-			nidoranf: "nidoranf",
-			"mr. mime": "mrmime",
-			"mr mime": "mrmime",
-			"mime jr.": "mimejr",
-			"mime jr": "mimejr",
-			"farfetch'd": "farfetchd",
-			farfetchd: "farfetchd",
-			"sirfetch'd": "sirfetchd",
-			sirfetchd: "sirfetchd",
-			"type: null": "typenull",
-			"type null": "typenull",
-			flabéb: "flabebe",
-			flabebe: "flabebe",
-			"jangmo-o": "jangmoo",
-			jangmoo: "jangmoo",
-			"hakamo-o": "hakamoo",
-			hakamoo: "hakamoo",
-			"kommo-o": "kommoo",
-			kommoo: "kommoo",
-		};
-
-		if (specialCases[lowerText]) {
-			return specialCases[lowerText];
+	// Update currentPokemon in gameState when API data changes
+	useEffect(() => {
+		if (currentPokemon) {
+			gameSetters.setCurrentPokemon(currentPokemon);
 		}
-
-		return lowerText
-			.normalize("NFKD")
-			.replace(/[\p{Diacritic}]/gu, "")
-			.replace(/[^a-z0-9]/g, ""); // Remove special characters
-	};
+	}, [currentPokemon, gameSetters]);
 
 	// Handle click outside suggestions
 	useEffect(() => {
@@ -411,24 +206,24 @@ const PokemonGame = () => {
 				suggestionsRef.current &&
 				!suggestionsRef.current.contains(event.target as Node)
 			) {
-				setSuggestions([]);
+				gameSetters.setSuggestions([]);
 			}
 		};
 
 		document.addEventListener("mousedown", handleClickOutside);
 		return () => document.removeEventListener("mousedown", handleClickOutside);
-	}, []);
+	}, [gameSetters]);
 
 	const handleSuggestionClick = async (suggestion: string) => {
-		if (guessTimeLeft <= 0 || isPokemonLoading) return;
+		if (gameState.guessTimeLeft <= 0 || isPokemonLoading) return;
 
-		setGuess(suggestion);
-		setSuggestions([]);
+		gameSetters.setGuess(suggestion);
+		gameSetters.setSuggestions([]);
 
 		// Wait for a small delay to ensure Pokemon data is loaded
 		await new Promise((resolve) => setTimeout(resolve, 50));
 
-		const normalizedSuggestion = normalizeText(suggestion);
+		const normalizedSuggestion = convertToStoredFormat(suggestion);
 		const pokemonNameFr = currentPokemon?.frenchName;
 		const pokemonNameEn = currentPokemon?.englishName;
 
@@ -436,8 +231,8 @@ const PokemonGame = () => {
 			return;
 		}
 
-		const normalizedAnswerFr = normalizeText(pokemonNameFr);
-		const normalizedAnswerEn = normalizeText(pokemonNameEn);
+		const normalizedAnswerFr = convertToStoredFormat(pokemonNameFr);
+		const normalizedAnswerEn = convertToStoredFormat(pokemonNameEn);
 
 		if (
 			normalizedSuggestion === normalizedAnswerFr ||
@@ -447,57 +242,65 @@ const PokemonGame = () => {
 		) {
 			handleCorrectAnswer();
 		} else {
-			setIsCorrect(false);
-			if (!isMuted) {
-				cleanupAllAudio();
-				wrongAudioRef.current = new Audio(WRONG_SOUND_URL);
-				try {
-					await wrongAudioRef.current.play();
-				} catch {
-					if (wrongAudioRef.current) {
-						wrongAudioRef.current = null;
-					}
-				}
-			}
+			gameSetters.setIsCorrect(false);
+			await playWrongSound();
 		}
 	};
 
-	// Update handleGuessChange to use pokemonNames
 	const handleGuessChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-		if (guessTimeLeft <= 0) return;
+		if (gameState.guessTimeLeft <= 0) return;
 
 		const value = e.target.value;
-		setGuess(capitalize(value));
-		setHighlightedIndex(0);
+		const capitalizedValue = value.charAt(0).toUpperCase() + value.slice(1);
+		gameSetters.setGuess(capitalizedValue);
+		gameSetters.setHighlightedIndex(0);
 
 		if (value.length > 0) {
-			const normalizedValue = normalizeText(value);
+			const normalizedValue = convertToStoredFormat(value);
 
-			const filteredSuggestions = pokemonNames
+			const filteredSuggestions = apiPokemonNames
 				.filter((pokemon) => {
 					if (!pokemon) return false;
 					const pokemonNameFr = pokemon.frenchName;
-					const pokemonNameEn = pokemon.name; // Use name instead of englishName
+					const pokemonNameEn = pokemon.englishName;
 					if (!pokemonNameFr || !pokemonNameEn) return false;
 
-					const normalizedNameFr = normalizeText(pokemonNameFr);
-					const normalizedNameEn = normalizeText(pokemonNameEn);
+					const normalizedNameFr = convertToStoredFormat(pokemonNameFr);
+					const normalizedNameEn = convertToStoredFormat(pokemonNameEn);
 
 					return (
-						(normalizedNameFr.startsWith(normalizedValue) ||
-							normalizedNameEn.startsWith(normalizedValue)) &&
-						pokemon.id >= selectedGeneration.startId &&
-						pokemon.id <= selectedGeneration.endId
+						(normalizedNameFr.includes(normalizedValue) ||
+							normalizedNameEn.includes(normalizedValue)) &&
+						pokemon.id >= gameState.selectedGeneration.startId &&
+						pokemon.id <= gameState.selectedGeneration.endId
 					);
 				})
 				.sort((a, b) => {
-					// Sort by exact match first
-					const aNameFr = normalizeText(a.frenchName);
-					const aNameEn = normalizeText(a.name);
-					const bNameFr = normalizeText(b.frenchName);
-					const bNameEn = normalizeText(b.name);
-					const normalizedValue = normalizeText(value);
+					const aNameFr = convertToStoredFormat(a.frenchName);
+					const aNameEn = convertToStoredFormat(a.englishName);
+					const bNameFr = convertToStoredFormat(b.frenchName);
+					const bNameEn = convertToStoredFormat(b.englishName);
+					const normalizedValue = convertToStoredFormat(value);
 
+					// Check if names start with the input value
+					const aStartsWithFr = aNameFr.startsWith(normalizedValue);
+					const aStartsWithEn = aNameEn.startsWith(normalizedValue);
+					const bStartsWithFr = bNameFr.startsWith(normalizedValue);
+					const bStartsWithEn = bNameEn.startsWith(normalizedValue);
+
+					// If one starts with and the other doesn't, prioritize the one that starts with
+					if (
+						(aStartsWithFr || aStartsWithEn) &&
+						!(bStartsWithFr || bStartsWithEn)
+					)
+						return -1;
+					if (
+						!(aStartsWithFr || aStartsWithEn) &&
+						(bStartsWithFr || bStartsWithEn)
+					)
+						return 1;
+
+					// If both or neither start with, check for exact matches
 					const aExactMatch =
 						aNameFr === normalizedValue || aNameEn === normalizedValue;
 					const bExactMatch =
@@ -506,177 +309,68 @@ const PokemonGame = () => {
 					if (aExactMatch && !bExactMatch) return -1;
 					if (!aExactMatch && bExactMatch) return 1;
 
-					// Then sort by length
-					const aLength = Math.min(a.frenchName.length, a.name.length);
-					const bLength = Math.min(b.frenchName.length, b.name.length);
+					// If no exact matches, sort by length
+					const aLength = Math.min(a.frenchName.length, a.englishName.length);
+					const bLength = Math.min(b.frenchName.length, b.englishName.length);
 					return aLength - bLength;
 				})
 				.map((pokemon) =>
-					capitalize(
-						i18n.language === "fr" ? pokemon.frenchName : pokemon.name,
-					),
+					i18n.language === "fr" ? pokemon.frenchName : pokemon.englishName,
 				)
 				.filter(Boolean)
 				.slice(0, 5);
 
-			setSuggestions(filteredSuggestions);
+			gameSetters.setSuggestions(filteredSuggestions);
 		} else {
-			setSuggestions([]);
-			setHighlightedIndex(-1);
+			gameSetters.setSuggestions([]);
+			gameSetters.setHighlightedIndex(-1);
 		}
 	};
-
-	// Update cleanupAllAudio
-	const cleanupAllAudio = () => {
-		const audioRefs = [
-			victoryAudioRef,
-			correctAudioRef,
-			wrongAudioRef,
-			trainHornRef,
-			lowLifeRef,
-		];
-
-		for (const ref of audioRefs) {
-			if (ref.current) {
-				ref.current.pause();
-				ref.current.currentTime = 0;
-				ref.current = null;
-			}
-		}
-	};
-
-	// Add cleanup effect for train horn sound when component unmounts
-	useEffect(() => {
-		return () => {
-			if (trainHornRef.current) {
-				trainHornRef.current.pause();
-				trainHornRef.current.currentTime = 0;
-				trainHornRef.current = null;
-			}
-		};
-	}, []);
-
-	// Add effect to monitor timer for Hype Train
-	useEffect(() => {
-		if (guessTimeLeft === 9) {
-			if (showHypeTrain && consecutiveFastAnswers > 0) {
-				const bonusPoints = consecutiveFastAnswers;
-				setScore((prev) => prev + bonusPoints);
-				// Show bonus points animation
-				setPointsEarned(bonusPoints);
-				setTimeout(() => {
-					setPointsEarned(0);
-				}, 1000);
-				// Increment hype train count when it ends
-				setHyperTrainCount((prev) => prev + 1);
-			}
-			setConsecutiveFastAnswers(0);
-			setShowHypeTrain(false);
-			// Stop train horn sound
-			if (trainHornRef.current) {
-				trainHornRef.current.pause();
-				trainHornRef.current.currentTime = 0;
-				trainHornRef.current = null;
-			}
-		}
-	}, [guessTimeLeft, showHypeTrain, consecutiveFastAnswers]);
-
-	// Add effect to stop train horn when game is over or when Hype Train should stop
-	useEffect(() => {
-		if (!showHypeTrain && trainHornRef.current) {
-			trainHornRef.current.pause();
-			trainHornRef.current.currentTime = 0;
-			trainHornRef.current = null;
-		}
-	}, [showHypeTrain]);
-
-	const startGuessTimer = useCallback(() => {
-		// Clear any existing timer first
-		if (timerInterval.current) {
-			clearInterval(timerInterval.current);
-			timerInterval.current = null;
-		}
-
-		// Set initial time based on whether Pokemon is shiny
-		setGuessTimeLeft(currentPokemon?.isShiny ? 10 : 15);
-
-		// Start new timer
-		timerInterval.current = setInterval(() => {
-			setGuessTimeLeft((prev) => {
-				if (prev <= 1) {
-					if (timerInterval.current) {
-						clearInterval(timerInterval.current);
-						timerInterval.current = null;
-					}
-					setIsCorrect(false);
-					return 0;
-				}
-				return prev - 1;
-			});
-		}, 1000);
-	}, [currentPokemon?.isShiny]);
-
-	// Add effect to handle timer
-	useEffect(() => {
-		if (!isHardMode || !isGameActive) {
-			if (timerInterval.current) {
-				clearInterval(timerInterval.current);
-				timerInterval.current = null;
-			}
-			return;
-		}
-
-		startGuessTimer();
-		return () => {
-			if (timerInterval.current) {
-				clearInterval(timerInterval.current);
-				timerInterval.current = null;
-			}
-		};
-	}, [isHardMode, isGameActive, startGuessTimer]);
 
 	const handleCorrectAnswer = async () => {
 		if (!currentPokemon) return;
 
+		// Only stop the guess timer in hard mode
+		if (gameState.isHardMode) {
+			clearGuessTimer();
+		}
+
+		gameSetters.setIsCorrect(true);
+
 		// Play correct sound effect
-		if (correctAudioRef.current && !isMuted) {
-			correctAudioRef.current.currentTime = 0;
-			correctAudioRef.current.play();
-		}
-
-		// Stop the current timer immediately
-		if (timerInterval.current) {
-			clearInterval(timerInterval.current);
-			timerInterval.current = null;
-		}
-
-		setIsCorrect(true);
-
-		// Clean up all audio immediately when correct answer is given
-		cleanupAllAudio();
+		await playCorrectSound();
 
 		// Award a hint every 5 correct answers
-		if ((score + 1) % 5 === 0) {
-			setHintsLeft((prev) => prev + 1);
+		if ((gameState.score + 1) % 5 === 0) {
+			gameSetters.setHintsLeft((prev) => prev + 1);
 		}
 
 		// Handle Hype Train logic only in hard mode
-		if (isHardMode && guessTimeLeft >= 10) {
-			setConsecutiveFastAnswers((prev) => {
+		if (gameState.isHardMode && gameState.guessTimeLeft >= 10) {
+			gameSetters.setConsecutiveFastAnswers((prev) => {
 				const newCount = prev + 1;
 				// Start Hype Train when reaching 3 or more
 				if (newCount >= 3) {
-					setShowHypeTrain(true);
-					setMaxHypeChain((prev) => Math.max(prev, newCount));
+					gameSetters.setShowHypeTrain(true);
+					gameSetters.setMaxHypeChain((prev) => Math.max(prev, newCount));
 				}
 				return newCount;
 			});
+		} else if (
+			gameState.isHardMode &&
+			gameState.guessTimeLeft <= 9 &&
+			gameState.showHypeTrain
+		) {
+			// Stop Hype Train and add bonus points
+			gameSetters.setShowHypeTrain(false);
+			gameSetters.setScore((prev) => prev + gameState.consecutiveFastAnswers);
+			gameSetters.setConsecutiveFastAnswers(0);
 		}
 
 		let earnedPoints = 0;
 
 		// Calculate points based on remaining time in Hard mode
-		if (isHardMode) {
+		if (gameState.isHardMode) {
 			if (currentPokemon?.isShiny) {
 				earnedPoints = 5; // Always 5 points for shiny Pokemon
 			} else {
@@ -684,33 +378,42 @@ const PokemonGame = () => {
 				const fastTime = 10;
 				const mediumTime = 5;
 
-				if (guessTimeLeft >= fastTime && guessTimeLeft <= maxTime) {
+				if (
+					gameState.guessTimeLeft >= fastTime &&
+					gameState.guessTimeLeft <= maxTime
+				) {
 					earnedPoints = 3;
-				} else if (guessTimeLeft >= mediumTime && guessTimeLeft < fastTime) {
+				} else if (
+					gameState.guessTimeLeft >= mediumTime &&
+					gameState.guessTimeLeft < fastTime
+				) {
 					earnedPoints = 2;
-				} else if (guessTimeLeft >= 0 && guessTimeLeft < mediumTime) {
+				} else if (
+					gameState.guessTimeLeft >= 0 &&
+					gameState.guessTimeLeft < mediumTime
+				) {
 					earnedPoints = 1;
 				}
 			}
 
 			// Show special effects only if not in Hype Train
-			if (!showHypeTrain) {
+			if (!gameState.showHypeTrain) {
 				// Show Succès Critique only at 0 seconds
-				if (guessTimeLeft === 0) {
-					setShowCriticalSuccess(true);
-					setCriticalSuccessCount((prev) => prev + 1);
+				if (gameState.guessTimeLeft === 0) {
+					gameSetters.setShowCriticalSuccess(true);
+					gameSetters.setCriticalSuccessCount((prev) => prev + 1);
 					setTimeout(() => {
-						setShowCriticalSuccess(false);
+						gameSetters.setShowCriticalSuccess(false);
 					}, 2000);
 					// Base point only for Succès Critique
 					earnedPoints = currentPokemon?.isShiny ? 5 : 1;
 				}
 				// Show Coup Critique with 20% chance
 				else if (Math.random() < 0.2) {
-					setShowCriticalHit(true);
-					setCriticalHitCount((prev) => prev + 1);
+					gameSetters.setShowCriticalHit(true);
+					gameSetters.setCriticalHitCount((prev) => prev + 1);
 					setTimeout(() => {
-						setShowCriticalHit(false);
+						gameSetters.setShowCriticalHit(false);
 					}, 2000);
 					// Add 1 bonus point for Coup Critique (but keep 5 points for shiny)
 					earnedPoints = currentPokemon?.isShiny ? 5 : earnedPoints + 1;
@@ -721,33 +424,22 @@ const PokemonGame = () => {
 		}
 
 		// Always show points earned animation
-		setPointsEarned(earnedPoints);
+		gameSetters.setPointsEarned(earnedPoints);
 		setTimeout(() => {
-			setPointsEarned(0);
+			gameSetters.setPointsEarned(0);
 		}, 1000);
 
-		setScore((prev) => prev + earnedPoints);
-
-		if (!isMuted) {
-			correctAudioRef.current = new Audio(CORRECT_SOUND_URL);
-			try {
-				await correctAudioRef.current.play();
-			} catch {
-				if (correctAudioRef.current) {
-					correctAudioRef.current = null;
-				}
-			}
-		}
+		gameSetters.setScore((prev) => prev + earnedPoints);
 
 		// Remove the current Pokemon from remainingPokemon
 		if (currentPokemon) {
-			setRemainingPokemon((prev) =>
+			gameSetters.setRemainingPokemon((prev) =>
 				prev.filter((id) => id !== currentPokemon.id),
 			);
 		}
 
 		// Check if this was the last Pokémon
-		const isLastPokemon = remainingPokemon.length <= 1;
+		const isLastPokemon = gameState.remainingPokemon.length <= 1;
 
 		if (isLastPokemon) {
 			setTimeout(() => {
@@ -758,11 +450,11 @@ const PokemonGame = () => {
 			await new Promise((resolve) => setTimeout(resolve, 1000));
 
 			// 2. Clear current Pokemon and set loading state
-			setCurrentPokemonId(null);
-			setIsCorrect(null);
-			setGuess("");
-			setSuggestions([]);
-			setShowHint(false);
+			gameSetters.setCurrentPokemonId(null);
+			gameSetters.setIsCorrect(null);
+			gameSetters.setGuess("");
+			gameSetters.setSuggestions([]);
+			gameSetters.setShowHint(false);
 
 			// Wait for states to be cleared
 			await new Promise((resolve) => setTimeout(resolve, 50));
@@ -772,20 +464,24 @@ const PokemonGame = () => {
 
 			// 4. Select next Pokemon
 			const nextPokemonId =
-				remainingPokemon[Math.floor(Math.random() * remainingPokemon.length)];
+				gameState.remainingPokemon[
+					Math.floor(Math.random() * gameState.remainingPokemon.length)
+				];
 
 			// 5. Update remaining pool
-			setRemainingPokemon((prev) => prev.filter((id) => id !== nextPokemonId));
+			gameSetters.setRemainingPokemon((prev) =>
+				prev.filter((id) => id !== nextPokemonId),
+			);
 
 			// Wait for remaining pool to update
 			await new Promise((resolve) => setTimeout(resolve, 50));
 
 			// 6. Set new Pokemon
-			setCurrentPokemonId(nextPokemonId);
+			gameSetters.setCurrentPokemonId(nextPokemonId);
 
 			// 7. Reset timer to 15 seconds (we'll let startGuessTimer handle the shiny check)
-			if (isHardMode) {
-				startGuessTimer();
+			if (gameState.isHardMode) {
+				startGuessTimer(gameSetters.setGuessTimeLeft);
 			}
 
 			// 8. Focus input
@@ -797,46 +493,50 @@ const PokemonGame = () => {
 		// Handle right arrow for hint regardless of suggestions
 		if (e.key === "ArrowRight") {
 			e.preventDefault();
-			if (hintsLeft > 0 && currentPokemon) {
-				setShowHint(true);
-				setHintsLeft((prev) => prev - 1);
+			if (gameState.hintsLeft > 0 && currentPokemon) {
+				gameSetters.setShowHint(true);
+				gameSetters.setHintsLeft((prev) => prev - 1);
 			}
 			return;
 		}
 
 		if (e.key === "Enter") {
 			e.preventDefault();
-			if (suggestions.length > 0 && highlightedIndex >= 0) {
-				handleSuggestionClick(suggestions[highlightedIndex]);
-			} else if (guess.trim()) {
-				handleSuggestionClick(guess);
+			if (gameState.suggestions.length > 0 && gameState.highlightedIndex >= 0) {
+				handleSuggestionClick(
+					gameState.suggestions[gameState.highlightedIndex],
+				);
+			} else if (gameState.guess.trim()) {
+				handleSuggestionClick(gameState.guess);
 			}
 			return;
 		}
 
-		if (suggestions.length === 0) {
+		if (gameState.suggestions.length === 0) {
 			return;
 		}
 
 		if (e.key === "ArrowDown") {
 			e.preventDefault();
-			setHighlightedIndex((prevIndex) => {
-				const newIndex = prevIndex < suggestions.length - 1 ? prevIndex + 1 : 0;
+			gameSetters.setHighlightedIndex((prevIndex) => {
+				const newIndex =
+					prevIndex < gameState.suggestions.length - 1 ? prevIndex + 1 : 0;
 				return newIndex;
 			});
 		} else if (e.key === "ArrowUp") {
 			e.preventDefault();
-			setHighlightedIndex((prevIndex) => {
-				const newIndex = prevIndex > 0 ? prevIndex - 1 : suggestions.length - 1;
+			gameSetters.setHighlightedIndex((prevIndex) => {
+				const newIndex =
+					prevIndex > 0 ? prevIndex - 1 : gameState.suggestions.length - 1;
 				return newIndex;
 			});
 		}
 	};
 
 	const useHint = () => {
-		if (hintsLeft > 0 && currentPokemon) {
-			setShowHint(true);
-			setHintsLeft((prev) => prev - 1);
+		if (gameState.hintsLeft > 0 && currentPokemon) {
+			gameSetters.setShowHint(true);
+			gameSetters.setHintsLeft((prev) => prev - 1);
 		}
 	};
 
@@ -844,422 +544,140 @@ const PokemonGame = () => {
 	useEffect(() => {
 		// Only handle invalid data if we have a currentPokemonId and the game is active
 		if (
-			isGameActive &&
+			gameState.isGameActive &&
 			!isPokemonLoading &&
-			currentPokemonId !== null &&
-			remainingPokemon.length > 0 &&
+			gameState.currentPokemonId !== null &&
+			gameState.remainingPokemon.length > 0 &&
 			(currentPokemon === undefined ||
 				currentPokemon?.englishName === undefined ||
 				currentPokemon?.frenchName === undefined)
 		) {
 			// Reset the current Pokemon ID to trigger a new fetch
-			setCurrentPokemonId(null);
+			gameSetters.setCurrentPokemonId(null);
 			// Add the ID back to the remaining pool
-			setRemainingPokemon((prev) => [...prev, currentPokemonId]);
+			gameSetters.setRemainingPokemon((prev) => [
+				...prev,
+				gameState.currentPokemonId || 0,
+			]);
 		}
 	}, [
 		currentPokemon,
-		currentPokemonId,
-		isGameActive,
+		gameState.currentPokemonId,
+		gameState.isGameActive,
 		isPokemonLoading,
-		remainingPokemon.length,
+		gameState.remainingPokemon.length,
+		gameSetters,
 	]);
 
-	// Add name format conversion functions
-	const convertToDisplayFormat = useCallback((name: string) => {
-		return name.replace(/_/g, " ");
-	}, []);
-
-	const convertToStoredFormat = useCallback((name: string) => {
-		return name.trim().replace(/\s+/g, "_");
-	}, []);
-
-	const fetchSelectedRankings = useCallback(async () => {
-		try {
-			const rankingsRef = collection(
-				db,
-				`rankings_gen${selectedGeneration.startId}_${selectedGeneration.endId}`,
-			);
-			const q = query(rankingsRef, orderBy("score", "desc"), limit(50));
-			const querySnapshot = await getDocs(q);
-			const rankingsData: Rankings[] = [];
-			for (const doc of querySnapshot.docs) {
-				const data = doc.data() as DocumentData;
-				const storedName = data.name;
-				const displayName = convertToDisplayFormat(storedName);
-
-				rankingsData.push({
-					name: displayName,
-					score: data.score,
-					time: data.time,
-					timestamp:
-						(data.timestamp as Timestamp)?.toDate() || new Date(data.timestamp),
-					uid: data.uid || null,
-				});
-			}
-			setRankings(rankingsData);
-
-			// Find user's best record and update best score/time
-			const userBestRecord = rankingsData.find((record) => {
-				if (auth.currentUser) {
-					// For authenticated users, match by UID
-					return record.uid === auth.currentUser.uid;
-				} else {
-					// For non-authenticated users, match by name
-					return record.name === playerName;
-				}
-			});
-
-			if (userBestRecord) {
-				setBestScore(userBestRecord.score);
-				setBestTime(userBestRecord.time);
-			} else {
-				setBestScore(0);
-				setBestTime(0);
-			}
-		} catch {
-			// Ignore database errors
-		}
-	}, [
-		selectedGeneration.startId,
-		selectedGeneration.endId,
-		convertToDisplayFormat,
-		playerName,
-	]);
-
-	// Add this effect to fetch rankings and best scores when generation or player changes
-	useEffect(() => {
-		if (!isGameActive) {
-			fetchSelectedRankings();
-		}
-	}, [selectedGeneration, playerName, isGameActive, fetchSelectedRankings]);
-
-	const handleGameOver = useCallback(async () => {
-		console.log("🎮 handleGameOver called, gameOver state:", gameOver);
-		if (gameOver) {
-			console.log("️ Game already over, returning");
-			return;
-		}
-		if (isHandlingGameOverRef.current) {
-			console.log(
-				"⚠️ Previous game over handling detected, checking timeout...",
-			);
-			const now = Date.now();
-			if (
-				!isHandlingGameOverRef.current.timestamp ||
-				now - isHandlingGameOverRef.current.timestamp > 10000
-			) {
-				console.log("🔄 Resetting stuck game over state");
-				isHandlingGameOverRef.current = null;
-			} else {
-				console.log("⏹️ Game over is being handled, returning");
-				return;
-			}
-		}
-
-		// Set the ref with timestamp to track how long we've been handling
-		isHandlingGameOverRef.current = { timestamp: Date.now() };
-
-		try {
-			// Stop all timers immediately
-			if (timerInterval.current) {
-				clearInterval(timerInterval.current);
-				timerInterval.current = null;
-			}
-			if (totalTimeInterval.current) {
-				clearInterval(totalTimeInterval.current);
-				totalTimeInterval.current = null;
-			}
-
-			// Show the correct Pokemon first
-			setIsCorrect(true);
-			console.log("✅ Set isCorrect to true");
-
-			// Wait for the reveal animation and give time to see the name
-			await new Promise((resolve) => setTimeout(resolve, 3000));
-			console.log("⏱️ Waited for reveal animation");
-
-			// Update states
-			setIsGameActive(false);
-			setGameOver(true);
-			console.log("🔄 Updated game states: isGameActive=false, gameOver=true");
-
-			// Calculate rankings
-			try {
-				const rankingsRef = collection(
-					db,
-					`rankings_gen${selectedGeneration.startId}_${selectedGeneration.endId}`,
-				);
-				const q = query(rankingsRef, orderBy("score", "desc"));
-				const querySnapshot = await getDocs(q);
-				const allRankings = querySnapshot.docs.map((doc) => doc.data());
-
-				// Calculate current ranking
-				let currentRank = 1;
-				for (const ranking of allRankings) {
-					if (
-						ranking.score > score ||
-						(ranking.score === score && ranking.time <= totalTimeElapsed)
-					) {
-						currentRank++;
-					}
-				}
-				setUserRanking(currentRank);
-
-				// Calculate best ranking if different from current
-				if (bestScore > 0 && bestScore !== score) {
-					let bestRank = 1;
-					for (const ranking of allRankings) {
-						if (
-							ranking.score > bestScore ||
-							(ranking.score === bestScore && ranking.time <= bestTime)
-						) {
-							bestRank++;
-						}
-					}
-					setBestRanking(bestRank);
-				} else {
-					setBestRanking(null);
-				}
-			} catch (error) {
-				console.error("Error calculating rankings:", error);
-				setUserRanking(null);
-				setBestRanking(null);
-			}
-
-			// Always calculate reward Pokemon, regardless of remaining Pokemon
-			console.log("🎁 Calculating reward Pokemon");
-			// Set loading state first
-			setRewardPokemon({ pokemon: undefined, isLoading: true });
-			console.log("⌛ Set reward Pokemon loading state");
-
-			// Calculate reward Pokemon
-			const rewardResult = await calculateRewardPokemon(score);
-			console.log(
-				"✨ Calculated reward Pokemon:",
-				rewardResult.pokemon?.englishName,
-			);
-			// Update the reward Pokemon state
-			setRewardPokemon(rewardResult);
-			console.log("💾 Updated reward Pokemon state");
-
-			// Small delay to ensure state updates are processed
-			await new Promise((resolve) => setTimeout(resolve, 50));
-			console.log("⏱️ Waited for state updates");
-
-			// Then handle audio
-			if (!isMuted) {
-				cleanupAllAudio();
-				console.log("🔊 Cleaned up audio");
-
-				try {
-					// Wait for any Pokemon cry handling to finish
-					if (rewardResult.pokemon) {
-						console.log("🎵 Playing reward Pokemon cry");
-						// Wait for potential cry playback and cleanup
-						await new Promise((resolve) => setTimeout(resolve, 2000));
-					}
-
-					// Always play victory sound
-					console.log("🎺 Playing victory sound");
-					victoryAudioRef.current = new Audio(VICTORY_SOUND_URL);
-					await victoryAudioRef.current.play();
-					console.log("✅ Victory sound played successfully");
-				} catch (error) {
-					console.error("❌ Error playing audio:", error);
-					if (victoryAudioRef.current) {
-						victoryAudioRef.current = null;
-					}
-				}
-			}
-
-			// Only update best score and save to rankings in Hard mode
-			if (isHardMode) {
-				if (score > 0 && playerName) {
-					try {
-						const storedName = convertToStoredFormat(playerName.trim());
-						const collectionName = `rankings_gen${selectedGeneration.startId}_${selectedGeneration.endId}`;
-						const rankingsRef = collection(db, collectionName);
-
-						// Use uid for query if authenticated, otherwise use name
-						const q = query(
-							rankingsRef,
-							auth.currentUser
-								? where("uid", "==", auth.currentUser.uid)
-								: where("name", "==", storedName),
-						);
-						const querySnapshot = await getDocs(q);
-
-						const playerData = {
-							name: storedName,
-							score: score,
-							time: totalTimeElapsed,
-							timestamp: serverTimestamp(),
-							uid: auth.currentUser?.uid || null,
-						};
-
-						if (!querySnapshot.empty) {
-							const existingDoc = querySnapshot.docs[0];
-							const existingScore = existingDoc.data().score;
-							const existingTime = existingDoc.data().time;
-
-							if (
-								score > existingScore ||
-								(score === existingScore && totalTimeElapsed < existingTime)
-							) {
-								await updateDoc(existingDoc.ref, playerData);
-								if (totalTimeElapsed < existingTime) {
-									setBestTime(totalTimeElapsed);
-								}
-							}
-						} else {
-							await addDoc(rankingsRef, playerData);
-							setBestTime(totalTimeElapsed);
-						}
-
-						await fetchSelectedRankings();
-					} catch {
-						// Ignore database errors
-					}
-				}
-			}
-		} finally {
-			// Reset the ref in finally block to ensure it's always reset
-			isHandlingGameOverRef.current = null;
-			console.log("🧹 Reset game over handling state");
-		}
-	}, [
-		gameOver,
-		score,
-		bestScore,
-		totalTimeElapsed,
-		bestTime,
-		isMuted,
-		isHardMode,
-		playerName,
-		selectedGeneration.startId,
-		selectedGeneration.endId,
-		calculateRewardPokemon,
-		convertToStoredFormat,
-		fetchSelectedRankings,
-		cleanupAllAudio,
-		db,
-		setGameOver,
-		setIsGameActive,
-		setIsCorrect,
-		setRewardPokemon,
-		setUserRanking,
-		setBestRanking,
-		setBestTime,
-	]);
-
-	// Update the effect to use both functions
-	useEffect(() => {
-		if (isGameActive && (guessTimeLeft <= 0 || remainingPokemon.length === 0)) {
-			handleGameOver();
-		}
-	}, [guessTimeLeft, remainingPokemon.length, handleGameOver, isGameActive]);
-
-	const formatTime = (seconds: number): string => {
-		const mins = Math.floor(seconds / 60);
-		const secs = seconds % 60;
-		return `${mins}:${secs.toString().padStart(2, "0")}`;
+	const formatTimeForRanking = (seconds: number): string => {
+		const minutes = Math.floor(seconds / 60);
+		const remainingSeconds = seconds % 60;
+		return `${minutes}:${remainingSeconds.toString().padStart(2, "0")}`;
 	};
 
-	// Update checkNameAvailability to use uid
-	const checkNameAvailability = useCallback(
-		async (name: string) => {
-			const storedName = convertToStoredFormat(name.trim());
-			if (!storedName) {
-				setNameError(null);
-				localStorage.removeItem("pokemonGamePlayerName");
-				return false;
-			}
+	const formatDate = (timestamp: Date): string => {
+		const date = new Date(timestamp);
+		const day = String(date.getDate()).padStart(2, "0");
+		const month = String(date.getMonth() + 1).padStart(2, "0");
+		return `${day}/${month}/${date.getFullYear()}`;
+	};
 
-			// If user is authenticated, allow it immediately
-			const currentUser = auth.currentUser;
-			if (currentUser?.displayName === name) {
-				setNameError(null);
-				setIsCheckingName(false);
-				return true;
-			}
+	const handleGenerationSelect = (generation: Generation) => {
+		gameSetters.setSelectedGeneration(generation);
+		// Reset game state
+		gameSetters.setScore(0);
+		gameSetters.setGuess("");
+		gameSetters.setSuggestions([]);
+		gameSetters.setIsCorrect(null);
+		gameSetters.setShowHint(false);
+	};
 
-			// Only set isCheckingName to true for new names
-			setIsCheckingName(true);
+	const handleQuit = useCallback(() => {
+		// Set timer to 0 to trigger name reveal
+		gameSetters.setGuessTimeLeft(0);
+		// Set isCorrect to false to show the name
+		gameSetters.setIsCorrect(false);
+		// Wait a moment to show the name before game over
+		setTimeout(() => {
+			handleGameOver();
+		}, 2000);
+	}, [gameSetters]);
 
-			try {
-				// Check across all generations using uid if authenticated, otherwise use name
-				for (const gen of GENERATIONS) {
-					const collectionName = `rankings_gen${gen.startId}_${gen.endId}`;
-					const rankingsRef = collection(db, collectionName);
-					const q = query(
-						rankingsRef,
-						auth.currentUser
-							? where("uid", "==", auth.currentUser.uid)
-							: where("name", "==", storedName),
-					);
-					const querySnapshot = await getDocs(q);
+	const handleRestart = () => {
+		// Clean up all audio first
+		cleanupAllAudio();
 
-					if (!querySnapshot.empty && !auth.currentUser) {
-						setNameError(
-							"Ce nom est déjà utilisé. Veuillez en choisir un autre.",
-						);
-						localStorage.removeItem("pokemonGamePlayerName");
-						setIsCheckingName(false);
-						return false;
-					}
-				}
+		// Reset reward Pokemon state
+		setRewardPokemonId(null);
+		gameSetters.setRewardPokemon({
+			pokemon: undefined,
+			isLoading: false,
+		});
 
-				setNameError(null);
-				setIsCheckingName(false);
-				return true;
-			} catch (error) {
-				console.error("Error checking name availability:", error);
-				setNameError("Erreur lors de la vérification du nom");
-				setIsCheckingName(false);
-				return false;
-			}
-		},
-		[GENERATIONS],
-	);
+		// Reset all Pokemon-related states first
+		gameSetters.setCurrentPokemonId(null);
+		gameSetters.setIsCorrect(null);
+		gameSetters.setGuess("");
+		gameSetters.setSuggestions([]);
+		gameSetters.setShowHint(false);
+		gameSetters.setGameOver(false);
+		gameSetters.setPointsEarned(0);
+		gameSetters.setShowCriticalSuccess(false);
+		gameSetters.setShowCriticalHit(false);
+		gameSetters.setShowHypeTrain(false);
+		gameSetters.setConsecutiveFastAnswers(0);
+		gameSetters.setCriticalHitCount(0);
+		gameSetters.setCriticalSuccessCount(0);
+		gameSetters.setHyperTrainCount(0);
+		gameSetters.setMaxHypeChain(0);
 
-	// Create debounced version of checkNameAvailability
-	const debouncedCheckName = useCallback(
-		debounce((name: string) => checkNameAvailability(name), 500),
-		[checkNameAvailability],
-	);
+		// Set restarting state to true
+		gameSetters.setIsRestarting(true);
 
-	// Update handlePlayerNameChange to only reset auth state for manual changes
-	const handlePlayerNameChange = useCallback(
-		(e: React.ChangeEvent<HTMLInputElement>) => {
-			// If user is authenticated, don't allow changes
-			if (auth.currentUser) {
-				return;
-			}
+		// Start a new game with the same mode immediately
+		startGame(gameState.isHardMode);
+	};
 
-			const exactName = e.target.value;
-			setPlayerName(exactName);
+	const handleBackToMenu = () => {
+		// Stop any ongoing timers
+		stopAllTimers();
 
-			if (!exactName.trim()) {
-				setNameError(null);
-				setIsAuthName(false);
-				localStorage.removeItem("pokemonGamePlayerName");
-				return;
-			}
+		// Clean up all audio
+		cleanupAllAudio();
 
-			debouncedCheckName(exactName);
-		},
-		[debouncedCheckName],
-	);
+		// Reset reward Pokemon state
+		setRewardPokemonId(null);
+		gameSetters.setRewardPokemon({
+			pokemon: undefined,
+			isLoading: false,
+		});
 
-	// Add isRestarting state
-	const [isRestarting, setIsRestarting] = useState(false);
+		// Reset all game states
+		gameSetters.setIsGameActive(false);
+		gameSetters.setGameOver(false);
+		gameSetters.setScore(0);
+		gameSetters.setHintsLeft(10);
+		gameSetters.setIsCorrect(null);
+		gameSetters.setGuess("");
+		gameSetters.setSuggestions([]);
+		gameSetters.setShowHint(false);
+		gameSetters.setConsecutiveFastAnswers(0);
+		gameSetters.setShowHypeTrain(false);
+		gameSetters.setCriticalHitCount(0);
+		gameSetters.setCriticalSuccessCount(0);
+		gameSetters.setHyperTrainCount(0);
+		gameSetters.setMaxHypeChain(0);
+		gameSetters.setTotalTimeElapsed(0);
+		gameSetters.setCurrentPokemonId(null);
+		gameSetters.setPointsEarned(0);
+		gameSetters.setShowCriticalSuccess(false);
+		gameSetters.setShowCriticalHit(false);
+	};
 
-	// Update the startGame function
 	const startGame = async (isHardMode: boolean) => {
 		if (!playerName) return;
 
-		const exactName = playerName.trim(); // Store exact input name
+		const exactName = playerName.trim();
 		const savedName = localStorage.getItem("pokemonGamePlayerName");
 
 		// Skip name validation if:
@@ -1267,7 +685,7 @@ const PokemonGame = () => {
 		// 2. We're restarting OR
 		// 3. The name is the same as the saved name
 		const shouldSkipValidation =
-			auth.currentUser || isRestarting || exactName === savedName;
+			auth.currentUser || gameState.isRestarting || exactName === savedName;
 
 		if (!shouldSkipValidation) {
 			const isAvailable = await checkNameAvailability(exactName);
@@ -1281,80 +699,70 @@ const PokemonGame = () => {
 		}
 
 		// Ensure we're in restarting state
-		setIsRestarting(true);
+		gameSetters.setIsRestarting(true);
 
 		try {
-			// Reset all game states first
-			setIsHardMode(isHardMode);
-			setConsecutiveFastAnswers(0);
-			setShowHypeTrain(false);
-			setPointsEarned(0);
-			setCurrentPokemonId(null);
-			setIsCorrect(null);
-			setGuess("");
-			setSuggestions([]);
-			setShowHint(false);
-
-			// Reset reward Pokemon state
-			setRewardPokemon({
-				pokemon: undefined,
-				isLoading: true,
-			});
-
-			// Clean up all audio
+			// Stop any existing timers and clean up audio
+			stopAllTimers();
 			cleanupAllAudio();
 
-			// Stop any existing timers
-			if (timerInterval.current) {
-				clearInterval(timerInterval.current);
-				timerInterval.current = null;
-			}
-			if (totalTimeInterval.current) {
-				clearInterval(totalTimeInterval.current);
-				totalTimeInterval.current = null;
-			}
-
 			// Reset all game states
-			setScore(0);
-			// In Chill mode, set hints to Infinity, in Hard mode set to 0
-			setHintsLeft(isHardMode ? 0 : Number.POSITIVE_INFINITY);
-			// In Chill mode, no timer (set to Infinity), in Hard mode set to 15
-			setGuessTimeLeft(isHardMode ? 15 : Number.POSITIVE_INFINITY);
-			setTotalTimeElapsed(0);
-			setGameOver(false);
-			setUserRanking(null);
-			setHighlightedIndex(-1);
+			gameSetters.setIsHardMode(isHardMode);
+			gameSetters.setScore(0);
+			gameSetters.setHintsLeft(isHardMode ? 0 : Number.POSITIVE_INFINITY);
+			gameSetters.setGuessTimeLeft(isHardMode ? 15 : Number.POSITIVE_INFINITY);
+			gameSetters.setTotalTimeElapsed(0);
+			gameSetters.setGameOver(false);
+			gameSetters.setUserRanking(null);
+			gameSetters.setHighlightedIndex(-1);
+			gameSetters.setConsecutiveFastAnswers(0);
+			gameSetters.setShowHypeTrain(false);
+			gameSetters.setPointsEarned(0);
+			gameSetters.setCurrentPokemonId(null);
+			gameSetters.setIsCorrect(null);
+			gameSetters.setGuess("");
+			gameSetters.setSuggestions([]);
+			gameSetters.setShowHint(false);
+			gameSetters.setRewardPokemon({
+				pokemon: undefined,
+				isLoading: false,
+			});
 
 			// Initialize Pokémon list for selected generation
 			const allPokemonIds = Array.from(
-				{ length: selectedGeneration.endId - selectedGeneration.startId + 1 },
-				(_, i) => selectedGeneration.startId + i,
+				{
+					length:
+						gameState.selectedGeneration.endId -
+						gameState.selectedGeneration.startId +
+						1,
+				},
+				(_, i) => gameState.selectedGeneration.startId + i,
 			);
 
 			// Set initial state and wait for it to be updated
-			setRemainingPokemon(allPokemonIds);
+			gameSetters.setRemainingPokemon(allPokemonIds);
 
 			// Add a delay to ensure state is updated
 			await new Promise((resolve) => setTimeout(resolve, 100));
 
-			// Set game active
-			setIsGameActive(true);
-
-			// Start timers based on game mode
+			// Set game active and start timers
+			gameSetters.setIsGameActive(true);
+			startTotalTimer(gameSetters.setTotalTimeElapsed);
 			if (isHardMode) {
-				startGuessTimer();
+				startGuessTimer(gameSetters.setGuessTimeLeft);
 			}
-			startTotalTimer();
 
 			// Start the game by fetching first Pokemon
 			const randomIndex = Math.floor(Math.random() * allPokemonIds.length);
 			const firstPokemonId = allPokemonIds[randomIndex];
 
 			// Remove the first Pokémon from the pool before setting it
-			setRemainingPokemon((prev) => prev.filter((id) => id !== firstPokemonId));
+			gameSetters.setRemainingPokemon((prev) =>
+				prev.filter((id) => id !== firstPokemonId),
+			);
 
-			// Finally set the current Pokemon ID and clear restarting state
-			setCurrentPokemonId(firstPokemonId);
+			// Finally set the current Pokemon ID
+			gameSetters.setCurrentPokemonId(firstPokemonId);
 
 			// Focus the input
 			if (inputRef.current) {
@@ -1363,348 +771,355 @@ const PokemonGame = () => {
 		} catch (error) {
 			console.error("Error starting game:", error);
 		} finally {
-			setIsRestarting(false);
+			gameSetters.setIsRestarting(false);
 		}
 	};
 
-	// Add this effect to handle mute state persistence
+	// Add effect to handle mute state persistence
 	useEffect(() => {
-		localStorage.setItem("pokemonGameMuted", JSON.stringify(isMuted));
-	}, [isMuted]);
+		localStorage.setItem("pokemonGameMuted", JSON.stringify(gameState.isMuted));
+	}, [gameState.isMuted]);
 
-	// Add this effect to fetch rankings only when the generation selector changes
+	// Add effect to auto-focus when game is active
 	useEffect(() => {
-		if (!isGameActive) {
-			fetchSelectedRankings();
-		}
-	}, [selectedGeneration, isGameActive, fetchSelectedRankings]);
-
-	const formatDate = (timestamp: Date): string => {
-		const date = new Date(timestamp);
-		const day = String(date.getDate()).padStart(2, "0");
-		const month = String(date.getMonth() + 1).padStart(2, "0");
-		return `${day}/${month}/${date.getFullYear()}`;
-	};
-
-	const startTotalTimer = () => {
-		if (totalTimeInterval.current) {
-			clearInterval(totalTimeInterval.current);
-		}
-
-		setTotalTimeElapsed(0);
-		totalTimeInterval.current = setInterval(() => {
-			setTotalTimeElapsed((prev) => prev + 1);
-		}, 1000);
-	};
-
-	useEffect(() => {
-		return () => {
-			if (timerInterval.current) {
-				clearInterval(timerInterval.current);
-				timerInterval.current = null;
-			}
-			if (totalTimeInterval.current) {
-				clearInterval(totalTimeInterval.current);
-				totalTimeInterval.current = null;
-			}
-		};
-	}, []);
-
-	// Add this useEffect to handle auto-focus when pokemon changes
-	useEffect(() => {
-		if (isGameActive && inputRef.current) {
+		if (gameState.isGameActive && inputRef.current) {
 			inputRef.current.focus();
 		}
-	}, [currentPokemon, isGameActive]);
+	}, [gameState.isGameActive]);
 
-	// Add this helper function near your other utility functions
-	const formatTimeForRanking = (seconds: number): string => {
-		const minutes = Math.floor(seconds / 60);
-		const remainingSeconds = seconds % 60;
-		return `${minutes}:${remainingSeconds.toString().padStart(2, "0")}`;
-	};
+	// Use Pokemon API queries for reward Pokemon
+	const { data: rewardPokemonData } = useGetPokemonByIdQuery(
+		rewardPokemonId
+			? { id: rewardPokemonId, maxHypeChain: gameState.maxHypeChain }
+			: skipToken,
+		{
+			skip: !rewardPokemonId || !gameState.gameOver,
+		},
+	);
 
-	// Update the initial useEffect for loading the username
+	// Update reward Pokemon when data is available
 	useEffect(() => {
-		const savedName = localStorage.getItem("pokemonGamePlayerName");
-		if (savedName && !auth.currentUser) {
-			setPlayerName(savedName);
-			setNameError(null);
-			setIsAuthName(false);
-		}
-	}, []);
-
-	// Modify the auth name effect to be more immediate
-	useEffect(() => {
-		const savedName = localStorage.getItem("pokemonGamePlayerName");
-		if (playerName) {
-			// Only set isAuthName if it matches the saved name
-			if (playerName === savedName) {
-				setIsAuthName(true);
+		if (!gameState.gameOver) {
+			// Only reset if we have a reward Pokemon
+			if (gameState.rewardPokemon.pokemon) {
+				setRewardPokemonId(null);
+				gameSetters.setRewardPokemon({
+					pokemon: undefined,
+					isLoading: false,
+				});
 			}
-			// If it's a new name, save it
-			if (playerName !== savedName) {
-				localStorage.setItem("pokemonGamePlayerName", playerName);
+			return;
+		}
+
+		// Only update if we have new data and we're not in slot machine mode
+		if (rewardPokemonData && !isSlotMachineRunning) {
+			gameSetters.setRewardPokemon({
+				pokemon: rewardPokemonData,
+				isLoading: false,
+			});
+		}
+	}, [
+		rewardPokemonData,
+		gameState.gameOver,
+		gameState.rewardPokemon,
+		isSlotMachineRunning,
+		gameSetters,
+	]);
+
+	const generatePotentialRewards = useCallback(
+		(finalPokemonId: number) => {
+			const minId = gameState.selectedGeneration.startId;
+			const maxId = gameState.selectedGeneration.endId;
+			console.log(
+				"[PokemonGame] Generating potential rewards from generation:",
+				{
+					minId,
+					maxId,
+					currentGeneration: gameState.selectedGeneration.name,
+				},
+			);
+
+			const rewards: number[] = [];
+
+			// Generate 20 unique Pokemon IDs from the selected generation
+			while (rewards.length < 20) {
+				const randomId =
+					Math.floor(Math.random() * (maxId - minId + 1)) + minId;
+				if (!rewards.includes(randomId) && randomId !== finalPokemonId) {
+					rewards.push(randomId);
+				}
 			}
-		} else {
-			setIsAuthName(false);
-		}
-	}, [playerName]);
 
-	const handleGenerationSelect = (generation: Generation) => {
-		setSelectedGeneration(generation);
-		// Reset game state
-		setScore(0);
-		setGuess("");
-		setSuggestions([]);
-		setIsCorrect(null);
-		setShowHint(false);
-	};
+			// Add the final Pokemon ID at the end
+			rewards.push(finalPokemonId);
 
-	// Add back the necessary functions
-	const handleQuit = useCallback(() => {
-		// Set timer to 0 to trigger name reveal
-		setGuessTimeLeft(0);
-		// Set isCorrect to false to show the name
-		setIsCorrect(false);
-		// Wait a moment to show the name before game over
-		setTimeout(() => {
-			handleGameOver();
-		}, 2000);
-	}, [handleGameOver]);
+			console.log("[PokemonGame] Generated rewards:", {
+				rewards,
+				generation: gameState.selectedGeneration.name,
+			});
 
-	const handleRestart = () => {
-		// Clean up all audio first
-		cleanupAllAudio();
+			return rewards;
+		},
+		[gameState.selectedGeneration],
+	);
 
-		// Reset all Pokemon-related states first
-		setCurrentPokemonId(null);
-		setIsCorrect(null);
-		setGuess("");
-		setSuggestions([]);
-		setShowHint(false);
-		setGameOver(false);
-		setRewardPokemon({ pokemon: undefined, isLoading: false });
-		setPointsEarned(0);
-		setShowCriticalSuccess(false);
-		setShowCriticalHit(false);
-		setShowHypeTrain(false);
-		setConsecutiveFastAnswers(0);
-		setCriticalHitCount(0);
-		setCriticalSuccessCount(0);
-		setHyperTrainCount(0);
-		setMaxHypeChain(0);
+	const runSlotMachineEffect = useCallback(
+		async (finalPokemonId: number) => {
+			setIsSlotMachineRunning(true);
 
-		// Set restarting state to true
-		setIsRestarting(true);
+			// Always generate new rewards to ensure they're from current generation
+			const rewards = generatePotentialRewards(finalPokemonId);
+			setPotentialRewards(rewards);
 
-		// Start a new game with the same mode immediately
-		startGame(isHardMode);
-	};
+			const totalSpins = rewards.length;
+			const initialInterval = 5; // Much faster initial interval
+			const finalInterval = 50; // Slower final interval
+			const minSpins = 100; // More spins to show more Pokemon
 
-	const handleBackToMenu = () => {
-		// Stop any ongoing timers
-		if (timerInterval.current) {
-			clearInterval(timerInterval.current);
-			timerInterval.current = null;
-		}
-		if (totalTimeInterval.current) {
-			clearInterval(totalTimeInterval.current);
-			totalTimeInterval.current = null;
-		}
+			const showNextPokemon = () => {
+				if (slotMachineCountRef.current < minSpins) {
+					// Pick a different Pokemon than the last one shown
+					let randomIndex: number;
+					let attempts = 0;
+					do {
+						randomIndex = Math.floor(Math.random() * (totalSpins - 1));
+						attempts++;
+					} while (rewards[randomIndex] === spinningPokemonId && attempts < 3);
 
-		// Clean up all audio
-		cleanupAllAudio();
+					// During slot machine, only update the spinning Pokemon
+					const displayPokemonId = rewards[randomIndex];
+					setSpinningPokemonId(displayPokemonId);
 
-		// Reset all game states
-		setIsGameActive(false);
-		setGameOver(false);
-		setScore(0);
-		setHintsLeft(MAX_HINTS);
-		setIsCorrect(null);
-		setGuess("");
-		setSuggestions([]);
-		setShowHint(false);
-		setConsecutiveFastAnswers(0);
-		setShowHypeTrain(false);
-		setCriticalHitCount(0);
-		setCriticalSuccessCount(0);
-		setHyperTrainCount(0);
-		setMaxHypeChain(0);
-		setTotalTimeElapsed(0);
-		setCurrentPokemonId(null);
-		setRewardPokemon({ pokemon: undefined, isLoading: false });
-		setPointsEarned(0);
-		setShowCriticalSuccess(false);
-		setShowCriticalHit(false);
-	};
+					// Calculate next interval with a more dramatic slowdown curve
+					const progress = Math.min(slotMachineCountRef.current / minSpins, 1);
+					const nextInterval =
+						initialInterval + (finalInterval - initialInterval) * progress ** 2;
 
-	// Add effect to log Pokemon data when it loads
+					// Schedule next Pokemon
+					slotMachineTimerRef.current = setTimeout(() => {
+						slotMachineCountRef.current++;
+						showNextPokemon();
+					}, nextInterval);
+				} else {
+					// Show the final Pokemon
+					setIsSlotMachineRunning(false);
+					setSpinningPokemonId(null);
+					setPotentialRewards([]);
+					// Now set the actual reward Pokemon
+					setRewardPokemonId(finalPokemonId);
+				}
+			};
+
+			// Start the effect
+			showNextPokemon();
+		},
+		[generatePotentialRewards, spinningPokemonId],
+	);
+
+	// Cleanup effect
 	useEffect(() => {
-		if (currentPokemon && !isPokemonLoading) {
-			// Pokemon data loaded, no need to log
-		}
-	}, [currentPokemon, isPokemonLoading]);
-
-	// Remove duplicate useEffect hooks and cleanup functions
-	useEffect(() => {
-		// Cleanup function for all audio and timers
 		return () => {
-			cleanupAllAudio();
-			if (timerInterval.current) {
-				clearInterval(timerInterval.current);
-				timerInterval.current = null;
-			}
-			if (totalTimeInterval.current) {
-				clearInterval(totalTimeInterval.current);
-				totalTimeInterval.current = null;
+			if (slotMachineTimerRef.current) {
+				clearTimeout(slotMachineTimerRef.current);
 			}
 		};
 	}, []);
 
-	// Consolidate train horn and low life sound effects
+	const handleGameOver = useCallback(async () => {
+		if (gameState.gameOver) {
+			console.log("[PokemonGame] Game already over, skipping handleGameOver");
+			return;
+		}
+
+		try {
+			// Stop all timers immediately
+			console.log("[PokemonGame] Game over, stopping all timers");
+			stopAllTimers();
+
+			// Show the correct Pokemon first
+			gameSetters.setIsCorrect(true);
+
+			// Wait for the reveal animation and give time to see the name
+			await new Promise((resolve) => setTimeout(resolve, 3000));
+
+			// Update states
+			gameSetters.setIsGameActive(false);
+			gameSetters.setGameOver(true);
+
+			// Calculate rankings
+			await calculateRankings(gameState.score, gameState.totalTimeElapsed);
+
+			// Clean up any existing audio before playing victory sound
+			cleanupAllAudio();
+			await playVictorySound();
+
+			// Select the final reward Pokemon from the current generation
+			const minId = gameState.selectedGeneration.startId;
+			const maxId = gameState.selectedGeneration.endId;
+			console.log("[PokemonGame] Selecting reward Pokemon from generation:", {
+				minId,
+				maxId,
+				currentGeneration: gameState.selectedGeneration.name,
+			});
+
+			let finalRewardPokemonId: number;
+			do {
+				finalRewardPokemonId =
+					Math.floor(Math.random() * (maxId - minId + 1)) + minId;
+			} while (finalRewardPokemonId === gameState.currentPokemonId);
+
+			console.log("[PokemonGame] Selected reward Pokemon:", {
+				id: finalRewardPokemonId,
+				generation: gameState.selectedGeneration.name,
+			});
+
+			// Reset slot machine counter
+			slotMachineCountRef.current = 0;
+
+			// Generate potential rewards and start the slot machine effect
+			const rewards = generatePotentialRewards(finalRewardPokemonId);
+			setPotentialRewards(rewards);
+			runSlotMachineEffect(finalRewardPokemonId);
+		} catch (error) {
+			console.error("Error handling game over:", error);
+			gameSetters.setRewardPokemon({
+				pokemon: undefined,
+				isLoading: false,
+			});
+		}
+	}, [
+		gameState.gameOver,
+		gameState.score,
+		gameState.totalTimeElapsed,
+		gameState.selectedGeneration,
+		gameState.currentPokemonId,
+		gameSetters,
+		stopAllTimers,
+		calculateRankings,
+		cleanupAllAudio,
+		playVictorySound,
+		runSlotMachineEffect,
+		generatePotentialRewards,
+	]);
+
+	// Add effect to handle game over conditions
 	useEffect(() => {
-		// Handle train horn sound
-		if (showHypeTrain && !isMuted && !trainHornRef.current) {
-			trainHornRef.current = new Audio(TRAIN_HORN_URL);
-			trainHornRef.current.volume = 0.05;
-			trainHornRef.current.loop = true;
-			trainHornRef.current.play().catch(() => {
-				if (trainHornRef.current) {
-					trainHornRef.current = null;
-				}
-			});
-		} else if (!showHypeTrain && trainHornRef.current) {
-			trainHornRef.current.pause();
-			trainHornRef.current.currentTime = 0;
-			trainHornRef.current = null;
-		}
-
-		// Handle low life sound
 		if (
-			isHardMode &&
-			guessTimeLeft <= 5 &&
-			guessTimeLeft > 0 &&
-			!isMuted &&
-			!lowLifeRef.current
+			gameState.isGameActive &&
+			!gameState.gameOver &&
+			(gameState.guessTimeLeft <= 0 || gameState.remainingPokemon.length === 0)
 		) {
-			lowLifeRef.current = new Audio(LOW_LIFE_SOUND_URL);
-			lowLifeRef.current.volume = 0.1;
-			lowLifeRef.current.loop = true;
-			lowLifeRef.current.play().catch(() => {
-				if (lowLifeRef.current) {
-					lowLifeRef.current = null;
-				}
-			});
-		} else if (
-			(guessTimeLeft > 5 || guessTimeLeft <= 0 || !isHardMode) &&
-			lowLifeRef.current
-		) {
-			lowLifeRef.current.pause();
-			lowLifeRef.current.currentTime = 0;
-			lowLifeRef.current = null;
+			handleGameOver();
 		}
-	}, [showHypeTrain, isMuted, isHardMode, guessTimeLeft]);
+	}, [
+		gameState.guessTimeLeft,
+		gameState.remainingPokemon.length,
+		gameState.isGameActive,
+		gameState.gameOver,
+		handleGameOver,
+	]);
 
-	// Add formatDisplayName function
-	const formatDisplayName = useCallback(
-		(
-			name: string | null | undefined,
-			email: string | null | undefined,
-		): string => {
-			if (!name) return "";
+	// Add effect to monitor time for hype train
+	useEffect(() => {
+		if (
+			gameState.isHardMode &&
+			gameState.showHypeTrain &&
+			gameState.guessTimeLeft <= 9
+		) {
+			// Stop Hype Train and add bonus points
+			gameSetters.setShowHypeTrain(false);
+			gameSetters.setScore((prev) => prev + gameState.consecutiveFastAnswers);
+			gameSetters.setConsecutiveFastAnswers(0);
+		}
+	}, [
+		gameState.isHardMode,
+		gameState.showHypeTrain,
+		gameState.guessTimeLeft,
+		gameState.consecutiveFastAnswers,
+		gameSetters,
+	]);
 
-			// Check if it's a Gmail user
-			const isGmailUser = email?.includes("@gmail.com");
-
-			if (isGmailUser && name.includes(" ")) {
-				// Split the full name into parts
-				const nameParts = name.split(" ");
-				const firstName = nameParts[0];
-				const lastNameInitial =
-					nameParts[nameParts.length - 1][0].toUpperCase();
-				return `${firstName} .${lastNameInitial}`;
-			}
-
-			return name;
+	// Use Pokemon API queries for spinning Pokemon
+	const { data: spinningPokemonData } = useGetPokemonByIdQuery(
+		spinningPokemonId
+			? { id: spinningPokemonId, maxHypeChain: gameState.maxHypeChain }
+			: skipToken,
+		{
+			skip: !spinningPokemonId || !isSlotMachineRunning,
 		},
-		[],
 	);
 
-	// Add effect to handle auth state changes
-	useEffect(() => {
-		const unsubscribe = auth.onAuthStateChanged((user: User | null) => {
-			if (user?.displayName) {
-				// User is logged in with a display name
-				const formattedName = formatDisplayName(user.displayName, user.email);
-				setPlayerName(formattedName);
-				setIsAuthName(true);
-				setNameError(null);
-				setIsCheckingName(false);
-				localStorage.setItem("pokemonGamePlayerName", formattedName);
-			} else if (!user) {
-				// User logged out - restore saved name from localStorage if it exists
-				const savedName = localStorage.getItem("pokemonGamePlayerName");
-				if (savedName) {
-					setPlayerName(savedName);
-					setIsAuthName(false);
-				}
-			}
-		});
-
-		return () => unsubscribe();
-	}, [formatDisplayName]);
-
 	return (
-		<div className="min-h-screen bg-gradient-to-b from-blue-100 to-blue-50 p-4 flex items-start sm:items-center justify-center font-oswald">
-			{isGameActive ? (
+		<div className="min-h-screen bg-gradient-to-br from-blue-100 to-blue-200 p-4 flex items-start sm:items-center justify-center font-oswald relative">
+			{/* Dev mode button - only visible in development */}
+			{import.meta.env.DEV && (
+				<button
+					type="button"
+					onClick={handleGameOver}
+					className="absolute left-4 top-4 bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-md shadow-md transition-colors duration-200 z-50"
+					title="Dev Mode: Trigger Game Over"
+				>
+					DEV: Game Over
+				</button>
+			)}
+			{gameState.isGameActive ? (
 				<GameScreen
-					currentPokemon={isRestarting ? undefined : currentPokemon}
-					isPokemonLoading={isRestarting || isPokemonLoading}
-					isCorrect={isCorrect}
-					score={score}
+					currentPokemon={
+						gameState.isRestarting ? undefined : gameState.currentPokemon
+					}
+					isPokemonLoading={gameState.isRestarting || isPokemonLoading}
+					isCorrect={gameState.isCorrect}
+					score={gameState.score}
 					bestScore={bestScore}
 					bestTime={bestTime}
-					guessTimeLeft={guessTimeLeft}
-					hintsLeft={hintsLeft}
-					guess={guess}
+					guessTimeLeft={gameState.guessTimeLeft}
+					hintsLeft={gameState.hintsLeft}
+					guess={gameState.guess}
 					handleGuessChange={handleGuessChange}
 					handleKeyDown={handleKeyDown}
-					suggestions={suggestions}
+					suggestions={gameState.suggestions}
 					handleSuggestionClick={handleSuggestionClick}
-					highlightedIndex={highlightedIndex}
-					showHint={showHint}
+					highlightedIndex={gameState.highlightedIndex}
+					showHint={gameState.showHint}
 					useHint={useHint}
 					inputRef={inputRef}
 					suggestionsRef={suggestionsRef}
-					formatTime={formatTime}
-					isMuted={isMuted}
-					setIsMuted={setIsMuted}
-					totalTimeElapsed={totalTimeElapsed}
+					formatTime={formatTimeForRanking}
+					isMuted={gameState.isMuted}
+					setIsMuted={gameSetters.setIsMuted}
+					totalTimeElapsed={gameState.totalTimeElapsed}
 					onQuit={handleQuit}
-					isHardMode={isHardMode}
-					showCriticalSuccess={showCriticalSuccess}
-					showCriticalHit={showCriticalHit}
-					showHypeTrain={showHypeTrain}
-					consecutiveFastAnswers={consecutiveFastAnswers}
-					pointsEarned={pointsEarned}
-					remainingCount={remainingPokemon.length}
-					totalCount={selectedGeneration.endId - selectedGeneration.startId + 1}
+					isHardMode={gameState.isHardMode}
+					showCriticalSuccess={gameState.showCriticalSuccess}
+					showCriticalHit={gameState.showCriticalHit}
+					showHypeTrain={gameState.showHypeTrain}
+					consecutiveFastAnswers={gameState.consecutiveFastAnswers}
+					pointsEarned={gameState.pointsEarned}
+					remainingCount={gameState.remainingPokemon.length}
+					totalCount={
+						gameState.selectedGeneration.endId -
+						gameState.selectedGeneration.startId +
+						1
+					}
 				/>
 			) : (
 				<MenuScreen
 					playerName={playerName}
 					handlePlayerNameChange={handlePlayerNameChange}
 					nameError={nameError}
-					selectedGeneration={selectedGeneration}
+					selectedGeneration={gameState.selectedGeneration}
 					handleGenerationSelect={handleGenerationSelect}
 					GENERATIONS={GENERATIONS}
-					canStartGame={canStartGame}
+					canStartGame={Boolean(
+						(playerName && !nameError && !isCheckingName) ||
+							(savedName && playerName === savedName) ||
+							(playerName && isAuthName),
+					)}
 					startGame={startGame}
-					score={score}
+					score={gameState.score}
 					bestScore={bestScore}
-					isMuted={isMuted}
-					setIsMuted={setIsMuted}
+					isMuted={gameState.isMuted}
+					setIsMuted={gameSetters.setIsMuted}
 					rankings={rankings}
 					formatTimeForRanking={formatTimeForRanking}
 					formatDate={formatDate}
@@ -1713,26 +1128,31 @@ const PokemonGame = () => {
 			)}
 
 			<GameOverDialog
-				gameOver={gameOver}
-				setGameOver={setGameOver}
+				gameOver={gameState.gameOver}
+				setGameOver={gameSetters.setGameOver}
 				playerName={playerName}
-				score={score}
+				score={gameState.score}
 				bestScore={bestScore}
 				bestTime={bestTime}
 				userRanking={userRanking}
 				bestRanking={bestRanking}
-				totalTimeElapsed={totalTimeElapsed}
+				totalTimeElapsed={gameState.totalTimeElapsed}
 				formatTimeForRanking={formatTimeForRanking}
-				rewardPokemon={rewardPokemon}
-				remainingPokemon={remainingPokemon}
+				rewardPokemon={{
+					pokemon: gameState.rewardPokemon.pokemon,
+					isLoading: gameState.rewardPokemon.isLoading,
+				}}
+				remainingPokemon={gameState.remainingPokemon}
 				handleRestart={handleRestart}
 				handleBackToMenu={handleBackToMenu}
-				isMuted={isMuted}
-				criticalHitCount={criticalHitCount}
-				criticalSuccessCount={criticalSuccessCount}
-				hyperTrainCount={hyperTrainCount}
-				maxHypeChain={maxHypeChain}
-				selectedGeneration={selectedGeneration}
+				isMuted={gameState.isMuted}
+				criticalHitCount={gameState.criticalHitCount}
+				criticalSuccessCount={gameState.criticalSuccessCount}
+				hyperTrainCount={gameState.hyperTrainCount}
+				maxHypeChain={gameState.maxHypeChain}
+				selectedGeneration={gameState.selectedGeneration}
+				isSlotMachineRunning={isSlotMachineRunning}
+				spinningPokemon={spinningPokemonData}
 			/>
 		</div>
 	);

@@ -25,6 +25,7 @@ export const fr = {
   time: 'Temps',
   date: 'Date',
   noScores: 'Aucun score enregistré pour cette génération',
+  noRankings: 'Aucun classement disponible pour cette génération',
   loggedInAs: 'Connecté en tant que {{name}}',
   
   // Game Screen
