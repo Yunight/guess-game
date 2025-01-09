@@ -35,6 +35,7 @@ interface GameOverDialogProps {
 	maxHypeChain: number;
 	selectedGeneration: { name: string; startId: number; endId: number };
 	isSlotMachineRunning: boolean;
+	spinningPokemon: Pokemon | undefined;
 }
 
 const getCachedCryUrl = async (
@@ -105,6 +106,7 @@ export const GameOverDialog: FC<GameOverDialogProps> = ({
 	maxHypeChain,
 	selectedGeneration,
 	isSlotMachineRunning,
+	spinningPokemon,
 }) => {
 	const { t, i18n } = useTranslation();
 	const [lastPlayedId, setLastPlayedId] = useState<number | null>(null);
@@ -189,26 +191,42 @@ export const GameOverDialog: FC<GameOverDialogProps> = ({
 
 	// Effect to play reward Pokemon cry
 	useEffect(() => {
-		if (!gameOver || isMuted || !rewardPokemon.pokemon) return;
+		// Reset last played ID when slot machine starts
+		if (isSlotMachineRunning) {
+			setLastPlayedId(null);
+			return;
+		}
 
-		// Skip if we're still in slot machine animation
-		if (isSlotMachineRunning) return;
+		// Don't play if basic conditions aren't met
+		if (
+			!gameOver ||
+			isMuted ||
+			!rewardPokemon.pokemon ||
+			rewardPokemon.isLoading
+		) {
+			return;
+		}
 
-		const pokemonId = rewardPokemon.pokemon.id;
-		const pokemonName = rewardPokemon.pokemon.englishName;
-		const frenchName = rewardPokemon.pokemon.frenchName;
+		// Add a delay to ensure the slot machine has completely finished
+		const timeoutId = setTimeout(() => {
+			const pokemonId = rewardPokemon.pokemon?.id;
+			if (!pokemonId) return;
 
-		console.log("🎵 Attempting to play reward Pokemon cry:", {
-			pokemonId,
-			pokemonName,
-			frenchName,
-		});
+			console.log("🎵 Attempting to play reward Pokemon cry:", {
+				pokemonId,
+				pokemonName: rewardPokemon.pokemon?.englishName,
+				frenchName: rewardPokemon.pokemon?.frenchName,
+			});
 
-		playPokemonCry(pokemonId);
+			playPokemonCry(pokemonId);
+		}, 500); // Delay to ensure everything has settled
+
+		return () => clearTimeout(timeoutId);
 	}, [
 		gameOver,
 		isMuted,
 		rewardPokemon.pokemon,
+		rewardPokemon.isLoading,
 		isSlotMachineRunning,
 		playPokemonCry,
 	]);
@@ -494,9 +512,9 @@ https://pokemon-guesser-game.vercel.app/
 						<RewardPokemonDisplay
 							pokemon={rewardPokemon.pokemon}
 							isLoading={rewardPokemon.isLoading}
-							totalPokemonCount={remainingPokemon.length}
 							selectedGeneration={selectedGeneration}
 							isSlotMachineRunning={isSlotMachineRunning}
+							spinningPokemon={spinningPokemon}
 						/>
 
 						<div className="grid grid-cols-2 gap-4">

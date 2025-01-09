@@ -35,6 +35,16 @@ const PokemonGame = () => {
 	const suggestionsRef = useRef<HTMLDivElement>(null);
 	const savedName = localStorage.getItem("pokemonGamePlayerName");
 
+	// Slot machine effect state
+	const [isSlotMachineRunning, setIsSlotMachineRunning] = useState(false);
+	const slotMachineTimerRef = useRef<NodeJS.Timeout | null>(null);
+	const slotMachineCountRef = useRef(0);
+	const [potentialRewards, setPotentialRewards] = useState<number[]>([]);
+	const [spinningPokemonId, setSpinningPokemonId] = useState<number | null>(
+		null,
+	);
+	const [rewardPokemonId, setRewardPokemonId] = useState<number | null>(null);
+
 	// Use our custom hooks
 	const { state: gameState, setters: gameSetters } = useGameState(
 		GENERATIONS[0],
@@ -778,8 +788,6 @@ const PokemonGame = () => {
 	}, [gameState.isGameActive]);
 
 	// Use Pokemon API queries for reward Pokemon
-	const [rewardPokemonId, setRewardPokemonId] = useState<number | null>(null);
-
 	const { data: rewardPokemonData } = useGetPokemonByIdQuery(
 		rewardPokemonId
 			? { id: rewardPokemonId, maxHypeChain: gameState.maxHypeChain }
@@ -792,11 +800,8 @@ const PokemonGame = () => {
 	// Update reward Pokemon when data is available
 	useEffect(() => {
 		if (!gameState.gameOver) {
-			// Only reset if we have a reward Pokemon or loading state
-			if (
-				gameState.rewardPokemon.pokemon ||
-				gameState.rewardPokemon.isLoading
-			) {
+			// Only reset if we have a reward Pokemon
+			if (gameState.rewardPokemon.pokemon) {
 				setRewardPokemonId(null);
 				gameSetters.setRewardPokemon({
 					pokemon: undefined,
@@ -806,110 +811,109 @@ const PokemonGame = () => {
 			return;
 		}
 
-		// Only update if we have new data or loading state changed
-		if (
-			rewardPokemonData &&
-			(!gameState.rewardPokemon.pokemon ||
-				gameState.rewardPokemon.pokemon.id !== rewardPokemonData.id)
-		) {
+		// Only update if we have new data and we're not in slot machine mode
+		if (rewardPokemonData && !isSlotMachineRunning) {
 			gameSetters.setRewardPokemon({
 				pokemon: rewardPokemonData,
 				isLoading: false,
 			});
-		} else if (
-			rewardPokemonId &&
-			!rewardPokemonData &&
-			!gameState.rewardPokemon.isLoading
-		) {
-			gameSetters.setRewardPokemon({
-				pokemon: undefined,
-				isLoading: true,
-			});
 		}
 	}, [
 		rewardPokemonData,
-		rewardPokemonId,
 		gameState.gameOver,
 		gameState.rewardPokemon,
+		isSlotMachineRunning,
 		gameSetters,
 	]);
-
-	// Slot machine effect state
-	const [isSlotMachineRunning, setIsSlotMachineRunning] = useState(false);
-	const slotMachineTimerRef = useRef<NodeJS.Timeout | null>(null);
-	const slotMachineCountRef = useRef(0);
-	const [potentialRewards, setPotentialRewards] = useState<number[]>([]);
 
 	const generatePotentialRewards = useCallback(
 		(finalPokemonId: number) => {
 			const minId = gameState.selectedGeneration.startId;
 			const maxId = gameState.selectedGeneration.endId;
+			console.log(
+				"[PokemonGame] Generating potential rewards from generation:",
+				{
+					minId,
+					maxId,
+					currentGeneration: gameState.selectedGeneration.name,
+				},
+			);
+
 			const rewards: number[] = [];
 
-			// Generate 20 unique Pokemon IDs (excluding current Pokemon)
+			// Generate 20 unique Pokemon IDs from the selected generation
 			while (rewards.length < 20) {
 				const randomId =
 					Math.floor(Math.random() * (maxId - minId + 1)) + minId;
-				if (
-					!rewards.includes(randomId) &&
-					randomId !== gameState.currentPokemonId &&
-					randomId !== finalPokemonId
-				) {
+				if (!rewards.includes(randomId) && randomId !== finalPokemonId) {
 					rewards.push(randomId);
 				}
 			}
 
 			// Add the final Pokemon ID at the end
 			rewards.push(finalPokemonId);
+
+			console.log("[PokemonGame] Generated rewards:", {
+				rewards,
+				generation: gameState.selectedGeneration.name,
+			});
+
 			return rewards;
 		},
-		[gameState.selectedGeneration, gameState.currentPokemonId],
+		[gameState.selectedGeneration],
 	);
 
 	const runSlotMachineEffect = useCallback(
 		async (finalPokemonId: number) => {
 			setIsSlotMachineRunning(true);
 
-			// Generate potential rewards if not already generated
-			if (potentialRewards.length === 0) {
-				const rewards = generatePotentialRewards(finalPokemonId);
-				setPotentialRewards(rewards);
-			}
+			// Always generate new rewards to ensure they're from current generation
+			const rewards = generatePotentialRewards(finalPokemonId);
+			setPotentialRewards(rewards);
 
-			const totalSpins = potentialRewards.length;
-			const initialInterval = 100; // Start fast (100ms)
-			const finalInterval = 500; // End slow (500ms)
+			const totalSpins = rewards.length;
+			const initialInterval = 5; // Much faster initial interval
+			const finalInterval = 50; // Slower final interval
+			const minSpins = 100; // More spins to show more Pokemon
 
 			const showNextPokemon = () => {
-				if (slotMachineCountRef.current >= totalSpins) {
+				if (slotMachineCountRef.current < minSpins) {
+					// Pick a different Pokemon than the last one shown
+					let randomIndex: number;
+					let attempts = 0;
+					do {
+						randomIndex = Math.floor(Math.random() * (totalSpins - 1));
+						attempts++;
+					} while (rewards[randomIndex] === spinningPokemonId && attempts < 3);
+
+					// During slot machine, only update the spinning Pokemon
+					const displayPokemonId = rewards[randomIndex];
+					setSpinningPokemonId(displayPokemonId);
+
+					// Calculate next interval with a more dramatic slowdown curve
+					const progress = Math.min(slotMachineCountRef.current / minSpins, 1);
+					const nextInterval =
+						initialInterval + (finalInterval - initialInterval) * progress ** 2;
+
+					// Schedule next Pokemon
+					slotMachineTimerRef.current = setTimeout(() => {
+						slotMachineCountRef.current++;
+						showNextPokemon();
+					}, nextInterval);
+				} else {
 					// Show the final Pokemon
 					setIsSlotMachineRunning(false);
-					setRewardPokemonId(finalPokemonId);
-					// Clear potential rewards for next time
+					setSpinningPokemonId(null);
 					setPotentialRewards([]);
-					return;
+					// Now set the actual reward Pokemon
+					setRewardPokemonId(finalPokemonId);
 				}
-
-				// Get the next Pokemon from our pre-generated list
-				const nextPokemonId = potentialRewards[slotMachineCountRef.current];
-				setRewardPokemonId(nextPokemonId);
-
-				// Calculate next interval (gradually increase)
-				const progress = slotMachineCountRef.current / totalSpins;
-				const nextInterval =
-					initialInterval + (finalInterval - initialInterval) * progress;
-
-				// Schedule next Pokemon
-				slotMachineTimerRef.current = setTimeout(() => {
-					slotMachineCountRef.current++;
-					showNextPokemon();
-				}, nextInterval);
 			};
 
 			// Start the effect
 			showNextPokemon();
 		},
-		[potentialRewards, generatePotentialRewards],
+		[generatePotentialRewards, spinningPokemonId],
 	);
 
 	// Cleanup effect
@@ -949,19 +953,24 @@ const PokemonGame = () => {
 			cleanupAllAudio();
 			await playVictorySound();
 
-			// Select the final reward Pokemon
+			// Select the final reward Pokemon from the current generation
 			const minId = gameState.selectedGeneration.startId;
 			const maxId = gameState.selectedGeneration.endId;
+			console.log("[PokemonGame] Selecting reward Pokemon from generation:", {
+				minId,
+				maxId,
+				currentGeneration: gameState.selectedGeneration.name,
+			});
+
 			let finalRewardPokemonId: number;
 			do {
 				finalRewardPokemonId =
 					Math.floor(Math.random() * (maxId - minId + 1)) + minId;
 			} while (finalRewardPokemonId === gameState.currentPokemonId);
 
-			// Set initial loading state
-			gameSetters.setRewardPokemon({
-				pokemon: undefined,
-				isLoading: true,
+			console.log("[PokemonGame] Selected reward Pokemon:", {
+				id: finalRewardPokemonId,
+				generation: gameState.selectedGeneration.name,
 			});
 
 			// Reset slot machine counter
@@ -1030,8 +1039,29 @@ const PokemonGame = () => {
 		gameSetters,
 	]);
 
+	// Use Pokemon API queries for spinning Pokemon
+	const { data: spinningPokemonData } = useGetPokemonByIdQuery(
+		spinningPokemonId
+			? { id: spinningPokemonId, maxHypeChain: gameState.maxHypeChain }
+			: skipToken,
+		{
+			skip: !spinningPokemonId || !isSlotMachineRunning,
+		},
+	);
+
 	return (
-		<div className="min-h-screen bg-gradient-to-br from-blue-100 to-blue-200 p-4 flex items-start sm:items-center justify-center font-oswald">
+		<div className="min-h-screen bg-gradient-to-br from-blue-100 to-blue-200 p-4 flex items-start sm:items-center justify-center font-oswald relative">
+			{/* Dev mode button - only visible in development */}
+			{import.meta.env.DEV && (
+				<button
+					type="button"
+					onClick={handleGameOver}
+					className="absolute left-4 top-4 bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-md shadow-md transition-colors duration-200 z-50"
+					title="Dev Mode: Trigger Game Over"
+				>
+					DEV: Game Over
+				</button>
+			)}
 			{gameState.isGameActive ? (
 				<GameScreen
 					currentPokemon={
@@ -1108,7 +1138,10 @@ const PokemonGame = () => {
 				bestRanking={bestRanking}
 				totalTimeElapsed={gameState.totalTimeElapsed}
 				formatTimeForRanking={formatTimeForRanking}
-				rewardPokemon={gameState.rewardPokemon}
+				rewardPokemon={{
+					pokemon: gameState.rewardPokemon.pokemon,
+					isLoading: gameState.rewardPokemon.isLoading,
+				}}
 				remainingPokemon={gameState.remainingPokemon}
 				handleRestart={handleRestart}
 				handleBackToMenu={handleBackToMenu}
@@ -1119,6 +1152,7 @@ const PokemonGame = () => {
 				maxHypeChain={gameState.maxHypeChain}
 				selectedGeneration={gameState.selectedGeneration}
 				isSlotMachineRunning={isSlotMachineRunning}
+				spinningPokemon={spinningPokemonData}
 			/>
 		</div>
 	);
