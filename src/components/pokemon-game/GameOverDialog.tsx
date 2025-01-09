@@ -7,7 +7,7 @@ import {
 } from "@/components/ui/dialog";
 import { ScrollableDialog } from "@/components/ui/scrollable-dialog";
 import { Clock, Crown, Home, RefreshCcw, Share2, Trophy } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import type { FC } from "react";
 import { useTranslation } from "react-i18next";
 import { RewardPokemonDisplay } from "./RewardPokemonDisplay";
@@ -34,6 +34,7 @@ interface GameOverDialogProps {
 	hyperTrainCount: number;
 	maxHypeChain: number;
 	selectedGeneration: { name: string; startId: number; endId: number };
+	isSlotMachineRunning: boolean;
 }
 
 const getCachedCryUrl = async (
@@ -103,20 +104,14 @@ export const GameOverDialog: FC<GameOverDialogProps> = ({
 	hyperTrainCount,
 	maxHypeChain,
 	selectedGeneration,
+	isSlotMachineRunning,
 }) => {
 	const { t, i18n } = useTranslation();
 	const [lastPlayedId, setLastPlayedId] = useState<number | null>(null);
 
-	useEffect(() => {
-		let isSubscribed = true;
-
-		const playPokemonCry = async () => {
-			if (!rewardPokemon.pokemon) {
-				console.log("❌ No reward Pokémon available");
-				return;
-			}
-
-			if (rewardPokemon.pokemon.id === lastPlayedId) {
+	const playPokemonCry = useCallback(
+		async (pokemonId: number) => {
+			if (pokemonId === lastPlayedId) {
 				console.log(
 					"⏭️ Skip playing cry - same Pokémon as last time:",
 					lastPlayedId,
@@ -128,26 +123,13 @@ export const GameOverDialog: FC<GameOverDialogProps> = ({
 				console.log(
 					"🔇 Audio is muted, setting last played ID without playing",
 				);
-				setLastPlayedId(rewardPokemon.pokemon.id);
+				setLastPlayedId(pokemonId);
 				return;
 			}
 
-			console.log("🎵 Attempting to play reward Pokemon cry:", {
-				pokemonId: rewardPokemon.pokemon.id,
-				pokemonName: rewardPokemon.pokemon.englishName,
-				frenchName: rewardPokemon.pokemon.frenchName,
-			});
-
 			try {
 				// Get cry URL from cache or PokeAPI
-				const cries = await getCachedCryUrl(rewardPokemon.pokemon.id);
-
-				// Check if we're still subscribed before continuing
-				if (!isSubscribed) {
-					console.log("🛑 Component unmounted, skipping audio playback");
-					return;
-				}
-
+				const cries = await getCachedCryUrl(pokemonId);
 				const [latestCry, legacyCry] = [cries.latest, cries.legacy];
 
 				console.log("🔊 Playing cry URL:", latestCry);
@@ -155,17 +137,16 @@ export const GameOverDialog: FC<GameOverDialogProps> = ({
 				let hasError = false;
 
 				// Add event listeners for debugging
-				cryAudio.addEventListener("loadstart", () => {
-					if (isSubscribed) console.log("🎵 Started loading audio");
-				});
-				cryAudio.addEventListener("canplay", () => {
-					if (isSubscribed) console.log("✅ Audio can start playing");
-				});
-				cryAudio.addEventListener("loadeddata", () => {
-					if (isSubscribed) console.log("✅ Audio data loaded successfully");
-				});
+				cryAudio.addEventListener("loadstart", () =>
+					console.log("🎵 Started loading audio"),
+				);
+				cryAudio.addEventListener("canplay", () =>
+					console.log("✅ Audio can start playing"),
+				);
+				cryAudio.addEventListener("loadeddata", () =>
+					console.log("✅ Audio data loaded successfully"),
+				);
 				cryAudio.addEventListener("error", (e) => {
-					if (!isSubscribed) return;
 					hasError = true;
 					const audio = e.currentTarget as HTMLAudioElement;
 					console.error("❌ Audio loading error:", {
@@ -184,16 +165,14 @@ export const GameOverDialog: FC<GameOverDialogProps> = ({
 				console.log("⏳ Attempting to play audio...");
 				await cryAudio.play();
 
-				// Only set lastPlayedId if there was no error and we're still subscribed
-				if (!hasError && isSubscribed) {
-					setLastPlayedId(rewardPokemon.pokemon.id);
+				// Only set lastPlayedId if there was no error
+				if (!hasError) {
+					setLastPlayedId(pokemonId);
 					console.log("✅ Reward Pokemon cry played successfully");
-				} else if (hasError) {
+				} else {
 					console.log("❌ Not setting lastPlayedId due to error");
 				}
 			} catch (err) {
-				if (!isSubscribed) return;
-
 				const error = err as Error;
 				console.error("❌ Error playing reward Pokemon cry:", {
 					name: error.name,
@@ -204,16 +183,35 @@ export const GameOverDialog: FC<GameOverDialogProps> = ({
 				// Don't set lastPlayedId on error
 				console.log("❌ Not setting lastPlayedId due to error");
 			}
-		};
+		},
+		[lastPlayedId, isMuted],
+	);
 
-		playPokemonCry();
+	// Effect to play reward Pokemon cry
+	useEffect(() => {
+		if (!gameOver || isMuted || !rewardPokemon.pokemon) return;
 
-		// Cleanup function
-		return () => {
-			isSubscribed = false;
-			console.log("🧹 Cleaning up GameOverDialog effect");
-		};
-	}, [rewardPokemon.pokemon, isMuted, lastPlayedId]);
+		// Skip if we're still in slot machine animation
+		if (isSlotMachineRunning) return;
+
+		const pokemonId = rewardPokemon.pokemon.id;
+		const pokemonName = rewardPokemon.pokemon.englishName;
+		const frenchName = rewardPokemon.pokemon.frenchName;
+
+		console.log("🎵 Attempting to play reward Pokemon cry:", {
+			pokemonId,
+			pokemonName,
+			frenchName,
+		});
+
+		playPokemonCry(pokemonId);
+	}, [
+		gameOver,
+		isMuted,
+		rewardPokemon.pokemon,
+		isSlotMachineRunning,
+		playPokemonCry,
+	]);
 
 	const handleShare = async () => {
 		const getClickbaitMessage = () => {
@@ -498,6 +496,7 @@ https://pokemon-guesser-game.vercel.app/
 							isLoading={rewardPokemon.isLoading}
 							totalPokemonCount={remainingPokemon.length}
 							selectedGeneration={selectedGeneration}
+							isSlotMachineRunning={isSlotMachineRunning}
 						/>
 
 						<div className="grid grid-cols-2 gap-4">

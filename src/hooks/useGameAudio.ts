@@ -1,4 +1,4 @@
-import { useRef, useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 
 const CORRECT_SOUND_URL = '/sounds/pkm_level_up.mp3';
 const WRONG_SOUND_URL = '/sounds/bump_wall.mp3';
@@ -71,12 +71,12 @@ export const useGameAudio = (
   // Handle train horn and low life sounds
   useEffect(() => {
     // Handle train horn sound
-    if (showHypeTrain && !isMuted && trainHornRef.current) {
+    if (showHypeTrain && !isMuted && trainHornRef.current && (!isHardMode || guessTimeLeft > 9)) {
       trainHornRef.current.loop = true;
       trainHornRef.current.play().catch((error) => {
         console.error('Error playing train horn:', error);
       });
-    } else if (!showHypeTrain && trainHornRef.current) {
+    } else if ((!showHypeTrain || guessTimeLeft <= 9) && trainHornRef.current) {
       trainHornRef.current.pause();
       trainHornRef.current.currentTime = 0;
     }

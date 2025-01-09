@@ -1,7 +1,12 @@
-import { useCallback, useEffect, useRef } from "react";
-import { useTranslation } from "react-i18next";
 import { skipToken } from "@reduxjs/toolkit/query";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { auth } from "../../firebase";
+import { useGameAudio } from "../../hooks/useGameAudio";
+import { useGameState } from "../../hooks/useGameState";
+import { useGameTimers } from "../../hooks/useGameTimers";
+import { usePlayerName } from "../../hooks/usePlayerName";
+import { useRankings } from "../../hooks/useRankings";
 import {
 	useGetAllPokemonNamesQuery,
 	useGetPokemonByIdQuery,
@@ -9,11 +14,6 @@ import {
 import { GameOverDialog } from "./GameOverDialog";
 import { GameScreen } from "./GameScreen";
 import { MenuScreen } from "./MenuScreen";
-import { useGameState } from "../../hooks/useGameState";
-import { useGameAudio } from "../../hooks/useGameAudio";
-import { useGameTimers } from "../../hooks/useGameTimers";
-import { usePlayerName } from "../../hooks/usePlayerName";
-import { useRankings } from "../../hooks/useRankings";
 import type { Generation } from "./types";
 import "../../styles/PokemonGame.css";
 
@@ -36,10 +36,9 @@ const PokemonGame = () => {
 	const savedName = localStorage.getItem("pokemonGamePlayerName");
 
 	// Use our custom hooks
-	const {
-		state: gameState,
-		setters: gameSetters,
-	} = useGameState(GENERATIONS[0]);
+	const { state: gameState, setters: gameSetters } = useGameState(
+		GENERATIONS[0],
+	);
 
 	const {
 		playerName,
@@ -75,7 +74,7 @@ const PokemonGame = () => {
 		gameState.isMuted,
 		gameState.showHypeTrain,
 		gameState.isHardMode,
-		gameState.guessTimeLeft
+		gameState.guessTimeLeft,
 	);
 
 	const handleWrongAnswer = useCallback(() => {
@@ -83,85 +82,79 @@ const PokemonGame = () => {
 		playWrongSound();
 	}, [gameSetters, playWrongSound]);
 
-	const { startGuessTimer, startTotalTimer, stopAllTimers, clearGuessTimer } = useGameTimers(
-		gameState.isGameActive,
-		gameState.isHardMode,
-		gameState.currentPokemon?.isShiny,
-		{
-			onGuessTimeEnd: handleWrongAnswer,
-			onTotalTimeUpdate: (time) => {
-				gameSetters.setTotalTimeElapsed(time);
+	const { startGuessTimer, startTotalTimer, stopAllTimers, clearGuessTimer } =
+		useGameTimers(
+			gameState.isGameActive,
+			gameState.isHardMode,
+			gameState.currentPokemon?.isShiny,
+			{
+				onGuessTimeEnd: handleWrongAnswer,
+				onTotalTimeUpdate: (time) => {
+					gameSetters.setTotalTimeElapsed(time);
+				},
 			},
-		}
-	);
+		);
 
 	// Initialize timers when game starts
 	useEffect(() => {
-		console.log('Timer initialization effect triggered', {
-			isGameActive: gameState.isGameActive,
-			isHardMode: gameState.isHardMode,
-			isShiny: gameState.currentPokemon?.isShiny
-		});
-
-		if (gameState.isGameActive) {
-			// Reset timer states first
-			console.log('Resetting timer states');
-			gameSetters.setTotalTimeElapsed(0);
-			if (gameState.isHardMode) {
-				const initialTime = gameState.currentPokemon?.isShiny ? 10 : 15;
-				console.log('Setting initial guess time:', initialTime);
-				gameSetters.setGuessTimeLeft(initialTime);
-			} else {
-				console.log('Setting guess time to infinity (chill mode)');
-				gameSetters.setGuessTimeLeft(Number.POSITIVE_INFINITY);
+		// Skip effect entirely if we're on menu screen (initial state) or game is not active
+		if (!gameState.isGameActive) {
+			if (
+				gameState.guessTimeLeft !== Number.POSITIVE_INFINITY ||
+				gameState.totalTimeElapsed !== 0
+			) {
+				console.log("[PokemonGame] Game not active, stopping all timers");
+				stopAllTimers();
+				// Reset timer states only if they're not already at initial values
+				if (gameState.guessTimeLeft !== Number.POSITIVE_INFINITY) {
+					gameSetters.setGuessTimeLeft(Number.POSITIVE_INFINITY);
+				}
+				if (gameState.totalTimeElapsed !== 0) {
+					gameSetters.setTotalTimeElapsed(0);
+				}
 			}
+			return;
+		}
 
-			// Start timers
-			console.log('Starting timers');
+		// Start total timer if it hasn't started yet and game is active
+		if (gameState.totalTimeElapsed === 0) {
+			console.log("[PokemonGame] Starting total timer");
 			startTotalTimer(gameSetters.setTotalTimeElapsed);
-			if (gameState.isHardMode) {
+		}
+
+		// Handle guess timer in hard mode
+		if (gameState.isHardMode) {
+			const initialTime = gameState.currentPokemon?.isShiny ? 10 : 15;
+			if (gameState.guessTimeLeft === Number.POSITIVE_INFINITY) {
+				console.log(
+					"[PokemonGame] Starting guess timer with initial time:",
+					initialTime,
+				);
 				startGuessTimer(gameSetters.setGuessTimeLeft);
 			}
 		}
 
-		// Only cleanup when component unmounts
+		// Cleanup function
 		return () => {
-			console.log('Timer initialization effect cleanup - unmounting');
-			stopAllTimers();
+			if (!gameState.isGameActive) {
+				console.log(
+					"[PokemonGame] Cleanup: Game not active, stopping all timers",
+				);
+				stopAllTimers();
+			}
 		};
-	}, [gameState.isGameActive]); // Only depend on isGameActive
-
-	// Reset guess timer when current Pokemon changes
-	useEffect(() => {
-		if (!gameState.currentPokemon?.id || !gameState.isGameActive || !gameState.isHardMode) {
-			return;
-		}
-
-		console.log('Pokemon change effect triggered', {
-			pokemonId: gameState.currentPokemon.id,
-			isShiny: gameState.currentPokemon.isShiny
-		});
-
-		// Reset timer state first
-		const initialTime = gameState.currentPokemon.isShiny ? 10 : 15;
-		console.log('Setting new guess time for Pokemon:', initialTime);
-		gameSetters.setGuessTimeLeft(initialTime);
-		// Start new timer
-		console.log('Starting new guess timer for Pokemon');
-		startGuessTimer(gameSetters.setGuessTimeLeft);
 	}, [
-		gameState.currentPokemon?.id // Only trigger on ID change
+		gameState.isGameActive,
+		gameState.isHardMode,
+		gameState.currentPokemon?.isShiny,
+		gameState.guessTimeLeft,
+		gameState.totalTimeElapsed,
+		startGuessTimer,
+		startTotalTimer,
+		stopAllTimers,
+		gameSetters.setGuessTimeLeft,
+		gameSetters.setTotalTimeElapsed,
 	]);
-
-	// Cleanup timers when game ends
-	useEffect(() => {
-		if (!gameState.isGameActive) {
-			stopAllTimers();
-		}
-		return () => {
-			stopAllTimers();
-		};
-	}, [gameState.isGameActive, stopAllTimers]);
 
 	// Use Pokemon API queries
 	const { data: apiPokemonNames = [] } = useGetAllPokemonNamesQuery(
@@ -170,20 +163,23 @@ const PokemonGame = () => {
 			refetchOnMountOrArgChange: false,
 			refetchOnFocus: false,
 			refetchOnReconnect: false,
-		}
+		},
 	);
 
 	const { data: currentPokemon, isLoading: isPokemonLoading } =
 		useGetPokemonByIdQuery(
 			gameState.currentPokemonId
-				? { id: gameState.currentPokemonId, maxHypeChain: gameState.maxHypeChain }
+				? {
+						id: gameState.currentPokemonId,
+						maxHypeChain: gameState.maxHypeChain,
+					}
 				: skipToken,
 			{
 				skip: !gameState.currentPokemonId || !gameState.isGameActive,
 				refetchOnMountOrArgChange: false,
 				refetchOnFocus: false,
 				refetchOnReconnect: false,
-			}
+			},
 		);
 
 	// Update currentPokemon in gameState when API data changes
@@ -283,12 +279,22 @@ const PokemonGame = () => {
 					const bStartsWithEn = bNameEn.startsWith(normalizedValue);
 
 					// If one starts with and the other doesn't, prioritize the one that starts with
-					if ((aStartsWithFr || aStartsWithEn) && !(bStartsWithFr || bStartsWithEn)) return -1;
-					if (!(aStartsWithFr || aStartsWithEn) && (bStartsWithFr || bStartsWithEn)) return 1;
+					if (
+						(aStartsWithFr || aStartsWithEn) &&
+						!(bStartsWithFr || bStartsWithEn)
+					)
+						return -1;
+					if (
+						!(aStartsWithFr || aStartsWithEn) &&
+						(bStartsWithFr || bStartsWithEn)
+					)
+						return 1;
 
 					// If both or neither start with, check for exact matches
-					const aExactMatch = aNameFr === normalizedValue || aNameEn === normalizedValue;
-					const bExactMatch = bNameFr === normalizedValue || bNameEn === normalizedValue;
+					const aExactMatch =
+						aNameFr === normalizedValue || aNameEn === normalizedValue;
+					const bExactMatch =
+						bNameFr === normalizedValue || bNameEn === normalizedValue;
 
 					if (aExactMatch && !bExactMatch) return -1;
 					if (!aExactMatch && bExactMatch) return 1;
@@ -299,7 +305,7 @@ const PokemonGame = () => {
 					return aLength - bLength;
 				})
 				.map((pokemon) =>
-					i18n.language === "fr" ? pokemon.frenchName : pokemon.englishName
+					i18n.language === "fr" ? pokemon.frenchName : pokemon.englishName,
 				)
 				.filter(Boolean)
 				.slice(0, 5);
@@ -340,6 +346,15 @@ const PokemonGame = () => {
 				}
 				return newCount;
 			});
+		} else if (
+			gameState.isHardMode &&
+			gameState.guessTimeLeft <= 9 &&
+			gameState.showHypeTrain
+		) {
+			// Stop Hype Train and add bonus points
+			gameSetters.setShowHypeTrain(false);
+			gameSetters.setScore((prev) => prev + gameState.consecutiveFastAnswers);
+			gameSetters.setConsecutiveFastAnswers(0);
 		}
 
 		let earnedPoints = 0;
@@ -353,11 +368,20 @@ const PokemonGame = () => {
 				const fastTime = 10;
 				const mediumTime = 5;
 
-				if (gameState.guessTimeLeft >= fastTime && gameState.guessTimeLeft <= maxTime) {
+				if (
+					gameState.guessTimeLeft >= fastTime &&
+					gameState.guessTimeLeft <= maxTime
+				) {
 					earnedPoints = 3;
-				} else if (gameState.guessTimeLeft >= mediumTime && gameState.guessTimeLeft < fastTime) {
+				} else if (
+					gameState.guessTimeLeft >= mediumTime &&
+					gameState.guessTimeLeft < fastTime
+				) {
 					earnedPoints = 2;
-				} else if (gameState.guessTimeLeft >= 0 && gameState.guessTimeLeft < mediumTime) {
+				} else if (
+					gameState.guessTimeLeft >= 0 &&
+					gameState.guessTimeLeft < mediumTime
+				) {
 					earnedPoints = 1;
 				}
 			}
@@ -400,7 +424,7 @@ const PokemonGame = () => {
 		// Remove the current Pokemon from remainingPokemon
 		if (currentPokemon) {
 			gameSetters.setRemainingPokemon((prev) =>
-				prev.filter((id) => id !== currentPokemon.id)
+				prev.filter((id) => id !== currentPokemon.id),
 			);
 		}
 
@@ -436,7 +460,7 @@ const PokemonGame = () => {
 
 			// 5. Update remaining pool
 			gameSetters.setRemainingPokemon((prev) =>
-				prev.filter((id) => id !== nextPokemonId)
+				prev.filter((id) => id !== nextPokemonId),
 			);
 
 			// Wait for remaining pool to update
@@ -469,7 +493,9 @@ const PokemonGame = () => {
 		if (e.key === "Enter") {
 			e.preventDefault();
 			if (gameState.suggestions.length > 0 && gameState.highlightedIndex >= 0) {
-				handleSuggestionClick(gameState.suggestions[gameState.highlightedIndex]);
+				handleSuggestionClick(
+					gameState.suggestions[gameState.highlightedIndex],
+				);
 			} else if (gameState.guess.trim()) {
 				handleSuggestionClick(gameState.guess);
 			}
@@ -521,7 +547,7 @@ const PokemonGame = () => {
 			// Add the ID back to the remaining pool
 			gameSetters.setRemainingPokemon((prev) => [
 				...prev,
-				gameState.currentPokemonId!,
+				gameState.currentPokemonId || 0,
 			]);
 		}
 	}, [
@@ -569,7 +595,14 @@ const PokemonGame = () => {
 
 	const handleRestart = () => {
 		// Clean up all audio first
-				cleanupAllAudio();
+		cleanupAllAudio();
+
+		// Reset reward Pokemon state
+		setRewardPokemonId(null);
+		gameSetters.setRewardPokemon({
+			pokemon: undefined,
+			isLoading: false,
+		});
 
 		// Reset all Pokemon-related states first
 		gameSetters.setCurrentPokemonId(null);
@@ -578,7 +611,6 @@ const PokemonGame = () => {
 		gameSetters.setSuggestions([]);
 		gameSetters.setShowHint(false);
 		gameSetters.setGameOver(false);
-		gameSetters.setRewardPokemon({ pokemon: undefined, isLoading: false });
 		gameSetters.setPointsEarned(0);
 		gameSetters.setShowCriticalSuccess(false);
 		gameSetters.setShowCriticalHit(false);
@@ -603,6 +635,13 @@ const PokemonGame = () => {
 		// Clean up all audio
 		cleanupAllAudio();
 
+		// Reset reward Pokemon state
+		setRewardPokemonId(null);
+		gameSetters.setRewardPokemon({
+			pokemon: undefined,
+			isLoading: false,
+		});
+
 		// Reset all game states
 		gameSetters.setIsGameActive(false);
 		gameSetters.setGameOver(false);
@@ -620,7 +659,6 @@ const PokemonGame = () => {
 		gameSetters.setMaxHypeChain(0);
 		gameSetters.setTotalTimeElapsed(0);
 		gameSetters.setCurrentPokemonId(null);
-		gameSetters.setRewardPokemon({ pokemon: undefined, isLoading: false });
 		gameSetters.setPointsEarned(0);
 		gameSetters.setShowCriticalSuccess(false);
 		gameSetters.setShowCriticalHit(false);
@@ -677,7 +715,7 @@ const PokemonGame = () => {
 			gameSetters.setShowHint(false);
 			gameSetters.setRewardPokemon({
 				pokemon: undefined,
-				isLoading: true,
+				isLoading: false,
 			});
 
 			// Initialize Pokémon list for selected generation
@@ -688,7 +726,7 @@ const PokemonGame = () => {
 						gameState.selectedGeneration.startId +
 						1,
 				},
-				(_, i) => gameState.selectedGeneration.startId + i
+				(_, i) => gameState.selectedGeneration.startId + i,
 			);
 
 			// Set initial state and wait for it to be updated
@@ -710,7 +748,7 @@ const PokemonGame = () => {
 
 			// Remove the first Pokémon from the pool before setting it
 			gameSetters.setRemainingPokemon((prev) =>
-				prev.filter((id) => id !== firstPokemonId)
+				prev.filter((id) => id !== firstPokemonId),
 			);
 
 			// Finally set the current Pokemon ID
@@ -732,20 +770,166 @@ const PokemonGame = () => {
 		localStorage.setItem("pokemonGameMuted", JSON.stringify(gameState.isMuted));
 	}, [gameState.isMuted]);
 
-	// Add effect to auto-focus when pokemon changes
+	// Add effect to auto-focus when game is active
 	useEffect(() => {
 		if (gameState.isGameActive && inputRef.current) {
 			inputRef.current.focus();
 		}
-	}, [currentPokemon, gameState.isGameActive]);
+	}, [gameState.isGameActive]);
+
+	// Use Pokemon API queries for reward Pokemon
+	const [rewardPokemonId, setRewardPokemonId] = useState<number | null>(null);
+
+	const { data: rewardPokemonData } = useGetPokemonByIdQuery(
+		rewardPokemonId
+			? { id: rewardPokemonId, maxHypeChain: gameState.maxHypeChain }
+			: skipToken,
+		{
+			skip: !rewardPokemonId || !gameState.gameOver,
+		},
+	);
+
+	// Update reward Pokemon when data is available
+	useEffect(() => {
+		if (!gameState.gameOver) {
+			// Only reset if we have a reward Pokemon or loading state
+			if (
+				gameState.rewardPokemon.pokemon ||
+				gameState.rewardPokemon.isLoading
+			) {
+				setRewardPokemonId(null);
+				gameSetters.setRewardPokemon({
+					pokemon: undefined,
+					isLoading: false,
+				});
+			}
+			return;
+		}
+
+		// Only update if we have new data or loading state changed
+		if (
+			rewardPokemonData &&
+			(!gameState.rewardPokemon.pokemon ||
+				gameState.rewardPokemon.pokemon.id !== rewardPokemonData.id)
+		) {
+			gameSetters.setRewardPokemon({
+				pokemon: rewardPokemonData,
+				isLoading: false,
+			});
+		} else if (
+			rewardPokemonId &&
+			!rewardPokemonData &&
+			!gameState.rewardPokemon.isLoading
+		) {
+			gameSetters.setRewardPokemon({
+				pokemon: undefined,
+				isLoading: true,
+			});
+		}
+	}, [
+		rewardPokemonData,
+		rewardPokemonId,
+		gameState.gameOver,
+		gameState.rewardPokemon,
+		gameSetters,
+	]);
+
+	// Slot machine effect state
+	const [isSlotMachineRunning, setIsSlotMachineRunning] = useState(false);
+	const slotMachineTimerRef = useRef<NodeJS.Timeout | null>(null);
+	const slotMachineCountRef = useRef(0);
+	const [potentialRewards, setPotentialRewards] = useState<number[]>([]);
+
+	const generatePotentialRewards = useCallback(
+		(finalPokemonId: number) => {
+			const minId = gameState.selectedGeneration.startId;
+			const maxId = gameState.selectedGeneration.endId;
+			const rewards: number[] = [];
+
+			// Generate 20 unique Pokemon IDs (excluding current Pokemon)
+			while (rewards.length < 20) {
+				const randomId =
+					Math.floor(Math.random() * (maxId - minId + 1)) + minId;
+				if (
+					!rewards.includes(randomId) &&
+					randomId !== gameState.currentPokemonId &&
+					randomId !== finalPokemonId
+				) {
+					rewards.push(randomId);
+				}
+			}
+
+			// Add the final Pokemon ID at the end
+			rewards.push(finalPokemonId);
+			return rewards;
+		},
+		[gameState.selectedGeneration, gameState.currentPokemonId],
+	);
+
+	const runSlotMachineEffect = useCallback(
+		async (finalPokemonId: number) => {
+			setIsSlotMachineRunning(true);
+
+			// Generate potential rewards if not already generated
+			if (potentialRewards.length === 0) {
+				const rewards = generatePotentialRewards(finalPokemonId);
+				setPotentialRewards(rewards);
+			}
+
+			const totalSpins = potentialRewards.length;
+			const initialInterval = 100; // Start fast (100ms)
+			const finalInterval = 500; // End slow (500ms)
+
+			const showNextPokemon = () => {
+				if (slotMachineCountRef.current >= totalSpins) {
+					// Show the final Pokemon
+					setIsSlotMachineRunning(false);
+					setRewardPokemonId(finalPokemonId);
+					// Clear potential rewards for next time
+					setPotentialRewards([]);
+					return;
+				}
+
+				// Get the next Pokemon from our pre-generated list
+				const nextPokemonId = potentialRewards[slotMachineCountRef.current];
+				setRewardPokemonId(nextPokemonId);
+
+				// Calculate next interval (gradually increase)
+				const progress = slotMachineCountRef.current / totalSpins;
+				const nextInterval =
+					initialInterval + (finalInterval - initialInterval) * progress;
+
+				// Schedule next Pokemon
+				slotMachineTimerRef.current = setTimeout(() => {
+					slotMachineCountRef.current++;
+					showNextPokemon();
+				}, nextInterval);
+			};
+
+			// Start the effect
+			showNextPokemon();
+		},
+		[potentialRewards, generatePotentialRewards],
+	);
+
+	// Cleanup effect
+	useEffect(() => {
+		return () => {
+			if (slotMachineTimerRef.current) {
+				clearTimeout(slotMachineTimerRef.current);
+			}
+		};
+	}, []);
 
 	const handleGameOver = useCallback(async () => {
 		if (gameState.gameOver) {
+			console.log("[PokemonGame] Game already over, skipping handleGameOver");
 			return;
 		}
 
 		try {
 			// Stop all timers immediately
+			console.log("[PokemonGame] Game over, stopping all timers");
 			stopAllTimers();
 
 			// Show the correct Pokemon first
@@ -761,38 +945,59 @@ const PokemonGame = () => {
 			// Calculate rankings
 			await calculateRankings(gameState.score, gameState.totalTimeElapsed);
 
-			// Set reward Pokemon
-			if (currentPokemon) {
-				gameSetters.setRewardPokemon({
-					pokemon: currentPokemon,
-					isLoading: false
-				});
-			}
-
-			// Clean up any existing audio
-		cleanupAllAudio();
-
-			// Play victory sound
+			// Clean up any existing audio before playing victory sound
+			cleanupAllAudio();
 			await playVictorySound();
+
+			// Select the final reward Pokemon
+			const minId = gameState.selectedGeneration.startId;
+			const maxId = gameState.selectedGeneration.endId;
+			let finalRewardPokemonId: number;
+			do {
+				finalRewardPokemonId =
+					Math.floor(Math.random() * (maxId - minId + 1)) + minId;
+			} while (finalRewardPokemonId === gameState.currentPokemonId);
+
+			// Set initial loading state
+			gameSetters.setRewardPokemon({
+				pokemon: undefined,
+				isLoading: true,
+			});
+
+			// Reset slot machine counter
+			slotMachineCountRef.current = 0;
+
+			// Generate potential rewards and start the slot machine effect
+			const rewards = generatePotentialRewards(finalRewardPokemonId);
+			setPotentialRewards(rewards);
+			runSlotMachineEffect(finalRewardPokemonId);
 		} catch (error) {
 			console.error("Error handling game over:", error);
+			gameSetters.setRewardPokemon({
+				pokemon: undefined,
+				isLoading: false,
+			});
 		}
 	}, [
 		gameState.gameOver,
 		gameState.score,
 		gameState.totalTimeElapsed,
-		currentPokemon,
+		gameState.selectedGeneration,
+		gameState.currentPokemonId,
 		gameSetters,
 		stopAllTimers,
 		calculateRankings,
 		cleanupAllAudio,
 		playVictorySound,
+		runSlotMachineEffect,
+		generatePotentialRewards,
 	]);
 
 	// Add effect to handle game over conditions
 	useEffect(() => {
 		if (
 			gameState.isGameActive &&
+			!gameState.gameOver &&
 			(gameState.guessTimeLeft <= 0 || gameState.remainingPokemon.length === 0)
 		) {
 			handleGameOver();
@@ -801,14 +1006,37 @@ const PokemonGame = () => {
 		gameState.guessTimeLeft,
 		gameState.remainingPokemon.length,
 		gameState.isGameActive,
+		gameState.gameOver,
 		handleGameOver,
 	]);
 
+	// Add effect to monitor time for hype train
+	useEffect(() => {
+		if (
+			gameState.isHardMode &&
+			gameState.showHypeTrain &&
+			gameState.guessTimeLeft <= 9
+		) {
+			// Stop Hype Train and add bonus points
+			gameSetters.setShowHypeTrain(false);
+			gameSetters.setScore((prev) => prev + gameState.consecutiveFastAnswers);
+			gameSetters.setConsecutiveFastAnswers(0);
+		}
+	}, [
+		gameState.isHardMode,
+		gameState.showHypeTrain,
+		gameState.guessTimeLeft,
+		gameState.consecutiveFastAnswers,
+		gameSetters,
+	]);
+
 	return (
-		<div className="min-h-screen bg-gradient-to-b from-blue-100 to-blue-50 p-4 flex items-start sm:items-center justify-center font-oswald">
+		<div className="min-h-screen bg-gradient-to-br from-blue-100 to-blue-200 p-4 flex items-start sm:items-center justify-center font-oswald">
 			{gameState.isGameActive ? (
 				<GameScreen
-					currentPokemon={gameState.isRestarting ? undefined : gameState.currentPokemon}
+					currentPokemon={
+						gameState.isRestarting ? undefined : gameState.currentPokemon
+					}
 					isPokemonLoading={gameState.isRestarting || isPokemonLoading}
 					isCorrect={gameState.isCorrect}
 					score={gameState.score}
@@ -855,7 +1083,7 @@ const PokemonGame = () => {
 					canStartGame={Boolean(
 						(playerName && !nameError && !isCheckingName) ||
 							(savedName && playerName === savedName) ||
-							(playerName && isAuthName)
+							(playerName && isAuthName),
 					)}
 					startGame={startGame}
 					score={gameState.score}
@@ -890,6 +1118,7 @@ const PokemonGame = () => {
 				hyperTrainCount={gameState.hyperTrainCount}
 				maxHypeChain={gameState.maxHypeChain}
 				selectedGeneration={gameState.selectedGeneration}
+				isSlotMachineRunning={isSlotMachineRunning}
 			/>
 		</div>
 	);
