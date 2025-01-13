@@ -121,11 +121,7 @@ export const GameOverDialog: FC<GameOverDialogProps> = ({
 	isSlotMachineRunning,
 	spinningPokemon,
 }) => {
-	console.log('GameOverDialog totalTimeElapsed:', {
-		value: totalTimeElapsed,
-		type: typeof totalTimeElapsed,
-		isNumber: !isNaN(Number(totalTimeElapsed))
-	});
+
 	
 	const { t, i18n } = useTranslation();
 	const [lastPlayedId, setLastPlayedId] = useState<number | null>(null);
