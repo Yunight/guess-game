@@ -84,6 +84,19 @@ const getCachedCryUrl = async (
 	}
 };
 
+// Helper function to format time in mm:ss format
+const formatTime = (timeInSeconds: number): string => {
+	// Ensure we have a valid number
+	if (typeof timeInSeconds !== 'number' || isNaN(timeInSeconds)) {
+		return '0:00';
+	}
+
+	const minutes = Math.floor(timeInSeconds / 60);
+	const seconds = Math.floor(timeInSeconds % 60);
+	
+	return `${minutes}:${seconds.toString().padStart(2, '0')}`;
+};
+
 export const GameOverDialog: FC<GameOverDialogProps> = ({
 	gameOver,
 	setGameOver,
@@ -108,8 +121,22 @@ export const GameOverDialog: FC<GameOverDialogProps> = ({
 	isSlotMachineRunning,
 	spinningPokemon,
 }) => {
+
+	
 	const { t, i18n } = useTranslation();
 	const [lastPlayedId, setLastPlayedId] = useState<number | null>(null);
+	const [finalTime, setFinalTime] = useState(0);
+
+	// Update finalTime when game ends
+	useEffect(() => {
+		if (gameOver && totalTimeElapsed > 0) {
+			console.log('Storing final time:', totalTimeElapsed);
+			setFinalTime(totalTimeElapsed);
+		}
+	}, [gameOver, totalTimeElapsed]);
+
+	// Use finalTime for display if available, otherwise use totalTimeElapsed
+	const displayTime = finalTime > 0 ? finalTime : totalTimeElapsed;
 
 	const playPokemonCry = useCallback(
 		async (pokemonId: number) => {
@@ -554,7 +581,7 @@ https://pokemon-guesser-game.vercel.app/
 											{t("current")}:
 										</span>
 										<p className="text-lg font-bold">
-											{formatTimeForRanking(totalTimeElapsed)}
+											{formatTime(displayTime)}
 										</p>
 									</div>
 									{bestTime > 0 && (
@@ -563,7 +590,7 @@ https://pokemon-guesser-game.vercel.app/
 												{t("best")}:
 											</span>
 											<p className="text-lg font-bold text-yellow-300">
-												{formatTimeForRanking(bestTime)}
+												{formatTime(bestTime)}
 											</p>
 										</div>
 									)}
