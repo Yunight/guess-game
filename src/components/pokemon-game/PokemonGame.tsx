@@ -37,7 +37,9 @@ const PokemonGame = () => {
 
 	// Slot machine effect state
 	const [isSlotMachineRunning, setIsSlotMachineRunning] = useState(false);
-	const slotMachineTimerRef = useRef<NodeJS.Timeout | null>(null);
+	const slotMachineTimerRef = useRef<ReturnType<typeof setTimeout> | null>(
+		null,
+	);
 	const slotMachineCountRef = useRef(0);
 	const [potentialRewards, setPotentialRewards] = useState<number[]>([]);
 	const [spinningPokemonId, setSpinningPokemonId] = useState<number | null>(
@@ -69,6 +71,7 @@ const PokemonGame = () => {
 		bestRanking,
 		calculateRankings,
 		fetchRankings,
+		saveRanking,
 	} = useRankings({
 		selectedGeneration: gameState.selectedGeneration,
 		playerName,
@@ -946,8 +949,8 @@ const PokemonGame = () => {
 			gameSetters.setIsGameActive(false);
 			gameSetters.setGameOver(true);
 
-			// Calculate rankings
-			await calculateRankings(gameState.score, gameState.totalTimeElapsed);
+			// Save ranking (this will also calculate rankings internally)
+			await saveRanking(gameState.score, gameState.totalTimeElapsed);
 
 			// Clean up any existing audio before playing victory sound
 			cleanupAllAudio();
@@ -968,11 +971,6 @@ const PokemonGame = () => {
 					Math.floor(Math.random() * (maxId - minId + 1)) + minId;
 			} while (finalRewardPokemonId === gameState.currentPokemonId);
 
-			console.log("[PokemonGame] Selected reward Pokemon:", {
-				id: finalRewardPokemonId,
-				generation: gameState.selectedGeneration.name,
-			});
-
 			// Reset slot machine counter
 			slotMachineCountRef.current = 0;
 
@@ -981,11 +979,7 @@ const PokemonGame = () => {
 			setPotentialRewards(rewards);
 			runSlotMachineEffect(finalRewardPokemonId);
 		} catch (error) {
-			console.error("Error handling game over:", error);
-			gameSetters.setRewardPokemon({
-				pokemon: undefined,
-				isLoading: false,
-			});
+			console.error("[PokemonGame] Error in handleGameOver:", error);
 		}
 	}, [
 		gameState.gameOver,
@@ -995,7 +989,7 @@ const PokemonGame = () => {
 		gameState.currentPokemonId,
 		gameSetters,
 		stopAllTimers,
-		calculateRankings,
+		saveRanking,
 		cleanupAllAudio,
 		playVictorySound,
 		runSlotMachineEffect,
