@@ -108,7 +108,10 @@ export const EmailAuthDialog: FC<EmailAuthDialogProps> = ({
 			onClose();
 		} catch (error: unknown) {
 			if (error instanceof Error) {
-				setError(error.message);
+				// Extract the error code from the Firebase error message
+				const errorCode =
+					error.message.match(/\(([^)]+)\)/)?.[1] || "auth/default";
+				setError(t(`firebaseErrors.${errorCode}`));
 			}
 		} finally {
 			setIsLoading(false);
