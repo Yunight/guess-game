@@ -1,5 +1,5 @@
 import { PWAInstallPrompt } from "@/components/ui/PWAInstallPrompt";
-import { SpeedInsights } from "@vercel/speed-insights/next";
+import { SpeedInsights } from "@vercel/speed-insights/react";
 import { Provider } from "react-redux";
 import { store } from "./store/store";
 import "./App.css";
