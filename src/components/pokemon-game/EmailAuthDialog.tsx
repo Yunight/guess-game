@@ -30,6 +30,14 @@ export const EmailAuthDialog: FC<EmailAuthDialogProps> = ({
 	const [error, setError] = useState<string | null>(null);
 	const [isLoading, setIsLoading] = useState(false);
 
+	const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+		setEmail(e.target.value);
+		// Clear error when email is changed
+		if (error?.includes("email")) {
+			setError(null);
+		}
+	};
+
 	const handleTrainerNameChange = async (
 		e: React.ChangeEvent<HTMLInputElement>,
 	) => {
@@ -71,10 +79,17 @@ export const EmailAuthDialog: FC<EmailAuthDialogProps> = ({
 					email,
 					password,
 				);
+
+				// Update profile with trainer name
 				await updateProfile(userCredential.user, {
 					displayName: trainerName,
 				});
+
+				// Store trainer name in localStorage
 				localStorage.setItem("pokemonGamePlayerName", trainerName);
+
+				// Force a refresh to ensure all auth states are updated
+				window.location.reload();
 			} else {
 				const userCredential = await signInWithEmailAndPassword(
 					auth,
@@ -87,6 +102,8 @@ export const EmailAuthDialog: FC<EmailAuthDialogProps> = ({
 						userCredential.user.displayName,
 					);
 				}
+				// Force a refresh to ensure all auth states are updated
+				window.location.reload();
 			}
 			onClose();
 		} catch (error: unknown) {
@@ -155,7 +172,7 @@ export const EmailAuthDialog: FC<EmailAuthDialogProps> = ({
 							id="email"
 							type="email"
 							value={email}
-							onChange={(e) => setEmail(e.target.value)}
+							onChange={handleEmailChange}
 							required
 							className="w-full"
 							disabled={isLoading}
