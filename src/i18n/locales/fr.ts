@@ -158,4 +158,17 @@ export const fr = {
   
   // Language Toggle
   switchLanguage: 'Passer en Anglais',
+
+  // Firebase Auth Errors
+  firebaseErrors: {
+    'auth/email-already-in-use': 'Cette adresse email est déjà utilisée',
+    'auth/invalid-email': 'Adresse email invalide',
+    'auth/operation-not-allowed': 'Opération non autorisée',
+    'auth/weak-password': 'Le mot de passe est trop faible',
+    'auth/user-disabled': 'Ce compte a été désactivé',
+    'auth/user-not-found': 'Aucun compte ne correspond à cette adresse email',
+    'auth/wrong-password': 'Mot de passe incorrect',
+    'auth/too-many-requests': 'Trop de tentatives de connexion. Veuillez réessayer plus tard',
+    'auth/default': 'Une erreur est survenue. Veuillez réessayer'
+  },
 }; 
