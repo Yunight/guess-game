@@ -12,7 +12,9 @@ export const en = {
   signIn: 'Sign In',
   signUp: 'Sign Up',
   email: 'Email',
+  emailPlaceholder: 'Enter your email',
   password: 'Password',
+  passwordPlaceholder: 'Enter your password',
   alreadyHaveAccount: 'Already have an account? Sign in',
   needAccount: 'Need an account? Sign up',
   trainerNameRequired: 'Trainer name is required',
@@ -158,6 +160,18 @@ export const en = {
   
   // Language Toggle
   switchLanguage: 'Switch to French',
+
+  // Auth
+  trainerNamePlaceholder: 'Enter your trainer name',
+  loading: 'Loading...',
+  forgotPassword: 'Forgot Password?',
+  emailRequired: 'Please enter your email',
+  passwordResetEmailSent: 'Password reset email has been sent',
+  startYourJourney: 'Start your journey as a Pokémon Trainer!',
+  welcomeBack: 'Welcome back, Pokémon Trainer!',
+  enterEmailForReset: 'Enter your email to receive a reset link',
+  sendResetLink: 'Send Reset Link',
+  backToSignIn: 'Back to Sign In',
 
   // Firebase Auth Errors
   firebaseErrors: {

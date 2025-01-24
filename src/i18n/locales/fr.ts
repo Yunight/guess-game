@@ -14,7 +14,9 @@ export const fr = {
   signIn: 'Connexion',
   signUp: 'Inscription',
   email: 'Email',
+  emailPlaceholder: 'Entrez votre email',
   password: 'Mot de passe',
+  passwordPlaceholder: 'Entrez votre mot de passe',
   alreadyHaveAccount: 'Déjà un compte ? Se connecter',
   needAccount: 'Pas de compte ? S\'inscrire',
   play: 'JOUER !',
@@ -158,6 +160,18 @@ export const fr = {
   
   // Language Toggle
   switchLanguage: 'Passer en Anglais',
+
+  // Auth
+  trainerNamePlaceholder: 'Entrez votre nom de dresseur',
+  loading: 'Chargement...',
+  forgotPassword: 'Mot de passe oublié ?',
+  emailRequired: 'Veuillez entrer votre email',
+  passwordResetEmailSent: 'Email de réinitialisation envoyé',
+  startYourJourney: 'Commencez votre aventure de Dresseur Pokémon !',
+  welcomeBack: 'Bon retour parmi nous, Dresseur Pokémon !',
+  enterEmailForReset: 'Entrez votre email pour recevoir un lien de réinitialisation',
+  sendResetLink: 'Envoyer le lien',
+  backToSignIn: 'Retour à la connexion',
 
   // Firebase Auth Errors
   firebaseErrors: {
