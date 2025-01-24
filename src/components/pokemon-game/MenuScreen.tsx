@@ -421,7 +421,7 @@ export const MenuScreen: FC<MenuScreenProps> = ({
 
 			{/* Copyright and social links */}
 			<div className="mt-6 text-center text-sm text-gray-500">
-				<div className="flex justify-center items-center gap-4">
+				<div className="flex flex-col sm:flex-row justify-center items-center gap-4">
 					<p>
 						© 2024 Pokémon. © 1995-2024 Nintendo/Creatures Inc./GAME FREAK inc.
 					</p>
@@ -450,6 +450,19 @@ export const MenuScreen: FC<MenuScreenProps> = ({
 							className="text-gray-500 hover:text-gray-700 transition-colors"
 						>
 							<Twitter className="h-5 w-5" />
+						</a>
+						<a
+							href="https://paypal.me/yunight?country.x=FR&locale.x=fr_FR"
+							target="_blank"
+							rel="noopener noreferrer"
+							className="inline-flex items-center h-8 px-4 bg-[#FFC439] hover:bg-[#FFB700] rounded-sm shadow-sm transition-colors duration-200"
+							title="Support via PayPal"
+						>
+							<img
+								src="https://www.paypalobjects.com/paypal-ui/logos/svg/paypal-color.svg"
+								alt="PayPal"
+								className="h-5"
+							/>
 						</a>
 					</div>
 				</div>
