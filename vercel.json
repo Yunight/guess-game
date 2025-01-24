@@ -1,7 +1,7 @@
 {
-  "buildCommand": "pnpm run build",
+  "buildCommand": "bun run build",
   "outputDirectory": "dist",
-  "devCommand": "pnpm run dev",
-  "installCommand": "pnpm install",
+  "devCommand": "bun run dev",
+  "installCommand": "bun install",
   "framework": "vite"
-} 
+}
