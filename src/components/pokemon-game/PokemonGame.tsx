@@ -46,6 +46,7 @@ const PokemonGame = () => {
 		null,
 	);
 	const [rewardPokemonId, setRewardPokemonId] = useState<number | null>(null);
+	const [remainingPokemon, setRemainingPokemon] = useState<number[]>([]);
 
 	// Use our custom hooks
 	const { state: gameState, setters: gameSetters } = useGameState(
@@ -1047,14 +1048,27 @@ const PokemonGame = () => {
 		<div className="min-h-screen bg-gradient-to-br from-blue-100 to-blue-200 p-4 flex items-start sm:items-center justify-center font-oswald relative">
 			{/* Dev mode button - only visible in development */}
 			{import.meta.env.DEV && (
-				<button
-					type="button"
-					onClick={handleGameOver}
-					className="absolute left-4 top-4 bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-md shadow-md transition-colors duration-200 z-50"
-					title="Dev Mode: Trigger Game Over"
-				>
-					DEV: Game Over
-				</button>
+				<div className="absolute left-4 top-4 flex gap-2 z-50">
+					<button
+						type="button"
+						onClick={handleGameOver}
+						className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-md shadow-md transition-colors duration-200"
+						title="Dev Mode: Trigger Game Over"
+					>
+						DEV: Game Over
+					</button>
+					<button
+						type="button"
+						onClick={() => {
+							setRemainingPokemon([]);
+							handleGameOver();
+						}}
+						className="bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2 rounded-md shadow-md transition-colors duration-200"
+						title="Dev Mode: Trigger Generation Complete"
+					>
+						DEV: Complete Gen
+					</button>
+				</div>
 			)}
 			{gameState.isGameActive ? (
 				<GameScreen

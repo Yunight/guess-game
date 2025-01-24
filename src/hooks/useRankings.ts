@@ -218,11 +218,12 @@ export const useRankings = ({
 					}
 				}
 
+				// Always create a new timestamp for the new record
 				const rankingData = {
 					name: playerName,
 					score: score,
 					time: totalTimeElapsed,
-					timestamp: Timestamp.now(),
+					timestamp: Timestamp.now(), // Always use current timestamp for new records
 					uid: auth.currentUser?.uid || null,
 				};
 

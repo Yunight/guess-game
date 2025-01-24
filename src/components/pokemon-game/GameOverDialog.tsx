@@ -449,7 +449,9 @@ https://pokemon-guesser-game.vercel.app/
 
 	return (
 		<Dialog open={gameOver} onOpenChange={setGameOver}>
-			<ScrollableDialog className="sm:max-w-md bg-gradient-to-b from-red-500 to-red-600 border-none text-white">
+			<ScrollableDialog
+				className={`sm:max-w-md ${remainingPokemon.length === 0 ? "bg-gradient-to-b from-yellow-500 to-yellow-600" : "bg-gradient-to-b from-red-500 to-red-600"} border-none text-white`}
+			>
 				<div className="absolute inset-0 bg-[url('/pokeball-pattern.png')] opacity-5 bg-repeat" />
 				<div className="relative">
 					<DialogHeader className="space-y-4">
@@ -461,7 +463,7 @@ https://pokemon-guesser-game.vercel.app/
 										<div className="absolute inset-[-150%] animate-spin-slow">
 											{[...Array(12)].map((_, i) => (
 												<div
-													key={`outer-firework-${i}-${Date.now()}`}
+													key={`firework-outer-${selectedGeneration.name}-${i}`}
 													className="absolute w-1 h-10 bg-gradient-to-t from-yellow-500 to-yellow-200 rounded-full"
 													style={{
 														top: "50%",
@@ -474,11 +476,11 @@ https://pokemon-guesser-game.vercel.app/
 												/>
 											))}
 										</div>
-										{/* Middle spinning fireworks */}
+										{/* Middle spinning stars */}
 										<div className="absolute inset-[-120%] animate-spin-slow-reverse">
 											{[...Array(8)].map((_, i) => (
 												<div
-													key={`middle-firework-${i}-${Date.now()}`}
+													key={`star-middle-${selectedGeneration.name}-${i}`}
 													className="absolute w-1 h-8 bg-gradient-to-t from-blue-500 to-blue-200 rounded-full"
 													style={{
 														top: "50%",
@@ -491,11 +493,11 @@ https://pokemon-guesser-game.vercel.app/
 												/>
 											))}
 										</div>
-										{/* Inner spinning stars */}
+										{/* Inner spinning sparkles */}
 										<div className="absolute inset-[-80%] animate-spin-slow">
 											{[...Array(6)].map((_, i) => (
 												<div
-													key={`inner-star-${i}-${Date.now()}`}
+													key={`sparkle-inner-${selectedGeneration.name}-${i}`}
 													className="absolute w-1.5 h-6 bg-gradient-to-t from-white to-yellow-100 rounded-full"
 													style={{
 														top: "50%",
@@ -508,12 +510,13 @@ https://pokemon-guesser-game.vercel.app/
 												/>
 											))}
 										</div>
-										{/* Pokéball with glow effect */}
-										<div className="relative h-12 w-12 animate-pulse">
-											<div className="absolute inset-[-25%] bg-white/30 rounded-full blur-md" />
-											<div className="absolute inset-0 bg-gradient-to-br from-red-400 to-red-600 rounded-full shadow-lg" />
+										{/* Master Ball with glow effect */}
+										<div className="relative h-12 w-12 animate-bounce">
+											<div className="absolute inset-[-25%] bg-purple-400/30 rounded-full blur-md" />
+											<div className="absolute inset-0 bg-gradient-to-br from-purple-500 to-purple-700 rounded-full shadow-lg" />
 											<div className="absolute top-[45%] left-0 right-0 h-[10%] bg-black shadow-sm" />
-											<div className="absolute top-[40%] left-[40%] w-[20%] h-[20%] bg-white rounded-full border-2 border-black shadow-inner" />
+											<div className="absolute top-[40%] left-[40%] w-[20%] h-[20%] bg-pink-300 rounded-full border-2 border-black shadow-inner" />
+											<div className="absolute top-0 left-0 w-full h-[45%] bg-gradient-to-br from-pink-400 to-pink-600 rounded-t-full" />
 										</div>
 									</>
 								) : (
@@ -522,14 +525,38 @@ https://pokemon-guesser-game.vercel.app/
 							</div>
 						</div>
 						<DialogTitle className="text-2xl font-bold text-center">
-							{remainingPokemon.length === 0
-								? "MAÎTRE POKÉMON LÉGENDAIRE!"
-								: t("gameOver")}
+							{remainingPokemon.length === 0 ? (
+								<div className="space-y-2">
+									<div className="text-3xl font-extrabold text-yellow-100 animate-pulse">
+										{i18n.language === "fr"
+											? "MAÎTRE POKÉMON LÉGENDAIRE!"
+											: "LEGENDARY POKÉMON MASTER!"}
+									</div>
+									<div className="text-lg font-medium text-yellow-200">
+										{i18n.language === "fr"
+											? "Génération Complétée!"
+											: "Generation Completed!"}
+									</div>
+								</div>
+							) : (
+								t("gameOver")
+							)}
 						</DialogTitle>
 						<DialogDescription className="text-center text-gray-200">
-							{remainingPokemon.length === 0
-								? t("congratsAllPokemon", { region: selectedGeneration.name })
-								: t("gameOverDesc")}
+							{remainingPokemon.length === 0 ? (
+								<div className="space-y-2">
+									<p className="text-yellow-100">
+										{t("congratulations", { name: playerName })}
+									</p>
+									<p className="text-yellow-200">
+										{t("congratsAllPokemon", {
+											region: selectedGeneration.name,
+										})}
+									</p>
+								</div>
+							) : (
+								t("gameOverDesc")
+							)}
 						</DialogDescription>
 					</DialogHeader>
 
@@ -675,8 +702,11 @@ https://pokemon-guesser-game.vercel.app/
 					<div className="grid grid-cols-3 gap-3 mt-6">
 						<Button
 							onClick={handleRestart}
-							className="bg-yellow-400 hover:bg-yellow-500 text-gray-900 border-none
-                shadow-lg hover:shadow-xl transition-all duration-300 font-bold"
+							className={`${
+								remainingPokemon.length === 0
+									? "bg-yellow-400 hover:bg-yellow-500"
+									: "bg-yellow-400 hover:bg-yellow-500"
+							} text-gray-900 border-none shadow-lg hover:shadow-xl transition-all duration-300 font-bold`}
 							size="lg"
 						>
 							<RefreshCcw className="mr-2 h-4 w-4" />
@@ -684,8 +714,11 @@ https://pokemon-guesser-game.vercel.app/
 						</Button>
 						<Button
 							onClick={handleShare}
-							className="bg-green-500 hover:bg-green-600 text-white border-none
-                shadow-lg hover:shadow-xl transition-all duration-300 font-bold"
+							className={`${
+								remainingPokemon.length === 0
+									? "bg-green-400 hover:bg-green-500"
+									: "bg-green-500 hover:bg-green-600"
+							} text-white border-none shadow-lg hover:shadow-xl transition-all duration-300 font-bold`}
 							size="lg"
 						>
 							<Share2 className="mr-2 h-4 w-4" />
@@ -693,8 +726,11 @@ https://pokemon-guesser-game.vercel.app/
 						</Button>
 						<Button
 							onClick={handleBackToMenu}
-							className="bg-blue-500 hover:bg-blue-600 text-white border-none
-                shadow-lg hover:shadow-xl transition-all duration-300 font-bold"
+							className={`${
+								remainingPokemon.length === 0
+									? "bg-blue-400 hover:bg-blue-500"
+									: "bg-blue-500 hover:bg-blue-600"
+							} text-white border-none shadow-lg hover:shadow-xl transition-all duration-300 font-bold`}
 							size="lg"
 						>
 							<Home className="mr-2 h-4 w-4" />
