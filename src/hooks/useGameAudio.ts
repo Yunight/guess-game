@@ -35,16 +35,43 @@ export const useGameAudio = (
 		};
 	}, []);
 
-	const cleanupAllAudio = () => {
-		const audioRefs = [
+	const cleanupAllAudio = (preserveTrainHorn = false) => {
+		const audioRefs = preserveTrainHorn
+			? [victoryAudioRef, correctAudioRef, wrongAudioRef, lowLifeRef]
+			: [
+					victoryAudioRef,
+					correctAudioRef,
+					wrongAudioRef,
+					trainHornRef,
+					lowLifeRef,
+				];
+
+		for (const ref of audioRefs) {
+			if (ref.current) {
+				ref.current.pause();
+				ref.current.currentTime = 0;
+			}
+		}
+	};
+
+	const cleanupNonCurrentAudio = (
+		currentRef: React.RefObject<HTMLAudioElement | null>,
+	): void => {
+		// Include all audio refs
+		const allRefs = [
 			victoryAudioRef,
 			correctAudioRef,
 			wrongAudioRef,
-			trainHornRef,
 			lowLifeRef,
+			trainHornRef,
 		];
+		// If the current audio is not the train horn, exclude the train horn from cleanup
+		const refsToCleanup =
+			currentRef !== trainHornRef
+				? allRefs.filter((ref) => ref !== currentRef && ref !== trainHornRef)
+				: allRefs.filter((ref) => ref !== currentRef);
 
-		for (const ref of audioRefs) {
+		for (const ref of refsToCleanup) {
 			if (ref.current) {
 				ref.current.pause();
 				ref.current.currentTime = 0;
@@ -58,7 +85,8 @@ export const useGameAudio = (
 		if (isMuted || !audioRef.current) return;
 
 		try {
-			cleanupAllAudio();
+			// Clean up all other non-current sounds while preserving the train horn if it's active
+			cleanupNonCurrentAudio(audioRef);
 			audioRef.current.currentTime = 0;
 			await audioRef.current.play();
 		} catch (error) {
@@ -79,10 +107,12 @@ export const useGameAudio = (
 			trainHornRef.current &&
 			(!isHardMode || guessTimeLeft > 9)
 		) {
-			trainHornRef.current.loop = true;
-			trainHornRef.current.play().catch((error) => {
-				console.error("Error playing train horn:", error);
-			});
+			if (trainHornRef.current.paused) {
+				trainHornRef.current.loop = true;
+				trainHornRef.current.play().catch((error) => {
+					console.error("Error playing train horn:", error);
+				});
+			}
 		} else if ((!showHypeTrain || guessTimeLeft <= 9) && trainHornRef.current) {
 			trainHornRef.current.pause();
 			trainHornRef.current.currentTime = 0;
