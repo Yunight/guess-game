@@ -24,6 +24,7 @@ export default defineConfig({
 				skipWaiting: true,
 				clientsClaim: true,
 				globPatterns: ["**/*.{js,css,html,ico,png,svg,mp3,ogg,gif}"],
+				navigateFallback: "/offline.html",
 				runtimeCaching: [
 					{
 						urlPattern:

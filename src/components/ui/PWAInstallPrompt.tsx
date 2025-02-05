@@ -1,6 +1,6 @@
-import { useEffect, useState } from "react";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 interface BeforeInstallPromptEvent extends Event {
@@ -28,16 +28,19 @@ export const PWAInstallPrompt = () => {
 		};
 	}, []);
 
-	const handleInstall = async () => {
+	const handleInstall = async (): Promise<void> => {
 		if (!deferredPrompt) return;
-
-		await deferredPrompt.prompt();
-		const { outcome } = await deferredPrompt.userChoice;
-
-		if (outcome === "accepted") {
-			setDeferredPrompt(null);
+		try {
+			await deferredPrompt.prompt();
+			const { outcome } = await deferredPrompt.userChoice;
+			if (outcome === "accepted") {
+				setDeferredPrompt(null);
+			}
+		} catch (error) {
+			console.error("Installation failed:", error);
+		} finally {
+			setIsOpen(false);
 		}
-		setIsOpen(false);
 	};
 
 	if (!deferredPrompt) return null;
@@ -49,21 +52,28 @@ export const PWAInstallPrompt = () => {
 					<div className="flex items-center gap-4">
 						<img
 							src="/pwa-192x192.png"
-							alt="App Icon"
+							alt={t("pwaInstallPrompt.appIconAlt", "App Icon")}
 							className="w-16 h-16 rounded-xl"
 						/>
 						<div>
-							<h2 className="text-xl font-bold">Pokemon Guess Game</h2>
+							<h2 className="text-xl font-bold">
+								{t("pwaInstallPrompt.gameTitle", "Pokemon Guess Game")}
+							</h2>
 							<p className="text-sm text-gray-500 dark:text-gray-400">
-								{t("installPrompt")}
+								{t(
+									"pwaInstallPrompt.installPromptText",
+									"Install our app for a better experience",
+								)}
 							</p>
 						</div>
 					</div>
 					<div className="flex justify-end gap-2">
 						<Button variant="outline" onClick={() => setIsOpen(false)}>
-							{t("later")}
+							{t("pwaInstallPrompt.later", "Later")}
 						</Button>
-						<Button onClick={handleInstall}>{t("install")}</Button>
+						<Button onClick={handleInstall}>
+							{t("pwaInstallPrompt.install", "Install")}
+						</Button>
 					</div>
 				</div>
 			</DialogContent>
