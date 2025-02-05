@@ -32,9 +32,13 @@ export const useRankings = ({
 	const [bestTime, setBestTime] = useState(0);
 	const [userRanking, setUserRanking] = useState<number | null>(null);
 	const [bestRanking, setBestRanking] = useState<number | null>(null);
-	
+
 	// Add refs to track last save attempt
-	const lastSaveAttempt = useRef<{ score: number; time: number; timestamp: number } | null>(null);
+	const lastSaveAttempt = useRef<{
+		score: number;
+		time: number;
+		timestamp: number;
+	} | null>(null);
 
 	const convertToDisplayFormat = useCallback((name: string) => {
 		return name.replace(/_/g, " ");
@@ -146,7 +150,7 @@ export const useRankings = ({
 					console.log("🚫 Duplicate save attempt detected, skipping:", {
 						timeSinceLastAttempt,
 						lastAttempt: lastSaveAttempt.current,
-						currentAttempt: { score, time: totalTimeElapsed }
+						currentAttempt: { score, time: totalTimeElapsed },
 					});
 					return;
 				}
@@ -156,21 +160,31 @@ export const useRankings = ({
 			lastSaveAttempt.current = {
 				score,
 				time: totalTimeElapsed,
-				timestamp: now
+				timestamp: now,
 			};
 
-			console.log("🎯 Starting saveRanking:", { score, totalTimeElapsed, playerName });
+			console.log("🎯 Starting saveRanking:", {
+				score,
+				totalTimeElapsed,
+				playerName,
+			});
 			try {
 				const rankingsRef = collection(
 					db,
 					`rankings_gen${selectedGeneration.startId}_${selectedGeneration.endId}`,
 				);
-				console.log("📊 Collection path:", `rankings_gen${selectedGeneration.startId}_${selectedGeneration.endId}`);
+				console.log(
+					"📊 Collection path:",
+					`rankings_gen${selectedGeneration.startId}_${selectedGeneration.endId}`,
+				);
 
 				// Find existing record for the user
 				let existingDocRef = null;
 				if (auth.currentUser) {
-					console.log("🔍 Checking for existing record with UID:", auth.currentUser.uid);
+					console.log(
+						"🔍 Checking for existing record with UID:",
+						auth.currentUser.uid,
+					);
 					const userQuery = query(
 						rankingsRef,
 						where("uid", "==", auth.currentUser.uid),
@@ -179,11 +193,11 @@ export const useRankings = ({
 					if (!userDocs.empty) {
 						existingDocRef = userDocs.docs[0].ref;
 						const existingData = userDocs.docs[0].data();
-						console.log("📝 Found existing record:", { 
-							existingScore: existingData.score, 
+						console.log("📝 Found existing record:", {
+							existingScore: existingData.score,
 							newScore: score,
 							existingTime: existingData.time,
-							newTime: totalTimeElapsed 
+							newTime: totalTimeElapsed,
 						});
 						// Only update if new score is better
 						if (existingData.score >= score) {
@@ -201,11 +215,11 @@ export const useRankings = ({
 					if (!nameDocs.empty) {
 						existingDocRef = nameDocs.docs[0].ref;
 						const existingData = nameDocs.docs[0].data();
-						console.log("📝 Found existing record:", { 
-							existingScore: existingData.score, 
+						console.log("📝 Found existing record:", {
+							existingScore: existingData.score,
 							newScore: score,
 							existingTime: existingData.time,
-							newTime: totalTimeElapsed 
+							newTime: totalTimeElapsed,
 						});
 						// Only update if new score is better
 						if (existingData.score >= score) {
@@ -214,7 +228,9 @@ export const useRankings = ({
 						}
 						console.log("✨ New score is better, will update existing record");
 					} else {
-						console.log("🆕 No existing record found for name, will create new");
+						console.log(
+							"🆕 No existing record found for name, will create new",
+						);
 					}
 				}
 
@@ -239,7 +255,10 @@ export const useRankings = ({
 
 				// Update local state
 				if (score > bestScore) {
-					console.log("🏆 Updating local best score:", { oldBest: bestScore, newBest: score });
+					console.log("🏆 Updating local best score:", {
+						oldBest: bestScore,
+						newBest: score,
+					});
 					setBestScore(score);
 					setBestTime(totalTimeElapsed);
 				}
