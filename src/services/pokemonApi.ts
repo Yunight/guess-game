@@ -139,7 +139,7 @@ const convertToPokemon = (
 	forcedShinyState?: boolean,
 ): Omit<Pokemon, "cryUrl"> => {
 	const pokemonId = tyradexPokemon.pokedex_id;
-	
+
 	let isShiny: boolean;
 	if (typeof forcedShinyState === "boolean") {
 		isShiny = forcedShinyState;
@@ -151,7 +151,7 @@ const convertToPokemon = (
 		isShiny = Math.random() < Math.min(0.05 + maxHypeChain * 0.01, 0.1);
 		shinyStateCache.set(pokemonId, isShiny);
 	}
-	
+
 	return {
 		id: pokemonId,
 		name: tyradexPokemon.name.en.toLowerCase(),
@@ -161,7 +161,8 @@ const convertToPokemon = (
 		englishFlavorText: "",
 		sprites: {
 			front_default: tyradexPokemon.sprites.regular,
-			front_shiny: tyradexPokemon.sprites.shiny || tyradexPokemon.sprites.regular,
+			front_shiny:
+				tyradexPokemon.sprites.shiny || tyradexPokemon.sprites.regular,
 		},
 		isShiny,
 		evolvesFromSpecies: null,
