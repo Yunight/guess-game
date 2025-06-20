@@ -24,7 +24,6 @@ function App() {
 				<SpeedInsights />
 				<Analytics />
 			</Provider>
-			<PWAInstallPrompt />
 		</div>
 	);
 }
