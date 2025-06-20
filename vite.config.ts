@@ -160,7 +160,6 @@ export default defineConfig({
 					"react-vendor": ["react", "react-dom", "react-redux"],
 					"game-core": [
 						"@reduxjs/toolkit",
-						"axios",
 						"i18next",
 						"react-i18next",
 					],

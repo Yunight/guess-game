@@ -328,7 +328,7 @@ export const PokemonDisplay: FC<PokemonDisplayProps> = ({
 
 							<PokemonSprite
 								pokemonId={displayedPokemon.id}
-								className={`w-auto h-[65%] max-w-full mt-14 mb-4 ${
+								className={`w-auto h-[65%] max-w-full mt-5 mb-4 ${
 									displayState === "revealed"
 										? "animate-reveal-pokemon"
 										: displayState === "ready"
