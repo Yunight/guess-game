@@ -138,6 +138,18 @@ export const GameOverDialog: FC<GameOverDialogProps> = ({
 	const [isSavingResult, setIsSavingResult] = useState(false);
 	const [urlCopied, setUrlCopied] = useState(false);
 
+	// Reset states when dialog closes or game restarts
+	useEffect(() => {
+		if (!gameOver) {
+			// Reset all states when game over dialog closes
+			setShareableUrl(null);
+			setIsSavingResult(false);
+			setUrlCopied(false);
+			setFinalTime(0);
+			console.log("🔄 GameOver dialog closed - Reset shareableUrl and states");
+		}
+	}, [gameOver]);
+
 	// Update finalTime when game ends
 	useEffect(() => {
 		if (gameOver && totalTimeElapsed > 0) {
@@ -146,15 +158,45 @@ export const GameOverDialog: FC<GameOverDialogProps> = ({
 		}
 	}, [gameOver, totalTimeElapsed]);
 
-	// Save game result when game ends
+	// Debug reward Pokemon changes
+	useEffect(() => {
+		if (gameOver && rewardPokemon.pokemon) {
+			console.log("🎯 Reward Pokemon updated:", {
+				id: rewardPokemon.pokemon.id,
+				englishName: rewardPokemon.pokemon.englishName,
+				frenchName: rewardPokemon.pokemon.frenchName,
+				isSlotMachineRunning,
+				isLoading: rewardPokemon.isLoading,
+			});
+		}
+	}, [
+		gameOver,
+		rewardPokemon.pokemon,
+		isSlotMachineRunning,
+		rewardPokemon.isLoading,
+	]);
+
+	// Save game result when game ends and slot machine is complete
 	useEffect(() => {
 		const saveGameResult = async () => {
+			// Debug log to understand the conditions
+			console.log("💾 Save result conditions:", {
+				gameOver,
+				hasShareableUrl: !!shareableUrl,
+				isSavingResult,
+				hasRewardPokemon: !!rewardPokemon.pokemon,
+				isSlotMachineRunning,
+				rewardPokemonName: rewardPokemon.pokemon?.englishName,
+			});
+
 			if (
 				gameOver &&
 				!shareableUrl &&
 				!isSavingResult &&
-				rewardPokemon.pokemon
+				rewardPokemon.pokemon &&
+				!isSlotMachineRunning // Only save after slot machine is complete
 			) {
+				console.log("✅ All conditions met! Saving new game result...");
 				setIsSavingResult(true);
 				try {
 					const resultData = {
@@ -174,12 +216,24 @@ export const GameOverDialog: FC<GameOverDialogProps> = ({
 					const resultId = await gameResultsService.saveGameResult(resultData);
 					const url = gameResultsService.generateShareableUrl(resultId);
 					setShareableUrl(url);
-					console.log("Game result saved! Shareable URL:", url);
+					console.log(
+						"🎉 NEW game result saved! Unique ID:",
+						resultId,
+						"Shareable URL:",
+						url,
+						"Reward Pokemon:",
+						rewardPokemon.pokemon.englishName,
+					);
 				} catch (error) {
-					console.error("Failed to save game result:", error);
+					console.error("❌ Failed to save game result:", error);
 				} finally {
 					setIsSavingResult(false);
 				}
+			} else if (gameOver && shareableUrl) {
+				console.log(
+					"⏭️ Skipping save - result already exists for this game:",
+					shareableUrl,
+				);
 			}
 		};
 
@@ -189,6 +243,7 @@ export const GameOverDialog: FC<GameOverDialogProps> = ({
 		shareableUrl,
 		isSavingResult,
 		rewardPokemon.pokemon,
+		isSlotMachineRunning, // Add this dependency
 		playerName,
 		score,
 		finalTime,

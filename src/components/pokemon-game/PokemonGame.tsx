@@ -817,6 +817,12 @@ const PokemonGame = () => {
 
 		// Only update if we have new data and we're not in slot machine mode
 		if (rewardPokemonData && !isSlotMachineRunning) {
+			console.log("🎯 Reward Pokemon data loaded:", {
+				id: rewardPokemonData.id,
+				englishName: rewardPokemonData.englishName,
+				frenchName: rewardPokemonData.frenchName,
+				isSlotMachineRunning,
+			});
 			gameSetters.setRewardPokemon({
 				pokemon: rewardPokemonData,
 				isLoading: false,
@@ -906,6 +912,10 @@ const PokemonGame = () => {
 					}, nextInterval);
 				} else {
 					// Show the final Pokemon
+					console.log(
+						"🎰 Slot machine complete! Setting final reward Pokemon:",
+						finalPokemonId,
+					);
 					setIsSlotMachineRunning(false);
 					setSpinningPokemonId(null);
 					setPotentialRewards([]);
