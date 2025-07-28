@@ -879,7 +879,7 @@ ${shareUrl}
 					<div className="grid grid-cols-2 gap-3 mt-6">
 						<Button
 							onClick={handleShare}
-							className="bg-green-500 hover:bg-green-600 text-white border-none shadow-lg hover:shadow-xl transition-all duration-300 font-bold"
+							className="w-full bg-green-500 hover:bg-green-600 text-white border-none shadow-lg hover:shadow-xl transition-all duration-300 font-bold"
 							size="lg"
 						>
 							<Share2 className="mr-2 h-4 w-4" />
