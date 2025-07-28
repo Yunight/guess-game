@@ -69,6 +69,7 @@ export const gameResultsService = {
 
 			// Generate a unique ID for the result
 			const resultId = doc(collection(db, "gameResults")).id;
+			console.log("🆔 Generated NEW Firebase document ID:", resultId);
 
 			// Set expiration date (30 days from now for non-exceptional scores)
 			const expirationDate = new Date();
@@ -91,11 +92,19 @@ export const gameResultsService = {
 				expiresAt: expirationDate,
 			};
 
+			console.log("💾 Saving game result with data:", {
+				id: resultId,
+				playerName: resultData.playerName,
+				score: resultData.score,
+				rewardPokemon: resultData.rewardPokemon?.englishName,
+				timestamp: new Date().toISOString(),
+			});
+
 			// Save to Firebase
 			await setDoc(doc(db, "gameResults", resultId), gameResult);
 
 			console.log(
-				"Game result saved with ID:",
+				"✅ Game result successfully saved to Firebase with ID:",
 				resultId,
 				"Expires:",
 				expirationDate,
@@ -241,7 +250,9 @@ export const gameResultsService = {
 	 */
 	generateShareableUrl(resultId: string): string {
 		const baseUrl = window.location.origin;
-		return `${baseUrl}/results/${resultId}`;
+		const url = `${baseUrl}/results/${resultId}`;
+		console.log("🔗 Generated shareable URL:", url, "from ID:", resultId);
+		return url;
 	},
 };
 

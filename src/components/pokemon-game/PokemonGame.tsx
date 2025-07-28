@@ -612,6 +612,11 @@ const PokemonGame = () => {
 		cleanupAllAudio();
 
 		// Reset reward Pokemon state
+		console.log(
+			"🔄 RESTART: Resetting reward Pokemon ID from",
+			rewardPokemonId,
+			"to null",
+		);
 		setRewardPokemonId(null);
 		gameSetters.setRewardPokemon({
 			pokemon: undefined,
@@ -792,14 +797,31 @@ const PokemonGame = () => {
 	}, [gameState.isGameActive]);
 
 	// Use Pokemon API queries for reward Pokemon
-	const { data: rewardPokemonData } = useGetPokemonByIdQuery(
-		rewardPokemonId
-			? { id: rewardPokemonId, maxHypeChain: gameState.maxHypeChain }
-			: skipToken,
-		{
-			skip: !rewardPokemonId || !gameState.gameOver,
-		},
-	);
+	const { data: rewardPokemonData, isLoading: isRewardPokemonLoading } =
+		useGetPokemonByIdQuery(
+			rewardPokemonId
+				? { id: rewardPokemonId, maxHypeChain: gameState.maxHypeChain }
+				: skipToken,
+			{
+				skip: !rewardPokemonId || !gameState.gameOver,
+			},
+		);
+
+	// Debug Pokemon API query
+	useEffect(() => {
+		if (rewardPokemonId && gameState.gameOver) {
+			console.log("📡 Fetching reward Pokemon data for ID:", rewardPokemonId, {
+				isLoading: isRewardPokemonLoading,
+				hasData: !!rewardPokemonData,
+				pokemonName: rewardPokemonData?.englishName,
+			});
+		}
+	}, [
+		rewardPokemonId,
+		gameState.gameOver,
+		isRewardPokemonLoading,
+		rewardPokemonData,
+	]);
 
 	// Update reward Pokemon when data is available
 	useEffect(() => {
@@ -920,6 +942,7 @@ const PokemonGame = () => {
 					setSpinningPokemonId(null);
 					setPotentialRewards([]);
 					// Now set the actual reward Pokemon
+					console.log("🎯 CALLING setRewardPokemonId with:", finalPokemonId);
 					setRewardPokemonId(finalPokemonId);
 				}
 			};
@@ -977,10 +1000,27 @@ const PokemonGame = () => {
 			});
 
 			let finalRewardPokemonId: number;
+			let attempts = 0;
 			do {
 				finalRewardPokemonId =
 					Math.floor(Math.random() * (maxId - minId + 1)) + minId;
-			} while (finalRewardPokemonId === gameState.currentPokemonId);
+				attempts++;
+				console.log(`🎲 Reward Pokemon selection attempt ${attempts}:`, {
+					generated: finalRewardPokemonId,
+					currentPokemon: gameState.currentPokemonId,
+					isDifferent: finalRewardPokemonId !== gameState.currentPokemonId,
+				});
+			} while (
+				finalRewardPokemonId === gameState.currentPokemonId &&
+				attempts < 10
+			);
+
+			console.log(
+				"🎯 FINAL reward Pokemon ID selected:",
+				finalRewardPokemonId,
+				"for generation:",
+				gameState.selectedGeneration.name,
+			);
 
 			// Reset slot machine counter
 			slotMachineCountRef.current = 0;

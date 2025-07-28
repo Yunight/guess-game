@@ -30,6 +30,19 @@ const ResultsPage = () => {
 			try {
 				const result = await gameResultsService.getGameResult(resultId);
 				if (result) {
+					console.log("📊 Retrieved game result from Firebase:", {
+						resultId,
+						playerName: result.playerName,
+						score: result.score,
+						rewardPokemon: {
+							id: result.rewardPokemon?.id,
+							englishName: result.rewardPokemon?.englishName,
+							frenchName: result.rewardPokemon?.frenchName,
+							isShiny: result.rewardPokemon?.isShiny,
+						},
+						createdAt: result.createdAt,
+						gameMode: result.gameMode,
+					});
 					setGameResult(result);
 				} else {
 					setError("Result not found");

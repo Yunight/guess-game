@@ -137,6 +137,7 @@ export const GameOverDialog: FC<GameOverDialogProps> = ({
 	const [shareableUrl, setShareableUrl] = useState<string | null>(null);
 	const [isSavingResult, setIsSavingResult] = useState(false);
 	const [urlCopied, setUrlCopied] = useState(false);
+	const [gameSessionId, setGameSessionId] = useState<string | null>(null);
 
 	// Reset states when dialog closes or game restarts
 	useEffect(() => {
@@ -146,9 +147,19 @@ export const GameOverDialog: FC<GameOverDialogProps> = ({
 			setIsSavingResult(false);
 			setUrlCopied(false);
 			setFinalTime(0);
-			console.log("🔄 GameOver dialog closed - Reset shareableUrl and states");
+			setGameSessionId(null);
 		}
 	}, [gameOver]);
+
+	// Create a unique game session ID when game starts
+	useEffect(() => {
+		if (gameOver && !gameSessionId) {
+			const newSessionId = `game_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+			setGameSessionId(newSessionId);
+
+			console.log("🎮 New game session started:", newSessionId);
+		}
+	}, [gameOver, gameSessionId]);
 
 	// Update finalTime when game ends
 	useEffect(() => {
@@ -176,27 +187,31 @@ export const GameOverDialog: FC<GameOverDialogProps> = ({
 		rewardPokemon.isLoading,
 	]);
 
-	// Save game result when game ends and slot machine is complete
+	// Save game result when everything is ready and settled
 	useEffect(() => {
-		const saveGameResult = async () => {
-			// Debug log to understand the conditions
-			console.log("💾 Save result conditions:", {
-				gameOver,
-				hasShareableUrl: !!shareableUrl,
-				isSavingResult,
-				hasRewardPokemon: !!rewardPokemon.pokemon,
-				isSlotMachineRunning,
-				rewardPokemonName: rewardPokemon.pokemon?.englishName,
-			});
-
+		const saveResult = async () => {
+			// Only proceed if we have everything we need
 			if (
 				gameOver &&
 				!shareableUrl &&
 				!isSavingResult &&
 				rewardPokemon.pokemon &&
-				!isSlotMachineRunning // Only save after slot machine is complete
+				!rewardPokemon.isLoading &&
+				!isSlotMachineRunning &&
+				gameSessionId
 			) {
-				console.log("✅ All conditions met! Saving new game result...");
+				// Wait a moment to ensure the reward Pokemon is completely settled
+				await new Promise((resolve) => setTimeout(resolve, 500));
+
+				// Double-check the Pokemon is still the same after the delay
+				if (
+					!rewardPokemon.pokemon ||
+					rewardPokemon.isLoading ||
+					isSlotMachineRunning
+				) {
+					return; // Pokemon changed or is still loading, abort
+				}
+
 				setIsSavingResult(true);
 				try {
 					const resultData = {
@@ -211,39 +226,38 @@ export const GameOverDialog: FC<GameOverDialogProps> = ({
 						criticalSuccessCount,
 						hyperTrainCount,
 						maxHypeChain,
+						gameMode: `${selectedGeneration.name}_${gameSessionId}`,
 					};
 
 					const resultId = await gameResultsService.saveGameResult(resultData);
 					const url = gameResultsService.generateShareableUrl(resultId);
 					setShareableUrl(url);
-					console.log(
-						"🎉 NEW game result saved! Unique ID:",
-						resultId,
-						"Shareable URL:",
-						url,
-						"Reward Pokemon:",
-						rewardPokemon.pokemon.englishName,
-					);
 				} catch (error) {
-					console.error("❌ Failed to save game result:", error);
+					console.error("Failed to save game result:", error);
 				} finally {
 					setIsSavingResult(false);
 				}
-			} else if (gameOver && shareableUrl) {
-				console.log(
-					"⏭️ Skipping save - result already exists for this game:",
-					shareableUrl,
-				);
 			}
 		};
 
-		saveGameResult();
+		// Only trigger save after a delay to ensure slot machine is completely done
+		if (
+			gameOver &&
+			!isSlotMachineRunning &&
+			rewardPokemon.pokemon &&
+			!shareableUrl
+		) {
+			const timeoutId = setTimeout(saveResult, 1000);
+			return () => clearTimeout(timeoutId);
+		}
 	}, [
 		gameOver,
+		isSlotMachineRunning,
+		rewardPokemon.pokemon,
+		rewardPokemon.isLoading,
 		shareableUrl,
 		isSavingResult,
-		rewardPokemon.pokemon,
-		isSlotMachineRunning, // Add this dependency
+		gameSessionId,
 		playerName,
 		score,
 		finalTime,
