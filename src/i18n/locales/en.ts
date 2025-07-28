@@ -209,6 +209,67 @@ export const en = {
 		"auth/default": "An error occurred. Please try again",
 	},
 
+	// Prestige Titles by Achievement Level
+	prestigeTitles: {
+		legendary: [
+			"Pokémon Master",
+			"Elite Champion",
+			"Legend of Kanto",
+			"Pokédex Completionist",
+			"Ultimate Trainer",
+		],
+		champion: [
+			"Champion",
+			"League Master",
+			"Elite Trainer",
+			"Pokémon Professor",
+			"Regional Champion",
+		],
+		master: [
+			"Gym Leader",
+			"Elite Four Member",
+			"Battle Frontier Brain",
+			"Master Trainer",
+			"Type Specialist",
+		],
+		expert: [
+			"Ace Trainer",
+			"Contest Master",
+			"Battle Expert",
+			"Pokémon Ranger",
+			"Safari Zone Warden",
+		],
+		skilled: [
+			"Skilled Trainer",
+			"Pokémon Breeder",
+			"Team Coordinator",
+			"Battle Tower Veteran",
+			"Poké Maniac",
+		],
+		experienced: [
+			"Experienced Trainer",
+			"Pokémon Collector",
+			"Route Master",
+			"Cave Explorer",
+			"Fisherman",
+		],
+		intermediate: [
+			"Intermediate Trainer",
+			"Bug Catcher",
+			"Picnicker",
+			"Hiker",
+			"Schoolkid",
+		],
+		novice: ["Novice Trainer", "Youngster", "Lass", "Camper", "Rising Star"],
+		beginner: [
+			"Rookie Trainer",
+			"Trainer",
+			"Pokémon Fan",
+			"New Trainer",
+			"Aspiring Trainer",
+		],
+	},
+
 	// Shareable Results
 	shareableLink: "Shareable Link",
 	gameComplete: "Game Complete",

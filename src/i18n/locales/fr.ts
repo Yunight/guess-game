@@ -228,6 +228,73 @@ export const fr = {
 		"auth/default": "Une erreur est survenue. Veuillez réessayer",
 	},
 
+	// Titres de Prestige par Niveau d'Accomplissement
+	prestigeTitles: {
+		legendary: [
+			"Maître Pokémon",
+			"Champion d'Élite",
+			"Légende de Kanto",
+			"Pokédex Complet",
+			"Dresseur Ultime",
+		],
+		champion: [
+			"Champion de la Ligue",
+			"Maître de Ligue",
+			"Dresseur d'Élite",
+			"Professeur Pokémon",
+			"Champion Régional",
+		],
+		master: [
+			"Champion d'Arène",
+			"Membre du Conseil 4",
+			"Meneur de Zone de Combat",
+			"Maître Dresseur",
+			"Spécialiste de Type",
+		],
+		expert: [
+			"Dresseur As",
+			"Maître de Concours",
+			"Expert de Combat",
+			"Ranger Pokémon",
+			"Gardien du Parc Safari",
+		],
+		skilled: [
+			"Dresseur Expérimenté",
+			"Éleveur Pokémon",
+			"Coordinateur d'Équipe",
+			"Vétéran Tour de Combat",
+			"Poké Maniac",
+		],
+		experienced: [
+			"Dresseur Confirmé",
+			"Collectionneur Pokémon",
+			"Maître de Route",
+			"Explorateur de Grotte",
+			"Pêcheur",
+		],
+		intermediate: [
+			"Dresseur Intermédiaire",
+			"Attrape-Insecte",
+			"Campeur",
+			"Montagnard",
+			"Écolier",
+		],
+		novice: [
+			"Dresseur Novice",
+			"Gamin",
+			"Fillette",
+			"Campeur",
+			"Étoile Montante",
+		],
+		beginner: [
+			"Dresseur Débutant",
+			"Dresseur",
+			"Fan de Pokémon",
+			"Nouveau Dresseur",
+			"Dresseur Aspirant",
+		],
+	},
+
 	// Shareable Results
 	shareableLink: "Lien Partageable",
 	gameComplete: "Partie Terminée",
