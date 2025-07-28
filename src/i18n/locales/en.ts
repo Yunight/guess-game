@@ -208,4 +208,22 @@ export const en = {
 		"auth/too-many-requests": "Too many login attempts. Please try again later",
 		"auth/default": "An error occurred. Please try again",
 	},
+
+	// Shareable Results
+	shareableLink: "Shareable Link",
+	gameComplete: "Game Complete",
+	generation: "Generation",
+	pokemonLeft: "Pokémon Left",
+	maxHypeChain: "Max Hype Chain",
+	sharedBy: "Shared by {{name}}",
+	resultNotFound: "Result Not Found",
+	resultNotFoundDesc: "This result could not be found.",
+	backToGame: "Back to Game",
+	playGame: "Play Game",
+	loadingResult: "Loading result...",
+	checkOutResult: "🎮 Check out my Pokémon Guesser Game result!",
+	viewMyResult: "🔗 View my result:",
+	saving: "Saving...",
+	urlCopied: "URL copied",
+	copyUrl: "Copy URL",
 };
