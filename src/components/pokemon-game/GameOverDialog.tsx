@@ -946,7 +946,9 @@ ${shareableUrl ? `${t("viewMyResult")} ${urlToShare}` : urlToShare}
 						</div>
 					)}
 
-					<div className="grid grid-cols-3 gap-3 mt-6">
+					<div
+						className={`grid grid-cols-3 gap-3 ${shareableUrl ? "mt-8" : "mt-6"}`}
+					>
 						<Button
 							onClick={handleRestart}
 							className={`${
