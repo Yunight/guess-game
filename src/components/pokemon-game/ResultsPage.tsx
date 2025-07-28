@@ -26,92 +26,183 @@ const getAvailableTitles = (
 	percentageRemaining: number,
 	t: (key: string) => string,
 ): string[] => {
-	const allTitles: string[] = [];
-
-	// Add titles based on achievement level (better achievements unlock more titles)
-	if (percentageRemaining <= 50) {
-		allTitles.push(
-			t("prestigeTitles.beginner.0"),
-			t("prestigeTitles.beginner.1"),
-			t("prestigeTitles.beginner.2"),
-			t("prestigeTitles.beginner.3"),
-			t("prestigeTitles.beginner.4"),
-		);
-	}
-	if (percentageRemaining <= 45) {
-		allTitles.push(
-			t("prestigeTitles.novice.0"),
-			t("prestigeTitles.novice.1"),
-			t("prestigeTitles.novice.2"),
-			t("prestigeTitles.novice.3"),
-			t("prestigeTitles.novice.4"),
-		);
-	}
-	if (percentageRemaining <= 40) {
-		allTitles.push(
-			t("prestigeTitles.intermediate.0"),
-			t("prestigeTitles.intermediate.1"),
-			t("prestigeTitles.intermediate.2"),
-			t("prestigeTitles.intermediate.3"),
-			t("prestigeTitles.intermediate.4"),
-		);
-	}
-	if (percentageRemaining <= 35) {
-		allTitles.push(
-			t("prestigeTitles.experienced.0"),
-			t("prestigeTitles.experienced.1"),
-			t("prestigeTitles.experienced.2"),
-			t("prestigeTitles.experienced.3"),
-			t("prestigeTitles.experienced.4"),
-		);
-	}
-	if (percentageRemaining <= 30) {
-		allTitles.push(
-			t("prestigeTitles.skilled.0"),
-			t("prestigeTitles.skilled.1"),
-			t("prestigeTitles.skilled.2"),
-			t("prestigeTitles.skilled.3"),
-			t("prestigeTitles.skilled.4"),
-		);
-	}
-	if (percentageRemaining <= 25) {
-		allTitles.push(
-			t("prestigeTitles.expert.0"),
-			t("prestigeTitles.expert.1"),
-			t("prestigeTitles.expert.2"),
-			t("prestigeTitles.expert.3"),
-			t("prestigeTitles.expert.4"),
-		);
-	}
-	if (percentageRemaining <= 20) {
-		allTitles.push(
-			t("prestigeTitles.master.0"),
-			t("prestigeTitles.master.1"),
-			t("prestigeTitles.master.2"),
-			t("prestigeTitles.master.3"),
-			t("prestigeTitles.master.4"),
-		);
-	}
-	if (percentageRemaining <= 10) {
-		allTitles.push(
-			t("prestigeTitles.champion.0"),
-			t("prestigeTitles.champion.1"),
-			t("prestigeTitles.champion.2"),
-			t("prestigeTitles.champion.3"),
-			t("prestigeTitles.champion.4"),
-		);
-	}
-	if (percentageRemaining <= 5) {
-		allTitles.push(
+	// Select titles based on achievement tier (higher achievements get more exclusive titles)
+	if (percentageRemaining === 0) {
+		return [
+			t("prestigeTitles.grandmaster.0"),
+			t("prestigeTitles.grandmaster.1"),
+			t("prestigeTitles.grandmaster.2"),
+			t("prestigeTitles.grandmaster.3"),
+			t("prestigeTitles.grandmaster.4"),
 			t("prestigeTitles.legendary.0"),
 			t("prestigeTitles.legendary.1"),
 			t("prestigeTitles.legendary.2"),
 			t("prestigeTitles.legendary.3"),
 			t("prestigeTitles.legendary.4"),
-		);
+		];
+	}
+	if (percentageRemaining <= 5) {
+		return [
+			t("prestigeTitles.champion.0"),
+			t("prestigeTitles.champion.1"),
+			t("prestigeTitles.champion.2"),
+			t("prestigeTitles.champion.3"),
+			t("prestigeTitles.champion.4"),
+		];
+	}
+	if (percentageRemaining <= 10) {
+		return [
+			t("prestigeTitles.elite.0"),
+			t("prestigeTitles.elite.1"),
+			t("prestigeTitles.elite.2"),
+			t("prestigeTitles.elite.3"),
+			t("prestigeTitles.elite.4"),
+		];
+	}
+	if (percentageRemaining <= 15) {
+		return [
+			t("prestigeTitles.master.0"),
+			t("prestigeTitles.master.1"),
+			t("prestigeTitles.master.2"),
+			t("prestigeTitles.master.3"),
+			t("prestigeTitles.master.4"),
+		];
+	}
+	if (percentageRemaining <= 20) {
+		return [
+			t("prestigeTitles.expert.0"),
+			t("prestigeTitles.expert.1"),
+			t("prestigeTitles.expert.2"),
+			t("prestigeTitles.expert.3"),
+			t("prestigeTitles.expert.4"),
+		];
+	}
+	if (percentageRemaining <= 25) {
+		return [
+			t("prestigeTitles.advanced.0"),
+			t("prestigeTitles.advanced.1"),
+			t("prestigeTitles.advanced.2"),
+			t("prestigeTitles.advanced.3"),
+			t("prestigeTitles.advanced.4"),
+		];
+	}
+	if (percentageRemaining <= 30) {
+		return [
+			t("prestigeTitles.skilled.0"),
+			t("prestigeTitles.skilled.1"),
+			t("prestigeTitles.skilled.2"),
+			t("prestigeTitles.skilled.3"),
+			t("prestigeTitles.skilled.4"),
+		];
+	}
+	if (percentageRemaining <= 35) {
+		return [
+			t("prestigeTitles.experienced.0"),
+			t("prestigeTitles.experienced.1"),
+			t("prestigeTitles.experienced.2"),
+			t("prestigeTitles.experienced.3"),
+			t("prestigeTitles.experienced.4"),
+		];
+	}
+	if (percentageRemaining <= 40) {
+		return [
+			t("prestigeTitles.intermediate.0"),
+			t("prestigeTitles.intermediate.1"),
+			t("prestigeTitles.intermediate.2"),
+			t("prestigeTitles.intermediate.3"),
+			t("prestigeTitles.intermediate.4"),
+		];
+	}
+	if (percentageRemaining <= 45) {
+		return [
+			t("prestigeTitles.novice.0"),
+			t("prestigeTitles.novice.1"),
+			t("prestigeTitles.novice.2"),
+			t("prestigeTitles.novice.3"),
+			t("prestigeTitles.novice.4"),
+		];
+	}
+	if (percentageRemaining <= 50) {
+		return [
+			t("prestigeTitles.beginner.0"),
+			t("prestigeTitles.beginner.1"),
+			t("prestigeTitles.beginner.2"),
+			t("prestigeTitles.beginner.3"),
+			t("prestigeTitles.beginner.4"),
+		];
+	}
+	if (percentageRemaining <= 60) {
+		return [
+			t("prestigeTitles.initiate.0"),
+			t("prestigeTitles.initiate.1"),
+			t("prestigeTitles.initiate.2"),
+			t("prestigeTitles.initiate.3"),
+			t("prestigeTitles.initiate.4"),
+		];
+	}
+	if (percentageRemaining <= 65) {
+		return [
+			t("prestigeTitles.junior.0"),
+			t("prestigeTitles.junior.1"),
+			t("prestigeTitles.junior.2"),
+			t("prestigeTitles.junior.3"),
+			t("prestigeTitles.junior.4"),
+		];
+	}
+	if (percentageRemaining <= 70) {
+		return [
+			t("prestigeTitles.cadet.0"),
+			t("prestigeTitles.cadet.1"),
+			t("prestigeTitles.cadet.2"),
+			t("prestigeTitles.cadet.3"),
+			t("prestigeTitles.cadet.4"),
+		];
+	}
+	if (percentageRemaining <= 75) {
+		return [
+			t("prestigeTitles.student.0"),
+			t("prestigeTitles.student.1"),
+			t("prestigeTitles.student.2"),
+			t("prestigeTitles.student.3"),
+			t("prestigeTitles.student.4"),
+		];
+	}
+	if (percentageRemaining <= 80) {
+		return [
+			t("prestigeTitles.trainee.0"),
+			t("prestigeTitles.trainee.1"),
+			t("prestigeTitles.trainee.2"),
+			t("prestigeTitles.trainee.3"),
+			t("prestigeTitles.trainee.4"),
+		];
+	}
+	if (percentageRemaining <= 85) {
+		return [
+			t("prestigeTitles.apprentice.0"),
+			t("prestigeTitles.apprentice.1"),
+			t("prestigeTitles.apprentice.2"),
+			t("prestigeTitles.apprentice.3"),
+			t("prestigeTitles.apprentice.4"),
+		];
+	}
+	if (percentageRemaining <= 90) {
+		return [
+			t("prestigeTitles.starter.0"),
+			t("prestigeTitles.starter.1"),
+			t("prestigeTitles.starter.2"),
+			t("prestigeTitles.starter.3"),
+			t("prestigeTitles.starter.4"),
+		];
 	}
 
-	return allTitles.length > 0 ? allTitles : [t("prestigeTitles.beginner.0")];
+	// Fallback for >90% remaining
+	return [
+		t("prestigeTitles.starter.0"),
+		t("prestigeTitles.starter.1"),
+		t("prestigeTitles.starter.2"),
+		t("prestigeTitles.starter.3"),
+		t("prestigeTitles.starter.4"),
+	];
 };
 
 // Get random title from available titles
@@ -135,12 +226,12 @@ const getPrestigeTheme = (
 			name: randomTitle,
 			bgGradient: "from-yellow-400 via-orange-500 to-red-600",
 			cardBg:
-				"bg-gradient-to-br from-slate-900/95 via-gray-900/95 to-slate-900/95 backdrop-blur-md border-2 border-yellow-400/80",
+				"bg-gradient-to-br from-yellow-950/95 via-orange-950/95 to-red-950/95 backdrop-blur-lg border-4 border-yellow-400 shadow-[0_0_40px_rgba(251,191,36,0.9),0_0_80px_rgba(251,191,36,0.4)] ring-4 ring-yellow-300/60 before:absolute before:inset-0 before:bg-gradient-to-br before:from-yellow-400/10 before:via-orange-400/15 before:to-red-400/10 before:rounded-lg",
 			titleColor: "text-yellow-100",
 			accentColor: "text-yellow-300",
 			icon: Crown,
 			particles: true,
-			glow: "shadow-2xl shadow-yellow-500/50",
+			glow: "shadow-2xl shadow-yellow-500/70 drop-shadow-2xl",
 			animation: "",
 		};
 	}
@@ -149,12 +240,12 @@ const getPrestigeTheme = (
 			name: randomTitle,
 			bgGradient: "from-red-600 via-orange-600 to-yellow-600",
 			cardBg:
-				"bg-gradient-to-br from-slate-900/95 via-gray-900/95 to-slate-900/95 backdrop-blur-md border-2 border-red-400/80",
+				"bg-gradient-to-br from-red-950/95 via-orange-950/95 to-yellow-950/95 backdrop-blur-lg border-4 border-red-400 shadow-[0_0_35px_rgba(239,68,68,0.8),0_0_70px_rgba(239,68,68,0.3)] ring-3 ring-red-300/50 before:absolute before:inset-0 before:bg-gradient-to-br before:from-red-400/10 before:via-orange-400/12 before:to-yellow-400/10 before:rounded-lg",
 			titleColor: "text-red-100",
 			accentColor: "text-orange-300",
 			icon: Crown,
 			particles: true,
-			glow: "shadow-xl shadow-red-500/50",
+			glow: "shadow-2xl shadow-red-500/70",
 			animation: "",
 		};
 	}
@@ -163,12 +254,26 @@ const getPrestigeTheme = (
 			name: randomTitle,
 			bgGradient: "from-amber-600 via-yellow-600 to-orange-600",
 			cardBg:
-				"bg-gradient-to-br from-slate-900/95 via-gray-900/95 to-slate-900/95 backdrop-blur-md border-2 border-amber-400/80",
+				"bg-gradient-to-br from-amber-950/95 via-yellow-950/95 to-orange-950/95 backdrop-blur-lg border-3 border-amber-400 shadow-[0_0_30px_rgba(245,158,11,0.7),0_0_60px_rgba(245,158,11,0.3)] ring-2 ring-amber-300/40 before:absolute before:inset-0 before:bg-gradient-to-br before:from-amber-400/8 before:via-yellow-400/10 before:to-orange-400/8 before:rounded-lg",
 			titleColor: "text-amber-100",
 			accentColor: "text-yellow-300",
 			icon: Gem,
 			particles: true,
-			glow: "shadow-xl shadow-amber-500/50",
+			glow: "shadow-xl shadow-amber-500/60",
+			animation: "",
+		};
+	}
+	if (percentageRemaining <= 15) {
+		return {
+			name: randomTitle,
+			bgGradient: "from-blue-600 via-cyan-600 to-teal-600",
+			cardBg:
+				"bg-gradient-to-br from-blue-900/85 via-cyan-900/85 to-teal-900/85 backdrop-blur-md border-2 border-blue-400/80 shadow-[0_0_18px_rgba(59,130,246,0.5)]",
+			titleColor: "text-blue-100",
+			accentColor: "text-cyan-300",
+			icon: Zap,
+			particles: false,
+			glow: "shadow-lg shadow-blue-500/50",
 			animation: "",
 		};
 	}
@@ -177,7 +282,7 @@ const getPrestigeTheme = (
 			name: randomTitle,
 			bgGradient: "from-pink-600 via-rose-600 to-red-600",
 			cardBg:
-				"bg-gradient-to-br from-slate-900/95 via-gray-900/95 to-slate-900/95 backdrop-blur-md border-2 border-pink-400/70",
+				"bg-gradient-to-br from-pink-900/80 via-rose-900/85 to-red-900/80 backdrop-blur-md border-2 border-pink-400/80 shadow-[0_0_15px_rgba(236,72,153,0.4)]",
 			titleColor: "text-pink-100",
 			accentColor: "text-rose-300",
 			icon: Star,
@@ -191,7 +296,7 @@ const getPrestigeTheme = (
 			name: randomTitle,
 			bgGradient: "from-indigo-600 via-blue-600 to-purple-600",
 			cardBg:
-				"bg-gradient-to-br from-slate-900/95 via-gray-900/95 to-slate-900/95 backdrop-blur-md border-2 border-indigo-400/70",
+				"bg-gradient-to-br from-indigo-900/85 via-blue-900/90 to-purple-900/85 backdrop-blur-md border-2 border-indigo-400/70 shadow-[0_0_12px_rgba(99,102,241,0.3)]",
 			titleColor: "text-indigo-100",
 			accentColor: "text-blue-300",
 			icon: Trophy,
@@ -205,7 +310,7 @@ const getPrestigeTheme = (
 			name: randomTitle,
 			bgGradient: "from-purple-600 via-violet-600 to-indigo-600",
 			cardBg:
-				"bg-gradient-to-br from-slate-900/95 via-gray-900/95 to-slate-900/95 backdrop-blur-md border-2 border-purple-400/70",
+				"bg-gradient-to-br from-purple-900/90 via-violet-900/90 to-indigo-900/90 backdrop-blur-md border-2 border-purple-400/60",
 			titleColor: "text-purple-100",
 			accentColor: "text-violet-300",
 			icon: Star,
@@ -219,7 +324,7 @@ const getPrestigeTheme = (
 			name: randomTitle,
 			bgGradient: "from-teal-600 via-cyan-600 to-blue-600",
 			cardBg:
-				"bg-gradient-to-br from-slate-900/95 via-gray-900/95 to-slate-900/95 backdrop-blur-md border-2 border-teal-400/70",
+				"bg-gradient-to-br from-teal-900/90 via-cyan-900/90 to-blue-900/90 backdrop-blur-md border-2 border-teal-400/60",
 			titleColor: "text-teal-100",
 			accentColor: "text-cyan-300",
 			icon: Crown,
@@ -233,7 +338,7 @@ const getPrestigeTheme = (
 			name: randomTitle,
 			bgGradient: "from-cyan-600 via-teal-600 to-blue-600",
 			cardBg:
-				"bg-gradient-to-br from-slate-900/95 via-gray-900/95 to-slate-900/95 backdrop-blur-md border-2 border-cyan-400/70",
+				"bg-gradient-to-br from-cyan-900/90 via-teal-900/90 to-blue-900/90 backdrop-blur-md border-2 border-cyan-400/60",
 			titleColor: "text-cyan-100",
 			accentColor: "text-teal-300",
 			icon: Trophy,
@@ -247,7 +352,7 @@ const getPrestigeTheme = (
 			name: randomTitle,
 			bgGradient: "from-green-600 via-teal-600 to-cyan-600",
 			cardBg:
-				"bg-gradient-to-br from-slate-900/95 via-gray-900/95 to-slate-900/95 backdrop-blur-md border-2 border-green-400/70",
+				"bg-gradient-to-br from-green-900/90 via-teal-900/90 to-cyan-900/90 backdrop-blur-md border-2 border-green-400/60",
 			titleColor: "text-green-100",
 			accentColor: "text-teal-300",
 			icon: Trophy,
@@ -261,7 +366,7 @@ const getPrestigeTheme = (
 			name: randomTitle,
 			bgGradient: "from-emerald-600 via-green-600 to-teal-600",
 			cardBg:
-				"bg-gradient-to-br from-slate-900/95 via-gray-900/95 to-slate-900/95 backdrop-blur-md border-2 border-emerald-400/70",
+				"bg-gradient-to-br from-emerald-900/90 via-green-900/90 to-teal-900/90 backdrop-blur-md border-2 border-emerald-400/60",
 			titleColor: "text-emerald-100",
 			accentColor: "text-green-300",
 			icon: Trophy,
@@ -270,17 +375,116 @@ const getPrestigeTheme = (
 			animation: "",
 		};
 	}
+	if (percentageRemaining <= 60) {
+		return {
+			name: randomTitle,
+			bgGradient: "from-orange-600 via-amber-600 to-yellow-600",
+			cardBg:
+				"bg-gradient-to-br from-orange-900/85 via-amber-900/85 to-yellow-900/85 backdrop-blur-sm border border-orange-400/50 shadow-[0_0_8px_rgba(251,146,60,0.2)]",
+			titleColor: "text-orange-100",
+			accentColor: "text-amber-300",
+			icon: Star,
+			particles: false,
+			glow: "shadow-sm shadow-orange-500/30",
+			animation: "",
+		};
+	}
+	if (percentageRemaining <= 65) {
+		return {
+			name: randomTitle,
+			bgGradient: "from-lime-600 via-green-600 to-emerald-600",
+			cardBg:
+				"bg-gradient-to-br from-lime-900/85 via-green-900/85 to-emerald-900/85 backdrop-blur-sm border border-lime-400/50 shadow-[0_0_8px_rgba(132,204,22,0.2)]",
+			titleColor: "text-lime-100",
+			accentColor: "text-green-300",
+			icon: Gem,
+			particles: false,
+			glow: "shadow-sm shadow-lime-500/30",
+			animation: "",
+		};
+	}
+	if (percentageRemaining <= 70) {
+		return {
+			name: randomTitle,
+			bgGradient: "from-sky-600 via-blue-600 to-indigo-600",
+			cardBg:
+				"bg-gradient-to-br from-sky-900/85 via-blue-900/85 to-indigo-900/85 backdrop-blur-sm border border-sky-400/50 shadow-[0_0_8px_rgba(14,165,233,0.2)]",
+			titleColor: "text-sky-100",
+			accentColor: "text-blue-300",
+			icon: Zap,
+			particles: false,
+			glow: "shadow-sm shadow-sky-500/30",
+			animation: "",
+		};
+	}
+	if (percentageRemaining <= 75) {
+		return {
+			name: randomTitle,
+			bgGradient: "from-violet-600 via-purple-600 to-fuchsia-600",
+			cardBg:
+				"bg-gradient-to-br from-violet-900/85 via-purple-900/85 to-fuchsia-900/85 backdrop-blur-sm border border-violet-400/50 shadow-[0_0_8px_rgba(139,92,246,0.2)]",
+			titleColor: "text-violet-100",
+			accentColor: "text-purple-300",
+			icon: Star,
+			particles: false,
+			glow: "shadow-sm shadow-violet-500/30",
+			animation: "",
+		};
+	}
+	if (percentageRemaining <= 80) {
+		return {
+			name: randomTitle,
+			bgGradient: "from-rose-600 via-pink-600 to-red-600",
+			cardBg:
+				"bg-gradient-to-br from-rose-900/85 via-pink-900/85 to-red-900/85 backdrop-blur-sm border border-rose-400/50 shadow-[0_0_8px_rgba(244,63,94,0.2)]",
+			titleColor: "text-rose-100",
+			accentColor: "text-pink-300",
+			icon: Trophy,
+			particles: false,
+			glow: "shadow-sm shadow-rose-500/30",
+			animation: "",
+		};
+	}
+	if (percentageRemaining <= 85) {
+		return {
+			name: randomTitle,
+			bgGradient: "from-amber-600 via-orange-600 to-red-600",
+			cardBg:
+				"bg-gradient-to-br from-amber-900/80 via-orange-900/80 to-red-900/80 backdrop-blur-sm border border-amber-400/40 shadow-[0_0_6px_rgba(245,158,11,0.15)]",
+			titleColor: "text-amber-100",
+			accentColor: "text-orange-300",
+			icon: Zap,
+			particles: false,
+			glow: "shadow-sm shadow-amber-500/25",
+			animation: "",
+		};
+	}
+	if (percentageRemaining <= 90) {
+		return {
+			name: randomTitle,
+			bgGradient: "from-gray-600 via-slate-600 to-zinc-600",
+			cardBg:
+				"bg-gradient-to-br from-gray-900/80 via-slate-900/80 to-zinc-900/80 backdrop-blur-sm border border-gray-400/40 shadow-[0_0_6px_rgba(107,114,128,0.15)]",
+			titleColor: "text-gray-100",
+			accentColor: "text-slate-300",
+			icon: Star,
+			particles: false,
+			glow: "shadow-sm shadow-gray-500/25",
+			animation: "",
+		};
+	}
 
+	// Default fallback for >90% remaining
 	return {
 		name: randomTitle,
-		bgGradient: "from-blue-900 via-purple-900 to-indigo-900",
+		bgGradient: "from-slate-600 via-gray-600 to-stone-600",
 		cardBg:
-			"bg-gradient-to-br from-slate-900/95 via-gray-900/95 to-slate-900/95 backdrop-blur-md border-2 border-blue-400/70",
-		titleColor: "text-blue-100",
-		accentColor: "text-blue-300",
+			"bg-gradient-to-br from-slate-900/75 via-gray-900/75 to-stone-900/75 backdrop-blur-sm border border-slate-400/30",
+		titleColor: "text-slate-200",
+		accentColor: "text-gray-400",
 		icon: Trophy,
 		particles: false,
-		glow: "shadow-lg shadow-blue-500/30",
+		glow: "shadow-sm shadow-slate-500/20",
 		animation: "",
 	};
 };
@@ -498,23 +702,24 @@ ${shareUrl}
 				<div className="absolute top-4 left-4 bg-black/80 p-4 rounded-lg text-white z-50">
 					<h3 className="text-lg font-bold mb-2">Debug: Prestige Levels</h3>
 					<div className="grid grid-cols-5 gap-2 text-xs">
-						{[0, 2, 5, 8, 12, 18, 22, 28, 32, 38, 42, 48, 55, 65, 75].map(
-							(percentage) => {
-								const pokemonCount = Math.round(
-									(percentage / 100) * totalPokemonInGeneration,
-								);
-								return (
-									<button
-										key={percentage}
-										type="button"
-										onClick={() => setDebugRemainingPokemon(pokemonCount)}
-										className={`px-2 py-1 rounded ${debugRemainingPokemon === pokemonCount ? "bg-blue-500" : "bg-gray-600"} hover:bg-blue-400`}
-									>
-										{percentage}%
-									</button>
-								);
-							},
-						)}
+						{[
+							0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 60, 65, 70, 75, 80, 85,
+							90, 95,
+						].map((percentage) => {
+							const pokemonCount = Math.round(
+								(percentage / 100) * totalPokemonInGeneration,
+							);
+							return (
+								<button
+									key={percentage}
+									type="button"
+									onClick={() => setDebugRemainingPokemon(pokemonCount)}
+									className={`px-2 py-1 rounded ${debugRemainingPokemon === pokemonCount ? "bg-blue-500" : "bg-gray-600"} hover:bg-blue-400`}
+								>
+									{percentage}%
+								</button>
+							);
+						})}
 					</div>
 					<button
 						type="button"
