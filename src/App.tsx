@@ -5,6 +5,7 @@ import { Provider } from "react-redux";
 import { Route, BrowserRouter as Router, Routes } from "react-router-dom";
 import { store } from "./store/store";
 import "./App.css";
+import "./styles/PokemonGame.css";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import { ResourcePreloader } from "@/components/pokemon-game/ResourcePreloader";
 import { Analytics } from "@vercel/analytics/react";
@@ -22,11 +23,21 @@ function App() {
 							<Route
 								path="/"
 								element={
-									<ResourcePreloader>
-										<Suspense fallback={<div>Loading game...</div>}>
-											<PokemonGame />
-										</Suspense>
-									</ResourcePreloader>
+									/* <ResourcePreloader> */
+									<Suspense
+										fallback={
+											<div className="fixed inset-0 bg-gradient-to-br from-blue-100 to-blue-200 flex items-center justify-center">
+												<div className="pokeball-loading">
+													<div className="outer-circle" />
+													<div className="middle-line" />
+													<div className="center-circle" />
+												</div>
+											</div>
+										}
+									>
+										<PokemonGame />
+									</Suspense>
+									/* </ResourcePreloader> */
 								}
 							/>
 							<Route

@@ -224,10 +224,26 @@ export const ResourcePreloader = ({ onComplete, children }: PreloaderProps) => {
 					},
 				};
 
-				let loadedCount = 0;
+				// Track progress state to prevent accordion effect
+				const completedItems = new Set<string>();
+				let lastProgress = 0;
 				const totalResources = config.skipAudio
 					? totalPokemon
 					: totalPokemon * 2;
+
+				// Progress updater that only moves forward
+				const updateProgress = (itemId: string) => {
+					if (!isBackground) {
+						completedItems.add(itemId);
+						const newProgress = Math.round(
+							(completedItems.size / totalResources) * 100,
+						);
+						if (newProgress > lastProgress) {
+							lastProgress = newProgress;
+							setProgress(newProgress);
+						}
+					}
+				};
 
 				// Load sprites
 				for (const [index, batch] of batches.entries()) {
@@ -237,10 +253,7 @@ export const ResourcePreloader = ({ onComplete, children }: PreloaderProps) => {
 							const spriteUrl = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${id}.png`;
 							const success = await preloadImage(spriteUrl, config.timeout);
 
-							loadedCount++;
-							if (!isBackground) {
-								setProgress(Math.round((loadedCount / totalResources) * 100));
-							}
+							updateProgress(`sprite-${id}`);
 
 							if (success) {
 								newCache.loadedResources[gen.name].sprites.push(id);
@@ -258,10 +271,7 @@ export const ResourcePreloader = ({ onComplete, children }: PreloaderProps) => {
 							const spriteUrl = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${id}.png`;
 							const success = await preloadImage(spriteUrl, config.timeout);
 
-							loadedCount++;
-							if (!isBackground) {
-								setProgress(Math.round((loadedCount / totalResources) * 100));
-							}
+							updateProgress(`sprite-${id}`);
 
 							if (success) {
 								newCache.loadedResources[gen.name].sprites.push(id);
@@ -292,10 +302,7 @@ export const ResourcePreloader = ({ onComplete, children }: PreloaderProps) => {
 								const cryUrl = `https://raw.githubusercontent.com/PokeAPI/cries/main/cries/pokemon/latest/${id}.ogg`;
 								const success = await preloadAudio(cryUrl, config.audioTimeout);
 
-								loadedCount++;
-								if (!isBackground) {
-									setProgress(Math.round((loadedCount / totalResources) * 100));
-								}
+								updateProgress(`cry-${id}`);
 
 								if (success) {
 									newCache.loadedResources[gen.name].cries.push(id);
@@ -312,10 +319,7 @@ export const ResourcePreloader = ({ onComplete, children }: PreloaderProps) => {
 								const cryUrl = `https://raw.githubusercontent.com/PokeAPI/cries/main/cries/pokemon/latest/${id}.ogg`;
 								const success = await preloadAudio(cryUrl, config.audioTimeout);
 
-								loadedCount++;
-								if (!isBackground) {
-									setProgress(Math.round((loadedCount / totalResources) * 100));
-								}
+								updateProgress(`cry-${id}`);
 
 								if (success) {
 									newCache.loadedResources[gen.name].cries.push(id);
@@ -337,6 +341,7 @@ export const ResourcePreloader = ({ onComplete, children }: PreloaderProps) => {
 
 				if (!isBackground) {
 					setCurrentPhase("complete");
+					setProgress(100); // Ensure we end at 100%
 					setIsLoading(false);
 					onComplete?.();
 				}
