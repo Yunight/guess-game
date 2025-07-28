@@ -1,5 +1,5 @@
-import { useState } from "react";
 import type { Generation, Pokemon } from "@/components/pokemon-game/types";
+import { useState } from "react";
 
 interface GameState {
 	score: number;
@@ -45,6 +45,7 @@ interface GameState {
 const MAX_HINTS = 10;
 
 export const useGameState = (initialGeneration: Generation) => {
+	// Core game state
 	const [score, setScore] = useState(0);
 	const [bestScore, setBestScore] = useState(0);
 	const [bestTime, setBestTime] = useState(0);
@@ -59,33 +60,41 @@ export const useGameState = (initialGeneration: Generation) => {
 		useState<Generation>(initialGeneration);
 	const [remainingPokemon, setRemainingPokemon] = useState<number[]>([]);
 	const [gameOver, setGameOver] = useState(false);
+
+	// UI state
 	const [suggestions, setSuggestions] = useState<string[]>([]);
 	const [highlightedIndex, setHighlightedIndex] = useState(-1);
 	const [userRanking, setUserRanking] = useState<number | null>(null);
+
+	// Effects state
 	const [showCriticalSuccess, setShowCriticalSuccess] = useState(false);
 	const [showCriticalHit, setShowCriticalHit] = useState(false);
 	const [showHypeTrain, setShowHypeTrain] = useState(false);
 	const [consecutiveFastAnswers, setConsecutiveFastAnswers] = useState(0);
 	const [pointsEarned, setPointsEarned] = useState(0);
+
+	// Stats state
 	const [criticalHitCount, setCriticalHitCount] = useState(0);
 	const [criticalSuccessCount, setCriticalSuccessCount] = useState(0);
 	const [hyperTrainCount, setHyperTrainCount] = useState(0);
 	const [maxHypeChain, setMaxHypeChain] = useState(0);
+
+	// Timer state
 	const [guessTimeLeft, setGuessTimeLeft] = useState<number>(
 		Number.POSITIVE_INFINITY,
 	);
 	const [totalTimeElapsed, setTotalTimeElapsed] = useState<number>(0);
+
+	// User state
 	const [nameError, setNameError] = useState<string | null>(null);
 	const [isCheckingName, setIsCheckingName] = useState(false);
+	const [isAuthName, setIsAuthName] = useState(false);
+
+	// Pokemon state
 	const [currentPokemonId, setCurrentPokemonId] = useState<number | null>(null);
 	const [currentPokemon, setCurrentPokemon] = useState<Pokemon | undefined>(
 		undefined,
 	);
-	const [isMuted, setIsMuted] = useState(() => {
-		const savedMute = localStorage.getItem("pokemonGameMuted");
-		return savedMute ? JSON.parse(savedMute) : false;
-	});
-	const [isAuthName, setIsAuthName] = useState(false);
 	const [isRestarting, setIsRestarting] = useState(false);
 	const [rewardPokemon, setRewardPokemon] = useState<{
 		pokemon: Pokemon | undefined;
@@ -93,6 +102,12 @@ export const useGameState = (initialGeneration: Generation) => {
 	}>({
 		pokemon: undefined,
 		isLoading: true,
+	});
+
+	// Settings state
+	const [isMuted, setIsMuted] = useState(() => {
+		const savedMute = localStorage.getItem("pokemonGameMuted");
+		return savedMute ? JSON.parse(savedMute) : false;
 	});
 
 	return {
