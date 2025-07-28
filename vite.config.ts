@@ -154,15 +154,29 @@ export default defineConfig({
 		}),
 	],
 	build: {
+		// Enable source maps for debugging
+		sourcemap: false,
+		// Optimize chunk size
+		minify: "terser",
+		terserOptions: {
+			compress: {
+				drop_console: true,
+				drop_debugger: true,
+			},
+		},
 		rollupOptions: {
 			output: {
 				manualChunks: {
-					"react-vendor": ["react", "react-dom", "react-redux"],
-					"game-core": [
-						"@reduxjs/toolkit",
+					// Vendor chunks
+					"react-vendor": ["react", "react-dom"],
+					"redux-vendor": ["react-redux", "@reduxjs/toolkit"],
+					"i18n-vendor": [
 						"i18next",
 						"react-i18next",
+						"i18next-browser-languagedetector",
 					],
+
+					// UI component chunks
 					"ui-components": [
 						"@radix-ui/react-dialog",
 						"@radix-ui/react-select",
@@ -170,15 +184,53 @@ export default defineConfig({
 						"class-variance-authority",
 						"clsx",
 						"tailwind-merge",
+						"tailwindcss-animate",
 					],
+
+					// Game logic chunks
+					"game-hooks": [
+						"@/hooks/useGameState",
+						"@/hooks/useGameTimers",
+						"@/hooks/useGameAudio",
+						"@/hooks/usePlayerName",
+						"@/hooks/useRankings",
+					],
+
+					// Firebase chunk (removed due to import issues)
+
+					// Analytics chunk
+					"analytics-vendor": ["@vercel/analytics", "@vercel/speed-insights"],
+
+					// Icon chunk
+					"lucide-vendor": ["lucide-react"],
+				},
+				// Optimize chunk naming
+				chunkFileNames: (chunkInfo) => {
+					const facadeModuleId = chunkInfo.facadeModuleId
+						? chunkInfo.facadeModuleId.split("/").pop()
+						: "chunk";
+					return "assets/[name]-[hash].js";
 				},
 			},
 		},
-		chunkSizeWarningLimit: 1000,
+		chunkSizeWarningLimit: 600,
+		// Enable aggressive code splitting
+		target: "esnext",
 	},
 	resolve: {
 		alias: {
 			"@": path.resolve(__dirname, "./src"),
 		},
+	},
+	// Optimize dev server
+	server: {
+		fs: {
+			strict: false,
+		},
+	},
+	// Enable tree shaking
+	esbuild: {
+		drop: ["console", "debugger"],
+		treeShaking: true,
 	},
 });

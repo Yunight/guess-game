@@ -227,4 +227,22 @@ export const fr = {
 			"Trop de tentatives de connexion. Veuillez réessayer plus tard",
 		"auth/default": "Une erreur est survenue. Veuillez réessayer",
 	},
+
+	// Shareable Results
+	shareableLink: "Lien Partageable",
+	gameComplete: "Partie Terminée",
+	generation: "Génération",
+	pokemonLeft: "Pokémon Restants",
+	maxHypeChain: "Max Hype Chain",
+	sharedBy: "Partagé par {{name}}",
+	resultNotFound: "Résultat Introuvable",
+	resultNotFoundDesc: "Ce résultat n'a pas pu être trouvé.",
+	backToGame: "Retour au Jeu",
+	playGame: "Jouer au Jeu",
+	loadingResult: "Chargement du résultat...",
+	checkOutResult: "🎮 Découvrez mon résultat au Pokémon Guesser Game!",
+	viewMyResult: "🔗 Voir mon résultat:",
+	saving: "Sauvegarde...",
+	urlCopied: "URL copiée",
+	copyUrl: "Copier l'URL",
 };

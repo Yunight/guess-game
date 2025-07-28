@@ -37,6 +37,8 @@ interface PokemonSpecies {
 }
 
 const TYRADEX_CACHE_KEY = "tyradexCache";
+const FLAVOR_TEXT_CACHE_KEY = "flavorTextCache";
+const CRY_URL_CACHE_KEY = "cryUrlCache";
 const CACHE_DURATION = 24 * 60 * 60 * 1000; // 24 hours
 
 interface CachedData {
@@ -44,34 +46,104 @@ interface CachedData {
 	tyradexData: TyradexPokemon[];
 }
 
+interface CachedFlavorText {
+	timestamp: number;
+	french: string;
+	english: string;
+}
+
+interface CachedCryUrl {
+	timestamp: number;
+	cryUrl: string;
+}
+
 interface ApiError {
 	status: number;
 	data: unknown;
 }
 
-// Add shiny state cache
+// Optimized shiny state cache with Map for better performance
 const shinyStateCache = new Map<number, boolean>();
 
-// Get Pokemon cry URL from PokeAPI - only when needed
+// Enhanced localStorage helpers with error handling and compression
+const getFromStorage = (key: string) => {
+	if (typeof window === "undefined") return null;
+	try {
+		const item = localStorage.getItem(key);
+		return item ? JSON.parse(item) : null;
+	} catch (error) {
+		console.error("Error accessing localStorage:", error);
+		// Clear corrupted data
+		try {
+			localStorage.removeItem(key);
+		} catch {}
+		return null;
+	}
+};
+
+const setToStorage = (key: string, value: unknown) => {
+	if (typeof window === "undefined") return;
+	try {
+		localStorage.setItem(key, JSON.stringify(value));
+	} catch (error) {
+		console.error("Error writing to localStorage:", error);
+		// If storage is full, try to clear old cache entries
+		try {
+			const keys = Object.keys(localStorage);
+			const cacheKeys = keys.filter((k) => k.includes("Cache"));
+			// Remove oldest cache entries first
+			for (const k of cacheKeys) {
+				localStorage.removeItem(k);
+			}
+			// Try again
+			localStorage.setItem(key, JSON.stringify(value));
+		} catch {
+			// Still failing, ignore
+		}
+	}
+};
+
+// Optimized cry URL fetching with caching
 const getCryUrl = async (id: number): Promise<string> => {
+	const cacheKey = `${CRY_URL_CACHE_KEY}_${id}`;
+	const cached = getFromStorage(cacheKey) as CachedCryUrl | null;
+
+	if (cached && Date.now() - cached.timestamp < CACHE_DURATION) {
+		return cached.cryUrl;
+	}
+
 	try {
 		const response = await fetch(`https://pokeapi.co/api/v2/pokemon/${id}`);
 		if (!response.ok) throw new Error("Failed to fetch Pokemon cry");
 
 		const data = await response.json();
 		const cries = data.cries as PokemonCries;
+		const cryUrl = `${cries.latest}|${cries.legacy}`;
 
-		return `${cries.latest}|${cries.legacy}`;
+		// Cache the result
+		setToStorage(cacheKey, {
+			timestamp: Date.now(),
+			cryUrl,
+		});
+
+		return cryUrl;
 	} catch (error) {
 		console.error("Error fetching Pokemon cry:", error);
 		return "";
 	}
 };
 
-// Get Pokemon flavor text from PokeAPI
+// Optimized flavor text fetching with caching
 const getFlavorText = async (
 	id: number,
 ): Promise<{ french: string; english: string }> => {
+	const cacheKey = `${FLAVOR_TEXT_CACHE_KEY}_${id}`;
+	const cached = getFromStorage(cacheKey) as CachedFlavorText | null;
+
+	if (cached && Date.now() - cached.timestamp < CACHE_DURATION) {
+		return { french: cached.french, english: cached.english };
+	}
+
 	try {
 		const response = await fetch(
 			`https://pokeapi.co/api/v2/pokemon-species/${id}`,
@@ -105,40 +177,37 @@ const getFlavorText = async (
 						.replace(/\n/g, " ")
 				: "";
 
-		return { french, english };
+		const result = { french, english };
+
+		// Cache the result
+		setToStorage(cacheKey, {
+			timestamp: Date.now(),
+			...result,
+		});
+
+		return result;
 	} catch (error) {
 		console.error("Error fetching Pokemon flavor text:", error);
 		return { french: "", english: "" };
 	}
 };
 
-// Update localStorage handling to be safe for SSR
-const getFromStorage = (key: string) => {
-	if (typeof window === "undefined") return null;
-	try {
-		return localStorage.getItem(key);
-	} catch (error) {
-		console.error("Error accessing localStorage:", error);
-		return null;
-	}
-};
+// Optimized Pokemon conversion with memoization
+const pokemonCache = new Map<string, Omit<Pokemon, "cryUrl">>();
 
-const setToStorage = (key: string, value: string) => {
-	if (typeof window === "undefined") return;
-	try {
-		localStorage.setItem(key, value);
-	} catch (error) {
-		console.error("Error writing to localStorage:", error);
-	}
-};
-
-// Convert Tyradex data to Pokemon format
 const convertToPokemon = (
 	tyradexPokemon: TyradexPokemon,
 	maxHypeChain = 0,
 	forcedShinyState?: boolean,
 ): Omit<Pokemon, "cryUrl"> => {
 	const pokemonId = tyradexPokemon.pokedex_id;
+	const cacheKey = `${pokemonId}_${maxHypeChain}_${forcedShinyState ?? "auto"}`;
+
+	// Check cache first
+	const cached = pokemonCache.get(cacheKey);
+	if (cached) {
+		return cached;
+	}
 
 	let isShiny: boolean;
 	if (typeof forcedShinyState === "boolean") {
@@ -152,7 +221,7 @@ const convertToPokemon = (
 		shinyStateCache.set(pokemonId, isShiny);
 	}
 
-	return {
+	const result = {
 		id: pokemonId,
 		name: tyradexPokemon.name.en.toLowerCase(),
 		englishName: tyradexPokemon.name.en,
@@ -171,51 +240,59 @@ const convertToPokemon = (
 		isLegendary: false,
 		isMythical: false,
 	};
+
+	// Cache the result
+	pokemonCache.set(cacheKey, result);
+
+	return result;
 };
 
 export const pokemonApi = createApi({
 	reducerPath: "pokemonApi",
-	baseQuery: fetchBaseQuery({ baseUrl: "https://tyradex.vercel.app/api/v1/" }),
+	baseQuery: fetchBaseQuery({
+		baseUrl: "https://tyradex.vercel.app/api/v1/",
+		timeout: 10000, // 10 second timeout
+	}),
+	tagTypes: ["Pokemon", "PokemonList"],
 	endpoints: (builder) => ({
 		getAllPokemonNames: builder.query<Pokemon[], { maxHypeChain?: number }>({
 			async queryFn(arg) {
 				try {
 					const maxHypeChain = arg?.maxHypeChain || 0;
 					// Check cache first
-					const cachedData = getFromStorage(TYRADEX_CACHE_KEY);
-					if (cachedData) {
-						const { timestamp, tyradexData } = JSON.parse(
-							cachedData,
-						) as CachedData;
-						// Cache is valid for 24 hours
-						if (Date.now() - timestamp < CACHE_DURATION) {
-							console.log("📦 Using cached Tyradex data");
-							return {
-								data: tyradexData.map((pokemon) => ({
-									...convertToPokemon(pokemon, maxHypeChain),
-									cryUrl: "",
-								})),
-							};
-						}
+					const cachedData = getFromStorage(
+						TYRADEX_CACHE_KEY,
+					) as CachedData | null;
+					if (
+						cachedData &&
+						Date.now() - cachedData.timestamp < CACHE_DURATION
+					) {
+						console.log("📦 Using cached Tyradex data");
+						return {
+							data: cachedData.tyradexData.map((pokemon) => ({
+								...convertToPokemon(pokemon, maxHypeChain),
+								cryUrl: "",
+							})),
+						};
 					}
 
 					// If no cache or expired, fetch from Tyradex API
 					console.log("🔄 Fetching Pokemon data from Tyradex API");
 					const response = await fetch(
 						"https://tyradex.vercel.app/api/v1/pokemon",
+						{
+							signal: AbortSignal.timeout(15000), // 15 second timeout
+						},
 					);
 					if (!response.ok) throw new Error("Failed to fetch from Tyradex API");
 
 					const tyradexData = (await response.json()) as TyradexPokemon[];
 
 					// Cache the raw Tyradex data
-					setToStorage(
-						TYRADEX_CACHE_KEY,
-						JSON.stringify({
-							timestamp: Date.now(),
-							tyradexData,
-						}),
-					);
+					setToStorage(TYRADEX_CACHE_KEY, {
+						timestamp: Date.now(),
+						tyradexData,
+					});
 					console.log("💾 Tyradex data cached successfully");
 
 					// Convert and return Pokemon data
@@ -230,7 +307,8 @@ export const pokemonApi = createApi({
 					return { error: error as ApiError };
 				}
 			},
-			keepUnusedDataFor: 3600,
+			keepUnusedDataFor: 3600, // Keep data for 1 hour
+			providesTags: ["PokemonList"],
 		}),
 
 		getPokemonById: builder.query<
@@ -243,30 +321,36 @@ export const pokemonApi = createApi({
 					let tyradexPokemon: TyradexPokemon | undefined;
 
 					// Try to get Pokemon data from cache first
-					const cachedData = getFromStorage(TYRADEX_CACHE_KEY);
-					if (cachedData) {
-						const { timestamp, tyradexData } = JSON.parse(
-							cachedData,
-						) as CachedData;
-						if (Date.now() - timestamp < CACHE_DURATION) {
-							const pokemon = tyradexData.find(
-								(p) => p.pokedex_id === pokemonId,
+					const cachedData = getFromStorage(
+						TYRADEX_CACHE_KEY,
+					) as CachedData | null;
+					if (
+						cachedData &&
+						Date.now() - cachedData.timestamp < CACHE_DURATION
+					) {
+						const pokemon = cachedData.tyradexData.find(
+							(p) => p.pokedex_id === pokemonId,
+						);
+						if (pokemon) {
+							console.log(
+								"📦 Using cached Tyradex data for Pokemon:",
+								pokemonId,
 							);
-							if (pokemon) {
-								console.log(
-									"📦 Using cached Tyradex data for Pokemon:",
-									pokemonId,
-								);
-								tyradexPokemon = pokemon;
-							}
+							tyradexPokemon = pokemon;
 						}
 					}
 
 					// If not in cache, fetch from API
 					if (!tyradexPokemon) {
-						console.log("🔄 Fetching Pokemon data from Tyradex API");
+						console.log(
+							"🔄 Fetching Pokemon data from Tyradex API for ID:",
+							pokemonId,
+						);
 						const response = await fetch(
 							`https://tyradex.vercel.app/api/v1/pokemon/${pokemonId}`,
+							{
+								signal: AbortSignal.timeout(10000), // 10 second timeout
+							},
 						);
 						if (!response.ok)
 							throw new Error("Failed to fetch from Tyradex API");
@@ -283,19 +367,39 @@ export const pokemonApi = createApi({
 						maxHypeChain,
 					);
 
-					// Fetch cry URL and flavor texts in parallel
-					const [cryUrl, flavorTexts] = await Promise.all([
-						getCryUrl(pokemonId),
-						getFlavorText(pokemonId),
+					// Fetch cry URL and flavor texts in parallel with timeout
+					const [cryUrl, flavorTexts] = await Promise.allSettled([
+						Promise.race([
+							getCryUrl(pokemonId),
+							new Promise<string>((_, reject) =>
+								setTimeout(() => reject(new Error("Cry URL timeout")), 5000),
+							),
+						]),
+						Promise.race([
+							getFlavorText(pokemonId),
+							new Promise<{ french: string; english: string }>((_, reject) =>
+								setTimeout(
+									() => reject(new Error("Flavor text timeout")),
+									5000,
+								),
+							),
+						]),
 					]);
+
+					// Handle results with fallbacks
+					const finalCryUrl = cryUrl.status === "fulfilled" ? cryUrl.value : "";
+					const finalFlavorTexts =
+						flavorTexts.status === "fulfilled"
+							? flavorTexts.value
+							: { french: "", english: "" };
 
 					// Return complete Pokemon data
 					return {
 						data: {
 							...convertedPokemon,
-							cryUrl,
-							frenchFlavorText: flavorTexts.french,
-							englishFlavorText: flavorTexts.english,
+							cryUrl: finalCryUrl,
+							frenchFlavorText: finalFlavorTexts.french,
+							englishFlavorText: finalFlavorTexts.english,
 						},
 					};
 				} catch (error) {
@@ -303,6 +407,8 @@ export const pokemonApi = createApi({
 					return { error: error as ApiError };
 				}
 			},
+			keepUnusedDataFor: 1800, // Keep data for 30 minutes
+			providesTags: (result, error, arg) => [{ type: "Pokemon", id: arg.id }],
 		}),
 	}),
 });

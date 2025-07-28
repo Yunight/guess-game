@@ -6,10 +6,20 @@ import {
 	DialogTitle,
 } from "@/components/ui/dialog";
 import { ScrollableDialog } from "@/components/ui/scrollable-dialog";
-import { Clock, Crown, Home, RefreshCcw, Share2, Trophy } from "lucide-react";
+import {
+	Check,
+	Clock,
+	Copy,
+	Crown,
+	Home,
+	RefreshCcw,
+	Share2,
+	Trophy,
+} from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import type { FC } from "react";
 import { useTranslation } from "react-i18next";
+import { gameResultsService } from "../../services/gameResultsService";
 import { RewardPokemonDisplay } from "./RewardPokemonDisplay";
 import type { Pokemon } from "./types";
 
@@ -124,6 +134,9 @@ export const GameOverDialog: FC<GameOverDialogProps> = ({
 	const { t, i18n } = useTranslation();
 	const [lastPlayedId, setLastPlayedId] = useState<number | null>(null);
 	const [finalTime, setFinalTime] = useState(0);
+	const [shareableUrl, setShareableUrl] = useState<string | null>(null);
+	const [isSavingResult, setIsSavingResult] = useState(false);
+	const [urlCopied, setUrlCopied] = useState(false);
 
 	// Update finalTime when game ends
 	useEffect(() => {
@@ -133,8 +146,90 @@ export const GameOverDialog: FC<GameOverDialogProps> = ({
 		}
 	}, [gameOver, totalTimeElapsed]);
 
+	// Save game result when game ends
+	useEffect(() => {
+		const saveGameResult = async () => {
+			if (
+				gameOver &&
+				!shareableUrl &&
+				!isSavingResult &&
+				rewardPokemon.pokemon
+			) {
+				setIsSavingResult(true);
+				try {
+					const resultData = {
+						playerName,
+						score,
+						totalTimeElapsed: finalTime > 0 ? finalTime : totalTimeElapsed,
+						userRanking,
+						selectedGeneration,
+						rewardPokemon: rewardPokemon.pokemon,
+						remainingPokemon,
+						criticalHitCount,
+						criticalSuccessCount,
+						hyperTrainCount,
+						maxHypeChain,
+					};
+
+					const resultId = await gameResultsService.saveGameResult(resultData);
+					const url = gameResultsService.generateShareableUrl(resultId);
+					setShareableUrl(url);
+					console.log("Game result saved! Shareable URL:", url);
+				} catch (error) {
+					console.error("Failed to save game result:", error);
+				} finally {
+					setIsSavingResult(false);
+				}
+			}
+		};
+
+		saveGameResult();
+	}, [
+		gameOver,
+		shareableUrl,
+		isSavingResult,
+		rewardPokemon.pokemon,
+		playerName,
+		score,
+		finalTime,
+		totalTimeElapsed,
+		userRanking,
+		selectedGeneration,
+		remainingPokemon,
+		criticalHitCount,
+		criticalSuccessCount,
+		hyperTrainCount,
+		maxHypeChain,
+	]);
+
 	// Use finalTime for display if available, otherwise use totalTimeElapsed
 	const displayTime = finalTime > 0 ? finalTime : totalTimeElapsed;
+
+	// Copy URL function
+	const copyUrl = async () => {
+		if (!shareableUrl) return;
+
+		try {
+			await navigator.clipboard.writeText(shareableUrl);
+			setUrlCopied(true);
+			setTimeout(() => setUrlCopied(false), 2000); // Reset after 2 seconds
+		} catch (error) {
+			console.error("Failed to copy URL:", error);
+			// Fallback: select text for manual copy
+			const textArea = document.createElement("textarea");
+			textArea.value = shareableUrl;
+			document.body.appendChild(textArea);
+			textArea.select();
+			try {
+				document.execCommand("copy");
+				setUrlCopied(true);
+				setTimeout(() => setUrlCopied(false), 2000);
+			} catch (fallbackError) {
+				console.error("Fallback copy failed:", fallbackError);
+			}
+			document.body.removeChild(textArea);
+		}
+	};
 
 	const playPokemonCry = useCallback(
 		async (pokemonId: number) => {
@@ -413,6 +508,10 @@ export const GameOverDialog: FC<GameOverDialogProps> = ({
 						rewardPokemon.pokemon.englishName.slice(1)
 					: "";
 
+		// Use shareable URL if available, otherwise fallback to main site
+		const urlToShare =
+			shareableUrl || "https://pokemon-guesser-game.vercel.app/";
+
 		const shareText = `${clickbaitMsg}
 
 👤 ${playerName}
@@ -422,7 +521,7 @@ export const GameOverDialog: FC<GameOverDialogProps> = ({
 ${userRanking ? `👑 ${t("myRank")} # ${userRanking}!` : ""}
 ${rewardPokemon.pokemon ? `✨ ${i18n.language === "fr" ? "Je suis un" : "I am"} ${pokemonName} ${shinyText}!` : ""}
 
-https://pokemon-guesser-game.vercel.app/
+${shareableUrl ? `${t("viewMyResult")} ${urlToShare}` : urlToShare}
 
 #PokemonGuesserGame #Pokemon #Yunight #Gaming`;
 
@@ -430,7 +529,7 @@ https://pokemon-guesser-game.vercel.app/
 			if (navigator.share) {
 				await navigator.share({
 					text: shareText,
-					url: "https://pokemon-guesser-game.vercel.app/",
+					url: urlToShare,
 				});
 			} else {
 				// Fallback to Twitter
@@ -457,7 +556,7 @@ https://pokemon-guesser-game.vercel.app/
 					<DialogHeader className="space-y-4">
 						<div className="flex justify-center -mt-5">
 							<div className="bg-white p-4 rounded-full shadow-xl relative overflow-visible">
-								{remainingPokemon.length === 0 ? (
+								{remainingPokemon.length === 0 && (
 									<>
 										{/* Outer spinning fireworks */}
 										<div className="absolute inset-[-150%] animate-spin-slow">
@@ -510,18 +609,37 @@ https://pokemon-guesser-game.vercel.app/
 												/>
 											))}
 										</div>
-										{/* Master Ball with glow effect */}
-										<div className="relative h-12 w-12 animate-bounce">
-											<div className="absolute inset-[-25%] bg-purple-400/30 rounded-full blur-md" />
-											<div className="absolute inset-0 bg-gradient-to-br from-purple-500 to-purple-700 rounded-full shadow-lg" />
-											<div className="absolute top-[45%] left-0 right-0 h-[10%] bg-black shadow-sm" />
-											<div className="absolute top-[40%] left-[40%] w-[20%] h-[20%] bg-pink-300 rounded-full border-2 border-black shadow-inner" />
-											<div className="absolute top-0 left-0 w-full h-[45%] bg-gradient-to-br from-pink-400 to-pink-600 rounded-t-full" />
-										</div>
 									</>
-								) : (
-									<Trophy className="h-12 w-12 text-yellow-400" />
 								)}
+								{/* Master Ball with glow effect - Always shown */}
+								<div
+									className={`relative h-12 w-12 ${remainingPokemon.length === 0 ? "animate-bounce" : "animate-pulse"}`}
+								>
+									{/* Purple glow effect */}
+									<div className="absolute inset-[-25%] bg-purple-400/30 rounded-full blur-md" />
+
+									{/* Ball body - white base */}
+									<div className="absolute inset-0 bg-white rounded-full shadow-lg border border-gray-200" />
+
+									{/* Purple top half */}
+									<div className="absolute top-0 left-0 w-full h-[45%] bg-gradient-to-b from-purple-500 to-purple-600 rounded-t-full" />
+
+									{/* Black middle band */}
+									<div className="absolute top-[45%] left-0 right-0 h-[10%] bg-black shadow-sm" />
+
+									{/* Center button - silver with M */}
+									<div className="absolute top-[37%] left-[37%] w-[26%] h-[26%] bg-gradient-to-b from-gray-300 to-gray-500 rounded-full border-2 border-black shadow-inner flex items-center justify-center">
+										<span className="text-black font-bold text-xs leading-none">
+											M
+										</span>
+									</div>
+
+									{/* Button highlight */}
+									<div className="absolute top-[39%] left-[39%] w-[22%] h-[22%] bg-white/40 rounded-full" />
+
+									{/* Shine effect on ball */}
+									<div className="absolute top-[15%] left-[25%] w-[20%] h-[20%] bg-white/50 rounded-full blur-sm" />
+								</div>
 							</div>
 						</div>
 						<DialogTitle className="text-2xl font-bold text-center">
@@ -699,6 +817,42 @@ https://pokemon-guesser-game.vercel.app/
 						</div>
 					</div>
 
+					{/* Shareable URL Display */}
+					{shareableUrl && (
+						<div className="mt-4 p-3 bg-white/5 rounded-lg border border-white/10">
+							<div className="text-sm text-yellow-300 font-medium mb-2">
+								🔗 {t("shareableLink")}
+							</div>
+							<div className="flex items-center gap-2">
+								<button
+									type="button"
+									className="text-xs text-gray-300 break-all font-mono bg-black/20 p-2 rounded flex-1 cursor-pointer hover:bg-black/30 transition-colors text-left"
+									onClick={copyUrl}
+									title={t("copyUrl")}
+								>
+									{shareableUrl}
+								</button>
+								<button
+									type="button"
+									onClick={copyUrl}
+									className="p-2 bg-black/20 hover:bg-black/40 rounded transition-colors text-gray-300 hover:text-white"
+									title={t("copyUrl")}
+								>
+									{urlCopied ? (
+										<Check className="h-4 w-4 text-green-400" />
+									) : (
+										<Copy className="h-4 w-4" />
+									)}
+								</button>
+							</div>
+							{urlCopied && (
+								<div className="text-xs text-green-400 mt-2 animate-fade-in">
+									✅ {t("urlCopied")}
+								</div>
+							)}
+						</div>
+					)}
+
 					<div className="grid grid-cols-3 gap-3 mt-6">
 						<Button
 							onClick={handleRestart}
@@ -720,9 +874,10 @@ https://pokemon-guesser-game.vercel.app/
 									: "bg-green-500 hover:bg-green-600"
 							} text-white border-none shadow-lg hover:shadow-xl transition-all duration-300 font-bold`}
 							size="lg"
+							disabled={isSavingResult}
 						>
 							<Share2 className="mr-2 h-4 w-4" />
-							{t("share")}
+							{isSavingResult ? t("saving") : t("share")}
 						</Button>
 						<Button
 							onClick={handleBackToMenu}
