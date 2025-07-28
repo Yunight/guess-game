@@ -67,9 +67,67 @@ export const gameResultsService = {
 				throw new Error("Invalid score range");
 			}
 
-			// Generate a unique ID for the result
+			// Generate a unique ID for the result with additional entropy
+			const timestamp = Date.now();
+			const randomPart = Math.random().toString(36).substr(2, 9);
 			const resultId = doc(collection(db, "gameResults")).id;
+
 			console.log("🆔 Generated NEW Firebase document ID:", resultId);
+			console.log(
+				"🔒 Additional entropy - timestamp:",
+				timestamp,
+				"random:",
+				randomPart,
+			);
+
+			// Check if this ID already exists (very unlikely but just in case)
+			const existingDoc = await getDoc(doc(db, "gameResults", resultId));
+			if (existingDoc.exists()) {
+				console.warn("⚠️ Document ID collision detected, generating new ID");
+				// Generate a new ID with additional entropy
+				const fallbackId = `${resultId}_${timestamp}_${randomPart}`;
+				console.log("🔄 Using fallback ID:", fallbackId);
+
+				// Set expiration date (30 days from now for non-exceptional scores)
+				const expirationDate = new Date();
+				const isExceptionalScore =
+					resultData.score >= 1000 ||
+					resultData.remainingPokemon.length === 0 ||
+					(resultData.userRanking && resultData.userRanking <= 10);
+
+				// Exceptional results last longer (90 days), regular ones expire in 30 days
+				expirationDate.setDate(
+					expirationDate.getDate() + (isExceptionalScore ? 90 : 30),
+				);
+
+				const gameResult = {
+					...resultData,
+					id: fallbackId,
+					createdAt: serverTimestamp(),
+					isShared: false,
+					viewCount: 0,
+					expiresAt: expirationDate,
+				};
+
+				console.log("💾 Saving game result with fallback ID:", {
+					id: fallbackId,
+					playerName: resultData.playerName,
+					score: resultData.score,
+					rewardPokemon: resultData.rewardPokemon?.englishName,
+					timestamp: new Date().toISOString(),
+				});
+
+				// Save to Firebase with fallback ID
+				await setDoc(doc(db, "gameResults", fallbackId), gameResult);
+
+				console.log(
+					"✅ Game result successfully saved to Firebase with fallback ID:",
+					fallbackId,
+					"Expires:",
+					expirationDate,
+				);
+				return fallbackId;
+			}
 
 			// Set expiration date (30 days from now for non-exceptional scores)
 			const expirationDate = new Date();
@@ -250,8 +308,17 @@ export const gameResultsService = {
 	 */
 	generateShareableUrl(resultId: string): string {
 		const baseUrl = window.location.origin;
-		const url = `${baseUrl}/results/${resultId}`;
-		console.log("🔗 Generated shareable URL:", url, "from ID:", resultId);
+		// Add a cache-busting parameter to ensure fresh loads
+		const timestamp = Date.now();
+		const url = `${baseUrl}/results/${resultId}?t=${timestamp}`;
+		console.log(
+			"🔗 Generated shareable URL:",
+			url,
+			"from ID:",
+			resultId,
+			"at timestamp:",
+			timestamp,
+		);
 		return url;
 	},
 };

@@ -151,15 +151,14 @@ export const GameOverDialog: FC<GameOverDialogProps> = ({
 		}
 	}, [gameOver]);
 
-	// Create a unique game session ID when game starts
+	// Create a unique game session ID when game starts and save result
 	useEffect(() => {
-		if (gameOver && !gameSessionId) {
+		if (gameOver && !gameSessionId && !shareableUrl && !isSavingResult) {
 			const newSessionId = `game_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 			setGameSessionId(newSessionId);
-
 			console.log("🎮 New game session started:", newSessionId);
 		}
-	}, [gameOver, gameSessionId]);
+	}, [gameOver, gameSessionId, shareableUrl, isSavingResult]);
 
 	// Update finalTime when game ends
 	useEffect(() => {
@@ -190,18 +189,24 @@ export const GameOverDialog: FC<GameOverDialogProps> = ({
 	// Save game result when everything is ready and settled
 	useEffect(() => {
 		const saveResult = async () => {
-			// Only proceed if we have everything we need
+			// Only proceed if we have everything we need and haven't saved yet
 			if (
 				gameOver &&
-				!shareableUrl &&
-				!isSavingResult &&
+				!shareableUrl && // Haven't saved yet
+				!isSavingResult && // Not currently saving
 				rewardPokemon.pokemon &&
 				!rewardPokemon.isLoading &&
 				!isSlotMachineRunning &&
-				gameSessionId
+				gameSessionId && // Have a session ID
+				(finalTime > 0 || totalTimeElapsed > 0) // Have timing data
 			) {
+				console.log(
+					"🚀 Starting game result save process for session:",
+					gameSessionId,
+				);
+
 				// Wait a moment to ensure the reward Pokemon is completely settled
-				await new Promise((resolve) => setTimeout(resolve, 500));
+				await new Promise((resolve) => setTimeout(resolve, 300));
 
 				// Double-check the Pokemon is still the same after the delay
 				if (
@@ -209,6 +214,9 @@ export const GameOverDialog: FC<GameOverDialogProps> = ({
 					rewardPokemon.isLoading ||
 					isSlotMachineRunning
 				) {
+					console.log(
+						"⚠️ Pokemon state changed during save delay, aborting save",
+					);
 					return; // Pokemon changed or is still loading, abort
 				}
 
@@ -229,26 +237,42 @@ export const GameOverDialog: FC<GameOverDialogProps> = ({
 						gameMode: `${selectedGeneration.name}_${gameSessionId}`,
 					};
 
+					console.log("💾 Saving game result with session:", gameSessionId);
 					const resultId = await gameResultsService.saveGameResult(resultData);
 					const url = gameResultsService.generateShareableUrl(resultId);
+					console.log("✅ Game result saved successfully. URL:", url);
 					setShareableUrl(url);
 				} catch (error) {
-					console.error("Failed to save game result:", error);
-				} finally {
+					console.error("❌ Failed to save game result:", error);
+					// Reset saving state so user can try again
 					setIsSavingResult(false);
+				} finally {
+					if (shareableUrl) {
+						setIsSavingResult(false);
+					}
 				}
 			}
 		};
 
-		// Only trigger save after a delay to ensure slot machine is completely done
+		// More conservative timing - only save when slot machine is completely done
 		if (
 			gameOver &&
+			!shareableUrl &&
+			!isSavingResult &&
 			!isSlotMachineRunning &&
 			rewardPokemon.pokemon &&
-			!shareableUrl
+			!rewardPokemon.isLoading &&
+			gameSessionId
 		) {
-			const timeoutId = setTimeout(saveResult, 1000);
-			return () => clearTimeout(timeoutId);
+			console.log(
+				"🎰 Slot machine done, scheduling save for session:",
+				gameSessionId,
+			);
+			const timeoutId = setTimeout(saveResult, 800);
+			return () => {
+				console.log("🚫 Clearing save timeout for session:", gameSessionId);
+				clearTimeout(timeoutId);
+			};
 		}
 	}, [
 		gameOver,

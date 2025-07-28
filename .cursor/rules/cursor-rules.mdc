@@ -1,0 +1,777 @@
+---
+alwaysApply: true
+---
+
+# React TypeScript Best Practices
+
+## Code Commenting Policy
+- Do not add comments in code. All explanations and reasoning should be provided in the chat, not in the code itself.
+
+## Error Handling Policy
+- Use 'instanceof Error' for error checking instead of 'typeof error === "object"'.
+- Implement proper error boundaries for React components.
+- Use try-catch blocks for async operations and provide meaningful error messages.
+- Create specific error types extending Error for better error handling.
+- Use Result<T, E> pattern for functions that can fail instead of throwing exceptions.
+
+## Type Checking Policy
+- Always use 'instanceof' for type checking when possible, not just for Error objects.
+- Use TypeScript's built-in type guards and utility types effectively.
+- Prefer discriminated unions for complex state management.
+- Use branded types for domain-specific values (IDs, emails, etc.).
+- Implement strict null checks and avoid non-null assertions (!).
+- Use `typeof array[number]` pattern to create union types from const arrays: `type SupportedExtension = typeof supportedExtensions[number]`.
+- Avoid default values in validation functions when the input format is invalid - handle errors explicitly instead.
+- Use type guards with explicit error handling: check if match exists before accessing properties, then validate the extracted values.
+- **Leverage type narrowing**: After conditional checks that eliminate union types, TypeScript automatically narrows the type, eliminating the need for type assertions.
+- **Create enum validation type guards**: For string-to-enum validation, create type guards: `const isValidEnum = (value: string): value is EnumType => Object.values(EnumType).includes(value as EnumType);`
+- **Use conditional logic over type assertions**: Prefer `isValidType(value) ? processValidValue(value) : processInvalidValue()` over `processValue(value as ValidType)`.
+
+## Function Declaration Policy
+- Always add explicit return types to all functions.
+- Always use arrow functions instead of function declarations.
+- Avoid React.FC - use explicit props typing instead: `(props: Props) => JSX.Element`.
+- Use generic constraints for better type inference.
+- Prefer function overloads over union types for different function signatures.
+
+## Assertion Policy
+- Must avoid assertions as much as possible. Prefer proper error handling and validation over assertions.
+- Use type guards instead of type assertions when possible.
+- Never use `any` type - use `unknown` and proper type narrowing instead.
+- Use `satisfies` operator over type assertions for object validation.
+- Always create type guard functions instead of type assertions for unknown values: `const isValidValue = (value: unknown): value is ValidType => { /* validation logic */ }`.
+- Use type guards with explicit error handling: check if match exists before accessing properties, then validate the extracted values.
+- **Use `as const satisfies Partial<Record<EnumType, ValueType>>` for enum-based objects to avoid casts**: When creating objects that map enum values to other values, use `as const satisfies Partial<Record<EnumType, ValueType>>` instead of `Record<string, ValueType>`. This provides better type safety and eliminates the need for complex casts like `as keyof typeof objectName`.
+- **Always use `as const satisfies Partial<Record<EnumType, ValueType>>` for enum-based mappings**: When creating objects that map enum values to other values, always use the pattern `as const satisfies Partial<Record<EnumType, ValueType>>`. This provides maximum type safety by:
+  - Ensuring only valid enum keys are allowed
+  - Preserving exact literal types with `as const`
+  - Allowing partial mappings with `Partial`
+  - Eliminating the need for type assertions
+  - Providing better autocompletion and error detection
+  - Example: `const roleLabels = { [ERoles.admin]: 'Admin' } as const satisfies Partial<Record<ERoles, string>>;`
+- **Avoid non-null assertions (!) by using variable assignment and checking**: When dealing with potentially null/undefined values, assign to a variable, check if it exists, then return it. This eliminates the need for type assertions and makes the code type-safe. Example: `const value = obj[key]; if (value) return value;` instead of `return obj[key]!;`
+
+## Type Safety and Dangerous Assertions Policy
+
+### Strict Type Safety Rules
+- **Never use `any` type**: Always use `unknown` and proper type narrowing instead of `any`
+- **Avoid `Object` type**: Use specific interfaces or `Record<string, unknown>` instead
+- **Prefer `unknown` over `any`**: When dealing with external data, start with `unknown` and narrow down
+- **Use strict object types**: Prevent excess properties with `{ readonly [K in keyof T]: T[K] }`
+- **Implement proper null checks**: Use optional chaining (`?.`) and nullish coalescing (`??`) operators
+- **Use branded types for domain values**: Create unique types for IDs, emails, etc. to prevent mixing up similar strings
+
+### Dangerous Assertions to Avoid
+- **Never use `as any`**: This bypasses all type checking and is extremely dangerous
+- **Avoid `as unknown as Type`**: This double assertion pattern is a red flag for unsafe code
+- **Don't use `!` for non-null assertions**: Use proper null checking instead
+- **Avoid `as` assertions on user input**: Always validate before asserting types
+- **Never assert on API responses**: Use proper type guards and validation instead
+- **Avoid `as const` on mutable data**: Only use on truly immutable data
+
+### Safe Type Assertion Patterns
+- **Use `satisfies` operator**: For object validation without losing type information
+- **Implement type guards**: Create functions that return `value is Type` for safe type checking
+- **Use discriminated unions**: For complex state management with type safety
+- **Prefer `instanceof` checks**: For class-based type checking
+- **Use `typeof` for primitive types**: For number, string, boolean checks
+- **Implement proper error handling**: Return `Result<T, E>` or throw specific error types
+- **Eliminate redundant type assertions**: After type narrowing (e.g., `if (value === '*')`), TypeScript knows the remaining type, so avoid unnecessary `as` assertions
+- **Use conditional logic for type safety**: Instead of casting, use conditional checks that naturally narrow types: `const level = isValidRole(group) ? groupsByLevel[group] : groupsByLevel[defaultRole];`
+
+### Type Guard Best Practices
+- **Create specific type guards**: `const isUser = (value: unknown): value is User => { /* validation */ }`
+- **Use exhaustive checks**: Ensure all cases are handled in discriminated unions
+- **Validate all properties**: Don't just check for existence, validate the actual values
+- **Handle edge cases**: Consider null, undefined, and invalid data scenarios
+- **Return early on invalid data**: Don't continue processing with invalid types
+- **Use type guards for enum validation**: Create type guards to validate string values against enums instead of using type assertions: `const isValidRole = (role: string): role is ERoles => Object.values(ERoles).includes(role as ERoles);`
+- **Leverage type narrowing**: After type guards, TypeScript automatically narrows the type, eliminating the need for type assertions
+- **Prefer type guards over `as` assertions**: When dealing with external data (APIs, localStorage, user input), always validate with type guards before using the data
+
+### API and External Data Safety
+- **Validate all external data**: Never trust data from APIs, localStorage, or user input
+- **Use runtime validation libraries**: Consider zod, io-ts, or similar for complex validation
+- **Implement proper error boundaries**: Handle type errors gracefully in React components
+- **Use proper TypeScript interfaces**: Define exact shapes for API responses
+- **Avoid type assertions on parsed JSON**: Always validate the structure first
+
+### Performance and Type Safety
+- **Use `as const` for literal types**: When you need exact literal types, not just readonly
+- **Prefer `satisfies` over type annotations**: Maintains type inference while ensuring correctness
+- **Use template literal types**: For string validation and type-safe string manipulation
+- **Implement proper generic constraints**: Use `extends` to constrain generic types
+- **Avoid unnecessary type assertions**: Let TypeScript infer types when possible
+
+## Code Quality Policy
+- Always write clean, readable, and maintainable code.
+- Prioritize type safety and use TypeScript features effectively.
+- Avoid type assertions when possible; prefer proper typing and type inference.
+- Use const assertions (`as const`) for literal arrays and objects when appropriate.
+- Keep functions small and focused on a single responsibility.
+- Use meaningful variable and function names that clearly express intent.
+- When dealing with potentially null/undefined values: assign to a variable, check if it exists, then return it. This eliminates the need for type assertions and makes the code type-safe.
+- Prefer immutable data patterns - use readonly arrays and objects.
+- Use template literal types for string validation.
+- Always choose the most optimal approach: prefer single operations that extract multiple values over multiple separate operations (e.g., use `.match()` with capture groups to extract multiple values in one operation instead of separate `.replace()` and `.match()` calls).
+- Always choose the most robust approach: prefer built-in parsing methods over manual string manipulation (e.g., use `tldjs.parse()` instead of `.split('.')` for domain parsing, use proper regex with capture groups instead of multiple string operations).
+
+## Step-by-Step Code Development Policy
+- **Always implement code changes step by step**: When suggesting code modifications, implement them incrementally, one line or small logical block at a time.
+- **Verify each step before proceeding**: After each modification, pause to evaluate if there's a better approach available.
+- **Apply improvements immediately**: If a better solution is identified during the step-by-step process, implement it before continuing.
+- **Consider all best practices at each step**: Evaluate type safety, performance, readability, and maintainability at every modification.
+- **Test assumptions continuously**: Question whether the current approach is optimal and consider alternatives.
+- **Document reasoning in chat**: Explain why each step is chosen and what alternatives were considered.
+- **Refactor proactively**: Don't wait until the end to optimize - improve as you go.
+- **Validate type safety at each step**: Ensure TypeScript types are correct and no type assertions are needed.
+- **Check for performance implications**: Consider the impact of each change on performance and user experience.
+- **Maintain consistency**: Ensure each step aligns with established project patterns and conventions.
+
+## Project-Specific Patterns
+
+### Architecture Patterns
+- Use modular provider architecture: wrap providers in buildAppTree pattern for testability
+- Implement strict separation between business logic and UI components
+- Use feature-based folder organization over file-type organization
+- Export both individual hooks and grouped exports from API services
+
+### Redux Toolkit Query Patterns
+- Always use createApi with proper baseQuery (customBaseQuery pattern)
+- Implement proper tag invalidation strategies for cache management
+- Use transformResponse for data normalization and formatting
+- Implement proper error handling in query/mutation endpoints
+- Use lazy queries for conditional data fetching
+- Provide proper TypeScript interfaces for all API responses
+- Use middleware array pattern for multiple API services
+- Implement proper tag types for cache invalidation: ['Segment', 'SegmentList', 'Stats', etc.]
+
+### Custom Hook Patterns
+- Create dedicated hooks for complex business logic (useResumeData, useTreeView patterns)
+- Return objects with named properties, not arrays for multiple values
+- Implement proper loading, error, and success states
+- Use useMemo and useCallback for performance optimization within hooks
+- Create URL synchronization hooks using buildUseUrlQueryAPI pattern
+- Implement proper cleanup in useEffect hooks
+
+### State Management Patterns
+- Use useState for local component state with proper TypeScript interfaces
+- Use useReducer for complex state logic with action patterns
+- Implement proper initial state with useMemo to prevent recreation
+- Use Redux Toolkit slices for global state with proper typing
+- Implement proper dispatch patterns with typed actions
+
+### Component Architecture Patterns
+- Use wrapper components for complex functionality (buildAppTree pattern)
+- Implement proper context providers with TypeScript interfaces
+- Use modal provider pattern for global modal management
+- Implement proper route-based component structure
+- Use compound component patterns for related functionality
+
+### Error Boundary Implementation
+- Use react-error-boundary library for comprehensive error handling
+- Implement error boundaries at route level and component level
+- Provide meaningful fallback components
+- Implement proper error logging and reporting
+
+### Testing Patterns
+- Use MSW (Mock Service Worker) for API mocking in tests
+- Implement proper test fixtures with TypeScript interfaces
+- Use React Testing Library with custom render utilities
+- Create helper functions for authentication in tests
+- Implement proper test setup with beforeAll/afterEach patterns
+- Mock chart libraries and external dependencies properly
+- Use data-testid attributes for reliable element selection
+
+### URL and Route Management
+- Use proper URL parameter handling with TypeScript interfaces
+- Implement query string synchronization with state
+- Use proper route protection with PrivateRoute patterns
+- Implement proper navigation patterns with useNavigate
+
+### Performance Optimization Patterns
+- Use React.memo for components that receive stable props
+- Implement proper dependency arrays in useEffect and useMemo
+- Use useCallback for event handlers passed to child components
+- Implement proper loading states to prevent unnecessary renders
+- Use proper data transformation in API layers
+
+## React Component Best Practices
+
+### Component Structure
+- Use functional components with hooks instead of class components.
+- Keep components small and focused on a single responsibility (max 200 lines).
+- Extract reusable logic into custom hooks.
+- Use proper TypeScript interfaces for props and state.
+- Prefer composition over inheritance.
+- Use children prop with proper typing: `React.ReactNode` or `React.PropsWithChildren<T>`.
+
+### Performance Optimization
+- Use React.memo() for components that receive stable props.
+- Implement useMemo() for expensive calculations.
+- Use useCallback() for functions passed as props to child components.
+- Avoid creating objects/arrays in render methods.
+- Use proper dependency arrays in useEffect, useMemo, and useCallback.
+- Use React.lazy() and Suspense for code splitting at component level.
+- Implement virtualization for large lists (react-window/react-virtualized).
+- Use startTransition for non-urgent updates.
+
+### State Management
+- Use useState for local component state.
+- Use useReducer for complex state logic.
+- Prefer context API for shared state over prop drilling (but avoid overuse).
+- Use proper TypeScript types for state initialization.
+- Use Zustand or Redux Toolkit for complex global state.
+- Implement optimistic updates for better UX.
+- Use server state libraries (React Query/SWR) for API data.
+
+### Hooks Best Practices
+- Always include all dependencies in useEffect dependency arrays.
+- Use custom hooks to extract reusable logic.
+- Follow the Rules of Hooks strictly.
+- Use proper cleanup functions in useEffect.
+- Prefer useLayoutEffect for DOM measurements.
+- Use useId() for generating unique IDs.
+- Implement proper loading and error states in custom hooks.
+- Use useTransition for expensive state updates.
+
+### Props and Types
+- Define explicit interfaces for component props.
+- Use optional properties with proper defaults.
+- Use union types for variant props.
+- Implement proper prop validation with TypeScript.
+- Use generic components for reusable interfaces.
+- Prefer extending HTML element props: `ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement>`.
+- Use strict object types to prevent excess properties.
+
+### Event Handling
+- Use proper TypeScript event types (React.MouseEvent, React.ChangeEvent, etc.).
+- Implement proper event handlers with correct typing.
+- Use event delegation when appropriate.
+- Prevent unnecessary re-renders by using useCallback for event handlers.
+- Use synthetic events properly and understand their pooling behavior.
+
+### Styling
+- Use CSS modules or styled-components for component-specific styles.
+- Implement responsive design patterns.
+- Use CSS custom properties for theming.
+- Follow BEM methodology or similar naming conventions.
+- Use CSS-in-JS solutions with proper TypeScript support.
+- Implement design tokens for consistent styling.
+- Use container queries for component-based responsive design.
+
+### Accessibility
+- Use semantic HTML elements.
+- Implement proper ARIA attributes.
+- Ensure keyboard navigation support.
+- Provide proper focus management.
+- Use proper heading hierarchy (h1-h6).
+- Implement proper color contrast ratios.
+- Provide alternative text for images.
+- Use live regions for dynamic content updates.
+
+### Testing
+- Write unit tests for custom hooks and utility functions.
+- Use React Testing Library for component testing.
+- Test user interactions and accessibility features.
+- Mock external dependencies appropriately.
+- Use MSW (Mock Service Worker) for API mocking.
+- Implement visual regression testing.
+- Write integration tests for critical user flows.
+- Use Playwright or Cypress for E2E testing.
+
+### Code Organization
+- Group related components in feature folders.
+- Use index files for clean imports.
+- Separate business logic from UI components.
+- Implement proper file naming conventions (PascalCase for components, camelCase for utilities).
+- Use absolute imports with path mapping.
+- Organize by feature, not by file type.
+- Implement proper barrel exports.
+- Use consistent folder structure across the project.
+
+### Bundle Optimization
+- Use dynamic imports for code splitting.
+- Implement proper tree shaking.
+- Optimize images and assets.
+- Use proper chunking strategies.
+- Implement module federation for micro-frontends.
+- Use preloading and prefetching strategies.
+- Optimize third-party libraries.
+- Implement proper caching strategies.
+
+### Error Boundaries
+- Implement error boundaries for graceful error handling.
+- Provide meaningful error messages to users.
+- Log errors appropriately for debugging.
+- Use error boundaries at route level.
+- Implement fallback components for different error types.
+- Use error reporting services (Sentry, Bugsnag).
+
+### Security
+- Sanitize user inputs.
+- Implement proper authentication and authorization.
+- Use HTTPS for all external requests.
+- Validate data on both client and server sides.
+- Implement Content Security Policy (CSP).
+- Use secure HTTP headers.
+- Avoid dangerouslySetInnerHTML unless absolutely necessary.
+- Implement proper CORS policies.
+
+### Performance Monitoring
+- Use React DevTools Profiler for performance analysis.
+- Implement proper logging and monitoring.
+- Use performance budgets for bundle sizes.
+- Monitor Core Web Vitals.
+- Use performance monitoring tools (Web Vitals, Lighthouse CI).
+- Implement error tracking and performance metrics.
+- Use real user monitoring (RUM).
+
+### API Integration
+- Use proper TypeScript types for API responses.
+- Implement proper loading and error states.
+- Use React Query or SWR for server state management.
+- Implement proper caching strategies.
+- Use optimistic updates for better UX.
+- Implement proper retry logic.
+- Use proper error boundaries for API errors.
+
+### Development Experience
+- Use strict TypeScript configuration.
+- Implement proper ESLint and Prettier configuration.
+- Use Husky for git hooks.
+- Implement proper CI/CD pipelines.
+- Use proper environment variable management.
+- Implement proper debugging strategies.
+- Use React DevTools and Redux DevTools.
+
+### Code Review Standards
+- Ensure all components are properly typed.
+- Verify proper error handling implementation.
+- Check for performance optimizations.
+- Validate accessibility compliance.
+- Confirm proper testing coverage.
+- Review bundle size impact.
+- Verify security best practices.
+- Check for proper documentation.
+
+## PostgreSQL Database Best Practices
+
+### Boolean Operations
+- **Always use `IS TRUE` instead of `= true` in PostgreSQL operations**
+- Use `IS FALSE` instead of `= false`
+- Use `IS NULL` and `IS NOT NULL` for null checks
+- Use `IS UNKNOWN` for three-valued logic when needed
+
+### Why PostgreSQL Boolean Standards Matter:
+- `IS TRUE` is more explicit and idiomatic in PostgreSQL
+- `IS TRUE` properly handles NULL values (only returns true for explicit true values)
+- `= true` can have unexpected behavior with NULL values in some contexts
+- It's the PostgreSQL standard for boolean comparisons
+
+### Examples:
+```sql
+-- ✅ Correct
+WHERE is_active IS TRUE
+WHERE deleted_at IS NOT NULL AND is_reactivating IS TRUE
+WHERE status IS FALSE
+WHERE created_at IS NOT NULL
+
+-- ❌ Avoid
+WHERE is_active = true
+WHERE deleted_at IS NOT NULL AND is_reactivating = true
+WHERE status = false
+```
+
+### When to Apply:
+- All boolean column comparisons in PostgreSQL queries
+- Boolean parameter comparisons in SQL template literals
+- CASE statements with boolean conditions
+- WHERE clauses with boolean expressions
+- UPDATE and INSERT statements with boolean values # React TypeScript Best Practices
+
+## Code Commenting Policy
+- Do not add comments in code. All explanations and reasoning should be provided in the chat, not in the code itself.
+
+## Error Handling Policy
+- Use 'instanceof Error' for error checking instead of 'typeof error === "object"'.
+- Implement proper error boundaries for React components.
+- Use try-catch blocks for async operations and provide meaningful error messages.
+- Create specific error types extending Error for better error handling.
+- Use Result<T, E> pattern for functions that can fail instead of throwing exceptions.
+
+## Type Checking Policy
+- Always use 'instanceof' for type checking when possible, not just for Error objects.
+- Use TypeScript's built-in type guards and utility types effectively.
+- Prefer discriminated unions for complex state management.
+- Use branded types for domain-specific values (IDs, emails, etc.).
+- Implement strict null checks and avoid non-null assertions (!).
+- Use `typeof array[number]` pattern to create union types from const arrays: `type SupportedExtension = typeof supportedExtensions[number]`.
+- Avoid default values in validation functions when the input format is invalid - handle errors explicitly instead.
+- Use type guards with explicit error handling: check if match exists before accessing properties, then validate the extracted values.
+- **Leverage type narrowing**: After conditional checks that eliminate union types, TypeScript automatically narrows the type, eliminating the need for type assertions.
+- **Create enum validation type guards**: For string-to-enum validation, create type guards: `const isValidEnum = (value: string): value is EnumType => Object.values(EnumType).includes(value as EnumType);`
+- **Use conditional logic over type assertions**: Prefer `isValidType(value) ? processValidValue(value) : processInvalidValue()` over `processValue(value as ValidType)`.
+
+## Function Declaration Policy
+- Always add explicit return types to all functions.
+- Always use arrow functions instead of function declarations.
+- Avoid React.FC - use explicit props typing instead: `(props: Props) => JSX.Element`.
+- Use generic constraints for better type inference.
+- Prefer function overloads over union types for different function signatures.
+
+## Assertion Policy
+- Must avoid assertions as much as possible. Prefer proper error handling and validation over assertions.
+- Use type guards instead of type assertions when possible.
+- Never use `any` type - use `unknown` and proper type narrowing instead.
+- Use `satisfies` operator over type assertions for object validation.
+- Always create type guard functions instead of type assertions for unknown values: `const isValidValue = (value: unknown): value is ValidType => { /* validation logic */ }`.
+- Use type guards with explicit error handling: check if match exists before accessing properties, then validate the extracted values.
+- **Use `as const satisfies Partial<Record<EnumType, ValueType>>` for enum-based objects to avoid casts**: When creating objects that map enum values to other values, use `as const satisfies Partial<Record<EnumType, ValueType>>` instead of `Record<string, ValueType>`. This provides better type safety and eliminates the need for complex casts like `as keyof typeof objectName`.
+- **Always use `as const satisfies Partial<Record<EnumType, ValueType>>` for enum-based mappings**: When creating objects that map enum values to other values, always use the pattern `as const satisfies Partial<Record<EnumType, ValueType>>`. This provides maximum type safety by:
+  - Ensuring only valid enum keys are allowed
+  - Preserving exact literal types with `as const`
+  - Allowing partial mappings with `Partial`
+  - Eliminating the need for type assertions
+  - Providing better autocompletion and error detection
+  - Example: `const roleLabels = { [ERoles.admin]: 'Admin' } as const satisfies Partial<Record<ERoles, string>>;`
+- **Avoid non-null assertions (!) by using variable assignment and checking**: When dealing with potentially null/undefined values, assign to a variable, check if it exists, then return it. This eliminates the need for type assertions and makes the code type-safe. Example: `const value = obj[key]; if (value) return value;` instead of `return obj[key]!;`
+
+## Type Safety and Dangerous Assertions Policy
+
+### Strict Type Safety Rules
+- **Never use `any` type**: Always use `unknown` and proper type narrowing instead of `any`
+- **Avoid `Object` type**: Use specific interfaces or `Record<string, unknown>` instead
+- **Prefer `unknown` over `any`**: When dealing with external data, start with `unknown` and narrow down
+- **Use strict object types**: Prevent excess properties with `{ readonly [K in keyof T]: T[K] }`
+- **Implement proper null checks**: Use optional chaining (`?.`) and nullish coalescing (`??`) operators
+- **Use branded types for domain values**: Create unique types for IDs, emails, etc. to prevent mixing up similar strings
+
+### Dangerous Assertions to Avoid
+- **Never use `as any`**: This bypasses all type checking and is extremely dangerous
+- **Avoid `as unknown as Type`**: This double assertion pattern is a red flag for unsafe code
+- **Don't use `!` for non-null assertions**: Use proper null checking instead
+- **Avoid `as` assertions on user input**: Always validate before asserting types
+- **Never assert on API responses**: Use proper type guards and validation instead
+- **Avoid `as const` on mutable data**: Only use on truly immutable data
+
+### Safe Type Assertion Patterns
+- **Use `satisfies` operator**: For object validation without losing type information
+- **Implement type guards**: Create functions that return `value is Type` for safe type checking
+- **Use discriminated unions**: For complex state management with type safety
+- **Prefer `instanceof` checks**: For class-based type checking
+- **Use `typeof` for primitive types**: For number, string, boolean checks
+- **Implement proper error handling**: Return `Result<T, E>` or throw specific error types
+- **Eliminate redundant type assertions**: After type narrowing (e.g., `if (value === '*')`), TypeScript knows the remaining type, so avoid unnecessary `as` assertions
+- **Use conditional logic for type safety**: Instead of casting, use conditional checks that naturally narrow types: `const level = isValidRole(group) ? groupsByLevel[group] : groupsByLevel[defaultRole];`
+
+### Type Guard Best Practices
+- **Create specific type guards**: `const isUser = (value: unknown): value is User => { /* validation */ }`
+- **Use exhaustive checks**: Ensure all cases are handled in discriminated unions
+- **Validate all properties**: Don't just check for existence, validate the actual values
+- **Handle edge cases**: Consider null, undefined, and invalid data scenarios
+- **Return early on invalid data**: Don't continue processing with invalid types
+- **Use type guards for enum validation**: Create type guards to validate string values against enums instead of using type assertions: `const isValidRole = (role: string): role is ERoles => Object.values(ERoles).includes(role as ERoles);`
+- **Leverage type narrowing**: After type guards, TypeScript automatically narrows the type, eliminating the need for type assertions
+- **Prefer type guards over `as` assertions**: When dealing with external data (APIs, localStorage, user input), always validate with type guards before using the data
+
+### API and External Data Safety
+- **Validate all external data**: Never trust data from APIs, localStorage, or user input
+- **Use runtime validation libraries**: Consider zod, io-ts, or similar for complex validation
+- **Implement proper error boundaries**: Handle type errors gracefully in React components
+- **Use proper TypeScript interfaces**: Define exact shapes for API responses
+- **Avoid type assertions on parsed JSON**: Always validate the structure first
+
+### Performance and Type Safety
+- **Use `as const` for literal types**: When you need exact literal types, not just readonly
+- **Prefer `satisfies` over type annotations**: Maintains type inference while ensuring correctness
+- **Use template literal types**: For string validation and type-safe string manipulation
+- **Implement proper generic constraints**: Use `extends` to constrain generic types
+- **Avoid unnecessary type assertions**: Let TypeScript infer types when possible
+
+## Code Quality Policy
+- Always write clean, readable, and maintainable code.
+- Prioritize type safety and use TypeScript features effectively.
+- Avoid type assertions when possible; prefer proper typing and type inference.
+- Use const assertions (`as const`) for literal arrays and objects when appropriate.
+- Keep functions small and focused on a single responsibility.
+- Use meaningful variable and function names that clearly express intent.
+- When dealing with potentially null/undefined values: assign to a variable, check if it exists, then return it. This eliminates the need for type assertions and makes the code type-safe.
+- Prefer immutable data patterns - use readonly arrays and objects.
+- Use template literal types for string validation.
+- Always choose the most optimal approach: prefer single operations that extract multiple values over multiple separate operations (e.g., use `.match()` with capture groups to extract multiple values in one operation instead of separate `.replace()` and `.match()` calls).
+- Always choose the most robust approach: prefer built-in parsing methods over manual string manipulation (e.g., use `tldjs.parse()` instead of `.split('.')` for domain parsing, use proper regex with capture groups instead of multiple string operations).
+
+## Step-by-Step Code Development Policy
+- **Always implement code changes step by step**: When suggesting code modifications, implement them incrementally, one line or small logical block at a time.
+- **Verify each step before proceeding**: After each modification, pause to evaluate if there's a better approach available.
+- **Apply improvements immediately**: If a better solution is identified during the step-by-step process, implement it before continuing.
+- **Consider all best practices at each step**: Evaluate type safety, performance, readability, and maintainability at every modification.
+- **Test assumptions continuously**: Question whether the current approach is optimal and consider alternatives.
+- **Document reasoning in chat**: Explain why each step is chosen and what alternatives were considered.
+- **Refactor proactively**: Don't wait until the end to optimize - improve as you go.
+- **Validate type safety at each step**: Ensure TypeScript types are correct and no type assertions are needed.
+- **Check for performance implications**: Consider the impact of each change on performance and user experience.
+- **Maintain consistency**: Ensure each step aligns with established project patterns and conventions.
+
+## Project-Specific Patterns
+
+### Architecture Patterns
+- Use modular provider architecture: wrap providers in buildAppTree pattern for testability
+- Implement strict separation between business logic and UI components
+- Use feature-based folder organization over file-type organization
+- Export both individual hooks and grouped exports from API services
+
+### Redux Toolkit Query Patterns
+- Always use createApi with proper baseQuery (customBaseQuery pattern)
+- Implement proper tag invalidation strategies for cache management
+- Use transformResponse for data normalization and formatting
+- Implement proper error handling in query/mutation endpoints
+- Use lazy queries for conditional data fetching
+- Provide proper TypeScript interfaces for all API responses
+- Use middleware array pattern for multiple API services
+- Implement proper tag types for cache invalidation: ['Segment', 'SegmentList', 'Stats', etc.]
+
+### Custom Hook Patterns
+- Create dedicated hooks for complex business logic (useResumeData, useTreeView patterns)
+- Return objects with named properties, not arrays for multiple values
+- Implement proper loading, error, and success states
+- Use useMemo and useCallback for performance optimization within hooks
+- Create URL synchronization hooks using buildUseUrlQueryAPI pattern
+- Implement proper cleanup in useEffect hooks
+
+### State Management Patterns
+- Use useState for local component state with proper TypeScript interfaces
+- Use useReducer for complex state logic with action patterns
+- Implement proper initial state with useMemo to prevent recreation
+- Use Redux Toolkit slices for global state with proper typing
+- Implement proper dispatch patterns with typed actions
+
+### Component Architecture Patterns
+- Use wrapper components for complex functionality (buildAppTree pattern)
+- Implement proper context providers with TypeScript interfaces
+- Use modal provider pattern for global modal management
+- Implement proper route-based component structure
+- Use compound component patterns for related functionality
+
+### Error Boundary Implementation
+- Use react-error-boundary library for comprehensive error handling
+- Implement error boundaries at route level and component level
+- Provide meaningful fallback components
+- Implement proper error logging and reporting
+
+### Testing Patterns
+- Use MSW (Mock Service Worker) for API mocking in tests
+- Implement proper test fixtures with TypeScript interfaces
+- Use React Testing Library with custom render utilities
+- Create helper functions for authentication in tests
+- Implement proper test setup with beforeAll/afterEach patterns
+- Mock chart libraries and external dependencies properly
+- Use data-testid attributes for reliable element selection
+
+### URL and Route Management
+- Use proper URL parameter handling with TypeScript interfaces
+- Implement query string synchronization with state
+- Use proper route protection with PrivateRoute patterns
+- Implement proper navigation patterns with useNavigate
+
+### Performance Optimization Patterns
+- Use React.memo for components that receive stable props
+- Implement proper dependency arrays in useEffect and useMemo
+- Use useCallback for event handlers passed to child components
+- Implement proper loading states to prevent unnecessary renders
+- Use proper data transformation in API layers
+
+## React Component Best Practices
+
+### Component Structure
+- Use functional components with hooks instead of class components.
+- Keep components small and focused on a single responsibility (max 200 lines).
+- Extract reusable logic into custom hooks.
+- Use proper TypeScript interfaces for props and state.
+- Prefer composition over inheritance.
+- Use children prop with proper typing: `React.ReactNode` or `React.PropsWithChildren<T>`.
+
+### Performance Optimization
+- Use React.memo() for components that receive stable props.
+- Implement useMemo() for expensive calculations.
+- Use useCallback() for functions passed as props to child components.
+- Avoid creating objects/arrays in render methods.
+- Use proper dependency arrays in useEffect, useMemo, and useCallback.
+- Use React.lazy() and Suspense for code splitting at component level.
+- Implement virtualization for large lists (react-window/react-virtualized).
+- Use startTransition for non-urgent updates.
+
+### State Management
+- Use useState for local component state.
+- Use useReducer for complex state logic.
+- Prefer context API for shared state over prop drilling (but avoid overuse).
+- Use proper TypeScript types for state initialization.
+- Use Zustand or Redux Toolkit for complex global state.
+- Implement optimistic updates for better UX.
+- Use server state libraries (React Query/SWR) for API data.
+
+### Hooks Best Practices
+- Always include all dependencies in useEffect dependency arrays.
+- Use custom hooks to extract reusable logic.
+- Follow the Rules of Hooks strictly.
+- Use proper cleanup functions in useEffect.
+- Prefer useLayoutEffect for DOM measurements.
+- Use useId() for generating unique IDs.
+- Implement proper loading and error states in custom hooks.
+- Use useTransition for expensive state updates.
+
+### Props and Types
+- Define explicit interfaces for component props.
+- Use optional properties with proper defaults.
+- Use union types for variant props.
+- Implement proper prop validation with TypeScript.
+- Use generic components for reusable interfaces.
+- Prefer extending HTML element props: `ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement>`.
+- Use strict object types to prevent excess properties.
+
+### Event Handling
+- Use proper TypeScript event types (React.MouseEvent, React.ChangeEvent, etc.).
+- Implement proper event handlers with correct typing.
+- Use event delegation when appropriate.
+- Prevent unnecessary re-renders by using useCallback for event handlers.
+- Use synthetic events properly and understand their pooling behavior.
+
+### Styling
+- Use CSS modules or styled-components for component-specific styles.
+- Implement responsive design patterns.
+- Use CSS custom properties for theming.
+- Follow BEM methodology or similar naming conventions.
+- Use CSS-in-JS solutions with proper TypeScript support.
+- Implement design tokens for consistent styling.
+- Use container queries for component-based responsive design.
+
+### Accessibility
+- Use semantic HTML elements.
+- Implement proper ARIA attributes.
+- Ensure keyboard navigation support.
+- Provide proper focus management.
+- Use proper heading hierarchy (h1-h6).
+- Implement proper color contrast ratios.
+- Provide alternative text for images.
+- Use live regions for dynamic content updates.
+
+### Testing
+- Write unit tests for custom hooks and utility functions.
+- Use React Testing Library for component testing.
+- Test user interactions and accessibility features.
+- Mock external dependencies appropriately.
+- Use MSW (Mock Service Worker) for API mocking.
+- Implement visual regression testing.
+- Write integration tests for critical user flows.
+- Use Playwright or Cypress for E2E testing.
+
+### Code Organization
+- Group related components in feature folders.
+- Use index files for clean imports.
+- Separate business logic from UI components.
+- Implement proper file naming conventions (PascalCase for components, camelCase for utilities).
+- Use absolute imports with path mapping.
+- Organize by feature, not by file type.
+- Implement proper barrel exports.
+- Use consistent folder structure across the project.
+
+### Bundle Optimization
+- Use dynamic imports for code splitting.
+- Implement proper tree shaking.
+- Optimize images and assets.
+- Use proper chunking strategies.
+- Implement module federation for micro-frontends.
+- Use preloading and prefetching strategies.
+- Optimize third-party libraries.
+- Implement proper caching strategies.
+
+### Error Boundaries
+- Implement error boundaries for graceful error handling.
+- Provide meaningful error messages to users.
+- Log errors appropriately for debugging.
+- Use error boundaries at route level.
+- Implement fallback components for different error types.
+- Use error reporting services (Sentry, Bugsnag).
+
+### Security
+- Sanitize user inputs.
+- Implement proper authentication and authorization.
+- Use HTTPS for all external requests.
+- Validate data on both client and server sides.
+- Implement Content Security Policy (CSP).
+- Use secure HTTP headers.
+- Avoid dangerouslySetInnerHTML unless absolutely necessary.
+- Implement proper CORS policies.
+
+### Performance Monitoring
+- Use React DevTools Profiler for performance analysis.
+- Implement proper logging and monitoring.
+- Use performance budgets for bundle sizes.
+- Monitor Core Web Vitals.
+- Use performance monitoring tools (Web Vitals, Lighthouse CI).
+- Implement error tracking and performance metrics.
+- Use real user monitoring (RUM).
+
+### API Integration
+- Use proper TypeScript types for API responses.
+- Implement proper loading and error states.
+- Use React Query or SWR for server state management.
+- Implement proper caching strategies.
+- Use optimistic updates for better UX.
+- Implement proper retry logic.
+- Use proper error boundaries for API errors.
+
+### Development Experience
+- Use strict TypeScript configuration.
+- Implement proper ESLint and Prettier configuration.
+- Use Husky for git hooks.
+- Implement proper CI/CD pipelines.
+- Use proper environment variable management.
+- Implement proper debugging strategies.
+- Use React DevTools and Redux DevTools.
+
+### Code Review Standards
+- Ensure all components are properly typed.
+- Verify proper error handling implementation.
+- Check for performance optimizations.
+- Validate accessibility compliance.
+- Confirm proper testing coverage.
+- Review bundle size impact.
+- Verify security best practices.
+- Check for proper documentation.
+
+## PostgreSQL Database Best Practices
+
+### Boolean Operations
+- **Always use `IS TRUE` instead of `= true` in PostgreSQL operations**
+- Use `IS FALSE` instead of `= false`
+- Use `IS NULL` and `IS NOT NULL` for null checks
+- Use `IS UNKNOWN` for three-valued logic when needed
+
+### Why PostgreSQL Boolean Standards Matter:
+- `IS TRUE` is more explicit and idiomatic in PostgreSQL
+- `IS TRUE` properly handles NULL values (only returns true for explicit true values)
+- `= true` can have unexpected behavior with NULL values in some contexts
+- It's the PostgreSQL standard for boolean comparisons
+
+### Examples:
+```sql
+-- ✅ Correct
+WHERE is_active IS TRUE
+WHERE deleted_at IS NOT NULL AND is_reactivating IS TRUE
+WHERE status IS FALSE
+WHERE created_at IS NOT NULL
+
+-- ❌ Avoid
+WHERE is_active = true
+WHERE deleted_at IS NOT NULL AND is_reactivating = true
+WHERE status = false
+```
+
+### When to Apply:
+- All boolean column comparisons in PostgreSQL queries
+- Boolean parameter comparisons in SQL template literals
+- CASE statements with boolean conditions
+- WHERE clauses with boolean expressions
+- UPDATE and INSERT statements with boolean values 

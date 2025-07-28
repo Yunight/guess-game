@@ -22,10 +22,13 @@ const ResultsPage = () => {
 	useEffect(() => {
 		const loadResult = async () => {
 			if (!resultId) {
+				console.error("❌ No result ID provided in URL");
 				setError("No result ID provided");
 				setLoading(false);
 				return;
 			}
+
+			console.log("🔍 Loading result for ID:", resultId);
 
 			try {
 				const result = await gameResultsService.getGameResult(resultId);
@@ -45,10 +48,11 @@ const ResultsPage = () => {
 					});
 					setGameResult(result);
 				} else {
+					console.warn("⚠️ Result not found for ID:", resultId);
 					setError("Result not found");
 				}
 			} catch (err) {
-				console.error("Error loading result:", err);
+				console.error("❌ Error loading result:", err);
 				setError("Failed to load result");
 			} finally {
 				setLoading(false);
@@ -68,13 +72,15 @@ const ResultsPage = () => {
 		if (!gameResult) return;
 
 		const shareUrl = gameResultsService.generateShareableUrl(gameResult.id);
+		console.log("📋 Copying URL to clipboard:", shareUrl);
 
 		try {
 			await navigator.clipboard.writeText(shareUrl);
 			setUrlCopied(true);
+			console.log("✅ URL copied successfully");
 			setTimeout(() => setUrlCopied(false), 2000); // Reset after 2 seconds
 		} catch (error) {
-			console.error("Failed to copy URL:", error);
+			console.error("❌ Failed to copy URL:", error);
 			// Fallback: select text for manual copy
 			const textArea = document.createElement("textarea");
 			textArea.value = shareUrl;
@@ -83,9 +89,10 @@ const ResultsPage = () => {
 			try {
 				document.execCommand("copy");
 				setUrlCopied(true);
+				console.log("✅ URL copied successfully (fallback method)");
 				setTimeout(() => setUrlCopied(false), 2000);
 			} catch (fallbackError) {
-				console.error("Fallback copy failed:", fallbackError);
+				console.error("❌ Fallback copy failed:", fallbackError);
 			}
 			document.body.removeChild(textArea);
 		}
