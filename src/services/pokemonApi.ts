@@ -36,6 +36,7 @@ interface PokemonSpecies {
 	flavor_text_entries: FlavorTextEntry[];
 }
 
+const TYRADEX_BASE_URL = "https://tyradex.app/api/v1";
 const TYRADEX_CACHE_KEY = "tyradexCache";
 const FLAVOR_TEXT_CACHE_KEY = "flavorTextCache";
 const CRY_URL_CACHE_KEY = "cryUrlCache";
@@ -250,7 +251,7 @@ const convertToPokemon = (
 export const pokemonApi = createApi({
 	reducerPath: "pokemonApi",
 	baseQuery: fetchBaseQuery({
-		baseUrl: "https://tyradex.vercel.app/api/v1/",
+		baseUrl: `${TYRADEX_BASE_URL}/`,
 		timeout: 10000, // 10 second timeout
 	}),
 	tagTypes: ["Pokemon", "PokemonList"],
@@ -278,12 +279,9 @@ export const pokemonApi = createApi({
 
 					// If no cache or expired, fetch from Tyradex API
 					console.log("🔄 Fetching Pokemon data from Tyradex API");
-					const response = await fetch(
-						"https://tyradex.vercel.app/api/v1/pokemon",
-						{
-							signal: AbortSignal.timeout(15000), // 15 second timeout
-						},
-					);
+					const response = await fetch(`${TYRADEX_BASE_URL}/pokemon`, {
+						signal: AbortSignal.timeout(15000), // 15 second timeout
+					});
 					if (!response.ok) throw new Error("Failed to fetch from Tyradex API");
 
 					const tyradexData = (await response.json()) as TyradexPokemon[];
@@ -347,7 +345,7 @@ export const pokemonApi = createApi({
 							pokemonId,
 						);
 						const response = await fetch(
-							`https://tyradex.vercel.app/api/v1/pokemon/${pokemonId}`,
+							`${TYRADEX_BASE_URL}/pokemon/${pokemonId}`,
 							{
 								signal: AbortSignal.timeout(10000), // 10 second timeout
 							},
