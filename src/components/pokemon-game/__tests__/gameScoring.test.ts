@@ -67,6 +67,7 @@ describe("calculateEarnedPoints", () => {
 				isShiny: false,
 				showHypeTrain: false,
 				roundDurationSeconds: 15,
+				random: () => 1,
 			}).earnedPoints,
 		).toBe(3);
 	});

@@ -3,6 +3,12 @@ import { expect, afterEach, vi } from "vitest";
 import { cleanup } from "@testing-library/react";
 import * as matchers from "@testing-library/jest-dom/matchers";
 
+vi.mock("@/firebase", () => ({
+	auth: { currentUser: null },
+	db: {},
+	googleProvider: {},
+}));
+
 // Extend Vitest's expect method with React Testing Library matchers
 expect.extend(matchers);
 
