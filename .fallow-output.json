@@ -1,0 +1,4044 @@
+{
+  "kind": "combined",
+  "schema_version": 7,
+  "version": "2.103.0",
+  "elapsed_ms": 734,
+  "check": {
+    "schema_version": 7,
+    "version": "2.103.0",
+    "elapsed_ms": 382,
+    "total_issues": 0,
+    "entry_points": {
+      "total": 56,
+      "sources": {
+        "manual_entry": 4,
+        "plugin": 52
+      }
+    },
+    "summary": {
+      "total_issues": 0,
+      "unused_files": 0,
+      "unused_exports": 0,
+      "unused_types": 0,
+      "private_type_leaks": 0,
+      "unused_dependencies": 0,
+      "unused_enum_members": 0,
+      "unused_class_members": 0,
+      "unused_store_members": 0,
+      "unprovided_injects": 0,
+      "unrendered_components": 0,
+      "unused_component_props": 0,
+      "unused_component_emits": 0,
+      "unused_component_inputs": 0,
+      "unused_component_outputs": 0,
+      "unused_svelte_events": 0,
+      "unused_server_actions": 0,
+      "unused_load_data_keys": 0,
+      "unresolved_imports": 0,
+      "unlisted_dependencies": 0,
+      "duplicate_exports": 0,
+      "type_only_dependencies": 0,
+      "test_only_dependencies": 0,
+      "circular_dependencies": 0,
+      "re_export_cycles": 0,
+      "boundary_violations": 0,
+      "boundary_coverage_violations": 0,
+      "boundary_call_violations": 0,
+      "policy_violations": 0,
+      "stale_suppressions": 0,
+      "unused_catalog_entries": 0,
+      "empty_catalog_groups": 0,
+      "unresolved_catalog_references": 0,
+      "unused_dependency_overrides": 0,
+      "misconfigured_dependency_overrides": 0,
+      "invalid_client_exports": 0,
+      "mixed_client_server_barrels": 0,
+      "misplaced_directives": 0,
+      "route_collisions": 0,
+      "dynamic_segment_name_conflicts": 0
+    },
+    "unused_files": [],
+    "unused_exports": [],
+    "unused_types": [],
+    "private_type_leaks": [],
+    "unused_dependencies": [],
+    "unused_dev_dependencies": [],
+    "unused_optional_dependencies": [],
+    "unused_enum_members": [],
+    "unused_class_members": [],
+    "unresolved_imports": [],
+    "unlisted_dependencies": [],
+    "duplicate_exports": [],
+    "type_only_dependencies": [],
+    "test_only_dependencies": [],
+    "circular_dependencies": [],
+    "re_export_cycles": [],
+    "boundary_violations": [],
+    "boundary_coverage_violations": [],
+    "boundary_call_violations": [],
+    "policy_violations": [],
+    "stale_suppressions": [],
+    "unused_catalog_entries": [],
+    "empty_catalog_groups": [],
+    "unresolved_catalog_references": [],
+    "unused_dependency_overrides": [],
+    "misconfigured_dependency_overrides": [],
+    "invalid_client_exports": [],
+    "mixed_client_server_barrels": [],
+    "misplaced_directives": [],
+    "route_collisions": [],
+    "dynamic_segment_name_conflicts": []
+  },
+  "dupes": {
+    "clone_groups": [],
+    "clone_families": [],
+    "stats": {
+      "total_files": 109,
+      "files_with_clones": 0,
+      "total_lines": 14076,
+      "duplicated_lines": 0,
+      "total_tokens": 48393,
+      "duplicated_tokens": 0,
+      "clone_groups": 0,
+      "clone_instances": 0,
+      "duplication_percentage": 0.0
+    }
+  },
+  "health": {
+    "findings": [
+      {
+        "path": "src/components/pokemon-game/PokemonGame.tsx",
+        "name": "PokemonGame",
+        "line": 41,
+        "col": 20,
+        "cyclomatic": 18,
+        "cognitive": 34,
+        "line_count": 385,
+        "param_count": 0,
+        "react_hook_count": 19,
+        "react_jsx_max_depth": 2,
+        "react_hook_profile": {
+          "state": 1,
+          "effect": 1,
+          "memo": 0,
+          "callback": 2,
+          "custom": 15,
+          "max_effect_dep_arity": 2
+        },
+        "exceeded": "cognitive_crap",
+        "severity": "critical",
+        "crap": 342.0,
+        "coverage_tier": "none",
+        "coverage_source": "estimated",
+        "actions": [
+          {
+            "type": "add-tests",
+            "auto_fixable": false,
+            "description": "Add test coverage for `PokemonGame` to lower its CRAP score (coverage reduces risk even without refactoring)",
+            "note": "CRAP = CC^2 * (1 - cov/100)^3 + CC; higher coverage is the fastest way to bring CRAP under threshold"
+          },
+          {
+            "type": "refactor-function",
+            "auto_fixable": false,
+            "description": "Refactor `PokemonGame` to reduce complexity (extract helper functions, simplify branching)",
+            "note": "Consider splitting into smaller functions with single responsibilities"
+          },
+          {
+            "type": "suppress-line",
+            "auto_fixable": false,
+            "description": "Suppress with an inline comment above the function declaration",
+            "comment": "// fallow-ignore-next-line complexity",
+            "placement": "above-function-declaration"
+          }
+        ]
+      },
+      {
+        "path": "src/hooks/useRankings.ts",
+        "name": "saveRanking",
+        "line": 150,
+        "col": 2,
+        "cyclomatic": 17,
+        "cognitive": 16,
+        "line_count": 77,
+        "param_count": 2,
+        "exceeded": "cognitive_crap",
+        "severity": "critical",
+        "crap": 306.0,
+        "coverage_tier": "none",
+        "coverage_source": "estimated",
+        "actions": [
+          {
+            "type": "add-tests",
+            "auto_fixable": false,
+            "description": "Add test coverage for `saveRanking` to lower its CRAP score (coverage reduces risk even without refactoring)",
+            "note": "CRAP = CC^2 * (1 - cov/100)^3 + CC; higher coverage is the fastest way to bring CRAP under threshold"
+          },
+          {
+            "type": "refactor-function",
+            "auto_fixable": false,
+            "description": "Refactor `saveRanking` to reduce complexity (extract helper functions, simplify branching)",
+            "note": "Consider splitting into smaller functions with single responsibilities"
+          },
+          {
+            "type": "suppress-line",
+            "auto_fixable": false,
+            "description": "Suppress with an inline comment above the function declaration",
+            "comment": "// fallow-ignore-next-line complexity",
+            "placement": "above-function-declaration"
+          }
+        ]
+      },
+      {
+        "path": "src/components/pokemon-game/ResultsPage.tsx",
+        "name": "ResultsPage",
+        "line": 51,
+        "col": 20,
+        "cyclomatic": 11,
+        "cognitive": 19,
+        "line_count": 701,
+        "param_count": 0,
+        "react_hook_count": 9,
+        "react_jsx_max_depth": 7,
+        "react_hook_profile": {
+          "state": 6,
+          "effect": 1,
+          "memo": 0,
+          "callback": 0,
+          "custom": 2,
+          "max_effect_dep_arity": 1
+        },
+        "exceeded": "cognitive_crap",
+        "severity": "critical",
+        "crap": 132.0,
+        "coverage_tier": "none",
+        "coverage_source": "estimated",
+        "actions": [
+          {
+            "type": "add-tests",
+            "auto_fixable": false,
+            "description": "Add test coverage for `ResultsPage` to lower its CRAP score (coverage reduces risk even without refactoring)",
+            "note": "CRAP = CC^2 * (1 - cov/100)^3 + CC; higher coverage is the fastest way to bring CRAP under threshold"
+          },
+          {
+            "type": "refactor-function",
+            "auto_fixable": false,
+            "description": "Refactor `ResultsPage` to reduce complexity (extract helper functions, simplify branching)",
+            "note": "Consider splitting into smaller functions with single responsibilities"
+          },
+          {
+            "type": "suppress-line",
+            "auto_fixable": false,
+            "description": "Suppress with an inline comment above the function declaration",
+            "comment": "// fallow-ignore-next-line complexity",
+            "placement": "above-function-declaration"
+          }
+        ]
+      },
+      {
+        "path": "src/hooks/usePokemonGameHandlers.ts",
+        "name": "handleCorrectAnswer",
+        "line": 159,
+        "col": 41,
+        "cyclomatic": 11,
+        "cognitive": 11,
+        "line_count": 98,
+        "param_count": 0,
+        "exceeded": "crap",
+        "severity": "critical",
+        "crap": 132.0,
+        "coverage_tier": "none",
+        "coverage_source": "estimated",
+        "actions": [
+          {
+            "type": "add-tests",
+            "auto_fixable": false,
+            "description": "Add test coverage for `handleCorrectAnswer` to lower its CRAP score (coverage reduces risk even without refactoring)",
+            "note": "CRAP = CC^2 * (1 - cov/100)^3 + CC; higher coverage is the fastest way to bring CRAP under threshold"
+          },
+          {
+            "type": "suppress-line",
+            "auto_fixable": false,
+            "description": "Suppress with an inline comment above the function declaration",
+            "comment": "// fallow-ignore-next-line complexity",
+            "placement": "above-function-declaration"
+          }
+        ]
+      },
+      {
+        "path": "src/hooks/useGameAudio.ts",
+        "name": "<arrow>",
+        "line": 102,
+        "col": 11,
+        "cyclomatic": 10,
+        "cognitive": 10,
+        "line_count": 29,
+        "param_count": 0,
+        "exceeded": "crap",
+        "severity": "critical",
+        "crap": 110.0,
+        "coverage_tier": "none",
+        "coverage_source": "estimated",
+        "actions": [
+          {
+            "type": "add-tests",
+            "auto_fixable": false,
+            "description": "Add test coverage for `<arrow>` to lower its CRAP score (coverage reduces risk even without refactoring)",
+            "note": "CRAP = CC^2 * (1 - cov/100)^3 + CC; higher coverage is the fastest way to bring CRAP under threshold"
+          },
+          {
+            "type": "suppress-line",
+            "auto_fixable": false,
+            "description": "Suppress with an inline comment above the function declaration",
+            "comment": "// fallow-ignore-next-line complexity",
+            "placement": "above-function-declaration"
+          }
+        ]
+      },
+      {
+        "path": "src/hooks/usePokemonGameEffects.ts",
+        "name": "<arrow>",
+        "line": 55,
+        "col": 11,
+        "cyclomatic": 9,
+        "cognitive": 10,
+        "line_count": 56,
+        "param_count": 0,
+        "exceeded": "crap",
+        "severity": "high",
+        "crap": 90.0,
+        "coverage_tier": "none",
+        "coverage_source": "estimated",
+        "actions": [
+          {
+            "type": "add-tests",
+            "auto_fixable": false,
+            "description": "Add test coverage for `<arrow>` to lower its CRAP score (coverage reduces risk even without refactoring)",
+            "note": "CRAP = CC^2 * (1 - cov/100)^3 + CC; higher coverage is the fastest way to bring CRAP under threshold"
+          },
+          {
+            "type": "suppress-line",
+            "auto_fixable": false,
+            "description": "Suppress with an inline comment above the function declaration",
+            "comment": "// fallow-ignore-next-line complexity",
+            "placement": "above-function-declaration"
+          }
+        ]
+      },
+      {
+        "path": "src/hooks/usePlayerName.ts",
+        "name": "checkNameAvailability",
+        "line": 28,
+        "col": 2,
+        "cyclomatic": 8,
+        "cognitive": 7,
+        "line_count": 55,
+        "param_count": 1,
+        "exceeded": "crap",
+        "severity": "high",
+        "crap": 72.0,
+        "coverage_tier": "none",
+        "coverage_source": "estimated",
+        "actions": [
+          {
+            "type": "add-tests",
+            "auto_fixable": false,
+            "description": "Add test coverage for `checkNameAvailability` to lower its CRAP score (coverage reduces risk even without refactoring)",
+            "note": "CRAP = CC^2 * (1 - cov/100)^3 + CC; higher coverage is the fastest way to bring CRAP under threshold"
+          },
+          {
+            "type": "suppress-line",
+            "auto_fixable": false,
+            "description": "Suppress with an inline comment above the function declaration",
+            "comment": "// fallow-ignore-next-line complexity",
+            "placement": "above-function-declaration"
+          }
+        ]
+      },
+      {
+        "path": "src/components/ErrorBoundaryFallback.tsx",
+        "name": "ErrorBoundaryFallback",
+        "line": 29,
+        "col": 37,
+        "cyclomatic": 8,
+        "cognitive": 6,
+        "line_count": 68,
+        "param_count": 1,
+        "react_jsx_max_depth": 5,
+        "react_prop_count": 6,
+        "exceeded": "crap",
+        "severity": "high",
+        "crap": 72.0,
+        "coverage_tier": "none",
+        "coverage_source": "estimated",
+        "actions": [
+          {
+            "type": "add-tests",
+            "auto_fixable": false,
+            "description": "Add test coverage for `ErrorBoundaryFallback` to lower its CRAP score (coverage reduces risk even without refactoring)",
+            "note": "CRAP = CC^2 * (1 - cov/100)^3 + CC; higher coverage is the fastest way to bring CRAP under threshold"
+          },
+          {
+            "type": "suppress-line",
+            "auto_fixable": false,
+            "description": "Suppress with an inline comment above the function declaration",
+            "comment": "// fallow-ignore-next-line complexity",
+            "placement": "above-function-declaration"
+          }
+        ]
+      },
+      {
+        "path": "src/components/pokemon-game/MenuPlayerForm.tsx",
+        "name": "MenuPlayerForm",
+        "line": 13,
+        "col": 30,
+        "cyclomatic": 8,
+        "cognitive": 6,
+        "line_count": 56,
+        "param_count": 1,
+        "react_hook_count": 1,
+        "react_jsx_max_depth": 5,
+        "react_prop_count": 4,
+        "react_hook_profile": {
+          "state": 0,
+          "effect": 0,
+          "memo": 0,
+          "callback": 0,
+          "custom": 1
+        },
+        "exceeded": "crap",
+        "severity": "high",
+        "crap": 72.0,
+        "coverage_tier": "none",
+        "coverage_source": "estimated",
+        "actions": [
+          {
+            "type": "add-tests",
+            "auto_fixable": false,
+            "description": "Add test coverage for `MenuPlayerForm` to lower its CRAP score (coverage reduces risk even without refactoring)",
+            "note": "CRAP = CC^2 * (1 - cov/100)^3 + CC; higher coverage is the fastest way to bring CRAP under threshold"
+          },
+          {
+            "type": "suppress-line",
+            "auto_fixable": false,
+            "description": "Suppress with an inline comment above the function declaration",
+            "comment": "// fallow-ignore-next-line complexity",
+            "placement": "above-function-declaration"
+          }
+        ]
+      },
+      {
+        "path": "src/hooks/usePokemonGameHandlers.ts",
+        "name": "startGame",
+        "line": 438,
+        "col": 2,
+        "cyclomatic": 8,
+        "cognitive": 8,
+        "line_count": 87,
+        "param_count": 1,
+        "exceeded": "crap",
+        "severity": "high",
+        "crap": 72.0,
+        "coverage_tier": "none",
+        "coverage_source": "estimated",
+        "actions": [
+          {
+            "type": "add-tests",
+            "auto_fixable": false,
+            "description": "Add test coverage for `startGame` to lower its CRAP score (coverage reduces risk even without refactoring)",
+            "note": "CRAP = CC^2 * (1 - cov/100)^3 + CC; higher coverage is the fastest way to bring CRAP under threshold"
+          },
+          {
+            "type": "suppress-line",
+            "auto_fixable": false,
+            "description": "Suppress with an inline comment above the function declaration",
+            "comment": "// fallow-ignore-next-line complexity",
+            "placement": "above-function-declaration"
+          }
+        ]
+      },
+      {
+        "path": "src/hooks/useGameOverDialogEffects.ts",
+        "name": "saveResult",
+        "line": 137,
+        "col": 21,
+        "cyclomatic": 7,
+        "cognitive": 6,
+        "line_count": 57,
+        "param_count": 0,
+        "exceeded": "crap",
+        "severity": "high",
+        "crap": 56.0,
+        "coverage_tier": "none",
+        "coverage_source": "estimated",
+        "actions": [
+          {
+            "type": "add-tests",
+            "auto_fixable": false,
+            "description": "Add test coverage for `saveResult` to lower its CRAP score (coverage reduces risk even without refactoring)",
+            "note": "CRAP = CC^2 * (1 - cov/100)^3 + CC; higher coverage is the fastest way to bring CRAP under threshold"
+          },
+          {
+            "type": "suppress-line",
+            "auto_fixable": false,
+            "description": "Suppress with an inline comment above the function declaration",
+            "comment": "// fallow-ignore-next-line complexity",
+            "placement": "above-function-declaration"
+          }
+        ]
+      },
+      {
+        "path": "src/components/pokemon-game/MenuScreen.tsx",
+        "name": "MenuScreen",
+        "line": 63,
+        "col": 47,
+        "cyclomatic": 7,
+        "cognitive": 12,
+        "line_count": 259,
+        "param_count": 1,
+        "react_hook_count": 3,
+        "react_jsx_max_depth": 9,
+        "react_prop_count": 7,
+        "react_hook_profile": {
+          "state": 2,
+          "effect": 0,
+          "memo": 0,
+          "callback": 0,
+          "custom": 1
+        },
+        "exceeded": "crap",
+        "severity": "high",
+        "crap": 56.0,
+        "coverage_tier": "none",
+        "coverage_source": "estimated",
+        "actions": [
+          {
+            "type": "add-tests",
+            "auto_fixable": false,
+            "description": "Add test coverage for `MenuScreen` to lower its CRAP score (coverage reduces risk even without refactoring)",
+            "note": "CRAP = CC^2 * (1 - cov/100)^3 + CC; higher coverage is the fastest way to bring CRAP under threshold"
+          },
+          {
+            "type": "suppress-line",
+            "auto_fixable": false,
+            "description": "Suppress with an inline comment above the function declaration",
+            "comment": "// fallow-ignore-next-line complexity",
+            "placement": "above-function-declaration"
+          }
+        ]
+      },
+      {
+        "path": "src/components/pokemon-game/GameOverDialogHeader.tsx",
+        "name": "GameOverDialogHeader",
+        "line": 15,
+        "col": 36,
+        "cyclomatic": 7,
+        "cognitive": 9,
+        "line_count": 68,
+        "param_count": 1,
+        "react_hook_count": 1,
+        "react_jsx_max_depth": 6,
+        "react_prop_count": 3,
+        "react_hook_profile": {
+          "state": 0,
+          "effect": 0,
+          "memo": 0,
+          "callback": 0,
+          "custom": 1
+        },
+        "exceeded": "crap",
+        "severity": "high",
+        "crap": 56.0,
+        "coverage_tier": "none",
+        "coverage_source": "estimated",
+        "actions": [
+          {
+            "type": "add-tests",
+            "auto_fixable": false,
+            "description": "Add test coverage for `GameOverDialogHeader` to lower its CRAP score (coverage reduces risk even without refactoring)",
+            "note": "CRAP = CC^2 * (1 - cov/100)^3 + CC; higher coverage is the fastest way to bring CRAP under threshold"
+          },
+          {
+            "type": "suppress-line",
+            "auto_fixable": false,
+            "description": "Suppress with an inline comment above the function declaration",
+            "comment": "// fallow-ignore-next-line complexity",
+            "placement": "above-function-declaration"
+          }
+        ]
+      },
+      {
+        "path": "src/components/pokemon-game/GameOverStats.tsx",
+        "name": "GameOverStats",
+        "line": 22,
+        "col": 29,
+        "cyclomatic": 7,
+        "cognitive": 11,
+        "line_count": 126,
+        "param_count": 1,
+        "react_hook_count": 1,
+        "react_jsx_max_depth": 6,
+        "react_prop_count": 10,
+        "react_hook_profile": {
+          "state": 0,
+          "effect": 0,
+          "memo": 0,
+          "callback": 0,
+          "custom": 1
+        },
+        "exceeded": "crap",
+        "severity": "high",
+        "crap": 56.0,
+        "coverage_tier": "none",
+        "coverage_source": "estimated",
+        "actions": [
+          {
+            "type": "add-tests",
+            "auto_fixable": false,
+            "description": "Add test coverage for `GameOverStats` to lower its CRAP score (coverage reduces risk even without refactoring)",
+            "note": "CRAP = CC^2 * (1 - cov/100)^3 + CC; higher coverage is the fastest way to bring CRAP under threshold"
+          },
+          {
+            "type": "suppress-line",
+            "auto_fixable": false,
+            "description": "Suppress with an inline comment above the function declaration",
+            "comment": "// fallow-ignore-next-line complexity",
+            "placement": "above-function-declaration"
+          }
+        ]
+      },
+      {
+        "path": "src/hooks/useGameOverDialogEffects.ts",
+        "name": "<arrow>",
+        "line": 254,
+        "col": 11,
+        "cyclomatic": 6,
+        "cognitive": 3,
+        "line_count": 32,
+        "param_count": 0,
+        "exceeded": "crap",
+        "severity": "moderate",
+        "crap": 42.0,
+        "coverage_tier": "none",
+        "coverage_source": "estimated",
+        "actions": [
+          {
+            "type": "add-tests",
+            "auto_fixable": false,
+            "description": "Add test coverage for `<arrow>` to lower its CRAP score (coverage reduces risk even without refactoring)",
+            "note": "CRAP = CC^2 * (1 - cov/100)^3 + CC; higher coverage is the fastest way to bring CRAP under threshold"
+          },
+          {
+            "type": "suppress-line",
+            "auto_fixable": false,
+            "description": "Suppress with an inline comment above the function declaration",
+            "comment": "// fallow-ignore-next-line complexity",
+            "placement": "above-function-declaration"
+          }
+        ]
+      },
+      {
+        "path": "src/components/pokemon-game/EmailAuthForm.tsx",
+        "name": "EmailAuthForm",
+        "line": 19,
+        "col": 29,
+        "cyclomatic": 6,
+        "cognitive": 14,
+        "line_count": 106,
+        "param_count": 1,
+        "react_hook_count": 1,
+        "react_jsx_max_depth": 4,
+        "react_prop_count": 11,
+        "react_hook_profile": {
+          "state": 0,
+          "effect": 0,
+          "memo": 0,
+          "callback": 0,
+          "custom": 1
+        },
+        "exceeded": "crap",
+        "severity": "moderate",
+        "crap": 42.0,
+        "coverage_tier": "none",
+        "coverage_source": "estimated",
+        "actions": [
+          {
+            "type": "add-tests",
+            "auto_fixable": false,
+            "description": "Add test coverage for `EmailAuthForm` to lower its CRAP score (coverage reduces risk even without refactoring)",
+            "note": "CRAP = CC^2 * (1 - cov/100)^3 + CC; higher coverage is the fastest way to bring CRAP under threshold"
+          },
+          {
+            "type": "suppress-line",
+            "auto_fixable": false,
+            "description": "Suppress with an inline comment above the function declaration",
+            "comment": "// fallow-ignore-next-line complexity",
+            "placement": "above-function-declaration"
+          }
+        ]
+      },
+      {
+        "path": "src/components/pokemon-game/EmailAuthDialog.tsx",
+        "name": "handleSubmit",
+        "line": 94,
+        "col": 22,
+        "cyclomatic": 6,
+        "cognitive": 8,
+        "line_count": 56,
+        "param_count": 1,
+        "exceeded": "crap",
+        "severity": "moderate",
+        "crap": 42.0,
+        "coverage_tier": "none",
+        "coverage_source": "estimated",
+        "actions": [
+          {
+            "type": "add-tests",
+            "auto_fixable": false,
+            "description": "Add test coverage for `handleSubmit` to lower its CRAP score (coverage reduces risk even without refactoring)",
+            "note": "CRAP = CC^2 * (1 - cov/100)^3 + CC; higher coverage is the fastest way to bring CRAP under threshold"
+          },
+          {
+            "type": "suppress-line",
+            "auto_fixable": false,
+            "description": "Suppress with an inline comment above the function declaration",
+            "comment": "// fallow-ignore-next-line complexity",
+            "placement": "above-function-declaration"
+          }
+        ]
+      },
+      {
+        "path": "src/components/pokemon-game/gameOverCryPlayback.ts",
+        "name": "executeRewardCryPlayback",
+        "line": 8,
+        "col": 40,
+        "cyclomatic": 6,
+        "cognitive": 9,
+        "line_count": 48,
+        "param_count": 3,
+        "exceeded": "crap",
+        "severity": "moderate",
+        "crap": 42.0,
+        "coverage_tier": "none",
+        "coverage_source": "estimated",
+        "actions": [
+          {
+            "type": "add-tests",
+            "auto_fixable": false,
+            "description": "Add test coverage for `executeRewardCryPlayback` to lower its CRAP score (coverage reduces risk even without refactoring)",
+            "note": "CRAP = CC^2 * (1 - cov/100)^3 + CC; higher coverage is the fastest way to bring CRAP under threshold"
+          },
+          {
+            "type": "suppress-line",
+            "auto_fixable": false,
+            "description": "Suppress with an inline comment above the function declaration",
+            "comment": "// fallow-ignore-next-line complexity",
+            "placement": "above-function-declaration"
+          }
+        ]
+      },
+      {
+        "path": "src/components/pokemon-game/GameScreen.tsx",
+        "name": "GameScreen",
+        "line": 49,
+        "col": 47,
+        "cyclomatic": 5,
+        "cognitive": 32,
+        "line_count": 195,
+        "param_count": 1,
+        "react_hook_count": 1,
+        "react_jsx_max_depth": 6,
+        "react_prop_count": 31,
+        "react_hook_profile": {
+          "state": 0,
+          "effect": 0,
+          "memo": 0,
+          "callback": 0,
+          "custom": 1
+        },
+        "exceeded": "cognitive",
+        "severity": "high",
+        "actions": [
+          {
+            "type": "refactor-function",
+            "auto_fixable": false,
+            "description": "Refactor `GameScreen` to reduce complexity (extract helper functions, simplify branching)",
+            "note": "Consider splitting into smaller functions with single responsibilities"
+          },
+          {
+            "type": "suppress-line",
+            "auto_fixable": false,
+            "description": "Suppress with an inline comment above the function declaration",
+            "comment": "// fallow-ignore-next-line complexity",
+            "placement": "above-function-declaration"
+          }
+        ]
+      },
+      {
+        "path": "src/hooks/useGameOverDialogEffects.ts",
+        "name": "<arrow>",
+        "line": 93,
+        "col": 11,
+        "cyclomatic": 5,
+        "cognitive": 2,
+        "line_count": 7,
+        "param_count": 0,
+        "exceeded": "crap",
+        "severity": "moderate",
+        "crap": 30.0,
+        "coverage_tier": "none",
+        "coverage_source": "estimated",
+        "actions": [
+          {
+            "type": "add-tests",
+            "auto_fixable": false,
+            "description": "Add test coverage for `<arrow>` to lower its CRAP score (coverage reduces risk even without refactoring)",
+            "note": "CRAP = CC^2 * (1 - cov/100)^3 + CC; higher coverage is the fastest way to bring CRAP under threshold"
+          },
+          {
+            "type": "suppress-line",
+            "auto_fixable": false,
+            "description": "Suppress with an inline comment above the function declaration",
+            "comment": "// fallow-ignore-next-line complexity",
+            "placement": "above-function-declaration"
+          }
+        ]
+      },
+      {
+        "path": "src/hooks/useGameOverDialogEffects.ts",
+        "name": "timeoutId",
+        "line": 269,
+        "col": 31,
+        "cyclomatic": 5,
+        "cognitive": 1,
+        "line_count": 14,
+        "param_count": 0,
+        "exceeded": "crap",
+        "severity": "moderate",
+        "crap": 30.0,
+        "coverage_tier": "none",
+        "coverage_source": "estimated",
+        "actions": [
+          {
+            "type": "add-tests",
+            "auto_fixable": false,
+            "description": "Add test coverage for `timeoutId` to lower its CRAP score (coverage reduces risk even without refactoring)",
+            "note": "CRAP = CC^2 * (1 - cov/100)^3 + CC; higher coverage is the fastest way to bring CRAP under threshold"
+          },
+          {
+            "type": "suppress-line",
+            "auto_fixable": false,
+            "description": "Suppress with an inline comment above the function declaration",
+            "comment": "// fallow-ignore-next-line complexity",
+            "placement": "above-function-declaration"
+          }
+        ]
+      },
+      {
+        "path": "src/hooks/usePlayerName.ts",
+        "name": "unsubscribe",
+        "line": 131,
+        "col": 46,
+        "cyclomatic": 5,
+        "cognitive": 4,
+        "line_count": 16,
+        "param_count": 1,
+        "exceeded": "crap",
+        "severity": "moderate",
+        "crap": 30.0,
+        "coverage_tier": "none",
+        "coverage_source": "estimated",
+        "actions": [
+          {
+            "type": "add-tests",
+            "auto_fixable": false,
+            "description": "Add test coverage for `unsubscribe` to lower its CRAP score (coverage reduces risk even without refactoring)",
+            "note": "CRAP = CC^2 * (1 - cov/100)^3 + CC; higher coverage is the fastest way to bring CRAP under threshold"
+          },
+          {
+            "type": "suppress-line",
+            "auto_fixable": false,
+            "description": "Suppress with an inline comment above the function declaration",
+            "comment": "// fallow-ignore-next-line complexity",
+            "placement": "above-function-declaration"
+          }
+        ]
+      },
+      {
+        "path": "src/components/pokemon-game/RewardPokemonDisplay.tsx",
+        "name": "<arrow>",
+        "line": 75,
+        "col": 11,
+        "cyclomatic": 5,
+        "cognitive": 4,
+        "line_count": 37,
+        "param_count": 0,
+        "exceeded": "crap",
+        "severity": "moderate",
+        "crap": 30.0,
+        "coverage_tier": "none",
+        "coverage_source": "estimated",
+        "actions": [
+          {
+            "type": "add-tests",
+            "auto_fixable": false,
+            "description": "Add test coverage for `<arrow>` to lower its CRAP score (coverage reduces risk even without refactoring)",
+            "note": "CRAP = CC^2 * (1 - cov/100)^3 + CC; higher coverage is the fastest way to bring CRAP under threshold"
+          },
+          {
+            "type": "suppress-line",
+            "auto_fixable": false,
+            "description": "Suppress with an inline comment above the function declaration",
+            "comment": "// fallow-ignore-next-line complexity",
+            "placement": "above-function-declaration"
+          }
+        ]
+      },
+      {
+        "path": "src/components/pokemon-game/RewardPokemonDisplay.tsx",
+        "name": "RewardPokemonDisplay",
+        "line": 53,
+        "col": 67,
+        "cyclomatic": 5,
+        "cognitive": 9,
+        "line_count": 155,
+        "param_count": 1,
+        "react_hook_count": 4,
+        "react_jsx_max_depth": 4,
+        "react_prop_count": 5,
+        "react_hook_profile": {
+          "state": 0,
+          "effect": 1,
+          "memo": 0,
+          "callback": 0,
+          "custom": 3,
+          "max_effect_dep_arity": 2
+        },
+        "exceeded": "crap",
+        "severity": "moderate",
+        "crap": 30.0,
+        "coverage_tier": "none",
+        "coverage_source": "estimated",
+        "actions": [
+          {
+            "type": "add-tests",
+            "auto_fixable": false,
+            "description": "Add test coverage for `RewardPokemonDisplay` to lower its CRAP score (coverage reduces risk even without refactoring)",
+            "note": "CRAP = CC^2 * (1 - cov/100)^3 + CC; higher coverage is the fastest way to bring CRAP under threshold"
+          },
+          {
+            "type": "suppress-line",
+            "auto_fixable": false,
+            "description": "Suppress with an inline comment above the function declaration",
+            "comment": "// fallow-ignore-next-line complexity",
+            "placement": "above-function-declaration"
+          }
+        ]
+      },
+      {
+        "path": "src/components/pokemon-game/EmailAuthDialog.tsx",
+        "name": "EmailAuthDialog",
+        "line": 29,
+        "col": 57,
+        "cyclomatic": 5,
+        "cognitive": 13,
+        "line_count": 196,
+        "param_count": 1,
+        "react_hook_count": 9,
+        "react_jsx_max_depth": 4,
+        "react_prop_count": 3,
+        "react_hook_profile": {
+          "state": 8,
+          "effect": 0,
+          "memo": 0,
+          "callback": 0,
+          "custom": 1
+        },
+        "exceeded": "crap",
+        "severity": "moderate",
+        "crap": 30.0,
+        "coverage_tier": "none",
+        "coverage_source": "estimated",
+        "actions": [
+          {
+            "type": "add-tests",
+            "auto_fixable": false,
+            "description": "Add test coverage for `EmailAuthDialog` to lower its CRAP score (coverage reduces risk even without refactoring)",
+            "note": "CRAP = CC^2 * (1 - cov/100)^3 + CC; higher coverage is the fastest way to bring CRAP under threshold"
+          },
+          {
+            "type": "suppress-line",
+            "auto_fixable": false,
+            "description": "Suppress with an inline comment above the function declaration",
+            "comment": "// fallow-ignore-next-line complexity",
+            "placement": "above-function-declaration"
+          }
+        ]
+      },
+      {
+        "path": "src/components/pokemon-game/GameOverActions.tsx",
+        "name": "GameOverActions",
+        "line": 22,
+        "col": 31,
+        "cyclomatic": 5,
+        "cognitive": 8,
+        "line_count": 81,
+        "param_count": 1,
+        "react_hook_count": 1,
+        "react_jsx_max_depth": 5,
+        "react_prop_count": 8,
+        "react_hook_profile": {
+          "state": 0,
+          "effect": 0,
+          "memo": 0,
+          "callback": 0,
+          "custom": 1
+        },
+        "exceeded": "crap",
+        "severity": "moderate",
+        "crap": 30.0,
+        "coverage_tier": "none",
+        "coverage_source": "estimated",
+        "actions": [
+          {
+            "type": "add-tests",
+            "auto_fixable": false,
+            "description": "Add test coverage for `GameOverActions` to lower its CRAP score (coverage reduces risk even without refactoring)",
+            "note": "CRAP = CC^2 * (1 - cov/100)^3 + CC; higher coverage is the fastest way to bring CRAP under threshold"
+          },
+          {
+            "type": "suppress-line",
+            "auto_fixable": false,
+            "description": "Suppress with an inline comment above the function declaration",
+            "comment": "// fallow-ignore-next-line complexity",
+            "placement": "above-function-declaration"
+          }
+        ]
+      },
+      {
+        "path": "src/components/pokemon-game/MenuRankingsList.tsx",
+        "name": "<arrow>",
+        "line": 27,
+        "col": 17,
+        "cyclomatic": 5,
+        "cognitive": 4,
+        "line_count": 60,
+        "param_count": 2,
+        "react_jsx_max_depth": 4,
+        "exceeded": "crap",
+        "severity": "moderate",
+        "crap": 30.0,
+        "coverage_tier": "none",
+        "coverage_source": "estimated",
+        "actions": [
+          {
+            "type": "add-tests",
+            "auto_fixable": false,
+            "description": "Add test coverage for `<arrow>` to lower its CRAP score (coverage reduces risk even without refactoring)",
+            "note": "CRAP = CC^2 * (1 - cov/100)^3 + CC; higher coverage is the fastest way to bring CRAP under threshold"
+          },
+          {
+            "type": "suppress-line",
+            "auto_fixable": false,
+            "description": "Suppress with an inline comment above the function declaration",
+            "comment": "// fallow-ignore-next-line complexity",
+            "placement": "above-function-declaration"
+          }
+        ]
+      },
+      {
+        "path": "src/hooks/usePokemonGameHandlers.ts",
+        "name": "handleSuggestionClick",
+        "line": 273,
+        "col": 2,
+        "cyclomatic": 5,
+        "cognitive": 3,
+        "line_count": 26,
+        "param_count": 1,
+        "exceeded": "crap",
+        "severity": "moderate",
+        "crap": 30.0,
+        "coverage_tier": "none",
+        "coverage_source": "estimated",
+        "actions": [
+          {
+            "type": "add-tests",
+            "auto_fixable": false,
+            "description": "Add test coverage for `handleSuggestionClick` to lower its CRAP score (coverage reduces risk even without refactoring)",
+            "note": "CRAP = CC^2 * (1 - cov/100)^3 + CC; higher coverage is the fastest way to bring CRAP under threshold"
+          },
+          {
+            "type": "suppress-line",
+            "auto_fixable": false,
+            "description": "Suppress with an inline comment above the function declaration",
+            "comment": "// fallow-ignore-next-line complexity",
+            "placement": "above-function-declaration"
+          }
+        ]
+      },
+      {
+        "path": "src/hooks/useGameOverDialogEffects.ts",
+        "name": "useGameOverDialogEffects",
+        "line": 52,
+        "col": 40,
+        "cyclomatic": 2,
+        "cognitive": 17,
+        "line_count": 294,
+        "param_count": 1,
+        "react_hook_count": 16,
+        "exceeded": "cognitive",
+        "severity": "moderate",
+        "actions": [
+          {
+            "type": "refactor-function",
+            "auto_fixable": false,
+            "description": "Refactor `useGameOverDialogEffects` to reduce complexity (extract helper functions, simplify branching)",
+            "note": "Consider splitting into smaller functions with single responsibilities"
+          },
+          {
+            "type": "suppress-line",
+            "auto_fixable": false,
+            "description": "Suppress with an inline comment above the function declaration",
+            "comment": "// fallow-ignore-next-line complexity",
+            "placement": "above-function-declaration"
+          }
+        ]
+      }
+    ],
+    "summary": {
+      "files_analyzed": 162,
+      "functions_analyzed": 1308,
+      "functions_above_threshold": 29,
+      "max_cyclomatic_threshold": 20,
+      "max_cognitive_threshold": 15,
+      "max_crap_threshold": 30.0,
+      "files_scored": 148,
+      "average_maintainability": 92.8,
+      "coverage_model": "istanbul",
+      "coverage_source_consistency": "uniform",
+      "istanbul_matched": 290,
+      "istanbul_total": 1308,
+      "severity_critical_count": 5,
+      "severity_high_count": 10,
+      "severity_moderate_count": 14
+    },
+    "vital_signs": {
+      "dead_file_pct": 0.0,
+      "dead_export_pct": 0.0,
+      "avg_cyclomatic": 1.7,
+      "critical_complexity_pct": 0.0,
+      "p90_cyclomatic": 3,
+      "hotspot_count": 0,
+      "hotspot_top_pct_count": 0,
+      "maintainability_avg": 92.8,
+      "maintainability_low_pct": 0.0,
+      "unused_dep_count": 0,
+      "unused_deps_per_k_files": 0.0,
+      "circular_dep_count": 0,
+      "circular_deps_per_k_files": 0.0,
+      "counts": {
+        "total_files": 162,
+        "total_exports": 344,
+        "dead_files": 0,
+        "dead_exports": 0,
+        "total_lines": 19725,
+        "files_scored": 148,
+        "total_deps": 0
+      },
+      "unit_size_profile": {
+        "low_risk": 78.2,
+        "medium_risk": 11.7,
+        "high_risk": 5.6,
+        "very_high_risk": 4.5
+      },
+      "functions_over_60_loc_per_k": 45.1,
+      "unit_interfacing_profile": {
+        "low_risk": 96.3,
+        "medium_risk": 3.0,
+        "high_risk": 0.7,
+        "very_high_risk": 0.0
+      },
+      "p95_fan_in": 5,
+      "coupling_high_pct": 1.4,
+      "p95_render_fan_in": 3,
+      "render_fan_in_high_pct": 1.6,
+      "max_render_fan_in": 12,
+      "top_render_fan_in": [
+        {
+          "component": "Button",
+          "path": "src/components/ui/button.tsx",
+          "render_sites": 22,
+          "distinct_parents": 12
+        },
+        {
+          "component": "Input",
+          "path": "src/components/ui/input.tsx",
+          "render_sites": 6,
+          "distinct_parents": 4
+        },
+        {
+          "component": "PokemonDisplayFrame",
+          "path": "src/components/pokemon-game/PokemonDisplayFrame.tsx",
+          "render_sites": 3,
+          "distinct_parents": 3
+        },
+        {
+          "component": "PokemonSprite",
+          "path": "src/components/pokemon-game/PokemonSprite.tsx",
+          "render_sites": 3,
+          "distinct_parents": 3
+        },
+        {
+          "component": "DialogContent",
+          "path": "src/components/ui/dialog.tsx",
+          "render_sites": 3,
+          "distinct_parents": 3
+        },
+        {
+          "component": "DialogDescription",
+          "path": "src/components/ui/dialog.tsx",
+          "render_sites": 3,
+          "distinct_parents": 3
+        },
+        {
+          "component": "DialogTitle",
+          "path": "src/components/ui/dialog.tsx",
+          "render_sites": 3,
+          "distinct_parents": 3
+        },
+        {
+          "component": "Card",
+          "path": "src/components/ui/card.tsx",
+          "render_sites": 3,
+          "distinct_parents": 2
+        },
+        {
+          "component": "DialogHeader",
+          "path": "src/components/ui/dialog.tsx",
+          "render_sites": 2,
+          "distinct_parents": 2
+        },
+        {
+          "component": "App",
+          "path": "src/App.tsx",
+          "render_sites": 1,
+          "distinct_parents": 1
+        },
+        {
+          "component": "ErrorBoundaryFallback",
+          "path": "src/components/ErrorBoundaryFallback.tsx",
+          "render_sites": 1,
+          "distinct_parents": 1
+        },
+        {
+          "component": "AuthButtons",
+          "path": "src/components/pokemon-game/AuthButtons.tsx",
+          "render_sites": 1,
+          "distinct_parents": 1
+        },
+        {
+          "component": "EmailAuthDialog",
+          "path": "src/components/pokemon-game/EmailAuthDialog.tsx",
+          "render_sites": 1,
+          "distinct_parents": 1
+        },
+        {
+          "component": "EmailAuthForm",
+          "path": "src/components/pokemon-game/EmailAuthForm.tsx",
+          "render_sites": 1,
+          "distinct_parents": 1
+        },
+        {
+          "component": "EmailAuthResetForm",
+          "path": "src/components/pokemon-game/EmailAuthResetForm.tsx",
+          "render_sites": 1,
+          "distinct_parents": 1
+        },
+        {
+          "component": "GameModeDialog",
+          "path": "src/components/pokemon-game/GameModeDialog.tsx",
+          "render_sites": 1,
+          "distinct_parents": 1
+        },
+        {
+          "component": "GameOverActions",
+          "path": "src/components/pokemon-game/GameOverActions.tsx",
+          "render_sites": 1,
+          "distinct_parents": 1
+        },
+        {
+          "component": "GameOverDialog",
+          "path": "src/components/pokemon-game/GameOverDialog.tsx",
+          "render_sites": 1,
+          "distinct_parents": 1
+        },
+        {
+          "component": "GameOverDialogHeader",
+          "path": "src/components/pokemon-game/GameOverDialogHeader.tsx",
+          "render_sites": 1,
+          "distinct_parents": 1
+        },
+        {
+          "component": "GameOverFireworks",
+          "path": "src/components/pokemon-game/GameOverFireworks.tsx",
+          "render_sites": 1,
+          "distinct_parents": 1
+        }
+      ],
+      "total_loc": 19725
+    },
+    "file_scores": [
+      {
+        "path": "src/components/pokemon-game/PokemonGame.tsx",
+        "fan_in": 1,
+        "fan_out": 16,
+        "dead_code_ratio": 0.0,
+        "complexity_density": 0.06,
+        "maintainability_index": 86.9,
+        "total_cyclomatic": 24,
+        "total_cognitive": 35,
+        "function_count": 6,
+        "lines": 428,
+        "crap_max": 342.0,
+        "crap_above_threshold": 1
+      },
+      {
+        "path": "src/hooks/useRankings.ts",
+        "fan_in": 1,
+        "fan_out": 5,
+        "dead_code_ratio": 0.0,
+        "complexity_density": 0.13,
+        "maintainability_index": 88.9,
+        "total_cyclomatic": 34,
+        "total_cognitive": 39,
+        "function_count": 11,
+        "lines": 259,
+        "crap_max": 306.0,
+        "crap_above_threshold": 1
+      },
+      {
+        "path": "src/hooks/usePokemonGameHandlers.ts",
+        "fan_in": 1,
+        "fan_out": 7,
+        "dead_code_ratio": 0.0,
+        "complexity_density": 0.11,
+        "maintainability_index": 88.4,
+        "total_cyclomatic": 65,
+        "total_cognitive": 45,
+        "function_count": 34,
+        "lines": 605,
+        "crap_max": 132.0,
+        "crap_above_threshold": 3
+      },
+      {
+        "path": "src/components/pokemon-game/ResultsPage.tsx",
+        "fan_in": 1,
+        "fan_out": 8,
+        "dead_code_ratio": 0.0,
+        "complexity_density": 0.05,
+        "maintainability_index": 89.7,
+        "total_cyclomatic": 37,
+        "total_cognitive": 29,
+        "function_count": 18,
+        "lines": 757,
+        "crap_max": 132.0,
+        "crap_above_threshold": 1
+      },
+      {
+        "path": "src/hooks/useGameAudio.ts",
+        "fan_in": 1,
+        "fan_out": 1,
+        "dead_code_ratio": 0.0,
+        "complexity_density": 0.25,
+        "maintainability_index": 89.7,
+        "total_cyclomatic": 35,
+        "total_cognitive": 31,
+        "function_count": 14,
+        "lines": 139,
+        "crap_max": 110.0,
+        "crap_above_threshold": 1
+      },
+      {
+        "path": "src/hooks/usePokemonGameEffects.ts",
+        "fan_in": 1,
+        "fan_out": 3,
+        "dead_code_ratio": 0.0,
+        "complexity_density": 0.15,
+        "maintainability_index": 90.0,
+        "total_cyclomatic": 40,
+        "total_cognitive": 33,
+        "function_count": 15,
+        "lines": 268,
+        "crap_max": 90.0,
+        "crap_above_threshold": 1
+      },
+      {
+        "path": "src/hooks/usePlayerName.ts",
+        "fan_in": 1,
+        "fan_out": 3,
+        "dead_code_ratio": 0.0,
+        "complexity_density": 0.17,
+        "maintainability_index": 89.4,
+        "total_cyclomatic": 31,
+        "total_cognitive": 32,
+        "function_count": 12,
+        "lines": 187,
+        "crap_max": 72.0,
+        "crap_above_threshold": 2
+      },
+      {
+        "path": "src/components/pokemon-game/MenuPlayerForm.tsx",
+        "fan_in": 1,
+        "fan_out": 3,
+        "dead_code_ratio": 0.0,
+        "complexity_density": 0.12,
+        "maintainability_index": 90.9,
+        "total_cyclomatic": 8,
+        "total_cognitive": 6,
+        "function_count": 1,
+        "lines": 69,
+        "crap_max": 72.0,
+        "crap_above_threshold": 1
+      },
+      {
+        "path": "src/components/ErrorBoundaryFallback.tsx",
+        "fan_in": 1,
+        "fan_out": 0,
+        "dead_code_ratio": 0.0,
+        "complexity_density": 0.13,
+        "maintainability_index": 96.1,
+        "total_cyclomatic": 13,
+        "total_cognitive": 8,
+        "function_count": 3,
+        "lines": 97,
+        "crap_max": 72.0,
+        "crap_above_threshold": 1
+      },
+      {
+        "path": "src/components/pokemon-game/MenuScreen.tsx",
+        "fan_in": 1,
+        "fan_out": 9,
+        "dead_code_ratio": 0.0,
+        "complexity_density": 0.05,
+        "maintainability_index": 89.3,
+        "total_cyclomatic": 15,
+        "total_cognitive": 12,
+        "function_count": 9,
+        "lines": 322,
+        "crap_max": 56.0,
+        "crap_above_threshold": 1
+      },
+      {
+        "path": "src/hooks/useGameOverDialogEffects.ts",
+        "fan_in": 1,
+        "fan_out": 4,
+        "dead_code_ratio": 0.0,
+        "complexity_density": 0.14,
+        "maintainability_index": 89.4,
+        "total_cyclomatic": 48,
+        "total_cognitive": 38,
+        "function_count": 19,
+        "lines": 346,
+        "crap_max": 56.0,
+        "crap_above_threshold": 4
+      },
+      {
+        "path": "src/components/pokemon-game/GameOverDialogHeader.tsx",
+        "fan_in": 1,
+        "fan_out": 2,
+        "dead_code_ratio": 0.0,
+        "complexity_density": 0.08,
+        "maintainability_index": 93.2,
+        "total_cyclomatic": 7,
+        "total_cognitive": 9,
+        "function_count": 1,
+        "lines": 83,
+        "crap_max": 56.0,
+        "crap_above_threshold": 1
+      },
+      {
+        "path": "src/components/pokemon-game/GameOverStats.tsx",
+        "fan_in": 1,
+        "fan_out": 2,
+        "dead_code_ratio": 0.0,
+        "complexity_density": 0.05,
+        "maintainability_index": 94.1,
+        "total_cyclomatic": 7,
+        "total_cognitive": 11,
+        "function_count": 1,
+        "lines": 148,
+        "crap_max": 56.0,
+        "crap_above_threshold": 1
+      },
+      {
+        "path": "src/components/pokemon-game/EmailAuthDialog.tsx",
+        "fan_in": 1,
+        "fan_out": 4,
+        "dead_code_ratio": 0.0,
+        "complexity_density": 0.1,
+        "maintainability_index": 90.6,
+        "total_cyclomatic": 23,
+        "total_cognitive": 29,
+        "function_count": 8,
+        "lines": 225,
+        "crap_max": 42.0,
+        "crap_above_threshold": 2
+      },
+      {
+        "path": "src/components/pokemon-game/EmailAuthForm.tsx",
+        "fan_in": 1,
+        "fan_out": 2,
+        "dead_code_ratio": 0.0,
+        "complexity_density": 0.05,
+        "maintainability_index": 94.1,
+        "total_cyclomatic": 6,
+        "total_cognitive": 14,
+        "function_count": 1,
+        "lines": 125,
+        "crap_max": 42.0,
+        "crap_above_threshold": 1
+      },
+      {
+        "path": "src/components/pokemon-game/gameOverCryPlayback.ts",
+        "fan_in": 1,
+        "fan_out": 1,
+        "dead_code_ratio": 0.0,
+        "complexity_density": 0.1,
+        "maintainability_index": 94.2,
+        "total_cyclomatic": 6,
+        "total_cognitive": 9,
+        "function_count": 1,
+        "lines": 58,
+        "crap_max": 42.0,
+        "crap_above_threshold": 1
+      },
+      {
+        "path": "src/components/pokemon-game/RewardPokemonDisplay.tsx",
+        "fan_in": 1,
+        "fan_out": 5,
+        "dead_code_ratio": 0.0,
+        "complexity_density": 0.06,
+        "maintainability_index": 91.0,
+        "total_cyclomatic": 13,
+        "total_cognitive": 14,
+        "function_count": 4,
+        "lines": 209,
+        "crap_max": 30.0,
+        "crap_above_threshold": 2
+      },
+      {
+        "path": "src/components/pokemon-game/MenuRankingsList.tsx",
+        "fan_in": 1,
+        "fan_out": 2,
+        "dead_code_ratio": 0.0,
+        "complexity_density": 0.07,
+        "maintainability_index": 93.5,
+        "total_cyclomatic": 7,
+        "total_cognitive": 6,
+        "function_count": 2,
+        "lines": 94,
+        "crap_max": 30.0,
+        "crap_above_threshold": 1
+      },
+      {
+        "path": "src/components/pokemon-game/GameOverActions.tsx",
+        "fan_in": 1,
+        "fan_out": 2,
+        "dead_code_ratio": 0.0,
+        "complexity_density": 0.05,
+        "maintainability_index": 94.1,
+        "total_cyclomatic": 5,
+        "total_cognitive": 8,
+        "function_count": 1,
+        "lines": 103,
+        "crap_max": 30.0,
+        "crap_above_threshold": 1
+      },
+      {
+        "path": "src/components/pokemon-game/AuthButtons.tsx",
+        "fan_in": 1,
+        "fan_out": 3,
+        "dead_code_ratio": 0.0,
+        "complexity_density": 0.13,
+        "maintainability_index": 90.6,
+        "total_cyclomatic": 18,
+        "total_cognitive": 16,
+        "function_count": 7,
+        "lines": 141,
+        "crap_max": 20.0,
+        "crap_above_threshold": 0
+      },
+      {
+        "path": "src/components/pokemon-game/MenuGenerationPicker.tsx",
+        "fan_in": 1,
+        "fan_out": 2,
+        "dead_code_ratio": 0.0,
+        "complexity_density": 0.12,
+        "maintainability_index": 92.0,
+        "total_cyclomatic": 7,
+        "total_cognitive": 4,
+        "function_count": 4,
+        "lines": 57,
+        "crap_max": 20.0,
+        "crap_above_threshold": 0
+      },
+      {
+        "path": "src/components/pokemon-game/StaticPokemonBadges.tsx",
+        "fan_in": 1,
+        "fan_out": 2,
+        "dead_code_ratio": 0.0,
+        "complexity_density": 0.1,
+        "maintainability_index": 93.3,
+        "total_cyclomatic": 4,
+        "total_cognitive": 3,
+        "function_count": 1,
+        "lines": 39,
+        "crap_max": 20.0,
+        "crap_above_threshold": 0
+      },
+      {
+        "path": "src/components/pokemon-game/RewardPokemonSprite.tsx",
+        "fan_in": 1,
+        "fan_out": 3,
+        "dead_code_ratio": 0.0,
+        "complexity_density": 0.03,
+        "maintainability_index": 93.6,
+        "total_cyclomatic": 4,
+        "total_cognitive": 4,
+        "function_count": 1,
+        "lines": 133,
+        "crap_max": 20.0,
+        "crap_above_threshold": 0
+      },
+      {
+        "path": "src/components/pokemon-game/resultsPageShare.ts",
+        "fan_in": 1,
+        "fan_out": 1,
+        "dead_code_ratio": 0.0,
+        "complexity_density": 0.14,
+        "maintainability_index": 93.7,
+        "total_cyclomatic": 6,
+        "total_cognitive": 3,
+        "function_count": 2,
+        "lines": 42,
+        "crap_max": 20.0,
+        "crap_above_threshold": 0
+      },
+      {
+        "path": "src/hooks/useGameTimers.ts",
+        "fan_in": 1,
+        "fan_out": 1,
+        "dead_code_ratio": 0.0,
+        "complexity_density": 0.1,
+        "maintainability_index": 94.2,
+        "total_cyclomatic": 23,
+        "total_cognitive": 24,
+        "function_count": 11,
+        "lines": 221,
+        "crap_max": 20.0,
+        "crap_above_threshold": 0
+      },
+      {
+        "path": "src/components/pokemon-game/RewardPokemonLabels.tsx",
+        "fan_in": 1,
+        "fan_out": 2,
+        "dead_code_ratio": 0.0,
+        "complexity_density": 0.04,
+        "maintainability_index": 94.4,
+        "total_cyclomatic": 4,
+        "total_cognitive": 3,
+        "function_count": 1,
+        "lines": 105,
+        "crap_max": 20.0,
+        "crap_above_threshold": 0
+      },
+      {
+        "path": "src/components/pokemon-game/guessSuggestionScoring.ts",
+        "fan_in": 1,
+        "fan_out": 1,
+        "dead_code_ratio": 0.0,
+        "complexity_density": 0.34,
+        "maintainability_index": 88.3,
+        "total_cyclomatic": 15,
+        "total_cognitive": 14,
+        "function_count": 1,
+        "lines": 44,
+        "crap_max": 17.1,
+        "crap_above_threshold": 0
+      },
+      {
+        "path": "src/components/pokemon-game/pokemonCryPlayer.ts",
+        "fan_in": 2,
+        "fan_out": 1,
+        "dead_code_ratio": 0.0,
+        "complexity_density": 0.19,
+        "maintainability_index": 91.5,
+        "total_cyclomatic": 28,
+        "total_cognitive": 22,
+        "function_count": 11,
+        "lines": 151,
+        "crap_max": 14.5,
+        "crap_above_threshold": 0
+      },
+      {
+        "path": "src/components/pokemon-game/gameScoring.ts",
+        "fan_in": 2,
+        "fan_out": 0,
+        "dead_code_ratio": 0.0,
+        "complexity_density": 0.16,
+        "maintainability_index": 95.2,
+        "total_cyclomatic": 14,
+        "total_cognitive": 14,
+        "function_count": 1,
+        "lines": 86,
+        "crap_max": 14.5,
+        "crap_above_threshold": 0
+      },
+      {
+        "path": "src/components/pokemon-game/GuessInput.tsx",
+        "fan_in": 3,
+        "fan_out": 1,
+        "dead_code_ratio": 0.0,
+        "complexity_density": 0.14,
+        "maintainability_index": 93.0,
+        "total_cyclomatic": 15,
+        "total_cognitive": 18,
+        "function_count": 4,
+        "lines": 111,
+        "crap_max": 13.0,
+        "crap_above_threshold": 0
+      },
+      {
+        "path": "src/services/pokemonApi.ts",
+        "fan_in": 2,
+        "fan_out": 6,
+        "dead_code_ratio": 0.0,
+        "complexity_density": 0.14,
+        "maintainability_index": 88.0,
+        "total_cyclomatic": 24,
+        "total_cognitive": 14,
+        "function_count": 12,
+        "lines": 171,
+        "crap_max": 12.0,
+        "crap_above_threshold": 0
+      },
+      {
+        "path": "src/components/pokemon-game/menuRankingsHelpers.ts",
+        "fan_in": 1,
+        "fan_out": 2,
+        "dead_code_ratio": 0.0,
+        "complexity_density": 0.27,
+        "maintainability_index": 90.7,
+        "total_cyclomatic": 8,
+        "total_cognitive": 4,
+        "function_count": 4,
+        "lines": 30,
+        "crap_max": 12.0,
+        "crap_above_threshold": 0
+      },
+      {
+        "path": "src/components/pokemon-game/pokemonDisplayState.ts",
+        "fan_in": 3,
+        "fan_out": 1,
+        "dead_code_ratio": 0.0,
+        "complexity_density": 0.19,
+        "maintainability_index": 91.5,
+        "total_cyclomatic": 26,
+        "total_cognitive": 19,
+        "function_count": 8,
+        "lines": 134,
+        "crap_max": 12.0,
+        "crap_above_threshold": 0
+      },
+      {
+        "path": "src/components/pokemon-game/gameOverDialogShare.ts",
+        "fan_in": 2,
+        "fan_out": 2,
+        "dead_code_ratio": 0.0,
+        "complexity_density": 0.11,
+        "maintainability_index": 92.3,
+        "total_cyclomatic": 15,
+        "total_cognitive": 11,
+        "function_count": 6,
+        "lines": 139,
+        "crap_max": 12.0,
+        "crap_above_threshold": 0
+      },
+      {
+        "path": "src/components/pokemon-game/PokemonSprite.tsx",
+        "fan_in": 3,
+        "fan_out": 1,
+        "dead_code_ratio": 0.0,
+        "complexity_density": 0.16,
+        "maintainability_index": 92.4,
+        "total_cyclomatic": 16,
+        "total_cognitive": 14,
+        "function_count": 5,
+        "lines": 97,
+        "crap_max": 12.0,
+        "crap_above_threshold": 0
+      },
+      {
+        "path": "vite.config.ts",
+        "fan_in": 0,
+        "fan_out": 0,
+        "dead_code_ratio": 0.0,
+        "complexity_density": 0.05,
+        "maintainability_index": 98.5,
+        "total_cyclomatic": 4,
+        "total_cognitive": 3,
+        "function_count": 2,
+        "lines": 81,
+        "crap_max": 12.0,
+        "crap_above_threshold": 0
+      },
+      {
+        "path": "src/services/pokemonApiValidators.ts",
+        "fan_in": 5,
+        "fan_out": 0,
+        "dead_code_ratio": 0.0,
+        "complexity_density": 0.27,
+        "maintainability_index": 91.9,
+        "total_cyclomatic": 36,
+        "total_cognitive": 26,
+        "function_count": 11,
+        "lines": 135,
+        "crap_max": 10.9,
+        "crap_above_threshold": 0
+      },
+      {
+        "path": "src/hooks/pokemonGameEffectLogic.ts",
+        "fan_in": 2,
+        "fan_out": 1,
+        "dead_code_ratio": 0.0,
+        "complexity_density": 0.39,
+        "maintainability_index": 85.5,
+        "total_cyclomatic": 29,
+        "total_cognitive": 14,
+        "function_count": 9,
+        "lines": 75,
+        "crap_max": 10.1,
+        "crap_above_threshold": 0
+      },
+      {
+        "path": "src/components/pokemon-game/gameOverCryCache.ts",
+        "fan_in": 2,
+        "fan_out": 0,
+        "dead_code_ratio": 0.0,
+        "complexity_density": 0.24,
+        "maintainability_index": 92.8,
+        "total_cyclomatic": 47,
+        "total_cognitive": 32,
+        "function_count": 16,
+        "lines": 199,
+        "crap_max": 10.0,
+        "crap_above_threshold": 0
+      },
+      {
+        "path": "src/components/pokemon-game/GameScreenCriticalBanner.tsx",
+        "fan_in": 1,
+        "fan_out": 0,
+        "dead_code_ratio": 0.0,
+        "complexity_density": 0.23,
+        "maintainability_index": 93.9,
+        "total_cyclomatic": 10,
+        "total_cognitive": 8,
+        "function_count": 1,
+        "lines": 44,
+        "crap_max": 10.0,
+        "crap_above_threshold": 0
+      },
+      {
+        "path": "src/services/pokemonApiTransform.ts",
+        "fan_in": 3,
+        "fan_out": 2,
+        "dead_code_ratio": 0.0,
+        "complexity_density": 0.19,
+        "maintainability_index": 89.9,
+        "total_cyclomatic": 21,
+        "total_cognitive": 9,
+        "function_count": 8,
+        "lines": 112,
+        "crap_max": 9.0,
+        "crap_above_threshold": 0
+      },
+      {
+        "path": "src/components/pokemon-game/gameOverDialogSave.ts",
+        "fan_in": 2,
+        "fan_out": 2,
+        "dead_code_ratio": 0.0,
+        "complexity_density": 0.18,
+        "maintainability_index": 90.2,
+        "total_cyclomatic": 25,
+        "total_cognitive": 5,
+        "function_count": 8,
+        "lines": 138,
+        "crap_max": 8.0,
+        "crap_above_threshold": 0
+      },
+      {
+        "path": "src/services/gameResultsValidation.ts",
+        "fan_in": 3,
+        "fan_out": 0,
+        "dead_code_ratio": 0.0,
+        "complexity_density": 0.25,
+        "maintainability_index": 92.5,
+        "total_cyclomatic": 26,
+        "total_cognitive": 14,
+        "function_count": 10,
+        "lines": 102,
+        "crap_max": 8.0,
+        "crap_above_threshold": 0
+      },
+      {
+        "path": "src/hooks/pokemonGameHandlerLogic.ts",
+        "fan_in": 2,
+        "fan_out": 2,
+        "dead_code_ratio": 0.0,
+        "complexity_density": 0.18,
+        "maintainability_index": 90.2,
+        "total_cyclomatic": 49,
+        "total_cognitive": 35,
+        "function_count": 14,
+        "lines": 274,
+        "crap_max": 7.1,
+        "crap_above_threshold": 0
+      },
+      {
+        "path": "src/services/gameResultsService.ts",
+        "fan_in": 6,
+        "fan_out": 3,
+        "dead_code_ratio": 0.0,
+        "complexity_density": 0.13,
+        "maintainability_index": 90.6,
+        "total_cyclomatic": 32,
+        "total_cognitive": 23,
+        "function_count": 13,
+        "lines": 252,
+        "crap_max": 7.1,
+        "crap_above_threshold": 0
+      },
+      {
+        "path": "src/components/pokemon-game/PokemonDisplay.tsx",
+        "fan_in": 3,
+        "fan_out": 5,
+        "dead_code_ratio": 0.0,
+        "complexity_density": 0.11,
+        "maintainability_index": 89.5,
+        "total_cyclomatic": 15,
+        "total_cognitive": 18,
+        "function_count": 5,
+        "lines": 134,
+        "crap_max": 7.0,
+        "crap_above_threshold": 0
+      },
+      {
+        "path": "src/services/rankingUtils.ts",
+        "fan_in": 3,
+        "fan_out": 1,
+        "dead_code_ratio": 0.0,
+        "complexity_density": 0.22,
+        "maintainability_index": 90.6,
+        "total_cyclomatic": 21,
+        "total_cognitive": 16,
+        "function_count": 6,
+        "lines": 94,
+        "crap_max": 7.0,
+        "crap_above_threshold": 0
+      },
+      {
+        "path": "src/components/pokemon-game/PokemonDisplayContent.tsx",
+        "fan_in": 1,
+        "fan_out": 3,
+        "dead_code_ratio": 0.0,
+        "complexity_density": 0.1,
+        "maintainability_index": 91.5,
+        "total_cyclomatic": 12,
+        "total_cognitive": 10,
+        "function_count": 3,
+        "lines": 123,
+        "crap_max": 7.0,
+        "crap_above_threshold": 0
+      },
+      {
+        "path": "src/hooks/slotMachineLogic.ts",
+        "fan_in": 2,
+        "fan_out": 0,
+        "dead_code_ratio": 0.0,
+        "complexity_density": 0.18,
+        "maintainability_index": 94.7,
+        "total_cyclomatic": 9,
+        "total_cognitive": 6,
+        "function_count": 3,
+        "lines": 49,
+        "crap_max": 7.0,
+        "crap_above_threshold": 0
+      },
+      {
+        "path": "src/hooks/playerNameUtils.ts",
+        "fan_in": 2,
+        "fan_out": 1,
+        "dead_code_ratio": 0.0,
+        "complexity_density": 0.18,
+        "maintainability_index": 91.8,
+        "total_cyclomatic": 17,
+        "total_cognitive": 9,
+        "function_count": 9,
+        "lines": 97,
+        "crap_max": 6.2,
+        "crap_above_threshold": 0
+      },
+      {
+        "path": "src/components/pokemon-game/HintButton.tsx",
+        "fan_in": 3,
+        "fan_out": 2,
+        "dead_code_ratio": 0.0,
+        "complexity_density": 0.12,
+        "maintainability_index": 92.0,
+        "total_cyclomatic": 13,
+        "total_cognitive": 11,
+        "function_count": 3,
+        "lines": 107,
+        "crap_max": 6.1,
+        "crap_above_threshold": 0
+      },
+      {
+        "path": "src/components/pokemon-game/guessSuggestions.ts",
+        "fan_in": 2,
+        "fan_out": 2,
+        "dead_code_ratio": 0.0,
+        "complexity_density": 0.21,
+        "maintainability_index": 89.3,
+        "total_cyclomatic": 12,
+        "total_cognitive": 6,
+        "function_count": 5,
+        "lines": 57,
+        "crap_max": 6.0,
+        "crap_above_threshold": 0
+      },
+      {
+        "path": "src/components/pokemon-game/gameOverDialogMessages.ts",
+        "fan_in": 3,
+        "fan_out": 1,
+        "dead_code_ratio": 0.0,
+        "complexity_density": 0.25,
+        "maintainability_index": 89.7,
+        "total_cyclomatic": 50,
+        "total_cognitive": 20,
+        "function_count": 26,
+        "lines": 202,
+        "crap_max": 6.0,
+        "crap_above_threshold": 0
+      },
+      {
+        "path": "src/components/pokemon-game/GameOverDialog.tsx",
+        "fan_in": 2,
+        "fan_out": 8,
+        "dead_code_ratio": 0.0,
+        "complexity_density": 0.03,
+        "maintainability_index": 90.3,
+        "total_cyclomatic": 3,
+        "total_cognitive": 2,
+        "function_count": 2,
+        "lines": 102,
+        "crap_max": 6.0,
+        "crap_above_threshold": 0
+      },
+      {
+        "path": "src/components/pokemon-game/rewardPokemonSpriteStyles.ts",
+        "fan_in": 2,
+        "fan_out": 1,
+        "dead_code_ratio": 0.0,
+        "complexity_density": 0.31,
+        "maintainability_index": 91.3,
+        "total_cyclomatic": 10,
+        "total_cognitive": 7,
+        "function_count": 3,
+        "lines": 32,
+        "crap_max": 6.0,
+        "crap_above_threshold": 0
+      },
+      {
+        "path": "src/hooks/useSlotMachine.ts",
+        "fan_in": 1,
+        "fan_out": 3,
+        "dead_code_ratio": 0.0,
+        "complexity_density": 0.09,
+        "maintainability_index": 91.8,
+        "total_cyclomatic": 10,
+        "total_cognitive": 11,
+        "function_count": 7,
+        "lines": 112,
+        "crap_max": 6.0,
+        "crap_above_threshold": 0
+      },
+      {
+        "path": "src/components/pokemon-game/EmailAuthResetForm.tsx",
+        "fan_in": 1,
+        "fan_out": 2,
+        "dead_code_ratio": 0.0,
+        "complexity_density": 0.04,
+        "maintainability_index": 94.4,
+        "total_cyclomatic": 3,
+        "total_cognitive": 3,
+        "function_count": 2,
+        "lines": 67,
+        "crap_max": 6.0,
+        "crap_above_threshold": 0
+      },
+      {
+        "path": "src/hooks/useGameStateSlices.ts",
+        "fan_in": 1,
+        "fan_out": 2,
+        "dead_code_ratio": 0.0,
+        "complexity_density": 0.03,
+        "maintainability_index": 94.7,
+        "total_cyclomatic": 9,
+        "total_cognitive": 36,
+        "function_count": 8,
+        "lines": 301,
+        "crap_max": 6.0,
+        "crap_above_threshold": 0
+      },
+      {
+        "path": "src/components/pokemon-game/gameOverActionStyles.ts",
+        "fan_in": 1,
+        "fan_out": 0,
+        "dead_code_ratio": 0.0,
+        "complexity_density": 0.33,
+        "maintainability_index": 95.2,
+        "total_cyclomatic": 8,
+        "total_cognitive": 4,
+        "function_count": 4,
+        "lines": 24,
+        "crap_max": 6.0,
+        "crap_above_threshold": 0
+      },
+      {
+        "path": "src/components/ErrorBoundary.tsx",
+        "fan_in": 1,
+        "fan_out": 1,
+        "dead_code_ratio": 0.0,
+        "complexity_density": 0.06,
+        "maintainability_index": 95.4,
+        "total_cyclomatic": 7,
+        "total_cognitive": 1,
+        "function_count": 6,
+        "lines": 113,
+        "crap_max": 6.0,
+        "crap_above_threshold": 0
+      },
+      {
+        "path": "src/components/pokemon-game/gameOverStatsHelpers.ts",
+        "fan_in": 1,
+        "fan_out": 0,
+        "dead_code_ratio": 0.0,
+        "complexity_density": 0.27,
+        "maintainability_index": 97.6,
+        "total_cyclomatic": 4,
+        "total_cognitive": 2,
+        "function_count": 2,
+        "lines": 15,
+        "crap_max": 6.0,
+        "crap_above_threshold": 0
+      },
+      {
+        "path": "src/components/pokemon-game/generations.ts",
+        "fan_in": 11,
+        "fan_out": 0,
+        "dead_code_ratio": 0.0,
+        "complexity_density": 0.13,
+        "maintainability_index": 98.1,
+        "total_cyclomatic": 3,
+        "total_cognitive": 1,
+        "function_count": 2,
+        "lines": 24,
+        "crap_max": 6.0,
+        "crap_above_threshold": 0
+      },
+      {
+        "path": "src/components/pokemon-game/PokemonGameDevTools.tsx",
+        "fan_in": 1,
+        "fan_out": 0,
+        "dead_code_ratio": 0.0,
+        "complexity_density": 0.06,
+        "maintainability_index": 98.7,
+        "total_cyclomatic": 2,
+        "total_cognitive": 1,
+        "function_count": 1,
+        "lines": 35,
+        "crap_max": 6.0,
+        "crap_above_threshold": 0
+      },
+      {
+        "path": "src/services/pokemonApiStorage.ts",
+        "fan_in": 3,
+        "fan_out": 1,
+        "dead_code_ratio": 0.0,
+        "complexity_density": 0.28,
+        "maintainability_index": 88.8,
+        "total_cyclomatic": 25,
+        "total_cognitive": 18,
+        "function_count": 8,
+        "lines": 89,
+        "crap_max": 5.0,
+        "crap_above_threshold": 0
+      },
+      {
+        "path": "src/components/pokemon-game/GameScreen.tsx",
+        "fan_in": 2,
+        "fan_out": 10,
+        "dead_code_ratio": 0.0,
+        "complexity_density": 0.02,
+        "maintainability_index": 89.8,
+        "total_cyclomatic": 6,
+        "total_cognitive": 32,
+        "function_count": 2,
+        "lines": 244,
+        "crap_max": 5.0,
+        "crap_above_threshold": 0
+      },
+      {
+        "path": "src/services/pokemonApiFetch.ts",
+        "fan_in": 2,
+        "fan_out": 3,
+        "dead_code_ratio": 0.0,
+        "complexity_density": 0.15,
+        "maintainability_index": 90.0,
+        "total_cyclomatic": 19,
+        "total_cognitive": 14,
+        "function_count": 5,
+        "lines": 127,
+        "crap_max": 5.0,
+        "crap_above_threshold": 0
+      },
+      {
+        "path": "src/components/pokemon-game/generationPool.ts",
+        "fan_in": 3,
+        "fan_out": 0,
+        "dead_code_ratio": 0.0,
+        "complexity_density": 0.25,
+        "maintainability_index": 94.0,
+        "total_cyclomatic": 10,
+        "total_cognitive": 7,
+        "function_count": 4,
+        "lines": 40,
+        "crap_max": 5.0,
+        "crap_above_threshold": 0
+      },
+      {
+        "path": "src/hooks/gameTimerLogic.ts",
+        "fan_in": 2,
+        "fan_out": 0,
+        "dead_code_ratio": 0.0,
+        "complexity_density": 0.14,
+        "maintainability_index": 95.8,
+        "total_cyclomatic": 13,
+        "total_cognitive": 7,
+        "function_count": 5,
+        "lines": 91,
+        "crap_max": 5.0,
+        "crap_above_threshold": 0
+      },
+      {
+        "path": "src/components/pokemon-game/__tests__/GameScreen.test.tsx",
+        "fan_in": 0,
+        "fan_out": 10,
+        "dead_code_ratio": 0.0,
+        "complexity_density": 0.13,
+        "maintainability_index": 86.5,
+        "total_cyclomatic": 62,
+        "total_cognitive": 4,
+        "function_count": 60,
+        "lines": 465,
+        "crap_max": 3.0,
+        "crap_above_threshold": 0
+      },
+      {
+        "path": "src/services/__tests__/gameResultsService.test.ts",
+        "fan_in": 0,
+        "fan_out": 3,
+        "dead_code_ratio": 0.0,
+        "complexity_density": 0.23,
+        "maintainability_index": 87.6,
+        "total_cyclomatic": 61,
+        "total_cognitive": 1,
+        "function_count": 59,
+        "lines": 261,
+        "crap_max": 2.0,
+        "crap_above_threshold": 0
+      },
+      {
+        "path": "src/components/pokemon-game/resultsPageLoader.ts",
+        "fan_in": 2,
+        "fan_out": 2,
+        "dead_code_ratio": 0.0,
+        "complexity_density": 0.15,
+        "maintainability_index": 91.5,
+        "total_cyclomatic": 7,
+        "total_cognitive": 4,
+        "function_count": 3,
+        "lines": 46,
+        "crap_max": 4.0,
+        "crap_above_threshold": 0
+      },
+      {
+        "path": "src/services/rankingSaveLogic.ts",
+        "fan_in": 2,
+        "fan_out": 1,
+        "dead_code_ratio": 0.0,
+        "complexity_density": 0.19,
+        "maintainability_index": 91.5,
+        "total_cyclomatic": 17,
+        "total_cognitive": 10,
+        "function_count": 7,
+        "lines": 91,
+        "crap_max": 4.0,
+        "crap_above_threshold": 0
+      },
+      {
+        "path": "src/components/pokemon-game/__tests__/pokemonCryPlayer.test.ts",
+        "fan_in": 0,
+        "fan_out": 2,
+        "dead_code_ratio": 0.0,
+        "complexity_density": 0.12,
+        "maintainability_index": 92.0,
+        "total_cyclomatic": 15,
+        "total_cognitive": 2,
+        "function_count": 11,
+        "lines": 121,
+        "crap_max": 4.0,
+        "crap_above_threshold": 0
+      },
+      {
+        "path": "src/hooks/gameAudioLogic.ts",
+        "fan_in": 2,
+        "fan_out": 0,
+        "dead_code_ratio": 0.0,
+        "complexity_density": 0.52,
+        "maintainability_index": 92.2,
+        "total_cyclomatic": 13,
+        "total_cognitive": 5,
+        "function_count": 4,
+        "lines": 25,
+        "crap_max": 4.0,
+        "crap_above_threshold": 0
+      },
+      {
+        "path": "src/components/pokemon-game/emailAuthLogic.ts",
+        "fan_in": 2,
+        "fan_out": 0,
+        "dead_code_ratio": 0.0,
+        "complexity_density": 0.2,
+        "maintainability_index": 94.0,
+        "total_cyclomatic": 16,
+        "total_cognitive": 9,
+        "function_count": 6,
+        "lines": 79,
+        "crap_max": 4.0,
+        "crap_above_threshold": 0
+      },
+      {
+        "path": "src/components/ui/language-toggle.tsx",
+        "fan_in": 2,
+        "fan_out": 1,
+        "dead_code_ratio": 0.0,
+        "complexity_density": 0.1,
+        "maintainability_index": 94.2,
+        "total_cyclomatic": 6,
+        "total_cognitive": 5,
+        "function_count": 2,
+        "lines": 62,
+        "crap_max": 4.0,
+        "crap_above_threshold": 0
+      },
+      {
+        "path": "src/components/pokemon-game/resultsPageCopy.ts",
+        "fan_in": 2,
+        "fan_out": 0,
+        "dead_code_ratio": 0.0,
+        "complexity_density": 0.16,
+        "maintainability_index": 95.2,
+        "total_cyclomatic": 10,
+        "total_cognitive": 8,
+        "function_count": 4,
+        "lines": 63,
+        "crap_max": 4.0,
+        "crap_above_threshold": 0
+      },
+      {
+        "path": "src/components/pokemon-game/GameStats.tsx",
+        "fan_in": 3,
+        "fan_out": 0,
+        "dead_code_ratio": 0.0,
+        "complexity_density": 0.05,
+        "maintainability_index": 98.5,
+        "total_cyclomatic": 4,
+        "total_cognitive": 6,
+        "function_count": 1,
+        "lines": 85,
+        "crap_max": 4.0,
+        "crap_above_threshold": 0
+      },
+      {
+        "path": "src/components/pokemon-game/__tests__/gamePool.test.ts",
+        "fan_in": 0,
+        "fan_out": 1,
+        "dead_code_ratio": 0.0,
+        "complexity_density": 0.26,
+        "maintainability_index": 89.4,
+        "total_cyclomatic": 17,
+        "total_cognitive": 2,
+        "function_count": 15,
+        "lines": 65,
+        "crap_max": 2.0,
+        "crap_above_threshold": 0
+      },
+      {
+        "path": "src/components/pokemon-game/__tests__/resultsPageTitles.test.ts",
+        "fan_in": 0,
+        "fan_out": 1,
+        "dead_code_ratio": 0.0,
+        "complexity_density": 0.24,
+        "maintainability_index": 90.0,
+        "total_cyclomatic": 23,
+        "total_cognitive": 0,
+        "function_count": 23,
+        "lines": 96,
+        "crap_max": 1.0,
+        "crap_above_threshold": 0
+      },
+      {
+        "path": "src/components/pokemon-game/__tests__/rewardPokemonDisplay.test.ts",
+        "fan_in": 0,
+        "fan_out": 4,
+        "dead_code_ratio": 0.0,
+        "complexity_density": 0.12,
+        "maintainability_index": 90.0,
+        "total_cyclomatic": 13,
+        "total_cognitive": 0,
+        "function_count": 13,
+        "lines": 108,
+        "crap_max": 1.0,
+        "crap_above_threshold": 0
+      },
+      {
+        "path": "src/hooks/__tests__/pokemonGameEffectLogic.test.ts",
+        "fan_in": 0,
+        "fan_out": 2,
+        "dead_code_ratio": 0.0,
+        "complexity_density": 0.18,
+        "maintainability_index": 90.2,
+        "total_cyclomatic": 18,
+        "total_cognitive": 0,
+        "function_count": 18,
+        "lines": 99,
+        "crap_max": 1.0,
+        "crap_above_threshold": 0
+      },
+      {
+        "path": "src/App.tsx",
+        "fan_in": 1,
+        "fan_out": 6,
+        "dead_code_ratio": 0.0,
+        "complexity_density": 0.05,
+        "maintainability_index": 90.7,
+        "total_cyclomatic": 3,
+        "total_cognitive": 0,
+        "function_count": 3,
+        "lines": 58,
+        "crap_max": 2.0,
+        "crap_above_threshold": 0
+      },
+      {
+        "path": "src/components/pokemon-game/__tests__/pokemonDisplayState.test.ts",
+        "fan_in": 0,
+        "fan_out": 2,
+        "dead_code_ratio": 0.0,
+        "complexity_density": 0.16,
+        "maintainability_index": 90.8,
+        "total_cyclomatic": 27,
+        "total_cognitive": 0,
+        "function_count": 27,
+        "lines": 164,
+        "crap_max": 1.0,
+        "crap_above_threshold": 0
+      },
+      {
+        "path": "src/components/pokemon-game/__tests__/resultsPageLoader.test.ts",
+        "fan_in": 0,
+        "fan_out": 2,
+        "dead_code_ratio": 0.0,
+        "complexity_density": 0.16,
+        "maintainability_index": 90.8,
+        "total_cyclomatic": 13,
+        "total_cognitive": 0,
+        "function_count": 13,
+        "lines": 82,
+        "crap_max": 1.0,
+        "crap_above_threshold": 0
+      },
+      {
+        "path": "src/hooks/__tests__/pokemonGameHandlerLogic.test.ts",
+        "fan_in": 0,
+        "fan_out": 1,
+        "dead_code_ratio": 0.0,
+        "complexity_density": 0.21,
+        "maintainability_index": 90.9,
+        "total_cyclomatic": 36,
+        "total_cognitive": 0,
+        "function_count": 36,
+        "lines": 170,
+        "crap_max": 1.0,
+        "crap_above_threshold": 0
+      },
+      {
+        "path": "src/components/pokemon-game/rewardPokemonDisplayLogic.ts",
+        "fan_in": 2,
+        "fan_out": 1,
+        "dead_code_ratio": 0.0,
+        "complexity_density": 0.25,
+        "maintainability_index": 91.2,
+        "total_cyclomatic": 10,
+        "total_cognitive": 4,
+        "function_count": 4,
+        "lines": 40,
+        "crap_max": 3.0,
+        "crap_above_threshold": 0
+      },
+      {
+        "path": "src/components/pokemon-game/__tests__/gameOverCryCache.test.ts",
+        "fan_in": 0,
+        "fan_out": 1,
+        "dead_code_ratio": 0.0,
+        "complexity_density": 0.15,
+        "maintainability_index": 92.7,
+        "total_cyclomatic": 32,
+        "total_cognitive": 3,
+        "function_count": 29,
+        "lines": 217,
+        "crap_max": 3.0,
+        "crap_above_threshold": 0
+      },
+      {
+        "path": "src/components/pokemon-game/__tests__/generations.test.ts",
+        "fan_in": 0,
+        "fan_out": 1,
+        "dead_code_ratio": 0.0,
+        "complexity_density": 0.32,
+        "maintainability_index": 93.6,
+        "total_cyclomatic": 6,
+        "total_cognitive": 1,
+        "function_count": 3,
+        "lines": 19,
+        "crap_max": 3.0,
+        "crap_above_threshold": 0
+      },
+      {
+        "path": "src/components/pokemon-game/gamePool.ts",
+        "fan_in": 2,
+        "fan_out": 0,
+        "dead_code_ratio": 0.0,
+        "complexity_density": 0.16,
+        "maintainability_index": 95.3,
+        "total_cyclomatic": 8,
+        "total_cognitive": 4,
+        "function_count": 4,
+        "lines": 49,
+        "crap_max": 3.0,
+        "crap_above_threshold": 0
+      },
+      {
+        "path": "src/components/ui/select.tsx",
+        "fan_in": 1,
+        "fan_out": 1,
+        "dead_code_ratio": 0.0,
+        "complexity_density": 0.06,
+        "maintainability_index": 95.4,
+        "total_cyclomatic": 9,
+        "total_cognitive": 2,
+        "function_count": 7,
+        "lines": 153,
+        "crap_max": 3.0,
+        "crap_above_threshold": 0
+      },
+      {
+        "path": "src/components/pokemon-game/ScoreIncrease.tsx",
+        "fan_in": 3,
+        "fan_out": 0,
+        "dead_code_ratio": 0.0,
+        "complexity_density": 0.12,
+        "maintainability_index": 98.2,
+        "total_cyclomatic": 3,
+        "total_cognitive": 2,
+        "function_count": 1,
+        "lines": 25,
+        "crap_max": 3.0,
+        "crap_above_threshold": 0
+      },
+      {
+        "path": "src/firebase.ts",
+        "fan_in": 9,
+        "fan_out": 0,
+        "dead_code_ratio": 0.0,
+        "complexity_density": 0.08,
+        "maintainability_index": 98.3,
+        "total_cyclomatic": 3,
+        "total_cognitive": 2,
+        "function_count": 1,
+        "lines": 36,
+        "crap_max": 3.0,
+        "crap_above_threshold": 0
+      },
+      {
+        "path": "src/test/setup.ts",
+        "fan_in": 0,
+        "fan_out": 0,
+        "dead_code_ratio": 0.0,
+        "complexity_density": 0.3,
+        "maintainability_index": 91.0,
+        "total_cyclomatic": 15,
+        "total_cognitive": 0,
+        "function_count": 15,
+        "lines": 50,
+        "crap_max": 2.0,
+        "crap_above_threshold": 0
+      },
+      {
+        "path": "src/components/pokemon-game/__tests__/generationPool.test.ts",
+        "fan_in": 0,
+        "fan_out": 1,
+        "dead_code_ratio": 0.0,
+        "complexity_density": 0.26,
+        "maintainability_index": 91.1,
+        "total_cyclomatic": 10,
+        "total_cognitive": 1,
+        "function_count": 9,
+        "lines": 39,
+        "crap_max": 2.0,
+        "crap_above_threshold": 0
+      },
+      {
+        "path": "src/components/pokemon-game/pokemonLabelText.ts",
+        "fan_in": 4,
+        "fan_out": 1,
+        "dead_code_ratio": 0.0,
+        "complexity_density": 0.4,
+        "maintainability_index": 91.2,
+        "total_cyclomatic": 10,
+        "total_cognitive": 5,
+        "function_count": 5,
+        "lines": 25,
+        "crap_max": 2.0,
+        "crap_above_threshold": 0
+      },
+      {
+        "path": "src/components/pokemon-game/__tests__/gameOverDialogSave.test.ts",
+        "fan_in": 0,
+        "fan_out": 3,
+        "dead_code_ratio": 0.0,
+        "complexity_density": 0.11,
+        "maintainability_index": 91.2,
+        "total_cyclomatic": 24,
+        "total_cognitive": 0,
+        "function_count": 24,
+        "lines": 226,
+        "crap_max": 1.0,
+        "crap_above_threshold": 0
+      },
+      {
+        "path": "src/hooks/__tests__/playerNameUtils.test.ts",
+        "fan_in": 0,
+        "fan_out": 1,
+        "dead_code_ratio": 0.0,
+        "complexity_density": 0.2,
+        "maintainability_index": 91.2,
+        "total_cyclomatic": 15,
+        "total_cognitive": 0,
+        "function_count": 15,
+        "lines": 76,
+        "crap_max": 1.0,
+        "crap_above_threshold": 0
+      },
+      {
+        "path": "src/services/__tests__/rankingSaveLogic.test.ts",
+        "fan_in": 0,
+        "fan_out": 1,
+        "dead_code_ratio": 0.0,
+        "complexity_density": 0.2,
+        "maintainability_index": 91.2,
+        "total_cyclomatic": 18,
+        "total_cognitive": 0,
+        "function_count": 18,
+        "lines": 92,
+        "crap_max": 1.0,
+        "crap_above_threshold": 0
+      },
+      {
+        "path": "src/components/pokemon-game/__tests__/emailAuthLogic.test.ts",
+        "fan_in": 0,
+        "fan_out": 1,
+        "dead_code_ratio": 0.0,
+        "complexity_density": 0.19,
+        "maintainability_index": 91.5,
+        "total_cyclomatic": 22,
+        "total_cognitive": 0,
+        "function_count": 22,
+        "lines": 117,
+        "crap_max": 1.0,
+        "crap_above_threshold": 0
+      },
+      {
+        "path": "src/components/pokemon-game/__tests__/gameOverDialogMessages.test.ts",
+        "fan_in": 0,
+        "fan_out": 2,
+        "dead_code_ratio": 0.0,
+        "complexity_density": 0.13,
+        "maintainability_index": 91.7,
+        "total_cyclomatic": 32,
+        "total_cognitive": 1,
+        "function_count": 31,
+        "lines": 252,
+        "crap_max": 2.0,
+        "crap_above_threshold": 0
+      },
+      {
+        "path": "src/components/pokemon-game/__tests__/HintButton.test.tsx",
+        "fan_in": 0,
+        "fan_out": 2,
+        "dead_code_ratio": 0.0,
+        "complexity_density": 0.13,
+        "maintainability_index": 91.7,
+        "total_cyclomatic": 13,
+        "total_cognitive": 0,
+        "function_count": 13,
+        "lines": 97,
+        "crap_max": 1.0,
+        "crap_above_threshold": 0
+      },
+      {
+        "path": "src/services/__tests__/pokemonApiStorage.test.ts",
+        "fan_in": 0,
+        "fan_out": 1,
+        "dead_code_ratio": 0.0,
+        "complexity_density": 0.18,
+        "maintainability_index": 91.8,
+        "total_cyclomatic": 34,
+        "total_cognitive": 8,
+        "function_count": 26,
+        "lines": 188,
+        "crap_max": 2.0,
+        "crap_above_threshold": 0
+      },
+      {
+        "path": "src/hooks/__tests__/slotMachineLogic.test.ts",
+        "fan_in": 0,
+        "fan_out": 1,
+        "dead_code_ratio": 0.0,
+        "complexity_density": 0.26,
+        "maintainability_index": 91.8,
+        "total_cyclomatic": 9,
+        "total_cognitive": 0,
+        "function_count": 9,
+        "lines": 35,
+        "crap_max": 1.0,
+        "crap_above_threshold": 0
+      },
+      {
+        "path": "src/hooks/__tests__/gameAudioLogic.test.ts",
+        "fan_in": 0,
+        "fan_out": 1,
+        "dead_code_ratio": 0.0,
+        "complexity_density": 0.21,
+        "maintainability_index": 91.9,
+        "total_cyclomatic": 9,
+        "total_cognitive": 0,
+        "function_count": 9,
+        "lines": 42,
+        "crap_max": 1.0,
+        "crap_above_threshold": 0
+      },
+      {
+        "path": "src/components/pokemon-game/__tests__/ScoreIncrease.test.tsx",
+        "fan_in": 0,
+        "fan_out": 2,
+        "dead_code_ratio": 0.0,
+        "complexity_density": 0.17,
+        "maintainability_index": 92.0,
+        "total_cyclomatic": 6,
+        "total_cognitive": 0,
+        "function_count": 6,
+        "lines": 35,
+        "crap_max": 1.0,
+        "crap_above_threshold": 0
+      },
+      {
+        "path": "src/components/pokemon-game/__tests__/gameOverDialogShare.test.ts",
+        "fan_in": 0,
+        "fan_out": 2,
+        "dead_code_ratio": 0.0,
+        "complexity_density": 0.11,
+        "maintainability_index": 92.3,
+        "total_cyclomatic": 13,
+        "total_cognitive": 1,
+        "function_count": 12,
+        "lines": 120,
+        "crap_max": 2.0,
+        "crap_above_threshold": 0
+      },
+      {
+        "path": "src/components/pokemon-game/__tests__/GameStats.test.tsx",
+        "fan_in": 0,
+        "fan_out": 2,
+        "dead_code_ratio": 0.0,
+        "complexity_density": 0.11,
+        "maintainability_index": 92.3,
+        "total_cyclomatic": 10,
+        "total_cognitive": 0,
+        "function_count": 10,
+        "lines": 88,
+        "crap_max": 1.0,
+        "crap_above_threshold": 0
+      },
+      {
+        "path": "src/components/pokemon-game/__tests__/PokemonDisplay.test.tsx",
+        "fan_in": 0,
+        "fan_out": 3,
+        "dead_code_ratio": 0.0,
+        "complexity_density": 0.07,
+        "maintainability_index": 92.4,
+        "total_cyclomatic": 10,
+        "total_cognitive": 0,
+        "function_count": 8,
+        "lines": 137,
+        "crap_max": 2.0,
+        "crap_above_threshold": 0
+      },
+      {
+        "path": "src/services/__tests__/pokemonApiValidators.test.ts",
+        "fan_in": 0,
+        "fan_out": 1,
+        "dead_code_ratio": 0.0,
+        "complexity_density": 0.16,
+        "maintainability_index": 92.4,
+        "total_cyclomatic": 14,
+        "total_cognitive": 0,
+        "function_count": 14,
+        "lines": 86,
+        "crap_max": 1.0,
+        "crap_above_threshold": 0
+      },
+      {
+        "path": "src/components/pokemon-game/StaticPokemonDisplay.tsx",
+        "fan_in": 1,
+        "fan_out": 5,
+        "dead_code_ratio": 0.0,
+        "complexity_density": 0.01,
+        "maintainability_index": 92.5,
+        "total_cyclomatic": 1,
+        "total_cognitive": 1,
+        "function_count": 1,
+        "lines": 111,
+        "crap_max": 2.0,
+        "crap_above_threshold": 0
+      },
+      {
+        "path": "src/components/ui/__tests__/button.test.tsx",
+        "fan_in": 0,
+        "fan_out": 1,
+        "dead_code_ratio": 0.0,
+        "complexity_density": 0.15,
+        "maintainability_index": 92.7,
+        "total_cyclomatic": 9,
+        "total_cognitive": 0,
+        "function_count": 9,
+        "lines": 60,
+        "crap_max": 1.0,
+        "crap_above_threshold": 0
+      },
+      {
+        "path": "src/hooks/__tests__/gameTimerLogic.test.ts",
+        "fan_in": 0,
+        "fan_out": 1,
+        "dead_code_ratio": 0.0,
+        "complexity_density": 0.15,
+        "maintainability_index": 92.7,
+        "total_cyclomatic": 12,
+        "total_cognitive": 0,
+        "function_count": 12,
+        "lines": 78,
+        "crap_max": 1.0,
+        "crap_above_threshold": 0
+      },
+      {
+        "path": "src/components/pokemon-game/__tests__/GuessInput.test.tsx",
+        "fan_in": 0,
+        "fan_out": 1,
+        "dead_code_ratio": 0.0,
+        "complexity_density": 0.14,
+        "maintainability_index": 93.0,
+        "total_cyclomatic": 13,
+        "total_cognitive": 0,
+        "function_count": 13,
+        "lines": 92,
+        "crap_max": 1.0,
+        "crap_above_threshold": 0
+      },
+      {
+        "path": "src/components/pokemon-game/__tests__/HowToPlay.test.tsx",
+        "fan_in": 0,
+        "fan_out": 1,
+        "dead_code_ratio": 0.0,
+        "complexity_density": 0.14,
+        "maintainability_index": 93.0,
+        "total_cyclomatic": 13,
+        "total_cognitive": 0,
+        "function_count": 13,
+        "lines": 92,
+        "crap_max": 1.0,
+        "crap_above_threshold": 0
+      },
+      {
+        "path": "src/services/__tests__/pokemonApiTransform.test.ts",
+        "fan_in": 0,
+        "fan_out": 1,
+        "dead_code_ratio": 0.0,
+        "complexity_density": 0.14,
+        "maintainability_index": 93.0,
+        "total_cyclomatic": 13,
+        "total_cognitive": 0,
+        "function_count": 13,
+        "lines": 90,
+        "crap_max": 1.0,
+        "crap_above_threshold": 0
+      },
+      {
+        "path": "src/components/pokemon-game/__tests__/resultsPageThemes.test.ts",
+        "fan_in": 0,
+        "fan_out": 1,
+        "dead_code_ratio": 0.0,
+        "complexity_density": 0.13,
+        "maintainability_index": 93.3,
+        "total_cyclomatic": 22,
+        "total_cognitive": 0,
+        "function_count": 22,
+        "lines": 166,
+        "crap_max": 1.0,
+        "crap_above_threshold": 0
+      },
+      {
+        "path": "src/services/__tests__/pokemonGeneration.test.ts",
+        "fan_in": 0,
+        "fan_out": 2,
+        "dead_code_ratio": 0.0,
+        "complexity_density": 0.13,
+        "maintainability_index": 93.3,
+        "total_cyclomatic": 4,
+        "total_cognitive": 0,
+        "function_count": 4,
+        "lines": 30,
+        "crap_max": 1.0,
+        "crap_above_threshold": 0
+      },
+      {
+        "path": "src/services/__tests__/rankingUtils.test.ts",
+        "fan_in": 0,
+        "fan_out": 1,
+        "dead_code_ratio": 0.0,
+        "complexity_density": 0.13,
+        "maintainability_index": 93.3,
+        "total_cyclomatic": 19,
+        "total_cognitive": 0,
+        "function_count": 19,
+        "lines": 148,
+        "crap_max": 1.0,
+        "crap_above_threshold": 0
+      },
+      {
+        "path": "src/components/pokemon-game/__tests__/resultsPageCopy.test.ts",
+        "fan_in": 0,
+        "fan_out": 1,
+        "dead_code_ratio": 0.0,
+        "complexity_density": 0.12,
+        "maintainability_index": 93.6,
+        "total_cyclomatic": 12,
+        "total_cognitive": 0,
+        "function_count": 12,
+        "lines": 98,
+        "crap_max": 1.0,
+        "crap_above_threshold": 0
+      },
+      {
+        "path": "src/components/ui/__tests__/input.test.tsx",
+        "fan_in": 0,
+        "fan_out": 1,
+        "dead_code_ratio": 0.0,
+        "complexity_density": 0.17,
+        "maintainability_index": 93.6,
+        "total_cyclomatic": 6,
+        "total_cognitive": 0,
+        "function_count": 6,
+        "lines": 36,
+        "crap_max": 1.0,
+        "crap_above_threshold": 0
+      },
+      {
+        "path": "src/components/ui/__tests__/language-toggle.test.tsx",
+        "fan_in": 0,
+        "fan_out": 1,
+        "dead_code_ratio": 0.0,
+        "complexity_density": 0.17,
+        "maintainability_index": 93.6,
+        "total_cyclomatic": 6,
+        "total_cognitive": 0,
+        "function_count": 6,
+        "lines": 36,
+        "crap_max": 1.0,
+        "crap_above_threshold": 0
+      },
+      {
+        "path": "src/services/__tests__/gameResultsValidation.test.ts",
+        "fan_in": 0,
+        "fan_out": 1,
+        "dead_code_ratio": 0.0,
+        "complexity_density": 0.12,
+        "maintainability_index": 93.6,
+        "total_cyclomatic": 21,
+        "total_cognitive": 0,
+        "function_count": 21,
+        "lines": 174,
+        "crap_max": 1.0,
+        "crap_above_threshold": 0
+      },
+      {
+        "path": "src/hooks/useGameState.ts",
+        "fan_in": 3,
+        "fan_out": 3,
+        "dead_code_ratio": 0.0,
+        "complexity_density": 0.01,
+        "maintainability_index": 94.2,
+        "total_cyclomatic": 1,
+        "total_cognitive": 7,
+        "function_count": 1,
+        "lines": 95,
+        "crap_max": 2.0,
+        "crap_above_threshold": 0
+      },
+      {
+        "path": "src/services/__tests__/pokemonApiFetch.test.ts",
+        "fan_in": 0,
+        "fan_out": 1,
+        "dead_code_ratio": 0.0,
+        "complexity_density": 0.1,
+        "maintainability_index": 94.2,
+        "total_cyclomatic": 25,
+        "total_cognitive": 3,
+        "function_count": 22,
+        "lines": 256,
+        "crap_max": 2.0,
+        "crap_above_threshold": 0
+      },
+      {
+        "path": "src/services/pokemonGeneration.ts",
+        "fan_in": 2,
+        "fan_out": 1,
+        "dead_code_ratio": 0.0,
+        "complexity_density": 0.25,
+        "maintainability_index": 94.2,
+        "total_cyclomatic": 5,
+        "total_cognitive": 2,
+        "function_count": 3,
+        "lines": 20,
+        "crap_max": 2.0,
+        "crap_above_threshold": 0
+      },
+      {
+        "path": "src/components/ui/__tests__/card.test.tsx",
+        "fan_in": 0,
+        "fan_out": 1,
+        "dead_code_ratio": 0.0,
+        "complexity_density": 0.09,
+        "maintainability_index": 94.5,
+        "total_cyclomatic": 7,
+        "total_cognitive": 0,
+        "function_count": 6,
+        "lines": 77,
+        "crap_max": 2.0,
+        "crap_above_threshold": 0
+      },
+      {
+        "path": "src/components/pokemon-game/GameModeDialog.tsx",
+        "fan_in": 1,
+        "fan_out": 2,
+        "dead_code_ratio": 0.0,
+        "complexity_density": 0.02,
+        "maintainability_index": 95.0,
+        "total_cyclomatic": 3,
+        "total_cognitive": 1,
+        "function_count": 3,
+        "lines": 168,
+        "crap_max": 2.0,
+        "crap_above_threshold": 0
+      },
+      {
+        "path": "src/components/ui/scrollable-dialog.tsx",
+        "fan_in": 1,
+        "fan_out": 2,
+        "dead_code_ratio": 0.0,
+        "complexity_density": 0.04,
+        "maintainability_index": 95.0,
+        "total_cyclomatic": 1,
+        "total_cognitive": 0,
+        "function_count": 1,
+        "lines": 25,
+        "crap_max": 2.0,
+        "crap_above_threshold": 0
+      },
+      {
+        "path": "src/components/pokemon-game/resultsPageTitles.ts",
+        "fan_in": 2,
+        "fan_out": 0,
+        "dead_code_ratio": 0.0,
+        "complexity_density": 0.14,
+        "maintainability_index": 95.8,
+        "total_cyclomatic": 7,
+        "total_cognitive": 1,
+        "function_count": 6,
+        "lines": 51,
+        "crap_max": 2.0,
+        "crap_above_threshold": 0
+      },
+      {
+        "path": "src/components/ui/button.tsx",
+        "fan_in": 14,
+        "fan_out": 1,
+        "dead_code_ratio": 0.0,
+        "complexity_density": 0.03,
+        "maintainability_index": 96.3,
+        "total_cyclomatic": 2,
+        "total_cognitive": 1,
+        "function_count": 1,
+        "lines": 58,
+        "crap_max": 2.0,
+        "crap_above_threshold": 0
+      },
+      {
+        "path": "src/components/pokemon-game/resultsPageThemes.ts",
+        "fan_in": 2,
+        "fan_out": 1,
+        "dead_code_ratio": 0.0,
+        "complexity_density": 0.01,
+        "maintainability_index": 96.9,
+        "total_cyclomatic": 4,
+        "total_cognitive": 1,
+        "function_count": 3,
+        "lines": 318,
+        "crap_max": 2.0,
+        "crap_above_threshold": 0
+      },
+      {
+        "path": "src/components/pokemon-game/GameOverFireworks.tsx",
+        "fan_in": 1,
+        "fan_out": 0,
+        "dead_code_ratio": 0.0,
+        "complexity_density": 0.07,
+        "maintainability_index": 97.9,
+        "total_cyclomatic": 4,
+        "total_cognitive": 0,
+        "function_count": 4,
+        "lines": 61,
+        "crap_max": 2.0,
+        "crap_above_threshold": 0
+      },
+      {
+        "path": "src/components/pokemon-game/GameScreenHypeOverlay.tsx",
+        "fan_in": 1,
+        "fan_out": 0,
+        "dead_code_ratio": 0.0,
+        "complexity_density": 0.07,
+        "maintainability_index": 98.8,
+        "total_cyclomatic": 2,
+        "total_cognitive": 1,
+        "function_count": 1,
+        "lines": 29,
+        "crap_max": 2.0,
+        "crap_above_threshold": 0
+      },
+      {
+        "path": "src/components/pokemon-game/__tests__/guessSuggestions.test.ts",
+        "fan_in": 0,
+        "fan_out": 2,
+        "dead_code_ratio": 0.0,
+        "complexity_density": 0.05,
+        "maintainability_index": 94.1,
+        "total_cyclomatic": 12,
+        "total_cognitive": 0,
+        "function_count": 12,
+        "lines": 253,
+        "crap_max": 1.0,
+        "crap_above_threshold": 0
+      },
+      {
+        "path": "src/components/pokemon-game/__tests__/gameScoring.test.ts",
+        "fan_in": 0,
+        "fan_out": 1,
+        "dead_code_ratio": 0.0,
+        "complexity_density": 0.1,
+        "maintainability_index": 94.2,
+        "total_cyclomatic": 6,
+        "total_cognitive": 0,
+        "function_count": 6,
+        "lines": 62,
+        "crap_max": 1.0,
+        "crap_above_threshold": 0
+      },
+      {
+        "path": "src/test/test-utils.tsx",
+        "fan_in": 4,
+        "fan_out": 2,
+        "dead_code_ratio": 0.0,
+        "complexity_density": 0.08,
+        "maintainability_index": 94.4,
+        "total_cyclomatic": 2,
+        "total_cognitive": 0,
+        "function_count": 2,
+        "lines": 26,
+        "crap_max": 1.0,
+        "crap_above_threshold": 0
+      },
+      {
+        "path": "src/utils/__tests__/gameFormatters.test.ts",
+        "fan_in": 0,
+        "fan_out": 1,
+        "dead_code_ratio": 0.0,
+        "complexity_density": 0.27,
+        "maintainability_index": 94.8,
+        "total_cyclomatic": 4,
+        "total_cognitive": 0,
+        "function_count": 4,
+        "lines": 15,
+        "crap_max": 1.0,
+        "crap_above_threshold": 0
+      },
+      {
+        "path": "src/components/ui/__tests__/select.test.tsx",
+        "fan_in": 0,
+        "fan_out": 1,
+        "dead_code_ratio": 0.0,
+        "complexity_density": 0.07,
+        "maintainability_index": 95.1,
+        "total_cyclomatic": 5,
+        "total_cognitive": 0,
+        "function_count": 5,
+        "lines": 71,
+        "crap_max": 1.0,
+        "crap_above_threshold": 0
+      },
+      {
+        "path": "src/components/ui/card.tsx",
+        "fan_in": 4,
+        "fan_out": 1,
+        "dead_code_ratio": 0.0,
+        "complexity_density": 0.07,
+        "maintainability_index": 95.1,
+        "total_cyclomatic": 6,
+        "total_cognitive": 0,
+        "function_count": 6,
+        "lines": 84,
+        "crap_max": 1.0,
+        "crap_above_threshold": 0
+      },
+      {
+        "path": "src/components/pokemon-game/HowToPlay.tsx",
+        "fan_in": 2,
+        "fan_out": 2,
+        "dead_code_ratio": 0.0,
+        "complexity_density": 0.01,
+        "maintainability_index": 95.3,
+        "total_cyclomatic": 1,
+        "total_cognitive": 1,
+        "function_count": 1,
+        "lines": 166,
+        "crap_max": 1.0,
+        "crap_above_threshold": 0
+      },
+      {
+        "path": "src/components/ui/__tests__/dialog.test.tsx",
+        "fan_in": 0,
+        "fan_out": 1,
+        "dead_code_ratio": 0.0,
+        "complexity_density": 0.06,
+        "maintainability_index": 95.4,
+        "total_cyclomatic": 5,
+        "total_cognitive": 0,
+        "function_count": 5,
+        "lines": 77,
+        "crap_max": 1.0,
+        "crap_above_threshold": 0
+      },
+      {
+        "path": "src/components/ui/dialog.tsx",
+        "fan_in": 6,
+        "fan_out": 1,
+        "dead_code_ratio": 0.0,
+        "complexity_density": 0.05,
+        "maintainability_index": 95.7,
+        "total_cyclomatic": 6,
+        "total_cognitive": 0,
+        "function_count": 6,
+        "lines": 118,
+        "crap_max": 1.0,
+        "crap_above_threshold": 0
+      },
+      {
+        "path": "src/store/store.ts",
+        "fan_in": 2,
+        "fan_out": 1,
+        "dead_code_ratio": 0.0,
+        "complexity_density": 0.07,
+        "maintainability_index": 96.6,
+        "total_cyclomatic": 1,
+        "total_cognitive": 0,
+        "function_count": 1,
+        "lines": 14,
+        "crap_max": 1.0,
+        "crap_above_threshold": 0
+      },
+      {
+        "path": "src/components/pokemon-game/PokemonDisplayFrame.tsx",
+        "fan_in": 3,
+        "fan_out": 1,
+        "dead_code_ratio": 0.0,
+        "complexity_density": 0.02,
+        "maintainability_index": 96.7,
+        "total_cyclomatic": 1,
+        "total_cognitive": 0,
+        "function_count": 1,
+        "lines": 43,
+        "crap_max": 1.0,
+        "crap_above_threshold": 0
+      },
+      {
+        "path": "src/components/ui/input.tsx",
+        "fan_in": 5,
+        "fan_out": 1,
+        "dead_code_ratio": 0.0,
+        "complexity_density": 0.04,
+        "maintainability_index": 96.7,
+        "total_cyclomatic": 1,
+        "total_cognitive": 0,
+        "function_count": 1,
+        "lines": 23,
+        "crap_max": 1.0,
+        "crap_above_threshold": 0
+      },
+      {
+        "path": "src/utils/gameFormatters.ts",
+        "fan_in": 4,
+        "fan_out": 0,
+        "dead_code_ratio": 0.0,
+        "complexity_density": 0.15,
+        "maintainability_index": 98.8,
+        "total_cyclomatic": 2,
+        "total_cognitive": 0,
+        "function_count": 2,
+        "lines": 13,
+        "crap_max": 1.0,
+        "crap_above_threshold": 0
+      },
+      {
+        "path": "src/lib/utils.ts",
+        "fan_in": 8,
+        "fan_out": 0,
+        "dead_code_ratio": 0.0,
+        "complexity_density": 0.14,
+        "maintainability_index": 99.4,
+        "total_cyclomatic": 1,
+        "total_cognitive": 0,
+        "function_count": 1,
+        "lines": 7,
+        "crap_max": 1.0,
+        "crap_above_threshold": 0
+      }
+    ],
+    "hotspot_summary": {
+      "since": "6 months",
+      "min_commits": 3,
+      "files_analyzed": 0,
+      "files_excluded": 1,
+      "shallow_clone": false
+    },
+    "large_functions": [
+      {
+        "path": "src/components/pokemon-game/ResultsPage.tsx",
+        "name": "ResultsPage",
+        "line": 51,
+        "line_count": 701
+      },
+      {
+        "path": "src/hooks/usePokemonGameHandlers.ts",
+        "name": "usePokemonGameHandlers",
+        "line": 69,
+        "line_count": 536
+      },
+      {
+        "path": "src/components/pokemon-game/PokemonGame.tsx",
+        "name": "PokemonGame",
+        "line": 41,
+        "line_count": 385
+      },
+      {
+        "path": "src/hooks/useGameOverDialogEffects.ts",
+        "name": "useGameOverDialogEffects",
+        "line": 52,
+        "line_count": 294
+      },
+      {
+        "path": "src/components/pokemon-game/__tests__/GameScreen.test.tsx",
+        "name": "<arrow>",
+        "line": 192,
+        "line_count": 273
+      },
+      {
+        "path": "src/components/pokemon-game/MenuScreen.tsx",
+        "name": "MenuScreen",
+        "line": 63,
+        "line_count": 259
+      },
+      {
+        "path": "src/hooks/usePokemonGameEffects.ts",
+        "name": "usePokemonGameEffects",
+        "line": 37,
+        "line_count": 231
+      },
+      {
+        "path": "src/hooks/useRankings.ts",
+        "name": "useRankings",
+        "line": 39,
+        "line_count": 220
+      },
+      {
+        "path": "src/hooks/useGameTimers.ts",
+        "name": "useGameTimers",
+        "line": 15,
+        "line_count": 206
+      },
+      {
+        "path": "src/components/pokemon-game/EmailAuthDialog.tsx",
+        "name": "EmailAuthDialog",
+        "line": 29,
+        "line_count": 196
+      },
+      {
+        "path": "src/components/pokemon-game/GameScreen.tsx",
+        "name": "GameScreen",
+        "line": 49,
+        "line_count": 195
+      },
+      {
+        "path": "src/hooks/usePlayerName.ts",
+        "name": "usePlayerName",
+        "line": 21,
+        "line_count": 166
+      },
+      {
+        "path": "src/components/pokemon-game/__tests__/resultsPageThemes.test.ts",
+        "name": "<arrow>",
+        "line": 9,
+        "line_count": 157
+      },
+      {
+        "path": "src/components/pokemon-game/RewardPokemonDisplay.tsx",
+        "name": "RewardPokemonDisplay",
+        "line": 53,
+        "line_count": 155
+      },
+      {
+        "path": "src/components/pokemon-game/HowToPlay.tsx",
+        "name": "HowToPlay",
+        "line": 17,
+        "line_count": 149
+      },
+      {
+        "path": "src/components/pokemon-game/GameModeDialog.tsx",
+        "name": "GameModeDialog",
+        "line": 31,
+        "line_count": 137
+      },
+      {
+        "path": "src/components/pokemon-game/__tests__/gameOverDialogMessages.test.ts",
+        "name": "<arrow>",
+        "line": 120,
+        "line_count": 132
+      },
+      {
+        "path": "src/components/pokemon-game/__tests__/guessSuggestions.test.ts",
+        "name": "<arrow>",
+        "line": 122,
+        "line_count": 131
+      },
+      {
+        "path": "src/components/pokemon-game/GameOverStats.tsx",
+        "name": "GameOverStats",
+        "line": 22,
+        "line_count": 126
+      },
+      {
+        "path": "src/hooks/useGameAudio.ts",
+        "name": "useGameAudio",
+        "line": 15,
+        "line_count": 124
+      },
+      {
+        "path": "src/components/pokemon-game/PokemonDisplay.tsx",
+        "name": "PokemonDisplay",
+        "line": 22,
+        "line_count": 112
+      },
+      {
+        "path": "src/services/pokemonApi.ts",
+        "name": "endpoints",
+        "line": 56,
+        "line_count": 111
+      },
+      {
+        "path": "src/components/pokemon-game/__tests__/gameOverCryCache.test.ts",
+        "name": "<arrow>",
+        "line": 42,
+        "line_count": 110
+      },
+      {
+        "path": "src/components/pokemon-game/EmailAuthForm.tsx",
+        "name": "EmailAuthForm",
+        "line": 19,
+        "line_count": 106
+      },
+      {
+        "path": "src/components/pokemon-game/AuthButtons.tsx",
+        "name": "AuthButtons",
+        "line": 37,
+        "line_count": 104
+      },
+      {
+        "path": "src/hooks/usePokemonGameHandlers.ts",
+        "name": "handleCorrectAnswer",
+        "line": 159,
+        "line_count": 98
+      },
+      {
+        "path": "src/components/pokemon-game/RewardPokemonSprite.tsx",
+        "name": "RewardPokemonSprite",
+        "line": 37,
+        "line_count": 95
+      },
+      {
+        "path": "src/components/pokemon-game/GuessInput.tsx",
+        "name": "GuessInput",
+        "line": 18,
+        "line_count": 93
+      },
+      {
+        "path": "src/components/pokemon-game/HintButton.tsx",
+        "name": "HintButton",
+        "line": 14,
+        "line_count": 93
+      },
+      {
+        "path": "src/components/pokemon-game/__tests__/PokemonDisplay.test.tsx",
+        "name": "<arrow>",
+        "line": 44,
+        "line_count": 93
+      },
+      {
+        "path": "src/hooks/useSlotMachine.ts",
+        "name": "useSlotMachine",
+        "line": 22,
+        "line_count": 90
+      },
+      {
+        "path": "src/hooks/usePokemonGameHandlers.ts",
+        "name": "startGame",
+        "line": 438,
+        "line_count": 87
+      },
+      {
+        "path": "src/hooks/useGameOverDialogEffects.ts",
+        "name": "<arrow>",
+        "line": 125,
+        "line_count": 84
+      },
+      {
+        "path": "src/components/pokemon-game/__tests__/GameStats.test.tsx",
+        "name": "<arrow>",
+        "line": 5,
+        "line_count": 83
+      },
+      {
+        "path": "src/services/__tests__/pokemonApiFetch.test.ts",
+        "name": "<arrow>",
+        "line": 32,
+        "line_count": 83
+      },
+      {
+        "path": "src/components/pokemon-game/PokemonSprite.tsx",
+        "name": "PokemonSprite",
+        "line": 15,
+        "line_count": 82
+      },
+      {
+        "path": "src/components/pokemon-game/__tests__/resultsPageTitles.test.ts",
+        "name": "<arrow>",
+        "line": 6,
+        "line_count": 82
+      },
+      {
+        "path": "src/components/pokemon-game/GameOverActions.tsx",
+        "name": "GameOverActions",
+        "line": 22,
+        "line_count": 81
+      },
+      {
+        "path": "src/components/pokemon-game/StaticPokemonDisplay.tsx",
+        "name": "StaticPokemonDisplay",
+        "line": 31,
+        "line_count": 79
+      },
+      {
+        "path": "src/components/pokemon-game/__tests__/HintButton.test.tsx",
+        "name": "<arrow>",
+        "line": 18,
+        "line_count": 79
+      },
+      {
+        "path": "src/components/pokemon-game/__tests__/GuessInput.test.tsx",
+        "name": "<arrow>",
+        "line": 14,
+        "line_count": 78
+      },
+      {
+        "path": "src/components/pokemon-game/MenuRankingsList.tsx",
+        "name": "MenuRankingsList",
+        "line": 17,
+        "line_count": 77
+      },
+      {
+        "path": "src/hooks/useRankings.ts",
+        "name": "saveRanking",
+        "line": 150,
+        "line_count": 77
+      },
+      {
+        "path": "src/components/pokemon-game/__tests__/HowToPlay.test.tsx",
+        "name": "<arrow>",
+        "line": 18,
+        "line_count": 74
+      },
+      {
+        "path": "src/components/pokemon-game/RewardPokemonLabels.tsx",
+        "name": "RewardPokemonLabels",
+        "line": 31,
+        "line_count": 73
+      },
+      {
+        "path": "src/services/pokemonApi.ts",
+        "name": "queryFn",
+        "line": 90,
+        "line_count": 73
+      },
+      {
+        "path": "src/components/pokemon-game/GameStats.tsx",
+        "name": "GameStats",
+        "line": 13,
+        "line_count": 72
+      },
+      {
+        "path": "src/services/__tests__/pokemonApiFetch.test.ts",
+        "name": "<arrow>",
+        "line": 116,
+        "line_count": 72
+      },
+      {
+        "path": "src/components/pokemon-game/gameScoring.ts",
+        "name": "calculateEarnedPoints",
+        "line": 15,
+        "line_count": 71
+      },
+      {
+        "path": "src/services/__tests__/gameResultsService.test.ts",
+        "name": "<arrow>",
+        "line": 51,
+        "line_count": 71
+      },
+      {
+        "path": "src/components/ErrorBoundaryFallback.tsx",
+        "name": "ErrorBoundaryFallback",
+        "line": 29,
+        "line_count": 68
+      },
+      {
+        "path": "src/components/pokemon-game/GameOverDialogHeader.tsx",
+        "name": "GameOverDialogHeader",
+        "line": 15,
+        "line_count": 68
+      },
+      {
+        "path": "src/services/__tests__/pokemonApiFetch.test.ts",
+        "name": "<arrow>",
+        "line": 189,
+        "line_count": 67
+      },
+      {
+        "path": "src/components/ui/__tests__/card.test.tsx",
+        "name": "<arrow>",
+        "line": 12,
+        "line_count": 65
+      },
+      {
+        "path": "src/components/pokemon-game/__tests__/gameOverCryCache.test.ts",
+        "name": "<arrow>",
+        "line": 153,
+        "line_count": 64
+      },
+      {
+        "path": "src/components/ui/__tests__/dialog.test.tsx",
+        "name": "<arrow>",
+        "line": 13,
+        "line_count": 64
+      },
+      {
+        "path": "src/services/__tests__/pokemonApiStorage.test.ts",
+        "name": "<arrow>",
+        "line": 51,
+        "line_count": 64
+      },
+      {
+        "path": "src/components/pokemon-game/__tests__/gameOverDialogSave.test.ts",
+        "name": "<arrow>",
+        "line": 163,
+        "line_count": 63
+      },
+      {
+        "path": "src/components/pokemon-game/__tests__/pokemonCryPlayer.test.ts",
+        "name": "<arrow>",
+        "line": 50,
+        "line_count": 61
+      }
+    ],
+    "targets": [
+      {
+        "path": "src/components/pokemon-game/pokemonLabelText.ts",
+        "priority": 25.3,
+        "efficiency": 12.7,
+        "recommendation": "Split high-impact file (25 LOC), 4 dependents amplify every change",
+        "category": "split_high_impact",
+        "effort": "medium",
+        "confidence": "medium",
+        "factors": [
+          {
+            "metric": "complexity_density",
+            "value": 0.4,
+            "threshold": 0.3,
+            "detail": "density 0.40 exceeds 0.3"
+          },
+          {
+            "metric": "fan_in",
+            "value": 4.0,
+            "threshold": 3.0,
+            "detail": "4 files depend on this"
+          }
+        ],
+        "evidence": {
+          "direct_callers": [
+            {
+              "path": "src/components/pokemon-game/RewardPokemonLabels.tsx",
+              "symbols": [
+                {
+                  "imported": "getLegendaryBadgeLabel",
+                  "local": "getLegendaryBadgeLabel",
+                  "type_only": false
+                },
+                {
+                  "imported": "getLocalizedPokemonName",
+                  "local": "getLocalizedPokemonName",
+                  "type_only": false
+                },
+                {
+                  "imported": "getMythicalBadgeLabel",
+                  "local": "getMythicalBadgeLabel",
+                  "type_only": false
+                },
+                {
+                  "imported": "getShinyBadgeLabel",
+                  "local": "getShinyBadgeLabel",
+                  "type_only": false
+                },
+                {
+                  "imported": "getYouAreLabel",
+                  "local": "getYouAreLabel",
+                  "type_only": false
+                }
+              ]
+            },
+            {
+              "path": "src/components/pokemon-game/StaticPokemonBadges.tsx",
+              "symbols": [
+                {
+                  "imported": "getLegendaryBadgeLabel",
+                  "local": "getLegendaryBadgeLabel",
+                  "type_only": false
+                },
+                {
+                  "imported": "getMythicalBadgeLabel",
+                  "local": "getMythicalBadgeLabel",
+                  "type_only": false
+                },
+                {
+                  "imported": "getShinyBadgeLabel",
+                  "local": "getShinyBadgeLabel",
+                  "type_only": false
+                }
+              ]
+            },
+            {
+              "path": "src/components/pokemon-game/StaticPokemonDisplay.tsx",
+              "symbols": [
+                {
+                  "imported": "getLocalizedPokemonName",
+                  "local": "getLocalizedPokemonName",
+                  "type_only": false
+                },
+                {
+                  "imported": "getYouAreLabel",
+                  "local": "getYouAreLabel",
+                  "type_only": false
+                }
+              ]
+            },
+            {
+              "path": "src/components/pokemon-game/__tests__/rewardPokemonDisplay.test.ts",
+              "symbols": [
+                {
+                  "imported": "getLegendaryBadgeLabel",
+                  "local": "getLegendaryBadgeLabel",
+                  "type_only": false
+                },
+                {
+                  "imported": "getLocalizedPokemonName",
+                  "local": "getLocalizedPokemonName",
+                  "type_only": false
+                },
+                {
+                  "imported": "getMythicalBadgeLabel",
+                  "local": "getMythicalBadgeLabel",
+                  "type_only": false
+                },
+                {
+                  "imported": "getShinyBadgeLabel",
+                  "local": "getShinyBadgeLabel",
+                  "type_only": false
+                },
+                {
+                  "imported": "getYouAreLabel",
+                  "local": "getYouAreLabel",
+                  "type_only": false
+                }
+              ]
+            }
+          ]
+        },
+        "actions": [
+          {
+            "type": "apply-refactoring",
+            "auto_fixable": false,
+            "description": "Split high-impact file (25 LOC), 4 dependents amplify every change",
+            "category": "split_high_impact"
+          },
+          {
+            "type": "suppress-line",
+            "auto_fixable": false,
+            "description": "Suppress the underlying complexity finding",
+            "comment": "// fallow-ignore-next-line complexity"
+          }
+        ]
+      },
+      {
+        "path": "src/components/pokemon-game/GameScreen.tsx",
+        "priority": 16.6,
+        "efficiency": 8.3,
+        "recommendation": "Extract GameScreen (cognitive: 32) in 244-LOC file into smaller functions",
+        "category": "extract_complex_functions",
+        "effort": "medium",
+        "confidence": "high",
+        "factors": [
+          {
+            "metric": "fan_out",
+            "value": 10.0,
+            "threshold": 5.0,
+            "detail": "imports 10 modules"
+          },
+          {
+            "metric": "cognitive_complexity",
+            "value": 32.0,
+            "threshold": 30.0,
+            "detail": "GameScreen has cognitive complexity 32"
+          }
+        ],
+        "evidence": {
+          "complex_functions": [
+            {
+              "name": "GameScreen",
+              "line": 49,
+              "cognitive": 32
+            }
+          ],
+          "direct_callers": [
+            {
+              "path": "src/components/pokemon-game/PokemonGame.tsx",
+              "symbols": [
+                {
+                  "imported": "GameScreen",
+                  "local": "GameScreen",
+                  "type_only": false
+                }
+              ]
+            },
+            {
+              "path": "src/components/pokemon-game/__tests__/GameScreen.test.tsx",
+              "symbols": [
+                {
+                  "imported": "GameScreen",
+                  "local": "GameScreen",
+                  "type_only": false
+                }
+              ]
+            }
+          ]
+        },
+        "actions": [
+          {
+            "type": "apply-refactoring",
+            "auto_fixable": false,
+            "description": "Extract GameScreen (cognitive: 32) in 244-LOC file into smaller functions",
+            "category": "extract_complex_functions"
+          },
+          {
+            "type": "suppress-line",
+            "auto_fixable": false,
+            "description": "Suppress the underlying complexity finding",
+            "comment": "// fallow-ignore-next-line complexity"
+          }
+        ]
+      },
+      {
+        "path": "src/components/pokemon-game/PokemonGame.tsx",
+        "priority": 14.8,
+        "efficiency": 7.4,
+        "recommendation": "Extract PokemonGame (cognitive: 34) in 428-LOC file into smaller functions",
+        "category": "extract_complex_functions",
+        "effort": "medium",
+        "confidence": "high",
+        "factors": [
+          {
+            "metric": "fan_out",
+            "value": 16.0,
+            "threshold": 5.0,
+            "detail": "imports 16 modules"
+          },
+          {
+            "metric": "cognitive_complexity",
+            "value": 34.0,
+            "threshold": 30.0,
+            "detail": "PokemonGame has cognitive complexity 34"
+          }
+        ],
+        "evidence": {
+          "complex_functions": [
+            {
+              "name": "PokemonGame",
+              "line": 41,
+              "cognitive": 34
+            }
+          ],
+          "direct_callers": [
+            {
+              "path": "src/App.tsx",
+              "symbols": [
+                {
+                  "imported": "default",
+                  "local": "default",
+                  "type_only": false
+                }
+              ]
+            }
+          ]
+        },
+        "actions": [
+          {
+            "type": "apply-refactoring",
+            "auto_fixable": false,
+            "description": "Extract PokemonGame (cognitive: 34) in 428-LOC file into smaller functions",
+            "category": "extract_complex_functions"
+          },
+          {
+            "type": "suppress-line",
+            "auto_fixable": false,
+            "description": "Suppress the underlying complexity finding",
+            "comment": "// fallow-ignore-next-line complexity"
+          }
+        ]
+      }
+    ],
+    "target_thresholds": {
+      "fan_in_p95": 5.0,
+      "fan_in_p75": 3.0,
+      "fan_out_p95": 8.0,
+      "fan_out_p90": 5
+    },
+    "framework_health": {
+      "detected_frameworks": [
+        "react"
+      ],
+      "detectors": [
+        {
+          "id": "unused-component-prop",
+          "framework": "react",
+          "status": "active"
+        },
+        {
+          "id": "prop-drilling",
+          "framework": "react",
+          "status": "disabled_by_config",
+          "reason": "disabled_by_config"
+        },
+        {
+          "id": "thin-wrapper",
+          "framework": "react",
+          "status": "disabled_by_config",
+          "reason": "disabled_by_config"
+        },
+        {
+          "id": "duplicate-prop-shape",
+          "framework": "react",
+          "status": "disabled_by_config",
+          "reason": "disabled_by_config"
+        }
+      ]
+    }
+  },
+  "next_steps": [
+    {
+      "id": "complexity-breakdown",
+      "command": "fallow health --complexity-breakdown",
+      "reason": "see per-decision-point contributions for a hotspot"
+    },
+    {
+      "id": "audit-changed",
+      "command": "fallow audit",
+      "reason": "gate only the files your branch changed (auto-detects the base)"
+    }
+  ],
+  "_meta": {
+    "telemetry": {
+      "analysis_run_id": "run_a611c04f4040d9d7"
+    }
+  }
+}

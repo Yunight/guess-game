@@ -1,0 +1,9 @@
+{
+	"$schema": "https://raw.githubusercontent.com/fallow-rs/fallow/main/schema.json",
+	"entry": [
+		"src/main.tsx",
+		"src/components/pokemon-game/PokemonGame.tsx",
+		"src/components/pokemon-game/ResultsPage.tsx",
+		"src/test/setup.ts"
+	]
+}

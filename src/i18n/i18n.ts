@@ -18,7 +18,7 @@ i18n
 		},
 		fallbackLng: "fr",
 		lng: "fr",
-		debug: process.env.NODE_ENV === "development",
+		debug: import.meta.env.DEV,
 		interpolation: {
 			escapeValue: false,
 		},

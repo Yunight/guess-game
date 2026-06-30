@@ -213,6 +213,9 @@ export const fr = {
 		"Entrez votre email pour recevoir un lien de réinitialisation",
 	sendResetLink: "Envoyer le lien",
 	backToSignIn: "Retour à la connexion",
+	rankingFetchError: "Impossible de charger le classement.",
+	rankingSaveError: "Impossible d'enregistrer le score.",
+	authSignInError: "Erreur de connexion. Réessayez.",
 
 	// Firebase Auth Errors
 	firebaseErrors: {

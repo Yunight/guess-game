@@ -195,6 +195,9 @@ export const en = {
 	enterEmailForReset: "Enter your email to receive a reset link",
 	sendResetLink: "Send Reset Link",
 	backToSignIn: "Back to Sign In",
+	rankingFetchError: "Unable to load the leaderboard.",
+	rankingSaveError: "Unable to save your score.",
+	authSignInError: "Sign-in failed. Please try again.",
 
 	// Firebase Auth Errors
 	firebaseErrors: {

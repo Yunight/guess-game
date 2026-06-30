@@ -1,4 +1,10 @@
 import { useEffect, useRef } from "react";
+import {
+	shouldPlayLowLifeSound,
+	shouldPlayTrainHorn,
+	shouldStopLowLifeSound,
+	shouldStopTrainHorn,
+} from "./gameAudioLogic";
 
 const CORRECT_SOUND_URL = "/sounds/pkm_level_up.mp3";
 const WRONG_SOUND_URL = "/sounds/bump_wall.mp3";
@@ -18,7 +24,6 @@ export const useGameAudio = (
 	const trainHornRef = useRef<HTMLAudioElement | null>(null);
 	const lowLifeRef = useRef<HTMLAudioElement | null>(null);
 
-	// Preload audio files
 	useEffect(() => {
 		correctAudioRef.current = new Audio(CORRECT_SOUND_URL);
 		wrongAudioRef.current = new Audio(WRONG_SOUND_URL);
@@ -26,7 +31,6 @@ export const useGameAudio = (
 		trainHornRef.current = new Audio(TRAIN_HORN_URL);
 		lowLifeRef.current = new Audio(LOW_LIFE_SOUND_URL);
 
-		// Set volume for specific sounds
 		if (trainHornRef.current) trainHornRef.current.volume = 0.05;
 		if (lowLifeRef.current) lowLifeRef.current.volume = 0.1;
 
@@ -57,7 +61,6 @@ export const useGameAudio = (
 	const cleanupNonCurrentAudio = (
 		currentRef: React.RefObject<HTMLAudioElement | null>,
 	): void => {
-		// Include all audio refs
 		const allRefs = [
 			victoryAudioRef,
 			correctAudioRef,
@@ -65,7 +68,6 @@ export const useGameAudio = (
 			lowLifeRef,
 			trainHornRef,
 		];
-		// If the current audio is not the train horn, exclude the train horn from cleanup
 		const refsToCleanup =
 			currentRef !== trainHornRef
 				? allRefs.filter((ref) => ref !== currentRef && ref !== trainHornRef)
@@ -85,7 +87,6 @@ export const useGameAudio = (
 		if (isMuted || !audioRef.current) return;
 
 		try {
-			// Clean up all other non-current sounds while preserving the train horn if it's active
 			cleanupNonCurrentAudio(audioRef);
 			audioRef.current.currentTime = 0;
 			await audioRef.current.play();
@@ -98,14 +99,10 @@ export const useGameAudio = (
 	const playWrongSound = () => playSound(wrongAudioRef);
 	const playVictorySound = () => playSound(victoryAudioRef);
 
-	// Handle train horn and low life sounds
 	useEffect(() => {
-		// Handle train horn sound
 		if (
-			showHypeTrain &&
-			!isMuted &&
-			trainHornRef.current &&
-			(!isHardMode || guessTimeLeft > 9)
+			shouldPlayTrainHorn(showHypeTrain, isMuted, isHardMode, guessTimeLeft) &&
+			trainHornRef.current
 		) {
 			if (trainHornRef.current.paused) {
 				trainHornRef.current.loop = true;
@@ -113,27 +110,20 @@ export const useGameAudio = (
 					console.error("Error playing train horn:", error);
 				});
 			}
-		} else if ((!showHypeTrain || guessTimeLeft <= 9) && trainHornRef.current) {
+		} else if (
+			shouldStopTrainHorn(showHypeTrain, guessTimeLeft) &&
+			trainHornRef.current
+		) {
 			trainHornRef.current.pause();
 			trainHornRef.current.currentTime = 0;
 		}
 
-		// Handle low life sound
-		if (
-			isHardMode &&
-			guessTimeLeft <= 5 &&
-			guessTimeLeft > 0 &&
-			!isMuted &&
-			lowLifeRef.current
-		) {
+		if (shouldPlayLowLifeSound(isHardMode, guessTimeLeft, isMuted) && lowLifeRef.current) {
 			lowLifeRef.current.loop = true;
 			lowLifeRef.current.play().catch((error) => {
 				console.error("Error playing low life sound:", error);
 			});
-		} else if (
-			(guessTimeLeft > 5 || guessTimeLeft <= 0 || !isHardMode) &&
-			lowLifeRef.current
-		) {
+		} else if (shouldStopLowLifeSound(isHardMode, guessTimeLeft) && lowLifeRef.current) {
 			lowLifeRef.current.pause();
 			lowLifeRef.current.currentTime = 0;
 		}

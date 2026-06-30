@@ -1,12 +1,10 @@
 {
-	"$schema": "https://biomejs.dev/schemas/1.4.1/schema.json",
-	"organizeImports": {
-		"enabled": true
-	},
+	"$schema": "https://biomejs.dev/schemas/2.5.1/schema.json",
+	"assist": { "actions": { "source": { "organizeImports": "on" } } },
 	"linter": {
 		"enabled": true,
 		"rules": {
-			"recommended": true
+			"preset": "recommended"
 		}
 	},
 	"formatter": {
@@ -25,6 +23,11 @@
 		}
 	},
 	"files": {
-		"ignore": ["dist/**/*", "tsconfig.json", "tsconfig.*.json"]
+		"includes": [
+			"**",
+			"!**/dist/**/*",
+			"!**/tsconfig.json",
+			"!**/tsconfig.*.json"
+		]
 	}
 }

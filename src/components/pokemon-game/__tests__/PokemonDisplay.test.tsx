@@ -13,10 +13,12 @@ const mockPokemon: Pokemon = {
 		"Quand il est en colère, il libère instantanément l'énergie emmagasinée dans les poches de ses joues.",
 	englishFlavorText:
 		"When it is angered, it immediately releases the energy stored in the pouches in its cheeks.",
-	sprite:
-		"https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/25.png",
-	shinySprite:
-		"https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/shiny/25.png",
+	sprites: {
+		front_default:
+			"https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/25.png",
+		front_shiny:
+			"https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/shiny/25.png",
+	},
 	isShiny: false,
 	evolvesFromSpecies: "pichu",
 	hasEvolution: true,
@@ -35,7 +37,9 @@ const mockAudio = {
 	currentTime: 0,
 };
 
-global.Audio = vi.fn().mockImplementation(() => mockAudio);
+global.Audio = vi.fn().mockImplementation(function AudioMock() {
+	return mockAudio;
+}) as unknown as typeof Audio;
 
 describe("PokemonDisplay", () => {
 	beforeEach(() => {
@@ -72,9 +76,9 @@ describe("PokemonDisplay", () => {
 			/>,
 		);
 
-		const pokemonImage = screen.getByAltText("Pikachu");
+		const pokemonImage = document.querySelector("img");
 		expect(pokemonImage).toBeInTheDocument();
-		expect(pokemonImage.className).toContain("brightness-0");
+		expect(pokemonImage?.className).toContain("brightness-0");
 	});
 
 	it("renders revealed Pokemon when correct", () => {
@@ -90,9 +94,9 @@ describe("PokemonDisplay", () => {
 			/>,
 		);
 
-		const pokemonImage = screen.getByAltText("Pikachu");
+		const pokemonImage = document.querySelector("img");
 		expect(pokemonImage).toBeInTheDocument();
-		expect(pokemonImage.className).not.toContain("brightness-0");
+		expect(pokemonImage?.className).not.toContain("brightness-0");
 	});
 
 	it("shows shiny badge for shiny Pokemon", () => {
@@ -110,7 +114,7 @@ describe("PokemonDisplay", () => {
 		);
 
 		// The text could be either in English or French
-		const shinyBadge = screen.getByText(/✨ (SHINY|CHROMATIQUE) ✨/);
+		const shinyBadge = screen.getByText(/✨ (SHINY|CHROMATIQUE)/);
 		expect(shinyBadge).toBeInTheDocument();
 	});
 

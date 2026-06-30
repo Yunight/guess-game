@@ -1,5 +1,3 @@
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import {
 	createUserWithEmailAndPassword,
 	sendPasswordResetEmail,
@@ -11,6 +9,16 @@ import type { FC } from "react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { auth } from "../../firebase";
+import { EmailAuthForm } from "./EmailAuthForm";
+import { EmailAuthResetForm } from "./EmailAuthResetForm";
+import {
+	extractFirebaseErrorCode,
+	getAuthDialogSubtitleKey,
+	getAuthDialogTitleKey,
+	shouldClearEmailError,
+	validateForgotPassword,
+	validateSignUpSubmit,
+} from "./emailAuthLogic";
 
 interface EmailAuthDialogProps {
 	isOpen: boolean;
@@ -33,17 +41,16 @@ export const EmailAuthDialog: FC<EmailAuthDialogProps> = ({
 	const [isLoading, setIsLoading] = useState(false);
 	const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
-	const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+	const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
 		setEmail(e.target.value);
-		// Clear error when email is changed
-		if (error?.includes("email")) {
+		if (shouldClearEmailError(error)) {
 			setError(null);
 		}
 	};
 
 	const handleTrainerNameChange = async (
 		e: React.ChangeEvent<HTMLInputElement>,
-	) => {
+	): Promise<void> => {
 		const newName = e.target.value;
 		setTrainerName(newName);
 
@@ -60,9 +67,10 @@ export const EmailAuthDialog: FC<EmailAuthDialogProps> = ({
 		}
 	};
 
-	const handleForgotPassword = async () => {
-		if (!email.trim()) {
-			setError(t("emailRequired"));
+	const handleForgotPassword = async (): Promise<void> => {
+		const validation = validateForgotPassword({ email });
+		if (validation.action === "abort") {
+			setError(t(validation.reason));
 			return;
 		}
 
@@ -73,11 +81,9 @@ export const EmailAuthDialog: FC<EmailAuthDialogProps> = ({
 		try {
 			await sendPasswordResetEmail(auth, email);
 			setSuccessMessage(t("passwordResetEmailSent"));
-			// Don't exit reset mode on success to keep showing the success message
-		} catch (error: unknown) {
-			if (error instanceof Error) {
-				const errorCode =
-					error.message.match(/\(([^)]+)\)/)?.[1] || "auth/default";
+		} catch (caughtError: unknown) {
+			if (caughtError instanceof Error) {
+				const errorCode = extractFirebaseErrorCode(caughtError.message);
 				setError(t(`firebaseErrors.${errorCode}`));
 			}
 		} finally {
@@ -85,40 +91,37 @@ export const EmailAuthDialog: FC<EmailAuthDialogProps> = ({
 		}
 	};
 
-	const handleSubmit = async (e: React.FormEvent) => {
+	const handleSubmit = async (e: React.FormEvent): Promise<void> => {
 		e.preventDefault();
 		setIsLoading(true);
 		setError(null);
 		setSuccessMessage(null);
 
+		const validation = validateSignUpSubmit({
+			isSignUp,
+			trainerName,
+			hasError: Boolean(error),
+		});
+
+		if (validation.action === "abort") {
+			setError(t(validation.reason));
+			setIsLoading(false);
+			return;
+		}
+
 		try {
 			if (isSignUp) {
-				if (!trainerName.trim()) {
-					setError(t("trainerNameRequired"));
-					setIsLoading(false);
-					return;
-				}
-
-				if (error) {
-					setIsLoading(false);
-					return;
-				}
-
 				const userCredential = await createUserWithEmailAndPassword(
 					auth,
 					email,
 					password,
 				);
 
-				// Update profile with trainer name
 				await updateProfile(userCredential.user, {
 					displayName: trainerName,
 				});
 
-				// Store trainer name in localStorage
 				localStorage.setItem("pokemonGamePlayerName", trainerName);
-
-				// Force a refresh to ensure all auth states are updated
 				window.location.reload();
 			} else {
 				const userCredential = await signInWithEmailAndPassword(
@@ -132,15 +135,12 @@ export const EmailAuthDialog: FC<EmailAuthDialogProps> = ({
 						userCredential.user.displayName,
 					);
 				}
-				// Force a refresh to ensure all auth states are updated
 				window.location.reload();
 			}
 			onClose();
-		} catch (error: unknown) {
-			if (error instanceof Error) {
-				// Extract the error code from the Firebase error message
-				const errorCode =
-					error.message.match(/\(([^)]+)\)/)?.[1] || "auth/default";
+		} catch (caughtError: unknown) {
+			if (caughtError instanceof Error) {
+				const errorCode = extractFirebaseErrorCode(caughtError.message);
 				setError(t(`firebaseErrors.${errorCode}`));
 			}
 		} finally {
@@ -148,14 +148,14 @@ export const EmailAuthDialog: FC<EmailAuthDialogProps> = ({
 		}
 	};
 
-	const toggleMode = () => {
+	const toggleMode = (): void => {
 		setIsSignUp(!isSignUp);
 		setError(null);
 		setSuccessMessage(null);
 		setIsResetMode(false);
 	};
 
-	const handleResetModeToggle = () => {
+	const handleResetModeToggle = (): void => {
 		setIsResetMode(!isResetMode);
 		setError(null);
 		setSuccessMessage(null);
@@ -176,18 +176,10 @@ export const EmailAuthDialog: FC<EmailAuthDialogProps> = ({
 
 				<div className="text-center mb-6">
 					<h2 className="text-2xl font-bold text-red-600">
-						{isResetMode
-							? t("forgotPassword")
-							: isSignUp
-								? t("signUp")
-								: t("signIn")}
+						{t(getAuthDialogTitleKey(isResetMode, isSignUp))}
 					</h2>
 					<p className="text-sm text-gray-700 mt-1">
-						{isResetMode
-							? t("enterEmailForReset")
-							: isSignUp
-								? t("startYourJourney")
-								: t("welcomeBack")}
+						{t(getAuthDialogSubtitleKey(isResetMode, isSignUp))}
 					</p>
 				</div>
 
@@ -204,137 +196,27 @@ export const EmailAuthDialog: FC<EmailAuthDialogProps> = ({
 				)}
 
 				{isResetMode ? (
-					<form
-						onSubmit={(e) => {
-							e.preventDefault();
-							handleForgotPassword();
-						}}
-						className="space-y-4"
-					>
-						<div>
-							<label
-								htmlFor="email"
-								className="block text-sm font-medium mb-1 text-gray-800"
-							>
-								{t("email")}
-							</label>
-							<Input
-								id="email"
-								type="email"
-								value={email}
-								onChange={handleEmailChange}
-								required
-								className="w-full border-2 border-red-200 focus:border-red-500 rounded-lg"
-								placeholder={t("emailPlaceholder")}
-							/>
-						</div>
-						<Button
-							type="submit"
-							className="w-full bg-red-600 hover:bg-red-700 text-white font-semibold py-2 px-4 rounded-lg shadow-md transform hover:scale-105 transition-transform duration-200"
-							disabled={isLoading}
-						>
-							{isLoading ? t("loading") : t("sendResetLink")}
-						</Button>
-						<div className="text-center">
-							<button
-								type="button"
-								onClick={handleResetModeToggle}
-								className="text-red-600 hover:text-red-800 text-sm font-medium hover:underline transform hover:scale-105 transition-transform duration-200"
-								disabled={isLoading}
-							>
-								{t("backToSignIn")}
-							</button>
-						</div>
-					</form>
+					<EmailAuthResetForm
+						email={email}
+						isLoading={isLoading}
+						onEmailChange={handleEmailChange}
+						onSubmit={handleForgotPassword}
+						onBackToSignIn={handleResetModeToggle}
+					/>
 				) : (
-					<form onSubmit={handleSubmit} className="space-y-4">
-						<div>
-							<label
-								htmlFor="email"
-								className="block text-sm font-medium mb-1 text-gray-800"
-							>
-								{t("email")}
-							</label>
-							<Input
-								id="email"
-								type="email"
-								value={email}
-								onChange={handleEmailChange}
-								required
-								className="w-full border-2 border-red-200 focus:border-red-500 rounded-lg"
-								placeholder={t("emailPlaceholder")}
-							/>
-						</div>
-
-						{isSignUp && (
-							<div>
-								<label
-									htmlFor="trainerName"
-									className="block text-sm font-medium mb-1 text-gray-800"
-								>
-									{t("trainerName")}
-								</label>
-								<Input
-									id="trainerName"
-									type="text"
-									value={trainerName}
-									onChange={handleTrainerNameChange}
-									required
-									className="w-full border-2 border-red-200 focus:border-red-500 rounded-lg"
-									placeholder={t("trainerNamePlaceholder")}
-								/>
-							</div>
-						)}
-
-						<div>
-							<label
-								htmlFor="password"
-								className="block text-sm font-medium mb-1 text-gray-800"
-							>
-								{t("password")}
-							</label>
-							<Input
-								id="password"
-								type="password"
-								value={password}
-								onChange={(e) => setPassword(e.target.value)}
-								required
-								className="w-full border-2 border-red-200 focus:border-red-500 rounded-lg"
-								placeholder={t("passwordPlaceholder")}
-							/>
-						</div>
-
-						<Button
-							type="submit"
-							className="w-full bg-red-600 hover:bg-red-700 text-white font-semibold py-2 px-4 rounded-lg shadow-md transform hover:scale-105 transition-transform duration-200"
-							disabled={isLoading}
-						>
-							{isLoading ? t("loading") : isSignUp ? t("signUp") : t("signIn")}
-						</Button>
-
-						<div className="mt-4 text-center space-y-2">
-							{!isSignUp && (
-								<button
-									type="button"
-									onClick={handleResetModeToggle}
-									className="text-red-600 hover:text-red-800 text-sm font-medium hover:underline transform hover:scale-105 transition-transform duration-200"
-									disabled={isLoading}
-								>
-									{t("forgotPassword")}
-								</button>
-							)}
-							<div>
-								<button
-									type="button"
-									onClick={toggleMode}
-									className="text-red-600 hover:text-red-800 text-sm font-medium hover:underline transform hover:scale-105 transition-transform duration-200"
-									disabled={isLoading}
-								>
-									{isSignUp ? t("alreadyHaveAccount") : t("needAccount")}
-								</button>
-							</div>
-						</div>
-					</form>
+					<EmailAuthForm
+						email={email}
+						password={password}
+						trainerName={trainerName}
+						isSignUp={isSignUp}
+						isLoading={isLoading}
+						onEmailChange={handleEmailChange}
+						onPasswordChange={(e) => setPassword(e.target.value)}
+						onTrainerNameChange={handleTrainerNameChange}
+						onSubmit={handleSubmit}
+						onForgotPassword={handleResetModeToggle}
+						onToggleMode={toggleMode}
+					/>
 				)}
 			</div>
 		</div>

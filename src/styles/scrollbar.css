@@ -1,0 +1,53 @@
+@layer utilities {
+	.scrollbar-thin {
+		scrollbar-width: thin;
+	}
+
+	.scrollbar-thin::-webkit-scrollbar {
+		width: 6px;
+		height: 6px;
+	}
+
+	.scrollbar-thumb-blue-500 {
+		scrollbar-color: rgb(59 130 246) transparent;
+	}
+
+	.scrollbar-thumb-blue-500::-webkit-scrollbar-thumb {
+		background-color: rgb(59 130 246);
+		border-radius: 9999px;
+	}
+
+	.scrollbar-thumb-gray-400 {
+		scrollbar-color: rgb(156 163 175) transparent;
+	}
+
+	.scrollbar-thumb-gray-400::-webkit-scrollbar-thumb {
+		background-color: rgb(156 163 175);
+		border-radius: 9999px;
+	}
+
+	.scrollbar-thumb-white\/20 {
+		scrollbar-color: rgb(255 255 255 / 0.2) transparent;
+	}
+
+	.scrollbar-thumb-white\/20::-webkit-scrollbar-thumb {
+		background-color: rgb(255 255 255 / 0.2);
+		border-radius: 9999px;
+	}
+
+	.scrollbar-track-transparent {
+		scrollbar-color: auto transparent;
+	}
+
+	.scrollbar-track-transparent::-webkit-scrollbar-track {
+		background-color: transparent;
+	}
+
+	.scrollbar-track-blue-100 {
+		scrollbar-color: auto rgb(219 234 254);
+	}
+
+	.scrollbar-track-blue-100::-webkit-scrollbar-track {
+		background-color: rgb(219 234 254);
+	}
+}

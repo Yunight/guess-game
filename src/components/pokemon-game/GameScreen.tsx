@@ -4,6 +4,8 @@ import { Volume2, VolumeX } from "lucide-react";
 import type { FC, RefObject } from "react";
 import { useTranslation } from "react-i18next";
 import { GameStats } from "./GameStats";
+import { GameScreenCriticalBanner } from "./GameScreenCriticalBanner";
+import { GameScreenHypeOverlay } from "./GameScreenHypeOverlay";
 import { GuessInput } from "./GuessInput";
 import { HintButton } from "./HintButton";
 import { PokemonDisplay } from "./PokemonDisplay";
@@ -81,33 +83,7 @@ export const GameScreen: FC<GameScreenProps> = ({
 
 	return (
 		<Card className="w-full max-w-md p-1 sm:p-4 relative flex flex-col min-h-0 sm:min-h-0 bg-red-500 rounded-3xl overflow-hidden">
-			{/* Fire overlay when Hype Train is active */}
-			{showHypeTrain && (
-				<div
-					className="absolute inset-0 z-0 overflow-hidden"
-					data-testid="fire-effects"
-				>
-					{/* Base glow */}
-					<div className="absolute inset-0 bg-gradient-to-t from-red-900/90 via-red-800/80 to-red-900/90 opacity-80" />
-
-					{/* Heat distortion effect */}
-					<div className="absolute inset-0 backdrop-blur-[1px] animate-heat-distort" />
-
-					{/* Core flames */}
-					<div className="absolute inset-x-0 bottom-0 h-full">
-						{/* Main flame core */}
-						<div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-full h-full">
-							<div className="absolute bottom-0 w-full h-4/5 bg-gradient-to-t from-orange-600 via-yellow-500 to-transparent opacity-80 animate-flame-dance mix-blend-screen" />
-						</div>
-					</div>
-
-					{/* Heat distortion overlay */}
-					<div className="absolute inset-0 bg-gradient-to-t from-orange-500/40 via-yellow-500/20 to-transparent mix-blend-overlay" />
-
-					{/* Glow effect */}
-					<div className="absolute inset-0 bg-gradient-radial from-yellow-500/30 via-orange-500/20 to-transparent mix-blend-overlay animate-fire-pulse" />
-				</div>
-			)}
+			<GameScreenHypeOverlay showHypeTrain={showHypeTrain} />
 
 			{/* Top dots */}
 			<div className="absolute top-4 left-4 flex gap-2 z-10">
@@ -177,26 +153,15 @@ export const GameScreen: FC<GameScreenProps> = ({
 						totalCount={totalCount}
 					/>
 
-					{/* Critical Messages */}
-					{(showCriticalSuccess || showCriticalHit || showHypeTrain) && (
-						<div className="absolute left-1/2 -translate-x-1/2 bottom-4 z-50 pointer-events-none">
-							{showCriticalSuccess && (
-								<div className="animate-float-up-fade-out text-yellow-300 font-bold text-xl whitespace-nowrap px-4 py-2 bg-black/80 rounded-full backdrop-blur-sm border-2 border-yellow-400 shadow-lg">
-									{t("criticalSuccess")}
-								</div>
-							)}
-							{!showCriticalSuccess && showCriticalHit && (
-								<div className="animate-float-up-fade-out text-yellow-300 font-bold text-xl whitespace-nowrap px-4 py-2 bg-black/80 rounded-full backdrop-blur-sm border-2 border-yellow-400 shadow-lg">
-									{t("criticalHit")}
-								</div>
-							)}
-							{!showCriticalSuccess && !showCriticalHit && showHypeTrain && (
-								<div className="text-yellow-300 font-bold text-xl whitespace-nowrap px-4 py-2 bg-black/80 rounded-full backdrop-blur-sm border-2 border-yellow-400 shadow-lg animate-pulse">
-									{t("hypeTrain", { count: consecutiveFastAnswers })}
-								</div>
-							)}
-						</div>
-					)}
+					<GameScreenCriticalBanner
+						showCriticalSuccess={showCriticalSuccess}
+						showCriticalHit={showCriticalHit}
+						showHypeTrain={showHypeTrain}
+						consecutiveFastAnswers={consecutiveFastAnswers}
+						criticalSuccessLabel={t("criticalSuccess")}
+						criticalHitLabel={t("criticalHit")}
+						hypeTrainLabel={t("hypeTrain", { count: consecutiveFastAnswers })}
+					/>
 				</div>
 
 				<GameStats

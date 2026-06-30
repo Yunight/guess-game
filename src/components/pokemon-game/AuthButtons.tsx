@@ -1,4 +1,5 @@
 import { Button } from "@/components/ui/button";
+import { FirebaseError } from "firebase/app";
 import { signInWithPopup, signOut } from "firebase/auth";
 import { LogOut, Mail } from "lucide-react";
 import type { FC } from "react";
@@ -40,15 +41,30 @@ export const AuthButtons: FC<AuthButtonsProps> = ({
 }) => {
 	const { t } = useTranslation();
 	const [showEmailDialog, setShowEmailDialog] = useState(false);
+	const [authError, setAuthError] = useState<string | null>(null);
 
-	const handleGoogleSignIn = async () => {
+	const getAuthErrorMessage = (error: unknown): string => {
+		if (error instanceof FirebaseError) {
+			const firebaseMessage = t(`firebaseErrors.${error.code}`, {
+				defaultValue: "",
+			});
+			if (firebaseMessage) {
+				return firebaseMessage;
+			}
+		}
+		return t("authSignInError");
+	};
+
+	const handleGoogleSignIn = async (): Promise<void> => {
 		try {
+			setAuthError(null);
 			const result = await signInWithPopup(auth, googleProvider);
 			if (result.user.displayName) {
 				localStorage.setItem("pokemonGamePlayerName", result.user.displayName);
 			}
 		} catch (error) {
 			console.error("Error signing in with Google:", error);
+			setAuthError(getAuthErrorMessage(error));
 		}
 	};
 
@@ -56,13 +72,15 @@ export const AuthButtons: FC<AuthButtonsProps> = ({
 		setShowEmailDialog(true);
 	};
 
-	const handleSignOut = async () => {
+	const handleSignOut = async (): Promise<void> => {
 		try {
+			setAuthError(null);
 			await signOut(auth);
 			localStorage.removeItem("pokemonGamePlayerName");
-			window.location.reload(); // Force a reload to ensure all states are reset
+			window.location.reload();
 		} catch (error) {
 			console.error("Erreur de déconnexion:", error);
+			setAuthError(getAuthErrorMessage(error));
 		}
 	};
 
@@ -87,6 +105,11 @@ export const AuthButtons: FC<AuthButtonsProps> = ({
 
 	return (
 		<>
+			{authError && (
+				<p className="text-sm text-red-600 bg-red-50 rounded-md px-2 py-1">
+					{authError}
+				</p>
+			)}
 			<div className="flex gap-2">
 				<Button
 					variant="ghost"

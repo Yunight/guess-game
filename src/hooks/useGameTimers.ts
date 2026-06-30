@@ -1,4 +1,11 @@
 import { useCallback, useEffect, useRef } from "react";
+import {
+	calculateElapsedTime,
+	getInitialGuessTime,
+	resolveVisibilityChange,
+	shouldStartGuessTimer,
+	tickGuessTimer,
+} from "./gameTimerLogic";
 
 interface TimerCallbacks {
 	onGuessTimeEnd?: () => void;
@@ -15,7 +22,6 @@ export const useGameTimers = (
 	const totalTimerRef = useRef<number | null>(null);
 	const elapsedTimeRef = useRef<number>(0);
 
-	// Add mobile-friendly timer tracking
 	const startTimeRef = useRef<number | null>(null);
 	const pausedTimeRef = useRef<number>(0);
 	const lastVisibilityChangeRef = useRef<number>(Date.now());
@@ -44,55 +50,38 @@ export const useGameTimers = (
 		}
 	}, []);
 
-	// Mobile-friendly timer calculation using performance timestamps
-	const calculateElapsedTime = useCallback((): number => {
-		if (!startTimeRef.current) return 0;
-
-		const now = Date.now();
-		const totalElapsed = Math.floor((now - startTimeRef.current) / 1000);
-		const adjustedElapsed = Math.max(0, totalElapsed - pausedTimeRef.current);
-
-		console.log("[useGameTimers] Calculated elapsed time:", {
-			totalElapsed,
-			pausedTime: pausedTimeRef.current,
-			adjustedElapsed,
-		});
-
-		return adjustedElapsed;
-	}, []);
-
-	// Handle page visibility changes for mobile timer accuracy
 	useEffect(() => {
-		const handleVisibilityChange = () => {
+		const handleVisibilityChange = (): void => {
 			const now = Date.now();
+			const result = resolveVisibilityChange({
+				isHidden: document.hidden,
+				now,
+				lastVisibilityChange: lastVisibilityChangeRef.current,
+				startTime: startTimeRef.current,
+				pausedTime: pausedTimeRef.current,
+				isGameActive,
+				hasTotalTimer: totalTimerRef.current !== null,
+			});
 
 			if (document.hidden) {
-				// Page became hidden - pause timer tracking
-				lastVisibilityChangeRef.current = now;
 				console.log("[useGameTimers] Page hidden, pausing timer tracking");
-			} else {
-				// Page became visible - resume timer tracking
-				if (startTimeRef.current && lastVisibilityChangeRef.current) {
-					const pauseDuration = Math.floor(
-						(now - lastVisibilityChangeRef.current) / 1000,
-					);
-					pausedTimeRef.current += pauseDuration;
-					console.log(
-						"[useGameTimers] Page visible, adding pause duration:",
-						pauseDuration,
-					);
-
-					// Update timer immediately with accurate time
-					if (isGameActive && totalTimerRef.current) {
-						const accurateElapsed = calculateElapsedTime();
-						elapsedTimeRef.current = accurateElapsed;
-						if (callbacks.onTotalTimeUpdate) {
-							callbacks.onTotalTimeUpdate(accurateElapsed);
-						}
-					}
-				}
-				lastVisibilityChangeRef.current = now;
+				lastVisibilityChangeRef.current = result.lastVisibilityChange;
+				return;
 			}
+
+			const previousPausedTime = pausedTimeRef.current;
+			pausedTimeRef.current = result.pausedTime;
+			console.log(
+				"[useGameTimers] Page visible, adding pause duration:",
+				result.pausedTime - previousPausedTime,
+			);
+
+			if (result.shouldUpdateTotal) {
+				elapsedTimeRef.current = result.accurateElapsed;
+				callbacks.onTotalTimeUpdate?.(result.accurateElapsed);
+			}
+
+			lastVisibilityChangeRef.current = result.lastVisibilityChange;
 		};
 
 		document.addEventListener("visibilitychange", handleVisibilityChange);
@@ -100,7 +89,7 @@ export const useGameTimers = (
 		return () => {
 			document.removeEventListener("visibilitychange", handleVisibilityChange);
 		};
-	}, [isGameActive, calculateElapsedTime, callbacks]);
+	}, [isGameActive, callbacks]);
 
 	const startGuessTimer = useCallback(
 		(setGuessTimeLeft: (time: number | ((prev: number) => number)) => void) => {
@@ -111,15 +100,13 @@ export const useGameTimers = (
 				existingTimer: guessTimerRef.current,
 			});
 
-			// Only start timer if game is active and in hard mode
-			if (!isGameActive || !isHardMode) {
+			if (!shouldStartGuessTimer(isGameActive, isHardMode)) {
 				console.log(
 					"[useGameTimers] Not starting guess timer - game inactive or not hard mode",
 				);
 				return;
 			}
 
-			// Clear any existing timer first
 			if (guessTimerRef.current) {
 				console.log(
 					"[useGameTimers] Clearing existing guess timer before starting new one",
@@ -127,28 +114,25 @@ export const useGameTimers = (
 				clearGuessTimer();
 			}
 
-			// Set initial time based on whether Pokemon is shiny
-			const initialTime = isShiny ? 10 : 15;
+			const initialTime = getInitialGuessTime(isShiny);
 			console.log("[useGameTimers] Setting initial guess time:", initialTime);
 			setGuessTimeLeft(initialTime);
 
 			let timeLeft = initialTime;
 
-			// Start new timer that updates every second
 			console.log("[useGameTimers] Creating new guess timer interval");
 			guessTimerRef.current = window.setInterval(() => {
-				timeLeft -= 1;
+				const tickResult = tickGuessTimer(timeLeft);
+				timeLeft = tickResult.timeLeft;
 				console.log("[useGameTimers] Guess time updated:", timeLeft);
 
-				if (timeLeft <= 0) {
+				if (tickResult.isExpired) {
 					console.log(
 						"[useGameTimers] Guess time reached zero, clearing timer",
 					);
 					clearGuessTimer();
 					setGuessTimeLeft(0);
-					if (callbacks.onGuessTimeEnd) {
-						callbacks.onGuessTimeEnd();
-					}
+					callbacks.onGuessTimeEnd?.();
 				} else {
 					setGuessTimeLeft(timeLeft);
 				}
@@ -171,13 +155,11 @@ export const useGameTimers = (
 				currentElapsedTime: elapsedTimeRef.current,
 			});
 
-			// Only start timer if game is active
 			if (!isGameActive) {
 				console.log("[useGameTimers] Not starting total timer - game inactive");
 				return;
 			}
 
-			// Clear any existing timer first
 			if (totalTimerRef.current) {
 				console.log(
 					"[useGameTimers] Clearing existing total timer before starting new one",
@@ -185,7 +167,6 @@ export const useGameTimers = (
 				clearTotalTimer();
 			}
 
-			// Reset timer tracking for mobile accuracy
 			const now = Date.now();
 			startTimeRef.current = now;
 			pausedTimeRef.current = 0;
@@ -195,25 +176,25 @@ export const useGameTimers = (
 			console.log("[useGameTimers] Setting initial total time: 0");
 			setTotalTimeElapsed(0);
 
-			// Start new timer that updates every second with mobile-friendly calculation
 			console.log("[useGameTimers] Creating new total timer interval");
 			totalTimerRef.current = window.setInterval(() => {
-				// Use mobile-friendly elapsed time calculation
-				const accurateElapsed = calculateElapsedTime();
+				const accurateElapsed = calculateElapsedTime(
+					startTimeRef.current,
+					pausedTimeRef.current,
+					Date.now(),
+				);
 				elapsedTimeRef.current = accurateElapsed;
 
 				console.log("[useGameTimers] Total time updated:", accurateElapsed);
 				setTotalTimeElapsed(accurateElapsed);
-				if (callbacks.onTotalTimeUpdate) {
-					callbacks.onTotalTimeUpdate(accurateElapsed);
-				}
+				callbacks.onTotalTimeUpdate?.(accurateElapsed);
 			}, 1000);
 
 			console.log("[useGameTimers] New total timer started", {
 				timerId: totalTimerRef.current,
 			});
 		},
-		[isGameActive, callbacks, clearTotalTimer, calculateElapsedTime],
+		[isGameActive, callbacks, clearTotalTimer],
 	);
 
 	const stopAllTimers = useCallback(() => {
@@ -224,7 +205,6 @@ export const useGameTimers = (
 		clearGuessTimer();
 		clearTotalTimer();
 
-		// Reset mobile timer tracking
 		startTimeRef.current = null;
 		pausedTimeRef.current = 0;
 		lastVisibilityChangeRef.current = Date.now();
