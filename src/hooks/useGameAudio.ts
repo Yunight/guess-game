@@ -1,10 +1,5 @@
 import { useEffect, useRef } from "react";
-import {
-	shouldPlayLowLifeSound,
-	shouldPlayTrainHorn,
-	shouldStopLowLifeSound,
-	shouldStopTrainHorn,
-} from "./gameAudioLogic";
+import { syncAmbientGameAudio } from "./gameAudioLogic";
 
 const CORRECT_SOUND_URL = "/sounds/pkm_level_up.mp3";
 const WRONG_SOUND_URL = "/sounds/bump_wall.mp3";
@@ -24,22 +19,7 @@ export const useGameAudio = (
 	const trainHornRef = useRef<HTMLAudioElement | null>(null);
 	const lowLifeRef = useRef<HTMLAudioElement | null>(null);
 
-	useEffect(() => {
-		correctAudioRef.current = new Audio(CORRECT_SOUND_URL);
-		wrongAudioRef.current = new Audio(WRONG_SOUND_URL);
-		victoryAudioRef.current = new Audio(VICTORY_SOUND_URL);
-		trainHornRef.current = new Audio(TRAIN_HORN_URL);
-		lowLifeRef.current = new Audio(LOW_LIFE_SOUND_URL);
-
-		if (trainHornRef.current) trainHornRef.current.volume = 0.05;
-		if (lowLifeRef.current) lowLifeRef.current.volume = 0.1;
-
-		return () => {
-			cleanupAllAudio();
-		};
-	}, []);
-
-	const cleanupAllAudio = (preserveTrainHorn = false) => {
+	const cleanupAllAudio = (preserveTrainHorn = false): void => {
 		const audioRefs = preserveTrainHorn
 			? [victoryAudioRef, correctAudioRef, wrongAudioRef, lowLifeRef]
 			: [
@@ -57,6 +37,21 @@ export const useGameAudio = (
 			}
 		}
 	};
+
+	useEffect(() => {
+		correctAudioRef.current = new Audio(CORRECT_SOUND_URL);
+		wrongAudioRef.current = new Audio(WRONG_SOUND_URL);
+		victoryAudioRef.current = new Audio(VICTORY_SOUND_URL);
+		trainHornRef.current = new Audio(TRAIN_HORN_URL);
+		lowLifeRef.current = new Audio(LOW_LIFE_SOUND_URL);
+
+		if (trainHornRef.current) trainHornRef.current.volume = 0.05;
+		if (lowLifeRef.current) lowLifeRef.current.volume = 0.1;
+
+		return () => {
+			cleanupAllAudio();
+		};
+	}, []);
 
 	const cleanupNonCurrentAudio = (
 		currentRef: React.RefObject<HTMLAudioElement | null>,
@@ -83,7 +78,7 @@ export const useGameAudio = (
 
 	const playSound = async (
 		audioRef: React.RefObject<HTMLAudioElement | null>,
-	) => {
+	): Promise<void> => {
 		if (isMuted || !audioRef.current) return;
 
 		try {
@@ -95,38 +90,15 @@ export const useGameAudio = (
 		}
 	};
 
-	const playCorrectSound = () => playSound(correctAudioRef);
-	const playWrongSound = () => playSound(wrongAudioRef);
-	const playVictorySound = () => playSound(victoryAudioRef);
+	const playCorrectSound = (): Promise<void> => playSound(correctAudioRef);
+	const playWrongSound = (): Promise<void> => playSound(wrongAudioRef);
+	const playVictorySound = (): Promise<void> => playSound(victoryAudioRef);
 
 	useEffect(() => {
-		if (
-			shouldPlayTrainHorn(showHypeTrain, isMuted, isHardMode, guessTimeLeft) &&
-			trainHornRef.current
-		) {
-			if (trainHornRef.current.paused) {
-				trainHornRef.current.loop = true;
-				trainHornRef.current.play().catch((error) => {
-					console.error("Error playing train horn:", error);
-				});
-			}
-		} else if (
-			shouldStopTrainHorn(showHypeTrain, guessTimeLeft) &&
-			trainHornRef.current
-		) {
-			trainHornRef.current.pause();
-			trainHornRef.current.currentTime = 0;
-		}
-
-		if (shouldPlayLowLifeSound(isHardMode, guessTimeLeft, isMuted) && lowLifeRef.current) {
-			lowLifeRef.current.loop = true;
-			lowLifeRef.current.play().catch((error) => {
-				console.error("Error playing low life sound:", error);
-			});
-		} else if (shouldStopLowLifeSound(isHardMode, guessTimeLeft) && lowLifeRef.current) {
-			lowLifeRef.current.pause();
-			lowLifeRef.current.currentTime = 0;
-		}
+		syncAmbientGameAudio(showHypeTrain, isMuted, isHardMode, guessTimeLeft, {
+			trainHorn: trainHornRef.current,
+			lowLife: lowLifeRef.current,
+		});
 	}, [showHypeTrain, isMuted, isHardMode, guessTimeLeft]);
 
 	return {

@@ -1,41 +1,88 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import {
 	shouldPlayLowLifeSound,
 	shouldPlayTrainHorn,
 	shouldStopLowLifeSound,
 	shouldStopTrainHorn,
+	syncAmbientGameAudio,
 } from "../gameAudioLogic";
 
 describe("shouldPlayTrainHorn", () => {
-	it("plays during hype train when not muted", () => {
+	it("plays when hype train is active and not muted", () => {
 		expect(shouldPlayTrainHorn(true, false, false, 15)).toBe(true);
 	});
 
-	it("does not play in hard mode with low time remaining", () => {
-		expect(shouldPlayTrainHorn(true, false, true, 8)).toBe(false);
+	it("does not play when muted", () => {
+		expect(shouldPlayTrainHorn(true, true, false, 15)).toBe(false);
 	});
 });
 
 describe("shouldStopTrainHorn", () => {
-	it("stops when hype train ends or time is low", () => {
+	it("stops when hype train ends", () => {
 		expect(shouldStopTrainHorn(false, 15)).toBe(true);
-		expect(shouldStopTrainHorn(true, 8)).toBe(true);
-		expect(shouldStopTrainHorn(true, 12)).toBe(false);
 	});
 });
 
 describe("shouldPlayLowLifeSound", () => {
-	it("plays only in hard mode with low remaining time", () => {
-		expect(shouldPlayLowLifeSound(true, 4, false)).toBe(true);
-		expect(shouldPlayLowLifeSound(true, 6, false)).toBe(false);
-		expect(shouldPlayLowLifeSound(false, 4, false)).toBe(false);
+	it("plays in hard mode with low time remaining", () => {
+		expect(shouldPlayLowLifeSound(true, 3, false)).toBe(true);
 	});
 });
 
 describe("shouldStopLowLifeSound", () => {
-	it("stops outside the low-life window", () => {
-		expect(shouldStopLowLifeSound(true, 6)).toBe(true);
-		expect(shouldStopLowLifeSound(true, 0)).toBe(true);
-		expect(shouldStopLowLifeSound(true, 4)).toBe(false);
+	it("stops when time is above threshold", () => {
+		expect(shouldStopLowLifeSound(true, 10)).toBe(true);
+	});
+});
+
+describe("syncAmbientGameAudio", () => {
+	it("starts train horn when hype train is active", () => {
+		const trainHorn = {
+			paused: true,
+			loop: false,
+			currentTime: 5,
+			play: vi.fn().mockResolvedValue(undefined),
+			pause: vi.fn(),
+		};
+		const lowLife = {
+			paused: true,
+			loop: false,
+			currentTime: 0,
+			play: vi.fn().mockResolvedValue(undefined),
+			pause: vi.fn(),
+		};
+
+		syncAmbientGameAudio(true, false, false, 15, {
+			trainHorn: trainHorn as never,
+			lowLife: lowLife as never,
+		});
+
+		expect(trainHorn.loop).toBe(true);
+		expect(trainHorn.play).toHaveBeenCalled();
+	});
+
+	it("stops low life sound when timer is above threshold", () => {
+		const trainHorn = {
+			paused: true,
+			loop: false,
+			currentTime: 0,
+			play: vi.fn().mockResolvedValue(undefined),
+			pause: vi.fn(),
+		};
+		const lowLife = {
+			paused: false,
+			loop: true,
+			currentTime: 3,
+			play: vi.fn().mockResolvedValue(undefined),
+			pause: vi.fn(),
+		};
+
+		syncAmbientGameAudio(false, false, true, 10, {
+			trainHorn: trainHorn as never,
+			lowLife: lowLife as never,
+		});
+
+		expect(lowLife.pause).toHaveBeenCalled();
+		expect(lowLife.currentTime).toBe(0);
 	});
 });

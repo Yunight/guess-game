@@ -1,6 +1,11 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi, beforeEach, afterEach } from "vitest";
 import type { Pokemon } from "../types";
-import { buildShareText, getShareUrl } from "../gameOverDialogShare";
+import {
+	buildShareText,
+	copyTextToClipboard,
+	getShareUrl,
+	shareGameResult,
+} from "../gameOverDialogShare";
 
 const t = (key: string, options?: Record<string, string | number>): string => {
 	if (options) {
@@ -115,5 +120,82 @@ describe("buildShareText", () => {
 		});
 
 		expect(result).toContain('shareMsg2500:{"gen":"Generation 1"}');
+	});
+});
+
+describe("copyTextToClipboard", () => {
+	beforeEach(() => {
+		Object.defineProperty(navigator, "clipboard", {
+			value: { writeText: vi.fn() },
+			configurable: true,
+		});
+	});
+
+	afterEach(() => {
+		vi.restoreAllMocks();
+	});
+
+	it("returns true when clipboard write succeeds", async () => {
+		vi.mocked(navigator.clipboard.writeText).mockResolvedValue();
+
+		const result = await copyTextToClipboard("https://example.com");
+
+		expect(result).toBe(true);
+	});
+
+	it("falls back to execCommand when clipboard API fails", async () => {
+		vi.mocked(navigator.clipboard.writeText).mockRejectedValue(
+			new Error("denied"),
+		);
+		document.execCommand = vi.fn().mockReturnValue(true);
+
+		const result = await copyTextToClipboard("https://example.com");
+
+		expect(result).toBe(true);
+		expect(document.execCommand).toHaveBeenCalledWith("copy");
+	});
+});
+
+describe("shareGameResult", () => {
+	const originalShare = navigator.share;
+	const originalOpen = window.open;
+
+	beforeEach(() => {
+		window.open = vi.fn();
+	});
+
+	afterEach(() => {
+		Object.defineProperty(navigator, "share", {
+			value: originalShare,
+			configurable: true,
+		});
+		window.open = originalOpen;
+		vi.restoreAllMocks();
+	});
+
+	it("uses navigator.share when available", async () => {
+		const share = vi.fn().mockResolvedValue(undefined);
+		Object.defineProperty(navigator, "share", {
+			value: share,
+			configurable: true,
+		});
+
+		await shareGameResult("text", "https://example.com");
+
+		expect(share).toHaveBeenCalledWith({
+			text: "text",
+			url: "https://example.com",
+		});
+	});
+
+	it("opens twitter share when navigator.share is unavailable", async () => {
+		Object.defineProperty(navigator, "share", {
+			value: undefined,
+			configurable: true,
+		});
+
+		await shareGameResult("hello", "https://example.com");
+
+		expect(window.open).toHaveBeenCalled();
 	});
 });

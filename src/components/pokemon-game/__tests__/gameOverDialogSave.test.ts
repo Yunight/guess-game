@@ -1,14 +1,17 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi, afterEach } from "vitest";
 import type { Pokemon } from "../types";
 import {
 	createGameSessionId,
 	persistGameResult,
+	runGameResultSave,
 	shouldAbortSaveAfterDelay,
 	shouldProceedWithGameSave,
 	shouldScheduleGameSave,
+	shouldInitializeGameSessionId,
+	shouldResetGameOverSaveState,
+	shouldUpdateFinalTime,
 	type GameSaveContext,
 } from "../gameOverDialogSave";
-
 const mockSaveGameResult = vi.fn();
 const mockGenerateShareableUrl = vi.fn();
 
@@ -54,6 +57,38 @@ describe("createGameSessionId", () => {
 		const id = createGameSessionId();
 		expect(id.startsWith("game_")).toBe(true);
 		expect(id.split("_").length).toBeGreaterThanOrEqual(3);
+	});
+});
+
+describe("shouldInitializeGameSessionId", () => {
+	it("returns true when game over without session state", () => {
+		expect(shouldInitializeGameSessionId(true, null, null, false)).toBe(true);
+	});
+
+	it("returns false when session already exists", () => {
+		expect(shouldInitializeGameSessionId(true, "game_1", null, false)).toBe(
+			false,
+		);
+	});
+});
+
+describe("shouldResetGameOverSaveState", () => {
+	it("returns true when game is not over", () => {
+		expect(shouldResetGameOverSaveState(false)).toBe(true);
+	});
+
+	it("returns false when game is over", () => {
+		expect(shouldResetGameOverSaveState(true)).toBe(false);
+	});
+});
+
+describe("shouldUpdateFinalTime", () => {
+	it("returns true when game over with elapsed time", () => {
+		expect(shouldUpdateFinalTime(true, 120)).toBe(true);
+	});
+
+	it("returns false when time is zero", () => {
+		expect(shouldUpdateFinalTime(true, 0)).toBe(false);
 	});
 });
 
@@ -220,6 +255,53 @@ describe("persistGameResult", () => {
 			expect.objectContaining({
 				totalTimeElapsed: 90,
 			}),
+		);
+	});
+});
+
+describe("runGameResultSave", () => {
+	beforeEach(() => {
+		vi.useFakeTimers();
+		mockSaveGameResult.mockResolvedValue("result-id");
+		mockGenerateShareableUrl.mockReturnValue(
+			"https://example.com/results/result-id",
+		);
+	});
+
+	afterEach(() => {
+		vi.useRealTimers();
+	});
+
+	it("persists the game result after the settle delay", async () => {
+		const setIsSavingResult = vi.fn();
+		const setShareableUrl = vi.fn();
+
+		const promise = runGameResultSave({
+			saveContext: readyContext,
+			gameSessionId: "game_123",
+			playerName: "Ash",
+			score: 500,
+			finalTime: 120,
+			totalTimeElapsed: 150,
+			userRanking: null,
+			selectedGeneration: { name: "gen1", startId: 1, endId: 151 },
+			rewardPokemon: readyContext.rewardPokemon,
+			remainingPokemon: [],
+			criticalHitCount: 0,
+			criticalSuccessCount: 0,
+			hyperTrainCount: 0,
+			maxHypeChain: 0,
+			isSlotMachineRunning: false,
+			setIsSavingResult,
+			setShareableUrl,
+		});
+
+		await vi.advanceTimersByTimeAsync(300);
+		await promise;
+
+		expect(setIsSavingResult).toHaveBeenCalledWith(true);
+		expect(setShareableUrl).toHaveBeenCalledWith(
+			"https://example.com/results/result-id",
 		);
 	});
 });

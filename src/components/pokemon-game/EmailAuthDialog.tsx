@@ -17,8 +17,8 @@ import {
 	getAuthDialogTitleKey,
 	shouldClearEmailError,
 	validateForgotPassword,
-	validateSignUpSubmit,
 } from "./emailAuthLogic";
+import { executeEmailAuthSubmit } from "./emailAuthSubmitLogic";
 
 interface EmailAuthDialogProps {
 	isOpen: boolean;
@@ -97,55 +97,38 @@ export const EmailAuthDialog: FC<EmailAuthDialogProps> = ({
 		setError(null);
 		setSuccessMessage(null);
 
-		const validation = validateSignUpSubmit({
-			isSignUp,
-			trainerName,
-			hasError: Boolean(error),
-		});
+		const result = await executeEmailAuthSubmit(
+			{
+				isSignUp,
+				email,
+				password,
+				trainerName,
+				hasError: Boolean(error),
+			},
+			{
+				createUser: (authEmail, authPassword) =>
+					createUserWithEmailAndPassword(auth, authEmail, authPassword),
+				signIn: (authEmail, authPassword) =>
+					signInWithEmailAndPassword(auth, authEmail, authPassword),
+				updateDisplayName: (user, name) =>
+					updateProfile(user, { displayName: name }),
+				persistPlayerName: (name) =>
+					localStorage.setItem("pokemonGamePlayerName", name),
+				reloadPage: () => {
+					window.location.reload();
+				},
+				translateError: (code) => t(`firebaseErrors.${code}`),
+				translateValidation: (key) => t(key),
+			},
+		);
 
-		if (validation.action === "abort") {
-			setError(t(validation.reason));
-			setIsLoading(false);
-			return;
-		}
-
-		try {
-			if (isSignUp) {
-				const userCredential = await createUserWithEmailAndPassword(
-					auth,
-					email,
-					password,
-				);
-
-				await updateProfile(userCredential.user, {
-					displayName: trainerName,
-				});
-
-				localStorage.setItem("pokemonGamePlayerName", trainerName);
-				window.location.reload();
-			} else {
-				const userCredential = await signInWithEmailAndPassword(
-					auth,
-					email,
-					password,
-				);
-				if (userCredential.user.displayName) {
-					localStorage.setItem(
-						"pokemonGamePlayerName",
-						userCredential.user.displayName,
-					);
-				}
-				window.location.reload();
-			}
+		if (result.status === "validation_failed" || result.status === "error") {
+			setError(result.errorKey);
+		} else {
 			onClose();
-		} catch (caughtError: unknown) {
-			if (caughtError instanceof Error) {
-				const errorCode = extractFirebaseErrorCode(caughtError.message);
-				setError(t(`firebaseErrors.${errorCode}`));
-			}
-		} finally {
-			setIsLoading(false);
 		}
+
+		setIsLoading(false);
 	};
 
 	const toggleMode = (): void => {

@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import { auth } from "../firebase";
 import type { User } from "firebase/auth";
 import { collection, getDocs, query, where } from "firebase/firestore";
@@ -8,71 +8,48 @@ import {
 	convertToDisplayFormat,
 	convertToStoredFormat,
 	formatDisplayName,
-	getRankingsCollectionName,
 	NAME_CHECK_ERROR,
-	shouldAllowAuthenticatedDisplayName,
-	validateNameAcrossGenerations,
+	performNameAvailabilityCheck,
+	resolveAuthStatePlayerName,
+	applyNameAvailabilityCheckResult,
 } from "./playerNameUtils";
 
 interface UsePlayerNameProps {
 	GENERATIONS: Generation[];
 }
 
+const firestoreDeps = {
+	query,
+	where,
+	getDocs,
+	getCollection: (collectionName: string) => collection(db, collectionName),
+};
+
 export const usePlayerName = ({ GENERATIONS }: UsePlayerNameProps) => {
 	const [playerName, setPlayerName] = useState("");
 	const [nameError, setNameError] = useState<string | null>(null);
 	const [isCheckingName, setIsCheckingName] = useState(false);
 	const [isAuthName, setIsAuthName] = useState(false);
+	const debounceTimeoutRef = useRef<NodeJS.Timeout | undefined>(undefined);
 
 	const checkNameAvailability = useCallback(
-		async (name: string) => {
-			const storedName = convertToStoredFormat(name.trim());
-			if (!storedName) {
-				setNameError(null);
-				localStorage.removeItem("pokemonGamePlayerName");
-				return false;
-			}
-
-			const currentUser = auth.currentUser;
-			if (shouldAllowAuthenticatedDisplayName(currentUser?.displayName, name)) {
-				setNameError(null);
-				setIsCheckingName(false);
-				return true;
-			}
-
+		async (name: string): Promise<boolean> => {
 			setIsCheckingName(true);
 
 			try {
-				const generationOccupied: boolean[] = [];
-
-				for (const gen of GENERATIONS) {
-					const collectionName = getRankingsCollectionName(gen);
-					const rankingsRef = collection(db, collectionName);
-					const q = query(
-						rankingsRef,
-						auth.currentUser
-							? where("uid", "==", auth.currentUser.uid)
-							: where("name", "==", storedName),
-					);
-					const querySnapshot = await getDocs(q);
-					generationOccupied.push(!querySnapshot.empty);
-				}
-
-				const validation = validateNameAcrossGenerations(
-					generationOccupied,
+				const result = await performNameAvailabilityCheck(
+					name,
+					GENERATIONS,
+					auth.currentUser?.displayName,
 					Boolean(auth.currentUser),
+					auth.currentUser?.uid,
+					firestoreDeps,
 				);
 
-				if (!validation.available) {
-					setNameError(validation.errorMessage);
-					localStorage.removeItem("pokemonGamePlayerName");
-					setIsCheckingName(false);
-					return false;
-				}
-
-				setNameError(null);
-				setIsCheckingName(false);
-				return true;
+				return applyNameAvailabilityCheckResult(result, {
+					setNameError,
+					setIsCheckingName,
+				});
 			} catch (error) {
 				console.error("Error checking name availability:", error);
 				setNameError(NAME_CHECK_ERROR);
@@ -83,31 +60,18 @@ export const usePlayerName = ({ GENERATIONS }: UsePlayerNameProps) => {
 		[GENERATIONS],
 	);
 
-	const debounce = <T extends (...args: never[]) => void>(
-		func: T,
-		wait: number,
-	): ((...args: Parameters<T>) => void) => {
-		let timeoutId: NodeJS.Timeout | undefined;
-
-		return (...args: Parameters<T>) => {
-			if (timeoutId) {
-				clearTimeout(timeoutId);
-			}
-
-			timeoutId = setTimeout(() => {
-				func(...args);
-				timeoutId = undefined;
-			}, wait);
-		};
-	};
-
-	const debouncedCheckName = useCallback(
-		debounce((name: string) => checkNameAvailability(name), 500),
-		[checkNameAvailability],
-	);
+	const debouncedCheckName = useCallback((name: string): void => {
+		if (debounceTimeoutRef.current) {
+			clearTimeout(debounceTimeoutRef.current);
+		}
+		debounceTimeoutRef.current = setTimeout(() => {
+			void checkNameAvailability(name);
+			debounceTimeoutRef.current = undefined;
+		}, 500);
+	}, [checkNameAvailability]);
 
 	const handlePlayerNameChange = useCallback(
-		(e: React.ChangeEvent<HTMLInputElement>) => {
+		(e: React.ChangeEvent<HTMLInputElement>): void => {
 			if (auth.currentUser) {
 				return;
 			}
@@ -129,18 +93,16 @@ export const usePlayerName = ({ GENERATIONS }: UsePlayerNameProps) => {
 
 	useEffect(() => {
 		const unsubscribe = auth.onAuthStateChanged((user: User | null) => {
-			if (user?.displayName) {
-				const formattedName = formatDisplayName(user.displayName, user.email);
-				setPlayerName(formattedName);
-				setIsAuthName(true);
+			const savedName = localStorage.getItem("pokemonGamePlayerName");
+			const authState = resolveAuthStatePlayerName(user, savedName);
+
+			if (authState.playerName) {
+				setPlayerName(authState.playerName);
+				setIsAuthName(authState.isAuthName);
 				setNameError(null);
 				setIsCheckingName(false);
-				localStorage.setItem("pokemonGamePlayerName", formattedName);
-			} else if (!user) {
-				const savedName = localStorage.getItem("pokemonGamePlayerName");
-				if (savedName) {
-					setPlayerName(savedName);
-					setIsAuthName(false);
+				if (authState.shouldPersist) {
+					localStorage.setItem("pokemonGamePlayerName", authState.playerName);
 				}
 			}
 		});

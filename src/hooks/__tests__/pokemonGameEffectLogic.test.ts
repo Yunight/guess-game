@@ -1,6 +1,7 @@
 import type { Pokemon } from "@/components/pokemon-game/types";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import {
+	applyGameTimerSync,
 	shouldApplyHypeTrainBonus,
 	shouldRecoverInvalidPokemon,
 	shouldResetRewardOnGameClose,
@@ -94,5 +95,31 @@ describe("shouldTriggerGameOver", () => {
 describe("shouldApplyHypeTrainBonus", () => {
 	it("returns true when hype train ends", () => {
 		expect(shouldApplyHypeTrainBonus(true, true, 5)).toBe(true);
+	});
+});
+
+describe("applyGameTimerSync", () => {
+	it("starts timers when the game becomes active", () => {
+		const setGuessTimeLeft = vi.fn();
+		const setTotalTimeElapsed = vi.fn();
+		const startTotalTimer = vi.fn();
+		const startGuessTimer = vi.fn();
+		const stopAllTimers = vi.fn();
+
+		applyGameTimerSync(
+			{
+				isGameActive: true,
+				isHardMode: true,
+				guessTimeLeft: Number.POSITIVE_INFINITY,
+				totalTimeElapsed: 0,
+			},
+			{ setGuessTimeLeft, setTotalTimeElapsed },
+			startTotalTimer,
+			startGuessTimer,
+			stopAllTimers,
+		);
+
+		expect(startTotalTimer).toHaveBeenCalledWith(setTotalTimeElapsed);
+		expect(startGuessTimer).toHaveBeenCalledWith(setGuessTimeLeft);
 	});
 });

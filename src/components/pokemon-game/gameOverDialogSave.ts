@@ -36,6 +36,28 @@ export interface GameResultPayloadParams {
 	gameSessionId: string;
 }
 
+export const shouldInitializeGameSessionId = (
+	gameOver: boolean,
+	gameSessionId: string | null,
+	shareableUrl: string | null,
+	isSavingResult: boolean,
+): boolean => {
+	return (
+		gameOver && !gameSessionId && !shareableUrl && !isSavingResult
+	);
+};
+
+export const shouldResetGameOverSaveState = (gameOver: boolean): boolean => {
+	return !gameOver;
+};
+
+export const shouldUpdateFinalTime = (
+	gameOver: boolean,
+	totalTimeElapsed: number,
+): boolean => {
+	return gameOver && totalTimeElapsed > 0;
+};
+
 export const createGameSessionId = (): string => {
 	return `game_${Date.now()}_${Math.random().toString(36).slice(2, 11)}`;
 };
@@ -133,5 +155,74 @@ export const persistGameResult = async (
 	return gameResultsService.generateShareableUrl(resultId);
 };
 
-export const SAVE_SETTLE_DELAY_MS = 300;
+const SAVE_SETTLE_DELAY_MS = 300;
 export const SAVE_SCHEDULE_DELAY_MS = 800;
+
+export interface RunGameResultSaveParams {
+	saveContext: GameSaveContext;
+	gameSessionId: string;
+	playerName: string;
+	score: number;
+	finalTime: number;
+	totalTimeElapsed: number;
+	userRanking: number | null;
+	selectedGeneration: { name: string; startId: number; endId: number };
+	rewardPokemon: RewardPokemonState;
+	remainingPokemon: number[];
+	criticalHitCount: number;
+	criticalSuccessCount: number;
+	hyperTrainCount: number;
+	maxHypeChain: number;
+	isSlotMachineRunning: boolean;
+	setIsSavingResult: (value: boolean) => void;
+	setShareableUrl: (url: string) => void;
+}
+
+export const runGameResultSave = async (
+	params: RunGameResultSaveParams,
+): Promise<void> => {
+	if (!shouldProceedWithGameSave(params.saveContext)) {
+		return;
+	}
+
+	await new Promise<void>((resolve) => {
+		setTimeout(resolve, SAVE_SETTLE_DELAY_MS);
+	});
+
+	if (
+		shouldAbortSaveAfterDelay(
+			params.rewardPokemon,
+			params.isSlotMachineRunning,
+		)
+	) {
+		return;
+	}
+
+	const pokemon = params.rewardPokemon.pokemon;
+	if (!pokemon) {
+		return;
+	}
+
+	params.setIsSavingResult(true);
+	try {
+		const url = await persistGameResult({
+			playerName: params.playerName,
+			score: params.score,
+			finalTime: params.finalTime,
+			totalTimeElapsed: params.totalTimeElapsed,
+			userRanking: params.userRanking,
+			selectedGeneration: params.selectedGeneration,
+			rewardPokemon: pokemon,
+			remainingPokemon: params.remainingPokemon,
+			criticalHitCount: params.criticalHitCount,
+			criticalSuccessCount: params.criticalSuccessCount,
+			hyperTrainCount: params.hyperTrainCount,
+			maxHypeChain: params.maxHypeChain,
+			gameSessionId: params.gameSessionId,
+		});
+		params.setShareableUrl(url);
+	} catch (error) {
+		console.error("❌ Failed to save game result:", error);
+		params.setIsSavingResult(false);
+	}
+};

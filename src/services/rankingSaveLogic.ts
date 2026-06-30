@@ -1,3 +1,10 @@
+import type {
+	CollectionReference,
+	DocumentData,
+	DocumentReference,
+	Query,
+	QuerySnapshot,
+} from "firebase/firestore";
 import { isBetterRankingScore } from "./rankingUtils";
 
 export interface ExistingRanking {
@@ -5,12 +12,12 @@ export interface ExistingRanking {
 	time: number;
 }
 
-export type RankingSaveDecision = "skip" | "update" | "create";
+type RankingSaveDecision = "skip" | "update" | "create";
 
 const isRecord = (value: unknown): value is Record<string, unknown> =>
 	typeof value === "object" && value !== null;
 
-export const parseExistingRankingData = (
+const parseExistingRankingData = (
 	data: unknown,
 ): ExistingRanking | null => {
 	if (!isRecord(data)) {
@@ -27,7 +34,7 @@ export const parseExistingRankingData = (
 	};
 };
 
-export const extractExistingRankingFromDocs = (
+const extractExistingRankingFromDocs = (
 	docs: ReadonlyArray<{ data: () => unknown }>,
 ): ExistingRanking | null => {
 	if (docs.length === 0) {
@@ -42,7 +49,7 @@ export const extractExistingRankingFromDocs = (
 	return parseExistingRankingData(firstDoc.data());
 };
 
-export const resolveRankingSaveDecision = (
+const resolveRankingSaveDecision = (
 	existing: ExistingRanking | null,
 	newScore: number,
 	newTime: number,
@@ -57,7 +64,7 @@ export const resolveRankingSaveDecision = (
 	return existing !== null ? "update" : "create";
 };
 
-export interface RankingPayloadInput {
+interface RankingPayloadInput {
 	playerName: string;
 	score: number;
 	totalTimeElapsed: number;
@@ -71,7 +78,7 @@ export interface RankingPayload {
 	uid: string | null;
 }
 
-export const buildRankingPayload = (
+const buildRankingPayload = (
 	input: RankingPayloadInput,
 ): RankingPayload => ({
 	name: input.playerName,
@@ -80,11 +87,132 @@ export const buildRankingPayload = (
 	uid: input.uid,
 });
 
-export const shouldUpdateBestScore = (
+const shouldUpdateBestScore = (
 	newScore: number,
 	bestScore: number,
 ): boolean => newScore > bestScore;
 
-export const shouldLookupRankingByUid = (
+const shouldLookupRankingByUid = (
 	uid: string | null | undefined,
 ): uid is string => typeof uid === "string" && uid.length > 0;
+
+export interface ExistingRankingLookup {
+	existingDocRef: DocumentReference<DocumentData> | null;
+	existingRanking: ExistingRanking | null;
+}
+
+export interface RankingFirestoreDeps {
+	query: (
+		collectionRef: CollectionReference<DocumentData>,
+		...constraints: unknown[]
+	) => Query<DocumentData>;
+	where: (field: string, op: string, value: string) => unknown;
+	getDocs: (queryRef: Query<DocumentData>) => Promise<QuerySnapshot<DocumentData>>;
+	addDoc: (
+		collectionRef: CollectionReference<DocumentData>,
+		data: RankingPayload & { timestamp: unknown },
+	) => Promise<unknown>;
+	updateDoc: (
+		docRef: DocumentReference<DocumentData>,
+		data: RankingPayload & { timestamp: unknown },
+	) => Promise<void>;
+	createTimestamp: () => unknown;
+}
+
+export interface ExecuteRankingSaveInput {
+	score: number;
+	totalTimeElapsed: number;
+	playerName: string;
+	bestScore: number;
+	uid: string | null;
+}
+
+export interface ExecuteRankingSaveCallbacks {
+	onBestScoreUpdate: (score: number, time: number) => void;
+	onAfterSave: () => Promise<void>;
+	onError: () => void;
+}
+
+export const lookupExistingRanking = async (
+	rankingsRef: CollectionReference<DocumentData>,
+	playerName: string,
+	uid: string | null,
+	deps: RankingFirestoreDeps,
+): Promise<ExistingRankingLookup> => {
+	if (shouldLookupRankingByUid(uid)) {
+		const userQuery = deps.query(rankingsRef, deps.where("uid", "==", uid));
+		const userDocs = await deps.getDocs(userQuery);
+		if (!userDocs.empty) {
+			return {
+				existingDocRef: userDocs.docs[0]?.ref ?? null,
+				existingRanking: extractExistingRankingFromDocs(userDocs.docs),
+			};
+		}
+		return { existingDocRef: null, existingRanking: null };
+	}
+
+	const nameQuery = deps.query(
+		rankingsRef,
+		deps.where("name", "==", playerName),
+	);
+	const nameDocs = await deps.getDocs(nameQuery);
+	if (!nameDocs.empty) {
+		return {
+			existingDocRef: nameDocs.docs[0]?.ref ?? null,
+			existingRanking: extractExistingRankingFromDocs(nameDocs.docs),
+		};
+	}
+
+	return { existingDocRef: null, existingRanking: null };
+};
+
+export const executeRankingSave = async (
+	input: ExecuteRankingSaveInput,
+	rankingsRef: CollectionReference<DocumentData>,
+	deps: RankingFirestoreDeps,
+	callbacks: ExecuteRankingSaveCallbacks,
+): Promise<void> => {
+	try {
+		const { existingDocRef, existingRanking } = await lookupExistingRanking(
+			rankingsRef,
+			input.playerName,
+			input.uid,
+			deps,
+		);
+
+		const saveDecision = resolveRankingSaveDecision(
+			existingRanking,
+			input.score,
+			input.totalTimeElapsed,
+		);
+
+		if (saveDecision === "skip") {
+			return;
+		}
+
+		const rankingData = {
+			...buildRankingPayload({
+				playerName: input.playerName,
+				score: input.score,
+				totalTimeElapsed: input.totalTimeElapsed,
+				uid: input.uid,
+			}),
+			timestamp: deps.createTimestamp(),
+		};
+
+		if (saveDecision === "update" && existingDocRef) {
+			await deps.updateDoc(existingDocRef, rankingData);
+		} else {
+			await deps.addDoc(rankingsRef, rankingData);
+		}
+
+		if (shouldUpdateBestScore(input.score, input.bestScore)) {
+			callbacks.onBestScoreUpdate(input.score, input.totalTimeElapsed);
+		}
+
+		await callbacks.onAfterSave();
+	} catch (error) {
+		console.error("Error saving ranking:", error);
+		callbacks.onError();
+	}
+};

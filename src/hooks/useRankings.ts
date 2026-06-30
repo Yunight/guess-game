@@ -14,6 +14,7 @@ import {
 import { useCallback, useEffect, useRef, useState } from "react";
 import { auth } from "../firebase";
 import { db } from "../firebase";
+import { executeRankingSave } from "../services/rankingSaveLogic";
 import {
 	calculateRankFromEntries,
 	getRankingsCollectionPath,
@@ -22,13 +23,6 @@ import {
 	RANKINGS_CALCULATION_LIMIT,
 	RANKINGS_DISPLAY_LIMIT,
 } from "../services/rankingUtils";
-import {
-	buildRankingPayload,
-	extractExistingRankingFromDocs,
-	resolveRankingSaveDecision,
-	shouldLookupRankingByUid,
-	shouldUpdateBestScore,
-} from "../services/rankingSaveLogic";
 
 interface UseRankingsProps {
 	selectedGeneration: Generation;
@@ -147,10 +141,15 @@ export const useRankings = ({
 	);
 
 	const saveRanking = useCallback(
-		async (score: number, totalTimeElapsed: number) => {
+		async (score: number, totalTimeElapsed: number): Promise<void> => {
 			const now = Date.now();
 			if (
-				isDuplicateSaveAttempt(lastSaveAttempt.current, score, totalTimeElapsed, now)
+				isDuplicateSaveAttempt(
+					lastSaveAttempt.current,
+					score,
+					totalTimeElapsed,
+					now,
+				)
 			) {
 				return;
 			}
@@ -161,68 +160,38 @@ export const useRankings = ({
 				timestamp: now,
 			};
 
-			try {
-				setRankingError(null);
-				const rankingsRef = getRankingsCollectionRef();
-
-				let existingDocRef = null;
-				let existingRanking = null;
-
-				const uid = auth.currentUser?.uid;
-
-				if (shouldLookupRankingByUid(uid)) {
-					const userQuery = query(rankingsRef, where("uid", "==", uid));
-					const userDocs = await getDocs(userQuery);
-					if (!userDocs.empty) {
-						existingDocRef = userDocs.docs[0]?.ref ?? null;
-						existingRanking = extractExistingRankingFromDocs(userDocs.docs);
-					}
-				} else {
-					const nameQuery = query(rankingsRef, where("name", "==", playerName));
-					const nameDocs = await getDocs(nameQuery);
-					if (!nameDocs.empty) {
-						existingDocRef = nameDocs.docs[0]?.ref ?? null;
-						existingRanking = extractExistingRankingFromDocs(nameDocs.docs);
-					}
-				}
-
-				const saveDecision = resolveRankingSaveDecision(
-					existingRanking,
+			setRankingError(null);
+			await executeRankingSave(
+				{
 					score,
 					totalTimeElapsed,
-				);
-
-				if (saveDecision === "skip") {
-					return;
-				}
-
-				const rankingData = {
-					...buildRankingPayload({
-						playerName,
-						score,
-						totalTimeElapsed,
-						uid: auth.currentUser?.uid ?? null,
-					}),
-					timestamp: Timestamp.now(),
-				};
-
-				if (saveDecision === "update" && existingDocRef) {
-					await updateDoc(existingDocRef, rankingData);
-				} else {
-					await addDoc(rankingsRef, rankingData);
-				}
-
-				if (shouldUpdateBestScore(score, bestScore)) {
-					setBestScore(score);
-					setBestTime(totalTimeElapsed);
-				}
-
-				await calculateRankings(score, totalTimeElapsed);
-				await fetchRankings();
-			} catch (error) {
-				console.error("Error saving ranking:", error);
-				setRankingError("rankingSaveError");
-			}
+					playerName,
+					bestScore,
+					uid: auth.currentUser?.uid ?? null,
+				},
+				getRankingsCollectionRef(),
+				{
+					query,
+					where,
+					getDocs,
+					addDoc,
+					updateDoc,
+					createTimestamp: () => Timestamp.now(),
+				},
+				{
+					onBestScoreUpdate: (newScore, newTime) => {
+						setBestScore(newScore);
+						setBestTime(newTime);
+					},
+					onAfterSave: async () => {
+						await calculateRankings(score, totalTimeElapsed);
+						await fetchRankings();
+					},
+					onError: () => {
+						setRankingError("rankingSaveError");
+					},
+				},
+			);
 		},
 		[
 			bestScore,
@@ -235,7 +204,7 @@ export const useRankings = ({
 
 	useEffect(() => {
 		if (!isGameActive) {
-			fetchRankings();
+			void fetchRankings();
 		}
 	}, [isGameActive, fetchRankings]);
 

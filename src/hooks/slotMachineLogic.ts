@@ -33,16 +33,16 @@ export const pickSpinDisplayId = (
 		return rewards[0] ?? finalPokemonId;
 	}
 
-	let randomIndex = 0;
-	let attempts = 0;
+	let randomIndex = Math.floor(random() * (rewards.length - 1));
+	let attempts = 1;
 
-	do {
-		randomIndex = Math.floor(random() * (rewards.length - 1));
-		attempts++;
-	} while (
+	while (
 		rewards[randomIndex] === lastDisplayedId &&
 		attempts < maxAttempts
-	);
+	) {
+		randomIndex = Math.floor(random() * (rewards.length - 1));
+		attempts++;
+	}
 
 	return rewards[randomIndex] ?? finalPokemonId;
 };

@@ -1,243 +1,51 @@
-import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Volume2, VolumeX } from "lucide-react";
-import type { FC, RefObject } from "react";
+import type { FC } from "react";
 import { useTranslation } from "react-i18next";
-import { GameStats } from "./GameStats";
-import { GameScreenCriticalBanner } from "./GameScreenCriticalBanner";
 import { GameScreenHypeOverlay } from "./GameScreenHypeOverlay";
-import { GuessInput } from "./GuessInput";
-import { HintButton } from "./HintButton";
-import { PokemonDisplay } from "./PokemonDisplay";
+import { GameScreenPlayArea } from "./GameScreenPlayArea";
+import { GameScreenTopBar } from "./GameScreenTopBar";
+import type { GameScreenPlayAreaProps } from "./gameScreenTypes";
 import { ScoreIncrease } from "./ScoreIncrease";
-import type { Pokemon } from "./types";
 
-interface GameScreenProps {
-	currentPokemon: Pokemon | undefined;
-	isPokemonLoading: boolean;
-	isCorrect: boolean | null;
-	score: number;
-	guessTimeLeft: number;
-	hintsLeft: number;
-	guess: string;
-	handleGuessChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
-	handleKeyDown: (e: React.KeyboardEvent<HTMLInputElement>) => void;
-	suggestions: string[];
-	handleSuggestionClick: (suggestion: string) => void;
-	highlightedIndex: number;
-	showHint: boolean;
-	useHint: () => void;
-	inputRef: RefObject<HTMLInputElement>;
-	suggestionsRef: RefObject<HTMLDivElement>;
-	formatTime: (seconds: number) => string;
-	isMuted: boolean;
+interface GameScreenProps
+	extends Omit<
+		GameScreenPlayAreaProps,
+		"criticalSuccessLabel" | "criticalHitLabel" | "hypeTrainLabel"
+	> {
 	setIsMuted: (value: boolean) => void;
 	totalTimeElapsed: number;
-	bestScore: number;
-	bestTime: number;
 	onQuit: () => void;
 	isHardMode: boolean;
-	showCriticalSuccess: boolean;
-	showCriticalHit: boolean;
-	showHypeTrain: boolean;
-	consecutiveFastAnswers: number;
 	pointsEarned: number;
-	remainingCount: number;
-	totalCount: number;
 }
 
-export const GameScreen: FC<GameScreenProps> = ({
-	currentPokemon,
-	isPokemonLoading,
-	isCorrect,
-	score,
-	guessTimeLeft,
-	hintsLeft,
-	guess,
-	handleGuessChange,
-	handleKeyDown,
-	suggestions,
-	handleSuggestionClick,
-	highlightedIndex,
-	showHint,
-	useHint,
-	inputRef,
-	suggestionsRef,
-	formatTime,
-	isMuted,
-	setIsMuted,
-	totalTimeElapsed,
-	bestScore,
-	bestTime,
-	onQuit,
-	isHardMode,
-	showCriticalSuccess,
-	showCriticalHit,
-	showHypeTrain,
-	consecutiveFastAnswers,
-	pointsEarned,
-	remainingCount,
-	totalCount,
-}) => {
+export const GameScreen: FC<GameScreenProps> = (props) => {
 	const { t } = useTranslation();
 
 	return (
 		<Card className="w-full max-w-md p-1 sm:p-4 relative flex flex-col min-h-0 sm:min-h-0 bg-red-500 rounded-3xl overflow-hidden">
-			<GameScreenHypeOverlay showHypeTrain={showHypeTrain} />
+			<GameScreenHypeOverlay showHypeTrain={props.showHypeTrain} />
 
-			{/* Top dots */}
-			<div className="absolute top-4 left-4 flex gap-2 z-10">
-				<div className="w-3 h-3 rounded-full bg-gray-700" />
-				<div className="w-3 h-3 rounded-full bg-yellow-400" />
-				<div className="w-3 h-3 rounded-full bg-green-500" />
-			</div>
+			<GameScreenTopBar
+				currentPokemon={props.currentPokemon}
+				totalTimeElapsed={props.totalTimeElapsed}
+				formatTime={props.formatTime}
+				isMuted={props.isMuted}
+				setIsMuted={props.setIsMuted}
+				isHardMode={props.isHardMode}
+				onQuit={props.onQuit}
+				pointsEarned={props.pointsEarned}
+				ScoreIncrease={ScoreIncrease}
+			/>
 
-			{/* Blue circle light */}
-			<div className="absolute top-2 left-24 w-10 h-10 rounded-full bg-blue-400 border-4 border-white z-10" />
-
-			{/* Quit Button - Only show in Chill mode */}
-			{!isHardMode && (
-				<Button
-					variant="ghost"
-					onClick={onQuit}
-					className="absolute left-4 top-14 text-white hover:text-red-200 hover:bg-white/10 transition-colors font-medium z-10"
-				>
-					Quitter
-				</Button>
-			)}
-
-			{/* Global Timer */}
-			<div className="absolute top-4 left-1/2 -translate-x-1/2 font-mono text-lg font-bold text-white h-9 flex items-center bg-black/20 px-4 rounded-full backdrop-blur-sm">
-				{formatTime(totalTimeElapsed)}
-			</div>
-
-			{/* Pokemon Number */}
-			<div className="absolute top-4 right-16 font-mono text-lg font-bold text-gray-700 h-9 flex items-center">
-				#{currentPokemon?.id.toString().padStart(3, "0") || "???"}
-			</div>
-
-			{pointsEarned > 0 && <ScoreIncrease points={pointsEarned} />}
-
-			{/* Sound toggle */}
-			<div className="absolute top-4 right-4">
-				<Button
-					variant="ghost"
-					size="icon"
-					onClick={() => setIsMuted(!isMuted)}
-					className="hover:bg-white/10"
-					data-testid="volume-toggle-button"
-				>
-					{isMuted ? (
-						<VolumeX
-							className="h-5 w-5 text-white"
-							data-testid="volume-x-icon"
-						/>
-					) : (
-						<Volume2
-							className="h-5 w-5 text-white"
-							data-testid="volume-2-icon"
-						/>
-					)}
-				</Button>
-			</div>
-
-			<div className="flex flex-col flex-1 mt-16 mb-2 relative z-10">
-				<div className="relative">
-					<PokemonDisplay
-						currentPokemon={currentPokemon}
-						isPokemonLoading={isPokemonLoading}
-						isCorrect={isCorrect}
-						isMuted={isMuted}
-						guessTimeLeft={guessTimeLeft}
-						remainingCount={remainingCount}
-						totalCount={totalCount}
-					/>
-
-					<GameScreenCriticalBanner
-						showCriticalSuccess={showCriticalSuccess}
-						showCriticalHit={showCriticalHit}
-						showHypeTrain={showHypeTrain}
-						consecutiveFastAnswers={consecutiveFastAnswers}
-						criticalSuccessLabel={t("criticalSuccess")}
-						criticalHitLabel={t("criticalHit")}
-						hypeTrainLabel={t("hypeTrain", { count: consecutiveFastAnswers })}
-					/>
-				</div>
-
-				<GameStats
-					score={score}
-					bestScore={bestScore}
-					guessTimeLeft={guessTimeLeft}
-					hintsLeft={hintsLeft}
-					formatTime={formatTime}
-					bestTime={bestTime}
-				/>
-
-				{/* D-Pad and green screen area */}
-				<div className="flex items-center gap-4 mx-2 mt-4">
-					{/* D-Pad */}
-					<div className="w-12 h-12 bg-gray-800 rounded-full relative shadow-inner">
-						{/* Vertical line */}
-						<div className="absolute left-1/2 top-0 -translate-x-1/2 h-full w-4 bg-gray-800">
-							{/* Up button */}
-							<div
-								className="absolute top-0 left-0 right-0 h-4 bg-gray-800 rounded-sm 
-                shadow-[inset_1px_1px_1px_rgba(255,255,255,0.1),inset_-1px_-1px_1px_rgba(0,0,0,0.3)]
-                hover:brightness-110 active:brightness-90 transition-all"
-							/>
-							{/* Down button */}
-							<div
-								className="absolute bottom-0 left-0 right-0 h-4 bg-gray-800 rounded-sm
-                shadow-[inset_1px_1px_1px_rgba(255,255,255,0.1),inset_-1px_-1px_1px_rgba(0,0,0,0.3)]
-                hover:brightness-110 active:brightness-90 transition-all"
-							/>
-						</div>
-						{/* Horizontal line */}
-						<div className="absolute top-1/2 left-0 -translate-y-1/2 w-full h-4 bg-gray-800">
-							{/* Left button */}
-							<div
-								className="absolute left-0 top-0 bottom-0 w-4 bg-gray-800 rounded-sm
-                shadow-[inset_1px_1px_1px_rgba(255,255,255,0.1),inset_-1px_-1px_1px_rgba(0,0,0,0.3)]
-                hover:brightness-110 active:brightness-90 transition-all"
-							/>
-							{/* Right button */}
-							<div
-								className="absolute right-0 top-0 bottom-0 w-4 bg-gray-800 rounded-sm
-                shadow-[inset_1px_1px_1px_rgba(255,255,255,0.1),inset_-1px_-1px_1px_rgba(0,0,0,0.3)]
-                hover:brightness-110 active:brightness-90 transition-all"
-							/>
-						</div>
-						{/* Center dot */}
-						<div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-3 h-3 bg-gray-700 rounded-full" />
-					</div>
-
-					{/* Green screen area */}
-					<div className="flex-1 bg-gradient-to-br from-green-300 to-green-400 rounded-lg p-2 shadow-inner">
-						<GuessInput
-							guess={guess}
-							handleGuessChange={handleGuessChange}
-							handleKeyDown={handleKeyDown}
-							suggestions={suggestions}
-							handleSuggestionClick={handleSuggestionClick}
-							highlightedIndex={highlightedIndex}
-							inputRef={inputRef}
-							suggestionsRef={suggestionsRef}
-							isCorrect={isCorrect}
-							guessTimeLeft={guessTimeLeft}
-						/>
-					</div>
-				</div>
-
-				<div className="mt-2">
-					<HintButton
-						showHint={showHint}
-						useHint={useHint}
-						hintsLeft={hintsLeft}
-						currentPokemon={currentPokemon}
-						isPokemonLoading={isPokemonLoading}
-					/>
-				</div>
-			</div>
+			<GameScreenPlayArea
+				{...props}
+				criticalSuccessLabel={t("criticalSuccess")}
+				criticalHitLabel={t("criticalHit")}
+				hypeTrainLabel={t("hypeTrain", {
+					count: props.consecutiveFastAnswers,
+				})}
+			/>
 		</Card>
 	);
 };

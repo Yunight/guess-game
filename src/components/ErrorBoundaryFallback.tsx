@@ -1,21 +1,8 @@
 import type { ErrorInfo } from "react";
-
-const isMobileUserAgent = (userAgent: string): boolean => {
-	return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
-		userAgent,
-	);
-};
-
-const isNetworkErrorMessage = (message: string | undefined): boolean => {
-	if (!message) {
-		return false;
-	}
-	return (
-		message.includes("fetch") ||
-		message.includes("network") ||
-		message.includes("load")
-	);
-};
+import {
+	getErrorBoundaryTitle,
+	shouldShowMobileNetworkHelp,
+} from "./errorBoundaryFallbackLogic";
 
 interface ErrorBoundaryFallbackProps {
 	error: Error | undefined;
@@ -34,18 +21,20 @@ export const ErrorBoundaryFallback = ({
 	onRefresh,
 	userAgent,
 }: ErrorBoundaryFallbackProps): JSX.Element => {
-	const isMobile = isMobileUserAgent(userAgent);
-	const isNetworkError = isNetworkErrorMessage(error?.message);
+	const showMobileNetworkHelp = shouldShowMobileNetworkHelp(
+		userAgent,
+		error?.message,
+	);
 
 	return (
 		<div className="min-h-screen bg-gradient-to-br from-blue-100 to-blue-200 p-4 flex items-center justify-center">
 			<div className="bg-white rounded-lg shadow-lg p-6 max-w-md mx-auto text-center">
 				<div className="text-6xl mb-4">⚠️</div>
 				<h2 className="text-xl font-bold mb-4 text-gray-800">
-					{isMobile ? "Mobile Loading Error" : "Something went wrong"}
+					{getErrorBoundaryTitle(userAgent)}
 				</h2>
 
-				{isMobile && isNetworkError ? (
+				{showMobileNetworkHelp ? (
 					<div className="space-y-3 text-sm text-gray-600">
 						<p>The app failed to load properly on your device.</p>
 						<p className="font-semibold">Quick fixes to try:</p>

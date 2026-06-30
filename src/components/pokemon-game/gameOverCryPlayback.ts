@@ -55,3 +55,34 @@ export const executeRewardCryPlayback = async (
 };
 
 export const REWARD_CRY_PLAYBACK_DELAY_MS = 500;
+
+export interface RewardCryScheduleInput {
+	gameOver: boolean;
+	isMuted: boolean;
+	isSlotMachineRunning: boolean;
+	rewardPokemon: { pokemon?: { id: number }; isLoading: boolean };
+}
+
+export const shouldScheduleRewardCry = (
+	input: RewardCryScheduleInput,
+): boolean => {
+	if (input.isSlotMachineRunning) {
+		return false;
+	}
+
+	return (
+		input.gameOver &&
+		!input.isMuted &&
+		Boolean(input.rewardPokemon.pokemon) &&
+		!input.rewardPokemon.isLoading
+	);
+};
+
+export const getRewardCryPokemonId = (
+	pokemon: { id: number } | undefined,
+): number | null => {
+	if (!pokemon) {
+		return null;
+	}
+	return pokemon.id;
+};

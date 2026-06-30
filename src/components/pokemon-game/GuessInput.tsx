@@ -2,7 +2,7 @@ import { Input } from "@/components/ui/input";
 import type { FC, RefObject } from "react";
 import { useTranslation } from "react-i18next";
 
-interface GuessInputProps {
+export interface GuessInputProps {
 	guess: string;
 	handleGuessChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
 	handleKeyDown: (e: React.KeyboardEvent<HTMLInputElement>) => void;

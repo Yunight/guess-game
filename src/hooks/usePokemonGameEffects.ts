@@ -4,12 +4,10 @@ import {
 	shouldApplyHypeTrainBonus,
 	shouldRecoverInvalidPokemon,
 	shouldResetRewardOnGameClose,
-	shouldResetTimersWhenInactive,
-	shouldStartGuessTimer,
-	shouldStartTotalTimer,
 	shouldSyncRewardPokemon,
 	shouldTriggerGameOver,
 } from "./pokemonGameEffectLogic";
+import { useGameTimerEffects } from "./useGameTimerEffects";
 import type { useGameState } from "./useGameState";
 
 type GameState = ReturnType<typeof useGameState>["state"];
@@ -52,73 +50,13 @@ export const usePokemonGameEffects = ({
 	startTotalTimer,
 	stopAllTimers,
 }: UsePokemonGameEffectsParams): void => {
-	useEffect(() => {
-		if (shouldResetTimersWhenInactive(
-			gameState.isGameActive,
-			gameState.guessTimeLeft,
-			gameState.totalTimeElapsed,
-		)) {
-			console.log("[PokemonGame] Game not active, stopping all timers");
-
-			stopAllTimers();
-
-			if (gameState.guessTimeLeft !== Number.POSITIVE_INFINITY) {
-				gameSetters.setGuessTimeLeft(Number.POSITIVE_INFINITY);
-			}
-
-			if (gameState.totalTimeElapsed !== 0) {
-				gameSetters.setTotalTimeElapsed(0);
-			}
-
-			return;
-		}
-
-		if (!gameState.isGameActive) {
-			return;
-		}
-
-		if (shouldStartTotalTimer(gameState.isGameActive, gameState.totalTimeElapsed)) {
-			console.log("[PokemonGame] Starting total timer");
-
-			startTotalTimer(gameSetters.setTotalTimeElapsed);
-		}
-
-		if (shouldStartGuessTimer(
-			gameState.isGameActive,
-			gameState.isHardMode,
-			gameState.guessTimeLeft,
-		)) {
-			const initialTime = gameState.currentPokemon?.isShiny ? 10 : 15;
-
-			console.log(
-				"[PokemonGame] Starting guess timer with initial time:",
-				initialTime,
-			);
-
-			startGuessTimer(gameSetters.setGuessTimeLeft);
-		}
-
-		return () => {
-			if (!gameState.isGameActive) {
-				console.log(
-					"[PokemonGame] Cleanup: Game not active, stopping all timers",
-				);
-
-				stopAllTimers();
-			}
-		};
-	}, [
-		gameState.isGameActive,
-		gameState.isHardMode,
-		gameState.currentPokemon?.isShiny,
-		gameState.guessTimeLeft,
-		gameState.totalTimeElapsed,
+	useGameTimerEffects({
+		gameState,
+		gameSetters,
 		startGuessTimer,
 		startTotalTimer,
 		stopAllTimers,
-		gameSetters.setGuessTimeLeft,
-		gameSetters.setTotalTimeElapsed,
-	]);
+	});
 
 	useEffect(() => {
 		const handleClickOutside = (event: MouseEvent): void => {

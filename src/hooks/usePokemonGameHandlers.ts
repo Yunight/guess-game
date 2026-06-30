@@ -8,16 +8,14 @@ import { buildGuessSuggestions } from "@/components/pokemon-game/guessSuggestion
 import type { Pokemon } from "@/components/pokemon-game/types";
 import { auth } from "@/firebase";
 import {
-	buildStartGameState,
-	pickFirstPokemonFromPool,
-	resolveCorrectAnswerHypeEffect,
-	resolveCorrectAnswerScoring,
+	resolveSuggestionSubmission,
 	resolveHighlightedIndex,
 	resolveKeyDownAction,
-	resolveSuggestionSubmission,
-	shouldAwardHintOnCorrectAnswer,
-	shouldSkipNameValidation,
-	shouldUpdateStoredPlayerName,
+	applyStartGameStateToSetters,
+	validateStartGameSession,
+	executeStartGameSession,
+	executeCorrectAnswerFlow,
+	executeSuggestionSubmission,
 } from "./pokemonGameHandlerLogic";
 import type { useGameState } from "./useGameState";
 
@@ -161,98 +159,31 @@ export const usePokemonGameHandlers = ({
 			return;
 		}
 
-		if (gameState.isHardMode) {
-			clearGuessTimer();
-		}
-
-		gameSetters.setIsCorrect(true);
-		await playCorrectSound();
-
-		if (shouldAwardHintOnCorrectAnswer(gameState.score)) {
-			gameSetters.setHintsLeft((prev) => prev + 1);
-		}
-
-		const hypeEffect = resolveCorrectAnswerHypeEffect(
-			gameState.isHardMode,
-			gameState.guessTimeLeft,
-			gameState.showHypeTrain,
-			gameState.consecutiveFastAnswers,
+		await executeCorrectAnswerFlow(
+			{
+				isHardMode: gameState.isHardMode,
+				guessTimeLeft: gameState.guessTimeLeft,
+				showHypeTrain: gameState.showHypeTrain,
+				score: gameState.score,
+				consecutiveFastAnswers: gameState.consecutiveFastAnswers,
+				remainingPokemon: gameState.remainingPokemon,
+				answeredPokemonId: currentPokemon.id,
+				isShiny: Boolean(currentPokemon.isShiny),
+			},
+			gameSetters,
+			{
+				clearGuessTimer,
+				playCorrectSound,
+				startGuessTimer,
+				focusInput: () => inputRef.current?.focus(),
+				delay: (ms) => new Promise((resolve) => setTimeout(resolve, ms)),
+				scheduleGameOver: () => {
+					setTimeout(() => {
+						void handleGameOver();
+					}, 1500);
+				},
+			},
 		);
-
-		if (hypeEffect.type === "increment_fast_answers") {
-			gameSetters.setConsecutiveFastAnswers(hypeEffect.newCount);
-			if (hypeEffect.shouldShowHypeTrain) {
-				gameSetters.setShowHypeTrain(true);
-				gameSetters.setMaxHypeChain((prevMax) =>
-					Math.max(prevMax, hypeEffect.newCount),
-				);
-			}
-		} else if (hypeEffect.type === "break_hype_train") {
-			gameSetters.setShowHypeTrain(false);
-			gameSetters.setScore((prev) => prev + hypeEffect.bonusScore);
-			gameSetters.setConsecutiveFastAnswers(0);
-		}
-
-		const { scoringResult, poolResult } = resolveCorrectAnswerScoring({
-			isHardMode: gameState.isHardMode,
-			guessTimeLeft: gameState.guessTimeLeft,
-			isShiny: Boolean(currentPokemon.isShiny),
-			showHypeTrain: gameState.showHypeTrain,
-			remainingPokemon: gameState.remainingPokemon,
-			answeredPokemonId: currentPokemon.id,
-		});
-
-		if (scoringResult.showCriticalSuccess) {
-			gameSetters.setShowCriticalSuccess(true);
-			gameSetters.setCriticalSuccessCount((prev) => prev + 1);
-			setTimeout(() => {
-				gameSetters.setShowCriticalSuccess(false);
-			}, 2000);
-		}
-
-		if (scoringResult.showCriticalHit) {
-			gameSetters.setShowCriticalHit(true);
-			gameSetters.setCriticalHitCount((prev) => prev + 1);
-			setTimeout(() => {
-				gameSetters.setShowCriticalHit(false);
-			}, 2000);
-		}
-
-		gameSetters.setPointsEarned(scoringResult.earnedPoints);
-		setTimeout(() => {
-			gameSetters.setPointsEarned(0);
-		}, 1000);
-
-		gameSetters.setScore((prev) => prev + scoringResult.earnedPoints);
-
-		if (poolResult.type === "game_complete") {
-			gameSetters.setRemainingPokemon([]);
-			setTimeout(() => {
-				void handleGameOver();
-			}, 1500);
-			return;
-		}
-
-		gameSetters.setRemainingPokemon(poolResult.remainingPool);
-
-		await new Promise((resolve) => setTimeout(resolve, 1000));
-
-		gameSetters.setCurrentPokemonId(null);
-		gameSetters.setIsCorrect(null);
-		gameSetters.setGuess("");
-		gameSetters.setSuggestions([]);
-		gameSetters.setShowHint(false);
-
-		await new Promise((resolve) => setTimeout(resolve, 50));
-		await new Promise((resolve) => setTimeout(resolve, 300));
-
-		gameSetters.setCurrentPokemonId(poolResult.nextPokemonId);
-
-		if (gameState.isHardMode) {
-			startGuessTimer(gameSetters.setGuessTimeLeft);
-		}
-
-		inputRef.current?.focus();
 	}, [
 		currentPokemon,
 		gameState.isHardMode,
@@ -280,21 +211,16 @@ export const usePokemonGameHandlers = ({
 				convertToStoredFormat,
 			);
 
-			if (submission.type === "skip") {
-				return;
-			}
-
-			gameSetters.setGuess(suggestion);
-			gameSetters.setSuggestions([]);
-
-			await new Promise((resolve) => setTimeout(resolve, 50));
-
-			if (submission.type === "correct") {
-				await handleCorrectAnswer();
-			} else {
-				gameSetters.setIsCorrect(false);
-				await playWrongSound();
-			}
+			await executeSuggestionSubmission(
+				submission,
+				suggestion,
+				gameSetters,
+				{
+					delay: (ms) => new Promise((resolve) => setTimeout(resolve, ms)),
+					handleCorrectAnswer,
+					playWrongSound,
+				},
+			);
 		},
 		[
 			gameState.guessTimeLeft,
@@ -436,91 +362,44 @@ export const usePokemonGameHandlers = ({
 
 	const startGame = useCallback(
 		async (isHardMode: boolean): Promise<void> => {
-			if (!playerName) {
+			const storedName = localStorage.getItem("pokemonGamePlayerName");
+			const canStart = await validateStartGameSession(
+				{
+					isHardMode,
+					selectedGeneration: gameState.selectedGeneration,
+					playerName,
+					isRestarting: gameState.isRestarting,
+					hasAuthUser: Boolean(auth.currentUser),
+					storedName,
+				},
+				{ checkNameAvailability },
+			);
+
+			if (!canStart) {
 				return;
 			}
 
-			const exactName = playerName.trim();
-			const storedName = localStorage.getItem("pokemonGamePlayerName");
-
-			const shouldSkipValidation = shouldSkipNameValidation(
-				Boolean(auth.currentUser),
-				gameState.isRestarting,
-				exactName,
-				storedName,
+			await executeStartGameSession(
+				{
+					isHardMode,
+					selectedGeneration: gameState.selectedGeneration,
+					playerName,
+					isRestarting: gameState.isRestarting,
+					hasAuthUser: Boolean(auth.currentUser),
+					storedName,
+				},
+				gameSetters,
+				{
+					checkNameAvailability,
+					stopAllTimers,
+					cleanupAllAudio,
+					applyStartState: applyStartGameStateToSetters,
+					startTotalTimer,
+					startGuessTimer,
+					focusInput: () => inputRef.current?.focus(),
+					delay: (ms) => new Promise((resolve) => setTimeout(resolve, ms)),
+				},
 			);
-
-			if (!shouldSkipValidation) {
-				const isAvailable = await checkNameAvailability(exactName);
-				if (!isAvailable) {
-					return;
-				}
-			}
-
-			if (shouldUpdateStoredPlayerName(exactName, storedName)) {
-				localStorage.clear();
-				localStorage.setItem("pokemonGamePlayerName", exactName);
-			}
-
-			gameSetters.setIsRestarting(true);
-
-			try {
-				stopAllTimers();
-				cleanupAllAudio();
-
-				const startState = buildStartGameState(isHardMode);
-				gameSetters.setIsHardMode(startState.isHardMode);
-				gameSetters.setScore(startState.score);
-				gameSetters.setHintsLeft(startState.hintsLeft);
-				gameSetters.setGuessTimeLeft(startState.guessTimeLeft);
-				gameSetters.setTotalTimeElapsed(startState.totalTimeElapsed);
-				gameSetters.setGameOver(startState.gameOver);
-				gameSetters.setUserRanking(startState.userRanking);
-				gameSetters.setHighlightedIndex(startState.highlightedIndex);
-				gameSetters.setConsecutiveFastAnswers(startState.consecutiveFastAnswers);
-				gameSetters.setShowHypeTrain(startState.showHypeTrain);
-				gameSetters.setPointsEarned(startState.pointsEarned);
-				gameSetters.setCurrentPokemonId(startState.currentPokemonId);
-				gameSetters.setIsCorrect(startState.isCorrect);
-				gameSetters.setGuess(startState.guess);
-				gameSetters.setSuggestions([...startState.suggestions]);
-				gameSetters.setShowHint(startState.showHint);
-				gameSetters.setRewardPokemon({
-					pokemon: undefined,
-					isLoading: false,
-				});
-
-				const allPokemonIds = buildGenerationPokemonIds(
-					gameState.selectedGeneration.startId,
-					gameState.selectedGeneration.endId,
-				);
-
-				gameSetters.setRemainingPokemon(allPokemonIds);
-
-				await new Promise((resolve) => setTimeout(resolve, 100));
-
-				gameSetters.setIsGameActive(true);
-				startTotalTimer(gameSetters.setTotalTimeElapsed);
-				if (isHardMode) {
-					startGuessTimer(gameSetters.setGuessTimeLeft);
-				}
-
-				const { firstPokemonId, remainingPokemon } =
-					pickFirstPokemonFromPool(allPokemonIds);
-
-				if (firstPokemonId === null) {
-					return;
-				}
-
-				gameSetters.setRemainingPokemon([...remainingPokemon]);
-				gameSetters.setCurrentPokemonId(firstPokemonId);
-
-				inputRef.current?.focus();
-			} catch (error) {
-				console.error("Error starting game:", error);
-			} finally {
-				gameSetters.setIsRestarting(false);
-			}
 		},
 		[
 			playerName,

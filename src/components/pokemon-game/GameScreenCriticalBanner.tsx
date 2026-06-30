@@ -2,7 +2,6 @@ interface GameScreenCriticalBannerProps {
 	showCriticalSuccess: boolean;
 	showCriticalHit: boolean;
 	showHypeTrain: boolean;
-	consecutiveFastAnswers: number;
 	criticalSuccessLabel: string;
 	criticalHitLabel: string;
 	hypeTrainLabel: string;
@@ -12,7 +11,6 @@ export const GameScreenCriticalBanner = ({
 	showCriticalSuccess,
 	showCriticalHit,
 	showHypeTrain,
-	consecutiveFastAnswers,
 	criticalSuccessLabel,
 	criticalHitLabel,
 	hypeTrainLabel,
