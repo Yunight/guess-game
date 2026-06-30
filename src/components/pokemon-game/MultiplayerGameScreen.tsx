@@ -5,7 +5,6 @@ import { GameScreenInputArea } from "./GameScreenInputArea";
 import { GameScreenPokemonSection } from "./GameScreenPokemonSection";
 import { MultiplayerGameTopBar } from "./MultiplayerGameTopBar";
 import { MultiplayerScoreBar } from "./MultiplayerScoreBar";
-import { ScoreIncrease } from "./ScoreIncrease";
 import type { Pokemon } from "./types";
 import type { useMultiplayerGameController } from "@/hooks/useMultiplayerGameController";
 import { formatTimeForRanking } from "@/utils/gameFormatters";
@@ -39,13 +38,7 @@ export const MultiplayerGameScreen: FC<MultiplayerGameScreenProps> = ({
 				onQuit={controller.handleQuit}
 			/>
 
-			{controller.pointsEarned > 0 && (
-				<div className="absolute top-28 left-1/2 -translate-x-1/2 z-20">
-					<ScoreIncrease points={controller.pointsEarned} />
-				</div>
-			)}
-
-			<div className="flex flex-col flex-1 mt-4 mb-2 relative z-10">
+			<div className="flex flex-col flex-1 mt-4 mb-2 relative z-10 gap-3">
 				<MultiplayerScoreBar
 					hostName={controller.hostName}
 					guestName={controller.guestName}
@@ -58,6 +51,8 @@ export const MultiplayerGameScreen: FC<MultiplayerGameScreenProps> = ({
 					localPlayerWonRound={localPlayerWonRound}
 					roundNumber={controller.roundNumber}
 					submitError={controller.submitError}
+					remainingCount={controller.remainingCount}
+					totalCount={controller.totalCount}
 				/>
 
 				<GameScreenPokemonSection
@@ -68,6 +63,7 @@ export const MultiplayerGameScreen: FC<MultiplayerGameScreenProps> = ({
 					guessTimeLeft={controller.guessTimeLeft}
 					remainingCount={controller.remainingCount}
 					totalCount={controller.totalCount}
+					showProgressCounter={false}
 					score={controller.localScore}
 					bestScore={0}
 					hintsLeft={0}

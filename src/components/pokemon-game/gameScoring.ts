@@ -3,6 +3,8 @@ export interface ScoringContext {
 	guessTimeLeft: number;
 	isShiny: boolean;
 	showHypeTrain: boolean;
+	roundDurationSeconds?: number;
+	isMultiplayer?: boolean;
 	random?: () => number;
 }
 
@@ -14,6 +16,11 @@ export interface ScoringResult {
 
 export const calculateEarnedPoints = (context: ScoringContext): ScoringResult => {
 	const random = context.random ?? Math.random;
+	const maxTime = context.roundDurationSeconds ?? 15;
+	const guessTimeLeft = Math.min(
+		maxTime,
+		Math.max(0, context.guessTimeLeft),
+	);
 
 	if (!context.isHardMode) {
 		return {
@@ -34,22 +41,12 @@ export const calculateEarnedPoints = (context: ScoringContext): ScoringResult =>
 	let earnedPoints = 0;
 	const fastTime = 10;
 	const mediumTime = 5;
-	const maxTime = 15;
 
-	if (
-		context.guessTimeLeft >= fastTime &&
-		context.guessTimeLeft <= maxTime
-	) {
+	if (guessTimeLeft >= fastTime && guessTimeLeft <= maxTime) {
 		earnedPoints = 3;
-	} else if (
-		context.guessTimeLeft >= mediumTime &&
-		context.guessTimeLeft < fastTime
-	) {
+	} else if (guessTimeLeft >= mediumTime && guessTimeLeft < fastTime) {
 		earnedPoints = 2;
-	} else if (
-		context.guessTimeLeft >= 0 &&
-		context.guessTimeLeft < mediumTime
-	) {
+	} else if (guessTimeLeft >= 0 && guessTimeLeft < mediumTime) {
 		earnedPoints = 1;
 	}
 
@@ -61,7 +58,7 @@ export const calculateEarnedPoints = (context: ScoringContext): ScoringResult =>
 		};
 	}
 
-	if (context.guessTimeLeft === 0) {
+	if (guessTimeLeft === 0) {
 		return {
 			earnedPoints: 1,
 			showCriticalSuccess: true,
@@ -69,7 +66,7 @@ export const calculateEarnedPoints = (context: ScoringContext): ScoringResult =>
 		};
 	}
 
-	if (random() < 0.2) {
+	if (!context.isMultiplayer && random() < 0.2) {
 		return {
 			earnedPoints: earnedPoints + 1,
 			showCriticalSuccess: false,

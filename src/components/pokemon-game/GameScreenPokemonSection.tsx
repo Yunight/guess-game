@@ -14,6 +14,7 @@ export const GameScreenPokemonSection = (
 			guessTimeLeft={props.guessTimeLeft}
 			remainingCount={props.remainingCount}
 			totalCount={props.totalCount}
+			showProgressCounter={props.showProgressCounter ?? true}
 		/>
 
 		<GameScreenCriticalBanner

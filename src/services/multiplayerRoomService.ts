@@ -22,6 +22,7 @@ import {
 	buildNextRoundGameState,
 	normalizeScores,
 } from "./multiplayerGameStateLogic";
+import { resolveMultiplayerRoundPoints } from "./multiplayerRoundScoring";
 import type {
 	MultiplayerGameState,
 	MultiplayerGeneration,
@@ -356,7 +357,7 @@ export const startGame = async (
 export const submitCorrectGuess = async (
 	roomId: string,
 	playerId: string,
-	pointsEarned: number,
+	isShiny: boolean,
 ): Promise<SubmitGuessResult> => {
 	const roomRef = doc(db, COLLECTION, roomId);
 
@@ -372,6 +373,12 @@ export const submitCorrectGuess = async (
 		if (room.gameState.roundResolved) {
 			return { type: "already_resolved" };
 		}
+
+		const pointsEarned = resolveMultiplayerRoundPoints(
+			room.gameState,
+			isShiny,
+			Timestamp.now().toMillis(),
+		);
 
 		const updatedGameState = applyCorrectGuessToGameState(
 			room.gameState,
@@ -394,9 +401,16 @@ export const submitCorrectGuess = async (
 	});
 };
 
+const isRoomPlayer = (
+	room: MultiplayerRoom,
+	playerId: string,
+): boolean =>
+	room.hostPlayer.id === playerId ||
+	room.guestPlayer?.id === playerId;
+
 export const advanceRound = async (
 	roomId: string,
-	hostPlayerId: string,
+	callerPlayerId: string,
 	isShiny: boolean,
 ): Promise<void> => {
 	const roomRef = doc(db, COLLECTION, roomId);
@@ -407,8 +421,8 @@ export const advanceRound = async (
 			throw new Error("room_not_found");
 		}
 		const room = parseMultiplayerRoom(roomId, roomSnap.data());
-		if (!room || room.hostPlayer.id !== hostPlayerId) {
-			throw new Error("not_host");
+		if (!room || !isRoomPlayer(room, callerPlayerId)) {
+			throw new Error("not_room_player");
 		}
 		if (room.status !== "playing" || !room.gameState || !room.guestPlayer) {
 			throw new Error("room_not_playing");
@@ -572,10 +586,7 @@ export const syncRoundDuration = async (
 		return;
 	}
 	await updateDoc(roomRef, {
-		gameState: {
-			...room.gameState,
-			roundDurationSeconds: expectedDuration,
-		},
+		"gameState.roundDurationSeconds": expectedDuration,
 	});
 };
 

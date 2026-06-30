@@ -9,6 +9,7 @@ import {
 	resolveCorrectAnswerHypeEffect,
 	resolveCorrectAnswerOutcome,
 	resolveCorrectAnswerScoring,
+	resolveGuessChangeHighlightedIndex,
 	resolveHighlightedIndex,
 	resolveKeyDownAction,
 	resolveSuggestionSubmission,
@@ -82,6 +83,20 @@ describe("resolveHighlightedIndex", () => {
 
 	it("wraps around when navigating up", () => {
 		expect(resolveHighlightedIndex("up", 0, 2)).toBe(1);
+	});
+});
+
+describe("resolveGuessChangeHighlightedIndex", () => {
+	it("selects the first suggestion when input and suggestions exist", () => {
+		expect(resolveGuessChangeHighlightedIndex(3, 5)).toBe(0);
+	});
+
+	it("clears selection when input is empty", () => {
+		expect(resolveGuessChangeHighlightedIndex(0, 5)).toBe(-1);
+	});
+
+	it("clears selection when no suggestions match", () => {
+		expect(resolveGuessChangeHighlightedIndex(3, 0)).toBe(-1);
 	});
 });
 

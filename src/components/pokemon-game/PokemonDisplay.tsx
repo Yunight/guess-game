@@ -17,6 +17,7 @@ interface PokemonDisplayProps {
 	guessTimeLeft: number;
 	remainingCount: number;
 	totalCount: number;
+	showProgressCounter?: boolean;
 }
 
 export const PokemonDisplay: FC<PokemonDisplayProps> = ({
@@ -27,6 +28,7 @@ export const PokemonDisplay: FC<PokemonDisplayProps> = ({
 	guessTimeLeft,
 	remainingCount,
 	totalCount,
+	showProgressCounter = true,
 }) => {
 	const { i18n } = useTranslation();
 	const [displayState, setDisplayState] = useState<
@@ -103,17 +105,19 @@ export const PokemonDisplay: FC<PokemonDisplayProps> = ({
 
 	return (
 		<div className="w-full max-w-2xl mx-auto px-4">
-			<div className="flex justify-between items-center mb-2">
-				<div className="w-24">
-					<slot name="quit-button" />
-				</div>
+			{showProgressCounter && (
+				<div className="flex justify-between items-center mb-2">
+					<div className="w-24">
+						<slot name="quit-button" />
+					</div>
 
-				<div className="bg-black/80 text-white px-4 py-1 rounded-full text-sm font-medium">
-					{remainingCount}/{totalCount}
-				</div>
+					<div className="bg-black/80 text-white px-4 py-1 rounded-full text-sm font-medium">
+						{remainingCount}/{totalCount}
+					</div>
 
-				<div className="w-24" />
-			</div>
+					<div className="w-24" />
+				</div>
+			)}
 			<PokemonDisplayFrame
 				className="rounded-lg flex items-center justify-center p-2 aspect-[4/3] mb-2 shadow-inner"
 				contentClassName="w-full h-full flex items-center justify-center"

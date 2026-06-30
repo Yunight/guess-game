@@ -135,6 +135,16 @@ export const resolveHighlightedIndex = (
 	return currentIndex > 0 ? currentIndex - 1 : suggestionsLength - 1;
 };
 
+export const resolveGuessChangeHighlightedIndex = (
+	valueLength: number,
+	suggestionsLength: number,
+): number => {
+	if (valueLength > 0 && suggestionsLength > 0) {
+		return 0;
+	}
+	return -1;
+};
+
 export type HypeEffectAction =
 	| { type: "increment_fast_answers"; newCount: number; shouldShowHypeTrain: boolean }
 	| { type: "break_hype_train"; bonusScore: number }

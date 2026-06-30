@@ -2,13 +2,17 @@ import type { FC } from "react";
 
 interface ScoreIncreaseProps {
 	points: number;
+	className?: string;
 }
 
-export const ScoreIncrease: FC<ScoreIncreaseProps> = ({ points }) => {
-	const isBonus = points >= 3; // Consider it a bonus if 3 or more points
+export const ScoreIncrease: FC<ScoreIncreaseProps> = ({
+	points,
+	className = "absolute right-16 top-12 z-50 pointer-events-none",
+}) => {
+	const isBonus = points >= 3;
 
 	return (
-		<div className="absolute right-16 top-12 z-50 pointer-events-none">
+		<div className={className}>
 			<div
 				className={`animate-float-up-fade-out text-2xl whitespace-nowrap px-3 py-1 rounded-full backdrop-blur-sm border shadow-lg ${
 					isBonus

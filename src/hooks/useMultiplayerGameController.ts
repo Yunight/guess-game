@@ -1,6 +1,8 @@
 import { buildGuessSuggestions } from "@/components/pokemon-game/guessSuggestions";
-import { calculateEarnedPoints } from "@/components/pokemon-game/gameScoring";
-import { resolveSuggestionSubmission } from "@/hooks/pokemonGameHandlerLogic";
+import {
+	resolveGuessChangeHighlightedIndex,
+	resolveSuggestionSubmission,
+} from "@/hooks/pokemonGameHandlerLogic";
 import { convertToStoredFormat } from "@/hooks/playerNameUtils";
 import {
 	advanceRound,
@@ -11,6 +13,7 @@ import {
 	transferHost,
 } from "@/services/multiplayerRoomService";
 import { resolveDisplayScore } from "@/services/multiplayerGameStateLogic";
+import { resolveMultiplayerRoundScoring } from "@/services/multiplayerRoundScoring";
 import type { MultiplayerRoom } from "@/services/multiplayerRoomTypes";
 import {
 	useGetAllPokemonNamesQuery,
@@ -28,6 +31,7 @@ import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import {
 	computeGuessTimeLeft,
+	shouldScheduleAdvanceRound,
 } from "./multiplayerGameHandlerLogic";
 import { useGameAudio } from "./useGameAudio";
 
@@ -95,6 +99,7 @@ export const useMultiplayerGameController = ({
 		null,
 	);
 	const lastProcessedRoundRef = useRef<number>(0);
+	const advanceScheduledForRoundRef = useRef<number>(0);
 	const gameStartTimeRef = useRef<number | null>(null);
 
 	const [guess, setGuess] = useState("");
@@ -181,7 +186,12 @@ export const useMultiplayerGameController = ({
 		? gameState.remainingPokemon.length + 1
 		: totalCount;
 
-	useGameAudio(isMuted, false, true, guessTimeLeft);
+	const { playCorrectSound, playWrongSound } = useGameAudio(
+		isMuted,
+		false,
+		true,
+		guessTimeLeft,
+	);
 
 	useEffect(() => {
 		localStorage.setItem("pokemonGameMuted", String(isMuted));
@@ -318,23 +328,53 @@ export const useMultiplayerGameController = ({
 	]);
 
 	useEffect(() => {
-		if (!isHost || !gameState || room.status !== "playing") {
+		if (!gameState || room.status !== "playing") {
 			return;
 		}
+
 		if (!gameState.roundResolved) {
+			lastProcessedRoundRef.current = Math.max(
+				lastProcessedRoundRef.current,
+				gameState.roundNumber - 1,
+			);
+			advanceScheduledForRoundRef.current = 0;
 			return;
 		}
-		if (lastProcessedRoundRef.current >= gameState.roundNumber) {
+
+		if (
+			!shouldScheduleAdvanceRound(
+				lastProcessedRoundRef.current,
+				gameState.roundNumber,
+				gameState.roundResolved,
+			)
+		) {
 			return;
 		}
-		lastProcessedRoundRef.current = gameState.roundNumber;
+
+		if (advanceScheduledForRoundRef.current === gameState.roundNumber) {
+			return;
+		}
+
+		advanceScheduledForRoundRef.current = gameState.roundNumber;
 
 		if (advanceTimeoutRef.current) {
 			clearTimeout(advanceTimeoutRef.current);
 		}
 
+		const resolvedRoundNumber = gameState.roundNumber;
+
 		advanceTimeoutRef.current = setTimeout(() => {
-			void advanceRound(room.id, localPlayerId, isShiny);
+			void advanceRound(room.id, localPlayerId, isShiny)
+				.then(() => {
+					lastProcessedRoundRef.current = resolvedRoundNumber;
+				})
+				.finally(() => {
+					if (
+						advanceScheduledForRoundRef.current === resolvedRoundNumber
+					) {
+						advanceScheduledForRoundRef.current = 0;
+					}
+				});
 		}, ROUND_TRANSITION_MS);
 
 		return () => {
@@ -342,14 +382,7 @@ export const useMultiplayerGameController = ({
 				clearTimeout(advanceTimeoutRef.current);
 			}
 		};
-	}, [
-		isHost,
-		gameState,
-		room.status,
-		room.id,
-		localPlayerId,
-		isShiny,
-	]);
+	}, [gameState, room.status, room.id, localPlayerId, isShiny]);
 
 	useEffect(() => {
 		if (room.status === "playing") {
@@ -392,25 +425,18 @@ export const useMultiplayerGameController = ({
 
 			if (submission.type === "wrong") {
 				setIsCorrect(false);
+				void playWrongSound();
 				setTimeout(() => setIsCorrect(null), 500);
 				return;
 			}
 
-			const scoring = calculateEarnedPoints({
-				isHardMode: true,
-				guessTimeLeft: computeGuessTimeLeft(
-					gameState.roundStartedAt,
-					gameState.roundDurationSeconds,
-				),
-				isShiny,
-				showHypeTrain: false,
-			});
+			const scoring = resolveMultiplayerRoundScoring(gameState, isShiny);
 
 			try {
 				const result = await submitCorrectGuess(
 					room.id,
 					localPlayerId,
-					scoring.earnedPoints,
+					isShiny,
 				);
 
 				if (result.type === "won_round") {
@@ -418,10 +444,11 @@ export const useMultiplayerGameController = ({
 						...previous,
 						...result.scores,
 					}));
+					void playCorrectSound();
 					setIsCorrect(true);
 					setShowCriticalSuccess(scoring.showCriticalSuccess);
 					setShowCriticalHit(scoring.showCriticalHit);
-					setPointsEarned(scoring.earnedPoints);
+					setPointsEarned(result.pointsEarned);
 					setTimeout(() => {
 						setIsCorrect(null);
 						setShowCriticalSuccess(false);
@@ -446,6 +473,8 @@ export const useMultiplayerGameController = ({
 			isShiny,
 			localPlayerId,
 			showSubmitError,
+			playCorrectSound,
+			playWrongSound,
 		],
 	);
 
@@ -453,17 +482,25 @@ export const useMultiplayerGameController = ({
 		(e: React.ChangeEvent<HTMLInputElement>): void => {
 			const value = e.target.value;
 			setGuess(value);
-			setSuggestions(
-				buildGuessSuggestions({
-					value,
-					pokemonList: apiPokemonNames,
-					startId: room.selectedGeneration.startId,
-					endId: room.selectedGeneration.endId,
-					language: i18n.language,
-					normalizeName: convertToStoredFormat,
-				}),
+
+			if (value.length === 0) {
+				setSuggestions([]);
+				setHighlightedIndex(-1);
+				return;
+			}
+
+			const nextSuggestions = buildGuessSuggestions({
+				value,
+				pokemonList: apiPokemonNames,
+				startId: room.selectedGeneration.startId,
+				endId: room.selectedGeneration.endId,
+				language: i18n.language,
+				normalizeName: convertToStoredFormat,
+			});
+			setSuggestions(nextSuggestions);
+			setHighlightedIndex(
+				resolveGuessChangeHighlightedIndex(value.length, nextSuggestions.length),
 			);
-			setHighlightedIndex(-1);
 		},
 		[apiPokemonNames, room.selectedGeneration, i18n.language],
 	);

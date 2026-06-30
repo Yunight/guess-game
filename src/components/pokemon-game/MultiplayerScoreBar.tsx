@@ -1,5 +1,6 @@
 import type { FC } from "react";
 import { useTranslation } from "react-i18next";
+import { ScoreIncrease } from "./ScoreIncrease";
 
 interface MultiplayerScoreBarProps {
 	hostName: string;
@@ -13,6 +14,8 @@ interface MultiplayerScoreBarProps {
 	localPlayerWonRound: boolean;
 	roundNumber: number;
 	submitError: string | null;
+	remainingCount: number;
+	totalCount: number;
 }
 
 export const MultiplayerScoreBar: FC<MultiplayerScoreBarProps> = ({
@@ -27,6 +30,8 @@ export const MultiplayerScoreBar: FC<MultiplayerScoreBarProps> = ({
 	localPlayerWonRound,
 	roundNumber,
 	submitError,
+	remainingCount,
+	totalCount,
 }) => {
 	const { t } = useTranslation();
 
@@ -75,26 +80,48 @@ export const MultiplayerScoreBar: FC<MultiplayerScoreBarProps> = ({
 				</div>
 			</div>
 
+			<div className="grid grid-cols-[1fr_auto_1fr] items-center gap-2">
+				<div className="flex justify-end min-h-9">
+					{hostWonRound && roundPointsEarned > 0 && (
+						<ScoreIncrease
+							points={roundPointsEarned}
+							className="pointer-events-none"
+						/>
+					)}
+				</div>
+				<div className="bg-black/80 text-white px-4 py-1 rounded-full text-sm font-medium">
+					{remainingCount}/{totalCount}
+				</div>
+				<div className="flex justify-start min-h-9">
+					{guestWonRound && roundPointsEarned > 0 && (
+						<ScoreIncrease
+							points={roundPointsEarned}
+							className="pointer-events-none"
+						/>
+					)}
+				</div>
+			</div>
+
 			{submitError && (
 				<div className="text-center bg-red-500/20 border border-red-400/40 rounded-lg py-2 px-3">
 					<p className="text-sm text-red-200">{t(submitError)}</p>
 				</div>
 			)}
 
-			{roundWinnerName && (
-				<div className="text-center bg-yellow-400/20 border border-yellow-400/40 rounded-lg py-2 px-3 animate-pulse">
-					<p className="text-sm font-medium text-yellow-100">
-						{t("roundWonBy", {
-							name: roundWinnerName,
-							points: roundPointsEarned,
-						})}
-					</p>
-				</div>
-			)}
-
-			{roundNumber <= 1 && roundWinnerName === null && roundPointsEarned === 0 && (
-				<div className="text-center text-xs text-gray-400">{t("multiRaceHint")}</div>
-			)}
+			<div className="min-h-11 flex items-center justify-center">
+				{roundWinnerName ? (
+					<div className="w-full text-center bg-yellow-400/20 border border-yellow-400/40 rounded-lg py-2 px-3 animate-pulse">
+						<p className="text-sm font-medium text-yellow-100">
+							{t("roundWonBy", {
+								name: roundWinnerName,
+								points: roundPointsEarned,
+							})}
+						</p>
+					</div>
+				) : roundNumber <= 1 && roundPointsEarned === 0 ? (
+					<p className="text-center text-xs text-gray-400">{t("multiRaceHint")}</p>
+				) : null}
+			</div>
 		</div>
 	);
 };

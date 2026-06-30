@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
+import { fireEvent } from "@testing-library/react";
 import { render, screen } from "../../../test/test-utils";
 import { PokemonDisplay } from "../PokemonDisplay";
 import { Pokemon } from "../types";
@@ -78,6 +79,9 @@ describe("PokemonDisplay", () => {
 
 		const pokemonImage = document.querySelector("img");
 		expect(pokemonImage).toBeInTheDocument();
+		if (pokemonImage) {
+			fireEvent.load(pokemonImage);
+		}
 		expect(pokemonImage?.className).toContain("brightness-0");
 	});
 

@@ -58,4 +58,33 @@ describe("calculateEarnedPoints", () => {
 			showCriticalHit: true,
 		});
 	});
+
+	it("awards points when guessTimeLeft exceeds default max after clamp", () => {
+		expect(
+			calculateEarnedPoints({
+				isHardMode: true,
+				guessTimeLeft: 47,
+				isShiny: false,
+				showHypeTrain: false,
+				roundDurationSeconds: 15,
+			}).earnedPoints,
+		).toBe(3);
+	});
+
+	it("skips random critical hit in multiplayer mode", () => {
+		expect(
+			calculateEarnedPoints({
+				isHardMode: true,
+				guessTimeLeft: 12,
+				isShiny: false,
+				showHypeTrain: false,
+				isMultiplayer: true,
+				random: () => 0,
+			}),
+		).toEqual({
+			earnedPoints: 3,
+			showCriticalSuccess: false,
+			showCriticalHit: false,
+		});
+	});
 });

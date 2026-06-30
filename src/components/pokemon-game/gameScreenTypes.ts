@@ -34,4 +34,5 @@ export interface GameScreenPlayAreaProps extends GameScreenGuessProps {
 	criticalSuccessLabel: string;
 	criticalHitLabel: string;
 	hypeTrainLabel: string;
+	showProgressCounter?: boolean;
 }
