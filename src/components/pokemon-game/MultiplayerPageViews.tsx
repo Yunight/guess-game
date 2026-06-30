@@ -1,13 +1,9 @@
-import { LanguageToggle } from "@/components/ui/language-toggle";
-import { Button } from "@/components/ui/button";
 import { useMultiplayerGameController } from "@/hooks/useMultiplayerGameController";
 import type { MultiplayerRoom } from "@/services/multiplayerRoomTypes";
-import { ArrowLeft } from "lucide-react";
 import type { FC } from "react";
-import { useTranslation } from "react-i18next";
-import { Link } from "react-router-dom";
 import { MultiplayerLobby } from "./MultiplayerLobby";
 import { MultiplayerGameScreen } from "./MultiplayerGameScreen";
+import { MultiplayerPageShell } from "./MultiplayerPageShell";
 
 interface MultiplayerLobbyViewProps {
 	room: MultiplayerRoom;
@@ -30,7 +26,6 @@ const MultiplayerLobbyView: FC<MultiplayerLobbyViewProps> = ({
 	joinError,
 	isJoining,
 }) => {
-	const { t } = useTranslation();
 	const controller = useMultiplayerGameController({
 		room,
 		localPlayerId,
@@ -38,31 +33,20 @@ const MultiplayerLobbyView: FC<MultiplayerLobbyViewProps> = ({
 	});
 
 	return (
-		<div className="min-h-screen bg-gradient-to-br from-blue-100 to-blue-200 p-4">
-			<div className="absolute top-4 left-4 right-4 flex justify-between items-center">
-				<Link to="/">
-					<Button variant="ghost" size="sm">
-						<ArrowLeft className="w-4 h-4 mr-1" />
-						{t("backToMenu")}
-					</Button>
-				</Link>
-				<LanguageToggle />
-			</div>
-			<div className="flex items-center justify-center min-h-screen pt-16">
-				<MultiplayerLobby
-					room={room}
-					isHost={isHost}
-					isJoined={isJoined}
-					localPlayerName={localPlayerName}
-					onJoin={onJoin}
-					onStart={controller.handleStartGame}
-					isStarting={controller.isStartingGame}
-					startError={controller.startGameError}
-					joinError={joinError}
-					isJoining={isJoining}
-				/>
-			</div>
-		</div>
+		<MultiplayerPageShell>
+			<MultiplayerLobby
+				room={room}
+				isHost={isHost}
+				isJoined={isJoined}
+				localPlayerName={localPlayerName}
+				onJoin={onJoin}
+				onStart={controller.handleStartGame}
+				isStarting={controller.isStartingGame}
+				startError={controller.startGameError}
+				joinError={joinError}
+				isJoining={isJoining}
+			/>
+		</MultiplayerPageShell>
 	);
 };
 
@@ -78,37 +62,22 @@ const MultiplayerGuestJoinView: FC<MultiplayerGuestJoinViewProps> = ({
 	onJoin,
 	joinError,
 	isJoining,
-}) => {
-	const { t } = useTranslation();
-
-	return (
-		<div className="min-h-screen bg-gradient-to-br from-blue-100 to-blue-200 p-4">
-			<div className="absolute top-4 left-4 right-4 flex justify-between items-center">
-				<Link to="/">
-					<Button variant="ghost" size="sm">
-						<ArrowLeft className="w-4 h-4 mr-1" />
-						{t("backToMenu")}
-					</Button>
-				</Link>
-				<LanguageToggle />
-			</div>
-			<div className="flex items-center justify-center min-h-screen pt-16">
-				<MultiplayerLobby
-					room={room}
-					isHost={false}
-					isJoined={false}
-					localPlayerName={null}
-					onJoin={onJoin}
-					onStart={async () => undefined}
-					isStarting={false}
-					startError={null}
-					joinError={joinError}
-					isJoining={isJoining}
-				/>
-			</div>
-		</div>
-	);
-};
+}) => (
+	<MultiplayerPageShell>
+		<MultiplayerLobby
+			room={room}
+			isHost={false}
+			isJoined={false}
+			localPlayerName={null}
+			onJoin={onJoin}
+			onStart={async () => undefined}
+			isStarting={false}
+			startError={null}
+			joinError={joinError}
+			isJoining={isJoining}
+		/>
+	</MultiplayerPageShell>
+);
 
 interface MultiplayerActiveGameViewProps {
 	room: MultiplayerRoom;

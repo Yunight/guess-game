@@ -1,7 +1,6 @@
 import { buildGenerationPokemonIds } from "@/components/pokemon-game/generationPool";
 import {
 	pickRandomFromPool,
-	resolvePoolAfterCorrectAnswer,
 } from "@/components/pokemon-game/gamePool";
 import { getInitialGuessTime } from "@/hooks/gameTimerLogic";
 import {
@@ -12,6 +11,8 @@ import {
 	runTransaction,
 	serverTimestamp,
 	setDoc,
+	type DocumentReference,
+	type Transaction,
 	type Unsubscribe,
 	updateDoc,
 } from "firebase/firestore";
@@ -19,10 +20,13 @@ import { auth, db } from "../firebase";
 import { createRoomPlayerId, generateRoomId } from "./multiplayerPlayerId";
 import {
 	applyCorrectGuessToGameState,
-	buildNextRoundGameState,
 	normalizeScores,
 } from "./multiplayerGameStateLogic";
-import { resolveMultiplayerRoundPoints } from "./multiplayerRoundScoring";
+import {
+	applyPoolProgressionInTransaction,
+	resolveWinnerId,
+	type PlayingMultiplayerRoom,
+} from "./multiplayerRoomTransactionLogic";
 import type {
 	MultiplayerGameState,
 	MultiplayerGeneration,
@@ -31,6 +35,7 @@ import type {
 	RoomStatus,
 	SubmitGuessResult,
 } from "./multiplayerRoomTypes";
+import { resolveMultiplayerRoundPoints } from "./multiplayerRoundScoring";
 
 const COLLECTION = "multiplayerRooms";
 const ROOM_TTL_MS = 24 * 60 * 60 * 1000;
@@ -208,20 +213,47 @@ const buildInitialScores = (
 	[guestPlayerId]: 0,
 });
 
-const resolveWinnerId = (
-	scores: Record<string, number>,
-	hostPlayerId: string,
-	guestPlayerId: string,
-): string | null => {
-	const hostScore = scores[hostPlayerId] ?? 0;
-	const guestScore = scores[guestPlayerId] ?? 0;
-	if (hostScore > guestScore) {
-		return hostPlayerId;
+const getRoomDocumentRef = (roomId: string): DocumentReference =>
+	doc(db, COLLECTION, roomId);
+
+const loadRoomDocument = async (
+	roomId: string,
+): Promise<MultiplayerRoom | null> => {
+	const roomSnap = await getDoc(getRoomDocumentRef(roomId));
+	if (!roomSnap.exists()) {
+		return null;
 	}
-	if (guestScore > hostScore) {
-		return guestPlayerId;
+	return parseMultiplayerRoom(roomId, roomSnap.data());
+};
+
+const loadRoomInTransaction = async (
+	transaction: Transaction,
+	roomRef: DocumentReference,
+	roomId: string,
+): Promise<MultiplayerRoom | null> => {
+	const roomSnap = await transaction.get(roomRef);
+	if (!roomSnap.exists()) {
+		return null;
 	}
-	return null;
+	return parseMultiplayerRoom(roomId, roomSnap.data());
+};
+
+const toPlayingRoom = (
+	room: MultiplayerRoom,
+): PlayingMultiplayerRoom | null => {
+	if (
+		room.status !== "playing" ||
+		!room.gameState ||
+		!room.guestPlayer
+	) {
+		return null;
+	}
+	return {
+		...room,
+		status: "playing",
+		gameState: room.gameState,
+		guestPlayer: room.guestPlayer,
+	};
 };
 
 export const createRoom = async (
@@ -362,12 +394,11 @@ export const submitCorrectGuess = async (
 	const roomRef = doc(db, COLLECTION, roomId);
 
 	return runTransaction(db, async (transaction) => {
-		const roomSnap = await transaction.get(roomRef);
-		if (!roomSnap.exists()) {
+		const room = await loadRoomInTransaction(transaction, roomRef, roomId);
+		if (!room) {
 			return { type: "room_not_playing" };
 		}
-		const room = parseMultiplayerRoom(roomId, roomSnap.data());
-		if (room?.status !== "playing" || !room.gameState) {
+		if (room.status !== "playing" || !room.gameState) {
 			return { type: "room_not_playing" };
 		}
 		if (room.gameState.roundResolved) {
@@ -408,62 +439,65 @@ const isRoomPlayer = (
 	room.hostPlayer.id === playerId ||
 	room.guestPlayer?.id === playerId;
 
+type PoolProgressionResolution =
+	| { type: "skip" }
+	| { type: "apply"; room: PlayingMultiplayerRoom };
+
+const runPoolProgressionTransaction = async (
+	roomId: string,
+	resolvePlayingRoom: (room: MultiplayerRoom) => PoolProgressionResolution,
+	isShiny: boolean,
+	onMissingDocument: () => void,
+): Promise<void> => {
+	const roomRef = getRoomDocumentRef(roomId);
+
+	await runTransaction(db, async (transaction) => {
+		const room = await loadRoomInTransaction(transaction, roomRef, roomId);
+		if (!room) {
+			onMissingDocument();
+			return;
+		}
+
+		const resolution = resolvePlayingRoom(room);
+		if (resolution.type === "skip") {
+			return;
+		}
+
+		applyPoolProgressionInTransaction(
+			transaction,
+			roomRef,
+			resolution.room,
+			isShiny,
+			serverTimestamp() as Timestamp,
+		);
+	});
+};
+
 export const advanceRound = async (
 	roomId: string,
 	callerPlayerId: string,
 	isShiny: boolean,
 ): Promise<void> => {
-	const roomRef = doc(db, COLLECTION, roomId);
-
-	await runTransaction(db, async (transaction) => {
-		const roomSnap = await transaction.get(roomRef);
-		if (!roomSnap.exists()) {
+	await runPoolProgressionTransaction(
+		roomId,
+		(room) => {
+			if (!isRoomPlayer(room, callerPlayerId)) {
+				throw new Error("not_room_player");
+			}
+			const playingRoom = toPlayingRoom(room);
+			if (!playingRoom) {
+				throw new Error("room_not_playing");
+			}
+			if (!playingRoom.gameState.roundResolved) {
+				throw new Error("round_not_resolved");
+			}
+			return { type: "apply", room: playingRoom };
+		},
+		isShiny,
+		() => {
 			throw new Error("room_not_found");
-		}
-		const room = parseMultiplayerRoom(roomId, roomSnap.data());
-		if (!room || !isRoomPlayer(room, callerPlayerId)) {
-			throw new Error("not_room_player");
-		}
-		if (room.status !== "playing" || !room.gameState || !room.guestPlayer) {
-			throw new Error("room_not_playing");
-		}
-		if (!room.gameState.roundResolved) {
-			throw new Error("round_not_resolved");
-		}
-
-		const poolResult = resolvePoolAfterCorrectAnswer(
-			[
-				room.gameState.currentPokemonId,
-				...room.gameState.remainingPokemon,
-			],
-			room.gameState.currentPokemonId,
-		);
-
-		if (poolResult.type === "game_complete") {
-			transaction.update(roomRef, {
-				status: "finished",
-				winnerId: resolveWinnerId(
-					room.gameState.scores,
-					room.hostPlayer.id,
-					room.guestPlayer.id,
-				),
-			});
-			return;
-		}
-
-		const roundDurationSeconds = getInitialGuessTime(isShiny);
-		const nextRoundStartedAt = serverTimestamp();
-
-		transaction.update(roomRef, {
-			gameState: buildNextRoundGameState(
-				room.gameState,
-				poolResult.nextPokemonId,
-				poolResult.remainingPool,
-				roundDurationSeconds,
-				nextRoundStartedAt as Timestamp,
-			),
-		});
-	});
+		},
+	);
 };
 
 export const resolveTimeout = async (
@@ -471,76 +505,41 @@ export const resolveTimeout = async (
 	hostPlayerId: string,
 	isShiny: boolean,
 ): Promise<void> => {
-	const roomRef = doc(db, COLLECTION, roomId);
+	await runPoolProgressionTransaction(
+		roomId,
+		(room) => {
+			if (
+				room.hostPlayer.id !== hostPlayerId ||
+				room.status !== "playing" ||
+				!room.gameState ||
+				!room.guestPlayer ||
+				room.gameState.roundResolved
+			) {
+				return { type: "skip" };
+			}
 
-	await runTransaction(db, async (transaction) => {
-		const roomSnap = await transaction.get(roomRef);
-		if (!roomSnap.exists()) {
-			return;
-		}
-		const room = parseMultiplayerRoom(roomId, roomSnap.data());
-		if (
-			!room ||
-			room.hostPlayer.id !== hostPlayerId ||
-			room.status !== "playing" ||
-			!room.gameState ||
-			!room.guestPlayer
-		) {
-			return;
-		}
-		if (room.gameState.roundResolved) {
-			return;
-		}
+			const playingRoom = toPlayingRoom(room);
+			if (!playingRoom) {
+				return { type: "skip" };
+			}
 
-		const poolResult = resolvePoolAfterCorrectAnswer(
-			[
-				room.gameState.currentPokemonId,
-				...room.gameState.remainingPokemon,
-			],
-			room.gameState.currentPokemonId,
-		);
-
-		if (poolResult.type === "game_complete") {
-			transaction.update(roomRef, {
-				status: "finished",
-				winnerId: resolveWinnerId(
-					room.gameState.scores,
-					room.hostPlayer.id,
-					room.guestPlayer.id,
-				),
-			});
-			return;
-		}
-
-		const roundDurationSeconds = getInitialGuessTime(isShiny);
-		const nextRoundStartedAt = serverTimestamp();
-
-		transaction.update(roomRef, {
-			gameState: buildNextRoundGameState(
-				room.gameState,
-				poolResult.nextPokemonId,
-				poolResult.remainingPool,
-				roundDurationSeconds,
-				nextRoundStartedAt as Timestamp,
-			),
-		});
-	});
+			return { type: "apply", room: playingRoom };
+		},
+		isShiny,
+		() => undefined,
+	);
 };
 
 export const transferHost = async (
 	roomId: string,
 	leavingHostId: string,
 ): Promise<void> => {
-	const roomRef = doc(db, COLLECTION, roomId);
-	const roomSnap = await getDoc(roomRef);
-	if (!roomSnap.exists()) {
-		return;
-	}
-	const room = parseMultiplayerRoom(roomId, roomSnap.data());
+	const room = await loadRoomDocument(roomId);
 	if (!room || room.hostPlayer.id !== leavingHostId || !room.guestPlayer) {
 		return;
 	}
 
+	const roomRef = getRoomDocumentRef(roomId);
 	if (room.status === "playing") {
 		await updateDoc(roomRef, {
 			status: "finished",
@@ -564,12 +563,7 @@ export const syncRoundDuration = async (
 	roundNumber: number,
 	isShiny: boolean,
 ): Promise<void> => {
-	const roomRef = doc(db, COLLECTION, roomId);
-	const roomSnap = await getDoc(roomRef);
-	if (!roomSnap.exists()) {
-		return;
-	}
-	const room = parseMultiplayerRoom(roomId, roomSnap.data());
+	const room = await loadRoomDocument(roomId);
 	if (
 		!room ||
 		room.hostPlayer.id !== hostPlayerId ||
@@ -585,7 +579,7 @@ export const syncRoundDuration = async (
 	if (room.gameState.roundDurationSeconds === expectedDuration) {
 		return;
 	}
-	await updateDoc(roomRef, {
+	await updateDoc(getRoomDocumentRef(roomId), {
 		"gameState.roundDurationSeconds": expectedDuration,
 	});
 };

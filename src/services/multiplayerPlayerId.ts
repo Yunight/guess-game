@@ -8,7 +8,7 @@ export const getStoredRoomPlayerId = (roomId: string): string | null => {
 	}
 };
 
-export const storeRoomPlayerId = (roomId: string, playerId: string): void => {
+const storeRoomPlayerId = (roomId: string, playerId: string): void => {
 	try {
 		sessionStorage.setItem(`${ROOM_PLAYER_ID_PREFIX}${roomId}`, playerId);
 	} catch {
