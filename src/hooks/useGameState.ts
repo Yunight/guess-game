@@ -1,5 +1,6 @@
 import type { Generation } from "@/components/pokemon-game/generations";
 import type { Pokemon } from "@/components/pokemon-game/types";
+import { useMemo } from "react";
 import {
 	useGameFeedbackState,
 	useGameInputState,
@@ -71,6 +72,121 @@ export const useGameState = (
 	const pokemon = useGamePokemonState();
 	const settings = useGameSettingsState();
 
+	const {
+		setScore,
+		setBestScore,
+		setBestTime,
+		setIsGameActive,
+		setIsHardMode,
+		setSelectedGeneration,
+		setRemainingPokemon,
+		setGameOver,
+		setIsRestarting,
+	} = progress.setters;
+	const {
+		setGuess,
+		setIsCorrect,
+		setShowHint,
+		setHintsLeft,
+		setSuggestions,
+		setHighlightedIndex,
+	} = input.setters;
+	const {
+		setShowCriticalSuccess,
+		setShowCriticalHit,
+		setShowHypeTrain,
+		setConsecutiveFastAnswers,
+		setPointsEarned,
+		setCriticalHitCount,
+		setCriticalSuccessCount,
+		setHyperTrainCount,
+		setMaxHypeChain,
+		setUserRanking,
+	} = feedback.setters;
+	const { setGuessTimeLeft, setTotalTimeElapsed } = timer.setters;
+	const { setPlayerName, setNameError, setIsCheckingName, setIsAuthName } =
+		player.setters;
+	const { setCurrentPokemonId, setCurrentPokemon, setRewardPokemon } =
+		pokemon.setters;
+	const { setIsMuted } = settings.setters;
+
+	const setters = useMemo(
+		() => ({
+			setScore,
+			setBestScore,
+			setBestTime,
+			setIsGameActive,
+			setIsHardMode,
+			setSelectedGeneration,
+			setRemainingPokemon,
+			setGameOver,
+			setIsRestarting,
+			setGuess,
+			setIsCorrect,
+			setShowHint,
+			setHintsLeft,
+			setSuggestions,
+			setHighlightedIndex,
+			setShowCriticalSuccess,
+			setShowCriticalHit,
+			setShowHypeTrain,
+			setConsecutiveFastAnswers,
+			setPointsEarned,
+			setCriticalHitCount,
+			setCriticalSuccessCount,
+			setHyperTrainCount,
+			setMaxHypeChain,
+			setUserRanking,
+			setGuessTimeLeft,
+			setTotalTimeElapsed,
+			setPlayerName,
+			setNameError,
+			setIsCheckingName,
+			setIsAuthName,
+			setCurrentPokemonId,
+			setCurrentPokemon,
+			setRewardPokemon,
+			setIsMuted,
+		}),
+		[
+			setScore,
+			setBestScore,
+			setBestTime,
+			setIsGameActive,
+			setIsHardMode,
+			setSelectedGeneration,
+			setRemainingPokemon,
+			setGameOver,
+			setIsRestarting,
+			setGuess,
+			setIsCorrect,
+			setShowHint,
+			setHintsLeft,
+			setSuggestions,
+			setHighlightedIndex,
+			setShowCriticalSuccess,
+			setShowCriticalHit,
+			setShowHypeTrain,
+			setConsecutiveFastAnswers,
+			setPointsEarned,
+			setCriticalHitCount,
+			setCriticalSuccessCount,
+			setHyperTrainCount,
+			setMaxHypeChain,
+			setUserRanking,
+			setGuessTimeLeft,
+			setTotalTimeElapsed,
+			setPlayerName,
+			setNameError,
+			setIsCheckingName,
+			setIsAuthName,
+			setCurrentPokemonId,
+			setCurrentPokemon,
+			setRewardPokemon,
+			setIsMuted,
+		],
+	);
+
 	return {
 		state: {
 			...progress.state,
@@ -81,14 +197,6 @@ export const useGameState = (
 			...pokemon.state,
 			...settings.state,
 		},
-		setters: {
-			...progress.setters,
-			...input.setters,
-			...feedback.setters,
-			...timer.setters,
-			...player.setters,
-			...pokemon.setters,
-			...settings.setters,
-		},
+		setters,
 	};
 };

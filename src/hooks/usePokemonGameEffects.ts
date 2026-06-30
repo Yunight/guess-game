@@ -1,6 +1,7 @@
 import { type RefObject, useEffect } from "react";
 import type { Pokemon } from "@/components/pokemon-game/types";
 import {
+	isRewardPokemonAlreadySynced,
 	shouldApplyHypeTrainBonus,
 	shouldRecoverInvalidPokemon,
 	shouldResetRewardOnGameClose,
@@ -20,10 +21,8 @@ export interface UsePokemonGameEffectsParams {
 	suggestionsRef: RefObject<HTMLDivElement>;
 	currentPokemon: Pokemon | undefined;
 	isPokemonLoading: boolean;
-	rewardPokemonId: number | null;
 	setRewardPokemonId: (id: number | null) => void;
 	rewardPokemonData: Pokemon | undefined;
-	isRewardPokemonLoading: boolean;
 	isSlotMachineRunning: boolean;
 	resetSlotMachine: () => void;
 	handleGameOver: () => Promise<void>;
@@ -39,10 +38,8 @@ export const usePokemonGameEffects = ({
 	suggestionsRef,
 	currentPokemon,
 	isPokemonLoading,
-	rewardPokemonId,
 	setRewardPokemonId,
 	rewardPokemonData,
-	isRewardPokemonLoading,
 	isSlotMachineRunning,
 	resetSlotMachine,
 	handleGameOver,
@@ -110,23 +107,16 @@ export const usePokemonGameEffects = ({
 		}
 	}, [gameState.isGameActive, inputRef]);
 
-	useEffect(() => {
-		if (rewardPokemonId && gameState.gameOver) {
-			console.log("📡 Fetching reward Pokemon data for ID:", rewardPokemonId, {
-				isLoading: isRewardPokemonLoading,
-				hasData: Boolean(rewardPokemonData),
-				pokemonName: rewardPokemonData?.englishName,
-			});
-		}
-	}, [
-		rewardPokemonId,
-		gameState.gameOver,
-		isRewardPokemonLoading,
-		rewardPokemonData,
-	]);
+	const syncedRewardPokemonId = gameState.rewardPokemon.pokemon?.id;
+	const isRewardPokemonStateLoading = gameState.rewardPokemon.isLoading;
 
 	useEffect(() => {
-		if (shouldResetRewardOnGameClose(gameState.gameOver, Boolean(gameState.rewardPokemon.pokemon))) {
+		if (
+			shouldResetRewardOnGameClose(
+				gameState.gameOver,
+				syncedRewardPokemonId !== undefined,
+			)
+		) {
 			resetSlotMachine();
 
 			setRewardPokemonId(null);
@@ -139,14 +129,19 @@ export const usePokemonGameEffects = ({
 			return;
 		}
 
-		if (shouldSyncRewardPokemon(gameState.gameOver, rewardPokemonData, isSlotMachineRunning) && rewardPokemonData) {
-			console.log("🎯 Reward Pokemon data loaded:", {
-				id: rewardPokemonData.id,
-				englishName: rewardPokemonData.englishName,
-				frenchName: rewardPokemonData.frenchName,
+		if (
+			shouldSyncRewardPokemon(
+				gameState.gameOver,
+				rewardPokemonData,
 				isSlotMachineRunning,
-			});
-
+			) &&
+			rewardPokemonData &&
+			!isRewardPokemonAlreadySynced(
+				syncedRewardPokemonId,
+				isRewardPokemonStateLoading,
+				rewardPokemonData,
+			)
+		) {
 			gameSetters.setRewardPokemon({
 				pokemon: rewardPokemonData,
 				isLoading: false,
@@ -155,9 +150,10 @@ export const usePokemonGameEffects = ({
 	}, [
 		rewardPokemonData,
 		gameState.gameOver,
-		gameState.rewardPokemon,
+		syncedRewardPokemonId,
+		isRewardPokemonStateLoading,
 		isSlotMachineRunning,
-		gameSetters,
+		gameSetters.setRewardPokemon,
 		resetSlotMachine,
 		setRewardPokemonId,
 	]);

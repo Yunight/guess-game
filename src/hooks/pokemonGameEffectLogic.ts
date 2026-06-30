@@ -116,6 +116,12 @@ export const shouldSyncRewardPokemon = (
 	isSlotMachineRunning: boolean,
 ): boolean => Boolean(gameOver && rewardPokemonData && !isSlotMachineRunning);
 
+export const isRewardPokemonAlreadySynced = (
+	existingPokemonId: number | undefined,
+	isLoading: boolean,
+	rewardPokemonData: Pokemon,
+): boolean => existingPokemonId === rewardPokemonData.id && !isLoading;
+
 export const shouldResetRewardOnGameClose = (
 	gameOver: boolean,
 	hasRewardPokemon: boolean,

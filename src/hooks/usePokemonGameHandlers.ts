@@ -393,7 +393,12 @@ export const usePokemonGameHandlers = ({
 					checkNameAvailability,
 					stopAllTimers,
 					cleanupAllAudio,
-					applyStartState: applyStartGameStateToSetters,
+					applyStartState: (isHardMode, generation) =>
+						applyStartGameStateToSetters(
+							isHardMode,
+							generation,
+							gameSetters,
+						),
 					startTotalTimer,
 					startGuessTimer,
 					focusInput: () => inputRef.current?.focus(),

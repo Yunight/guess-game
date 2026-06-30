@@ -10,6 +10,7 @@ import {
 	shouldStartTotalTimer,
 	shouldSyncRewardPokemon,
 	shouldTriggerGameOver,
+	isRewardPokemonAlreadySynced,
 } from "../pokemonGameEffectLogic";
 
 const incompletePokemon: Pokemon = {
@@ -77,6 +78,20 @@ describe("shouldRecoverInvalidPokemon", () => {
 describe("shouldSyncRewardPokemon", () => {
 	it("returns true when game is over and reward data is ready", () => {
 		expect(shouldSyncRewardPokemon(true, completePokemon, false)).toBe(true);
+	});
+});
+
+describe("isRewardPokemonAlreadySynced", () => {
+	it("returns true when reward pokemon matches loaded data", () => {
+		expect(
+			isRewardPokemonAlreadySynced(completePokemon.id, false, completePokemon),
+		).toBe(true);
+	});
+
+	it("returns false when reward pokemon is still loading", () => {
+		expect(
+			isRewardPokemonAlreadySynced(completePokemon.id, true, completePokemon),
+		).toBe(false);
 	});
 });
 

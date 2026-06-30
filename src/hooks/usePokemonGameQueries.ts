@@ -1,4 +1,4 @@
-import { skipToken } from "@reduxjs/toolkit/query";
+import type { Pokemon } from "@/components/pokemon-game/types";
 import { useEffect } from "react";
 import {
 	useGetAllPokemonNamesQuery,
@@ -27,12 +27,19 @@ interface UsePokemonGameQueriesParams {
 }
 
 const syncCurrentPokemonToState = (
-	currentPokemon: ReturnType<typeof useGetPokemonByIdQuery>["data"],
-	gameSetters: GameSetters,
+	currentPokemon: Pokemon | undefined,
+	existingPokemonId: number | undefined,
+	setCurrentPokemon: GameSetters["setCurrentPokemon"],
 ): void => {
-	if (currentPokemon) {
-		gameSetters.setCurrentPokemon(currentPokemon);
+	if (!currentPokemon) {
+		return;
 	}
+
+	if (existingPokemonId === currentPokemon.id) {
+		return;
+	}
+
+	setCurrentPokemon(currentPokemon);
 };
 
 export const usePokemonGameQueries = ({
@@ -63,8 +70,16 @@ export const usePokemonGameQueries = ({
 		});
 
 	useEffect(() => {
-		syncCurrentPokemonToState(currentPokemon, gameSetters);
-	}, [currentPokemon, gameSetters]);
+		syncCurrentPokemonToState(
+			currentPokemon,
+			gameState.currentPokemon?.id,
+			gameSetters.setCurrentPokemon,
+		);
+	}, [
+		currentPokemon,
+		gameState.currentPokemon?.id,
+		gameSetters.setCurrentPokemon,
+	]);
 
 	const { data: rewardPokemonData, isLoading: isRewardPokemonLoading } =
 		useGetPokemonByIdQuery(

@@ -8,6 +8,3 @@ export const store = configureStore({
 	middleware: (getDefaultMiddleware) =>
 		getDefaultMiddleware().concat(pokemonApi.middleware),
 });
-
-type RootState = ReturnType<typeof store.getState>;
-type AppDispatch = typeof store.dispatch;
