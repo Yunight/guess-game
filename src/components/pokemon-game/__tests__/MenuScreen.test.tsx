@@ -49,6 +49,9 @@ const baseProps = {
 	},
 	canStartGame: true,
 	startGame: vi.fn(),
+	onStartMulti: vi.fn(),
+	isCreatingMultiRoom: false,
+	multiError: null,
 	score: 0,
 	audio: {
 		isMuted: false,
@@ -70,16 +73,16 @@ describe("MenuScreen", () => {
 		expect(screen.getByTestId("menu-rankings-list")).toBeInTheDocument();
 	});
 
-	it("disables play button when cannot start", () => {
+	it("disables solo button when cannot start", () => {
 		render(<MenuScreen {...baseProps} canStartGame={false} />);
-		expect(screen.getByRole("button", { name: /play/i })).toBeDisabled();
+		expect(screen.getByRole("button", { name: /solo/i })).toBeDisabled();
 	});
 
 	it("opens game mode dialog and starts game", () => {
 		const startGame = vi.fn();
 		render(<MenuScreen {...baseProps} startGame={startGame} />);
 
-		fireEvent.click(screen.getByRole("button", { name: /play/i }));
+		fireEvent.click(screen.getByRole("button", { name: /solo/i }));
 		fireEvent.click(screen.getByText("easy-mode"));
 
 		expect(startGame).toHaveBeenCalledWith(false);

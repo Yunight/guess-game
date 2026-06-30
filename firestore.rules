@@ -1,0 +1,41 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /multiplayerRooms/{roomId} {
+      allow read: if true;
+
+      allow create: if request.resource.data.status == 'waiting'
+        && request.resource.data.isHardMode == true
+        && request.resource.data.hostPlayer is map
+        && request.resource.data.hostPlayer.id is string
+        && request.resource.data.hostPlayer.name is string
+        && request.resource.data.selectedGeneration is map;
+
+      allow update: if resource.data.status == 'waiting'
+        && request.resource.data.status == 'waiting'
+        && !('guestPlayer' in resource.data)
+        && request.resource.data.guestPlayer is map
+        && request.resource.data.diff(resource.data).affectedKeys()
+            .hasOnly(['guestPlayer']);
+
+      allow update: if resource.data.status == 'waiting'
+        && request.resource.data.status == 'playing'
+        && resource.data.hostPlayer.id == request.resource.data.hostPlayer.id
+        && request.resource.data.gameState is map;
+
+      allow update: if resource.data.status == 'playing'
+        && request.resource.data.status in ['playing', 'finished'];
+
+      allow delete: if false;
+    }
+
+    match /gameResults/{resultId} {
+      allow read, write: if true;
+    }
+
+    match /{collection}/{document} {
+      allow read, write: if collection.matches('rankings_.*');
+    }
+  }
+}

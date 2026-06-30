@@ -55,6 +55,9 @@ interface MenuScreenProps {
 	generation: MenuGenerationPickerProps;
 	canStartGame: boolean;
 	startGame: (isHardMode: boolean) => void;
+	onStartMulti: () => void;
+	isCreatingMultiRoom: boolean;
+	multiError: string | null;
 	score: number;
 	audio: MenuAudioProps;
 	rankings: MenuRankingsProps;
@@ -65,6 +68,9 @@ export const MenuScreen: FC<MenuScreenProps> = ({
 	generation,
 	canStartGame,
 	startGame,
+	onStartMulti,
+	isCreatingMultiRoom,
+	multiError,
 	score,
 	audio,
 	rankings: rankingsProps,
@@ -79,6 +85,10 @@ export const MenuScreen: FC<MenuScreenProps> = ({
 
 	const handleStartGameClick = (): void => {
 		setShowGameModeDialog(true);
+	};
+
+	const handleMultiClick = (): void => {
+		onStartMulti();
 	};
 
 	const handleGameModeSelect = (isHardMode: boolean): void => {
@@ -161,11 +171,12 @@ export const MenuScreen: FC<MenuScreenProps> = ({
 							<MenuGenerationPicker {...generation} />
 						</div>
 
-						<Button
-							variant="ghost"
-							onClick={handleStartGameClick}
-							disabled={!canStartGame}
-							className={`w-full h-16 sm:h-24 text-lg sm:text-xl font-bold transition-all duration-500 ease-out relative overflow-hidden rounded-xl mb-4
+						<div className="flex flex-col sm:flex-row gap-3 mb-4">
+							<Button
+								variant="ghost"
+								onClick={handleStartGameClick}
+								disabled={!canStartGame}
+								className={`flex-1 h-16 sm:h-24 text-lg sm:text-xl font-bold transition-all duration-500 ease-out relative overflow-hidden rounded-xl
                 ${
 									canStartGame
 										? "bg-white/10 text-white shadow-xl hover:bg-white/20 transform hover:scale-[1.02] border-4 border-white hover:text-white"
@@ -174,29 +185,34 @@ export const MenuScreen: FC<MenuScreenProps> = ({
                 before:content-[""] before:absolute before:inset-0 before:bg-gradient-to-r before:from-white/20 before:via-transparent before:to-transparent
                 ${canStartGame ? "before:animate-shine-slow" : ""}
               `}
-						>
-							<div className="absolute left-10 top-1/2 -translate-y-1/2 hidden sm:block">
-								<div className="w-16 h-16 bg-white/20 rounded-full relative backdrop-blur-sm border-4 border-white/40">
-									<div className="absolute left-1/2 top-0 -translate-x-1/2 h-full w-4 flex flex-col justify-between">
-										<div className="h-4 bg-white/60 rounded-t-sm" />
-										<div className="h-4 bg-white/60 rounded-b-sm" />
-									</div>
-									<div className="absolute top-1/2 left-0 -translate-y-1/2 w-full h-4 flex justify-between">
-										<div className="w-4 bg-white/60 rounded-l-sm" />
-										<div className="w-4 bg-white/60 rounded-r-sm" />
-									</div>
-									<div className="absolute inset-1/2 -translate-x-1/2 -translate-y-1/2 w-4 h-4 bg-white rounded-full shadow-glow" />
-								</div>
-							</div>
-							<div className="flex items-center justify-center gap-4 py-2">
-								<span className="sm:ml-16 text-3xl sm:text-4xl md:text-5xl font-pokemon">
-									{score > 0 ? t("replay") : t("play")}
+							>
+								<span className="text-3xl sm:text-4xl font-pokemon">
+									{score > 0 ? t("replay") : t("solo")}
 								</span>
-								{canStartGame && (
-									<div className="w-4 h-4 bg-white rounded-full animate-pulse" />
-								)}
-							</div>
-						</Button>
+							</Button>
+
+							<Button
+								variant="ghost"
+								onClick={handleMultiClick}
+								disabled={!canStartGame || isCreatingMultiRoom}
+								className={`flex-1 h-16 sm:h-24 text-lg sm:text-xl font-bold transition-all duration-500 ease-out relative overflow-hidden rounded-xl
+                ${
+									canStartGame
+										? "bg-purple-500/30 text-white shadow-xl hover:bg-purple-500/40 transform hover:scale-[1.02] border-4 border-white hover:text-white"
+										: "bg-gray-400/40 text-gray-200 border-4 border-white/40"
+								}
+              `}
+							>
+								<span className="text-3xl sm:text-4xl font-pokemon">
+									{t("multi")}
+								</span>
+							</Button>
+						</div>
+						{multiError && (
+							<p className="text-sm text-yellow-100 text-center mb-2">
+								{t(multiError)}
+							</p>
+						)}
 					</div>
 				</div>
 

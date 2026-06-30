@@ -7,6 +7,10 @@ import {
 	formatTimeForRanking,
 } from "../../utils/gameFormatters";
 import type { usePokemonGameController } from "../../hooks/usePokemonGameController";
+import { useCallback, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { createRoom } from "@/services/multiplayerRoomService";
+import { createRoomPlayerId } from "@/services/multiplayerPlayerId";
 
 type Controller = ReturnType<typeof usePokemonGameController>;
 
@@ -72,6 +76,31 @@ export const PokemonGameMenuLayout = ({
 	controller,
 }: PokemonGameMenuLayoutProps): JSX.Element => {
 	const { gameState, gameSetters } = controller;
+	const navigate = useNavigate();
+	const [isCreatingMultiRoom, setIsCreatingMultiRoom] = useState(false);
+	const [multiError, setMultiError] = useState<string | null>(null);
+
+	const handleStartMulti = useCallback(async (): Promise<void> => {
+		setMultiError(null);
+		setIsCreatingMultiRoom(true);
+		try {
+			const playerName = controller.playerName.trim();
+			const roomId = await createRoom(
+				playerName,
+				gameState.selectedGeneration,
+			);
+			createRoomPlayerId(roomId);
+			navigate(`/multi/${roomId}`);
+		} catch (error: unknown) {
+			if (error instanceof Error) {
+				setMultiError(error.message);
+			} else {
+				setMultiError("multiplayerCreateFailed");
+			}
+		} finally {
+			setIsCreatingMultiRoom(false);
+		}
+	}, [controller.playerName, gameState.selectedGeneration, navigate]);
 
 	return (
 		<MenuScreen
@@ -94,6 +123,9 @@ export const PokemonGameMenuLayout = ({
 				isAuthName: controller.isAuthName,
 			})}
 			startGame={controller.startGame}
+			onStartMulti={() => void handleStartMulti()}
+			isCreatingMultiRoom={isCreatingMultiRoom}
+			multiError={multiError}
 			score={gameState.score}
 			audio={{
 				isMuted: gameState.isMuted,
