@@ -1,5 +1,5 @@
 import { Timestamp } from "firebase/firestore";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it } from "vite-plus/test";
 import {
 	resolveMultiplayerRoundPoints,
 	resolveMultiplayerRoundScoring,
@@ -28,9 +28,7 @@ describe("resolveMultiplayerRoundScoring", () => {
 			roundStartedAt: futureStart,
 		};
 
-		expect(
-			resolveMultiplayerRoundPoints(gameState, false, mockNow),
-		).toBe(3);
+		expect(resolveMultiplayerRoundPoints(gameState, false, mockNow)).toBe(3);
 	});
 
 	it("awards shiny points for shiny rounds", () => {
@@ -39,15 +37,11 @@ describe("resolveMultiplayerRoundScoring", () => {
 			roundDurationSeconds: 10,
 		};
 
-		expect(
-			resolveMultiplayerRoundScoring(gameState, true, mockNow).earnedPoints,
-		).toBe(5);
+		expect(resolveMultiplayerRoundScoring(gameState, true, mockNow).earnedPoints).toBe(5);
 	});
 
 	it("disables random critical hit bonuses", () => {
-		expect(
-			resolveMultiplayerRoundScoring(baseGameState, false, mockNow),
-		).toEqual({
+		expect(resolveMultiplayerRoundScoring(baseGameState, false, mockNow)).toEqual({
 			earnedPoints: 3,
 			showCriticalSuccess: false,
 			showCriticalHit: false,

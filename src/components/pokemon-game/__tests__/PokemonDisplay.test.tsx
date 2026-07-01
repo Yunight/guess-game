@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi, beforeEach } from "vite-plus/test";
 import { fireEvent } from "@testing-library/react";
 import { render, screen } from "../../../test/test-utils";
 import { PokemonDisplay } from "../PokemonDisplay";

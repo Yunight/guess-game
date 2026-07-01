@@ -1,10 +1,7 @@
 import { type FC, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { PokemonDisplayFrame } from "./PokemonDisplayFrame";
-import {
-	PokemonDisplayContent,
-	PokemonDisplayLoading,
-} from "./PokemonDisplayContent";
+import { PokemonDisplayContent, PokemonDisplayLoading } from "./PokemonDisplayContent";
 import { computePokemonDisplayTransition } from "./pokemonDisplayState";
 import { clearPokemonCryCache, playPokemonCry } from "./pokemonCryPlayer";
 import type { Pokemon } from "./types";
@@ -31,12 +28,8 @@ export const PokemonDisplay: FC<PokemonDisplayProps> = ({
 	showProgressCounter = true,
 }) => {
 	const { i18n } = useTranslation();
-	const [displayState, setDisplayState] = useState<
-		"loading" | "ready" | "revealed"
-	>("loading");
-	const [displayedPokemon, setDisplayedPokemon] = useState<
-		Pokemon | undefined
-	>();
+	const [displayState, setDisplayState] = useState<"loading" | "ready" | "revealed">("loading");
+	const [displayedPokemon, setDisplayedPokemon] = useState<Pokemon | undefined>();
 	const audioRef = useRef<HTMLAudioElement | null>(null);
 	const soundPlayedRef = useRef(false);
 	const currentPokemonIdRef = useRef<number | null>(0);
@@ -66,14 +59,7 @@ export const PokemonDisplay: FC<PokemonDisplayProps> = ({
 		currentPokemonIdRef.current = transition.currentPokemonId;
 		setDisplayState(transition.displayState);
 		setDisplayedPokemon(transition.displayedPokemon);
-	}, [
-		currentPokemon,
-		isPokemonLoading,
-		isCorrect,
-		displayState,
-		displayedPokemon,
-		guessTimeLeft,
-	]);
+	}, [currentPokemon, isPokemonLoading, isCorrect, displayState, displayedPokemon, guessTimeLeft]);
 
 	useEffect(() => {
 		if (

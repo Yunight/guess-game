@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it } from "vite-plus/test";
 import { getAvailableTitles, getRandomTitle } from "../resultsPageTitles";
 
 const t = (key: string): string => key;

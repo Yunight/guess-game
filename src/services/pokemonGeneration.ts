@@ -4,10 +4,7 @@ export const filterPokemonByGeneration = (
 	pokemonList: readonly Pokemon[],
 	startId: number,
 	endId: number,
-): Pokemon[] =>
-	pokemonList.filter(
-		(pokemon) => pokemon.id >= startId && pokemon.id <= endId,
-	);
+): Pokemon[] => pokemonList.filter((pokemon) => pokemon.id >= startId && pokemon.id <= endId);
 
 export interface PokemonNamesQueryArg {
 	startId: number;

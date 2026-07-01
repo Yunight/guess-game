@@ -6,10 +6,7 @@ import { Button } from "@/components/ui/button";
 import { LanguageToggle } from "@/components/ui/language-toggle";
 import { getGenerationI18nKey } from "./generations";
 import { HowToPlay } from "./HowToPlay";
-import {
-	MenuGenerationPicker,
-	type MenuGenerationPickerProps,
-} from "./MenuGenerationPicker";
+import { MenuGenerationPicker, type MenuGenerationPickerProps } from "./MenuGenerationPicker";
 import { MenuPlayerForm, type MenuPlayerFormProps } from "./MenuPlayerForm";
 import { MenuRankingsList } from "./MenuRankingsList";
 import type { Rankings } from "./types";
@@ -79,8 +76,7 @@ export const MenuScreen: FC<MenuScreenProps> = ({
 	const [showHowToPlay, setShowHowToPlay] = useState(false);
 	const [showGameModeDialog, setShowGameModeDialog] = useState(false);
 	const { isMuted, setIsMuted } = audio;
-	const { rankings, rankingError, formatTimeForRanking, formatDate } =
-		rankingsProps;
+	const { rankings, rankingError, formatTimeForRanking, formatDate } = rankingsProps;
 	const { selectedGeneration } = generation;
 
 	const handleStartGameClick = (): void => {
@@ -157,11 +153,7 @@ export const MenuScreen: FC<MenuScreenProps> = ({
 							onClick={() => setIsMuted(!isMuted)}
 							className="hover:bg-white/20 bg-white/10 text-gray-800 hover:text-gray-900 transition-colors"
 						>
-							{isMuted ? (
-								<VolumeX className="h-5 w-5" />
-							) : (
-								<Volume2 className="h-5 w-5" />
-							)}
+							{isMuted ? <VolumeX className="h-5 w-5" /> : <Volume2 className="h-5 w-5" />}
 						</Button>
 					</div>
 
@@ -203,15 +195,11 @@ export const MenuScreen: FC<MenuScreenProps> = ({
 								}
               `}
 							>
-								<span className="text-3xl sm:text-4xl font-pokemon">
-									{t("multi")}
-								</span>
+								<span className="text-3xl sm:text-4xl font-pokemon">{t("multi")}</span>
 							</Button>
 						</div>
 						{multiError && (
-							<p className="text-sm text-yellow-100 text-center mb-2">
-								{t(multiError)}
-							</p>
+							<p className="text-sm text-yellow-100 text-center mb-2">{t(multiError)}</p>
 						)}
 					</div>
 				</div>
@@ -223,9 +211,7 @@ export const MenuScreen: FC<MenuScreenProps> = ({
 						<div className="relative flex flex-col items-center justify-center gap-1">
 							<div className="flex items-center gap-3">
 								<div className="w-6 h-6 bg-yellow-400 rounded-full border-2 border-white animate-spin-slow" />
-								<h2 className="text-2xl font-bold text-center text-white">
-									{t("bestScores")}
-								</h2>
+								<h2 className="text-2xl font-bold text-center text-white">{t("bestScores")}</h2>
 								<div className="w-6 h-6 bg-yellow-400 rounded-full border-2 border-white animate-spin-slow" />
 							</div>
 							<h3 className="text-xl font-bold text-center text-white/80">
@@ -277,9 +263,7 @@ export const MenuScreen: FC<MenuScreenProps> = ({
 
 			<div className="mt-6 text-center text-sm text-gray-500">
 				<div className="flex flex-col sm:flex-row justify-center items-center gap-4">
-					<p>
-						© 2024 Pokémon. © 1995-2024 Nintendo/Creatures Inc./GAME FREAK inc.
-					</p>
+					<p>© 2024 Pokémon. © 1995-2024 Nintendo/Creatures Inc./GAME FREAK inc.</p>
 					<div className="flex items-center gap-2">
 						<span>Developed by</span>
 						<a
@@ -323,10 +307,7 @@ export const MenuScreen: FC<MenuScreenProps> = ({
 				</div>
 			</div>
 
-			<HowToPlay
-				isOpen={showHowToPlay}
-				onClose={() => setShowHowToPlay(false)}
-			/>
+			<HowToPlay isOpen={showHowToPlay} onClose={() => setShowHowToPlay(false)} />
 			<GameModeDialog
 				isOpen={showGameModeDialog}
 				onClose={() => setShowGameModeDialog(false)}

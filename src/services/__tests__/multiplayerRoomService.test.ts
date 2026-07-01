@@ -1,9 +1,6 @@
 import { Timestamp } from "firebase/firestore";
-import { describe, expect, it } from "vitest";
-import {
-	parseMultiplayerRoom,
-	resolveRoomSnapshot,
-} from "@/services/multiplayerRoomService";
+import { describe, expect, it } from "vite-plus/test";
+import { parseMultiplayerRoom, resolveRoomSnapshot } from "@/services/multiplayerRoomService";
 
 const mockTimestamp = Timestamp.fromDate(new Date("2026-01-01T00:00:00Z"));
 
@@ -84,7 +81,7 @@ describe("parseMultiplayerRoom gameState", () => {
 			guestPlayer: { id: "guest-1", name: "Misty" },
 			gameState: {
 				...gameStateBase,
-				scores: { "host-1": 4, "guest-1": "bad", "orphan": 99 },
+				scores: { "host-1": 4, "guest-1": "bad", orphan: 99 },
 			},
 		});
 		expect(room?.gameState?.scores).toEqual({ "host-1": 4, orphan: 99 });

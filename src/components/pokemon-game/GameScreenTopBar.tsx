@@ -63,15 +63,9 @@ export const GameScreenTopBar = ({
 				data-testid="volume-toggle-button"
 			>
 				{isMuted ? (
-					<VolumeX
-						className="h-5 w-5 text-white"
-						data-testid="volume-x-icon"
-					/>
+					<VolumeX className="h-5 w-5 text-white" data-testid="volume-x-icon" />
 				) : (
-					<Volume2
-						className="h-5 w-5 text-white"
-						data-testid="volume-2-icon"
-					/>
+					<Volume2 className="h-5 w-5 text-white" data-testid="volume-2-icon" />
 				)}
 			</Button>
 		</div>

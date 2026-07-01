@@ -42,21 +42,14 @@ export const applyPoolProgressionInTransaction = (
 	roundStartedAt: Timestamp,
 ): void => {
 	const poolResult = resolvePoolAfterCorrectAnswer(
-		[
-			room.gameState.currentPokemonId,
-			...room.gameState.remainingPokemon,
-		],
+		[room.gameState.currentPokemonId, ...room.gameState.remainingPokemon],
 		room.gameState.currentPokemonId,
 	);
 
 	if (poolResult.type === "game_complete") {
 		transaction.update(roomRef, {
 			status: "finished",
-			winnerId: resolveWinnerId(
-				room.gameState.scores,
-				room.hostPlayer.id,
-				room.guestPlayer.id,
-			),
+			winnerId: resolveWinnerId(room.gameState.scores, room.hostPlayer.id, room.guestPlayer.id),
 		});
 		return;
 	}

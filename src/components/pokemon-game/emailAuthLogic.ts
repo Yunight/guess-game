@@ -16,9 +16,7 @@ export type SignUpValidationResult =
 	| { action: "proceed" }
 	| { action: "abort"; reason: "trainerNameRequired" | "existingError" };
 
-export const validateSignUpSubmit = (
-	input: SignUpValidationInput,
-): SignUpValidationResult => {
+export const validateSignUpSubmit = (input: SignUpValidationInput): SignUpValidationResult => {
 	if (!input.isSignUp) {
 		return { action: "proceed" };
 	}
@@ -51,26 +49,18 @@ export const validateForgotPassword = (
 	return { action: "proceed" };
 };
 
-export const shouldClearEmailError = (
-	error: string | null,
-): boolean => {
+export const shouldClearEmailError = (error: string | null): boolean => {
 	return Boolean(error?.includes("email"));
 };
 
-export const getAuthDialogTitleKey = (
-	isResetMode: boolean,
-	isSignUp: boolean,
-): string => {
+export const getAuthDialogTitleKey = (isResetMode: boolean, isSignUp: boolean): string => {
 	if (isResetMode) {
 		return "forgotPassword";
 	}
 	return isSignUp ? "signUp" : "signIn";
 };
 
-export const getAuthDialogSubtitleKey = (
-	isResetMode: boolean,
-	isSignUp: boolean,
-): string => {
+export const getAuthDialogSubtitleKey = (isResetMode: boolean, isSignUp: boolean): string => {
 	if (isResetMode) {
 		return "enterEmailForReset";
 	}

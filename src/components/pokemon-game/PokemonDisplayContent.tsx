@@ -12,27 +12,17 @@ interface PokemonDisplayContentProps {
 	language: string;
 }
 
-const RevealRingEffects = ({
-	isShiny,
-}: {
-	isShiny: boolean;
-}): JSX.Element => {
+const RevealRingEffects = ({ isShiny }: { isShiny: boolean }): JSX.Element => {
 	const primaryBorder = isShiny ? "border-yellow-400/50" : "border-blue-400/30";
-	const secondaryBorder = isShiny
-		? "border-yellow-400/40"
-		: "border-blue-400/20";
+	const secondaryBorder = isShiny ? "border-yellow-400/40" : "border-blue-400/20";
 
 	return (
 		<div className="absolute inset-0 pointer-events-none">
 			<div className="absolute inset-0 animate-ring-expand">
-				<div
-					className={`absolute inset-0 border-4 ${primaryBorder} rounded-full`}
-				/>
+				<div className={`absolute inset-0 border-4 ${primaryBorder} rounded-full`} />
 			</div>
 			<div className="absolute inset-0 animate-ring-expand-delayed">
-				<div
-					className={`absolute inset-0 border-4 ${secondaryBorder} rounded-full`}
-				/>
+				<div className={`absolute inset-0 border-4 ${secondaryBorder} rounded-full`} />
 			</div>
 			<div
 				className="absolute w-2 h-2 bg-yellow-300 rounded-full animate-ping"

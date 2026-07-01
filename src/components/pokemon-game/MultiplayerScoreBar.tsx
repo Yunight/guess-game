@@ -37,10 +37,8 @@ export const MultiplayerScoreBar: FC<MultiplayerScoreBarProps> = ({
 
 	const hostIsLocal = hostPlayerId === localPlayerId;
 	const guestIsLocal = !hostIsLocal;
-	const hostWonRound =
-		roundWinnerName !== null && roundWinnerName === hostName;
-	const guestWonRound =
-		roundWinnerName !== null && roundWinnerName === guestName;
+	const hostWonRound = roundWinnerName !== null && roundWinnerName === hostName;
+	const guestWonRound = roundWinnerName !== null && roundWinnerName === guestName;
 
 	const renderPlayerBadge = (isLocal: boolean): JSX.Element | null =>
 		isLocal ? (
@@ -83,10 +81,7 @@ export const MultiplayerScoreBar: FC<MultiplayerScoreBarProps> = ({
 			<div className="grid grid-cols-[1fr_auto_1fr] items-center gap-2">
 				<div className="flex justify-end min-h-9">
 					{hostWonRound && roundPointsEarned > 0 && (
-						<ScoreIncrease
-							points={roundPointsEarned}
-							className="pointer-events-none"
-						/>
+						<ScoreIncrease points={roundPointsEarned} className="pointer-events-none" />
 					)}
 				</div>
 				<div className="bg-black/80 text-white px-4 py-1 rounded-full text-sm font-medium">
@@ -94,10 +89,7 @@ export const MultiplayerScoreBar: FC<MultiplayerScoreBarProps> = ({
 				</div>
 				<div className="flex justify-start min-h-9">
 					{guestWonRound && roundPointsEarned > 0 && (
-						<ScoreIncrease
-							points={roundPointsEarned}
-							className="pointer-events-none"
-						/>
+						<ScoreIncrease points={roundPointsEarned} className="pointer-events-none" />
 					)}
 				</div>
 			</div>

@@ -30,11 +30,7 @@ interface UseRankingsProps {
 	isGameActive: boolean;
 }
 
-export const useRankings = ({
-	selectedGeneration,
-	playerName,
-	isGameActive,
-}: UseRankingsProps) => {
+export const useRankings = ({ selectedGeneration, playerName, isGameActive }: UseRankingsProps) => {
 	const [rankings, setRankings] = useState<Rankings[]>([]);
 	const [bestScore, setBestScore] = useState(0);
 	const [bestTime, setBestTime] = useState(0);
@@ -51,20 +47,13 @@ export const useRankings = ({
 	const getRankingsCollectionRef = useCallback(() => {
 		return collection(
 			db,
-			getRankingsCollectionPath(
-				selectedGeneration.startId,
-				selectedGeneration.endId,
-			),
+			getRankingsCollectionPath(selectedGeneration.startId, selectedGeneration.endId),
 		);
 	}, [selectedGeneration.endId, selectedGeneration.startId]);
 
 	const fetchRankingsForCalculation = useCallback(async () => {
 		const rankingsRef = getRankingsCollectionRef();
-		const q = query(
-			rankingsRef,
-			orderBy("score", "desc"),
-			limit(RANKINGS_CALCULATION_LIMIT),
-		);
+		const q = query(rankingsRef, orderBy("score", "desc"), limit(RANKINGS_CALCULATION_LIMIT));
 		const querySnapshot = await getDocs(q);
 		return querySnapshot.docs.map((docSnap) => docSnap.data());
 	}, [getRankingsCollectionRef]);
@@ -93,11 +82,7 @@ export const useRankings = ({
 		try {
 			setRankingError(null);
 			const rankingsRef = getRankingsCollectionRef();
-			const q = query(
-				rankingsRef,
-				orderBy("score", "desc"),
-				limit(RANKINGS_DISPLAY_LIMIT),
-			);
+			const q = query(rankingsRef, orderBy("score", "desc"), limit(RANKINGS_DISPLAY_LIMIT));
 			const querySnapshot = await getDocs(q);
 			const rankingsData = mapRankingDocuments(querySnapshot.docs);
 			setRankings(rankingsData);
@@ -113,19 +98,11 @@ export const useRankings = ({
 			try {
 				setRankingError(null);
 				const allRankings = await fetchRankingsForCalculation();
-				const currentRank = calculateRankFromEntries(
-					allRankings,
-					score,
-					totalTimeElapsed,
-				);
+				const currentRank = calculateRankFromEntries(allRankings, score, totalTimeElapsed);
 				setUserRanking(currentRank);
 
 				if (bestScore > 0 && bestScore !== score) {
-					const bestRank = calculateRankFromEntries(
-						allRankings,
-						bestScore,
-						bestTime,
-					);
+					const bestRank = calculateRankFromEntries(allRankings, bestScore, bestTime);
 					setBestRanking(bestRank);
 				} else {
 					setBestRanking(null);
@@ -143,14 +120,7 @@ export const useRankings = ({
 	const saveRanking = useCallback(
 		async (score: number, totalTimeElapsed: number): Promise<void> => {
 			const now = Date.now();
-			if (
-				isDuplicateSaveAttempt(
-					lastSaveAttempt.current,
-					score,
-					totalTimeElapsed,
-					now,
-				)
-			) {
+			if (isDuplicateSaveAttempt(lastSaveAttempt.current, score, totalTimeElapsed, now)) {
 				return;
 			}
 
@@ -193,13 +163,7 @@ export const useRankings = ({
 				},
 			);
 		},
-		[
-			bestScore,
-			calculateRankings,
-			fetchRankings,
-			getRankingsCollectionRef,
-			playerName,
-		],
+		[bestScore, calculateRankings, fetchRankings, getRankingsCollectionRef, playerName],
 	);
 
 	useEffect(() => {

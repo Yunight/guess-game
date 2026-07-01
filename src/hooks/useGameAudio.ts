@@ -22,13 +22,7 @@ export const useGameAudio = (
 	const cleanupAllAudio = (preserveTrainHorn = false): void => {
 		const audioRefs = preserveTrainHorn
 			? [victoryAudioRef, correctAudioRef, wrongAudioRef, lowLifeRef]
-			: [
-					victoryAudioRef,
-					correctAudioRef,
-					wrongAudioRef,
-					trainHornRef,
-					lowLifeRef,
-				];
+			: [victoryAudioRef, correctAudioRef, wrongAudioRef, trainHornRef, lowLifeRef];
 
 		for (const ref of audioRefs) {
 			if (ref.current) {
@@ -53,16 +47,8 @@ export const useGameAudio = (
 		};
 	}, []);
 
-	const cleanupNonCurrentAudio = (
-		currentRef: React.RefObject<HTMLAudioElement | null>,
-	): void => {
-		const allRefs = [
-			victoryAudioRef,
-			correctAudioRef,
-			wrongAudioRef,
-			lowLifeRef,
-			trainHornRef,
-		];
+	const cleanupNonCurrentAudio = (currentRef: React.RefObject<HTMLAudioElement | null>): void => {
+		const allRefs = [victoryAudioRef, correctAudioRef, wrongAudioRef, lowLifeRef, trainHornRef];
 		const refsToCleanup =
 			currentRef !== trainHornRef
 				? allRefs.filter((ref) => ref !== currentRef && ref !== trainHornRef)
@@ -76,9 +62,7 @@ export const useGameAudio = (
 		}
 	};
 
-	const playSound = async (
-		audioRef: React.RefObject<HTMLAudioElement | null>,
-	): Promise<void> => {
+	const playSound = async (audioRef: React.RefObject<HTMLAudioElement | null>): Promise<void> => {
 		if (isMuted || !audioRef.current) return;
 
 		try {

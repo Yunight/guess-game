@@ -16,9 +16,7 @@ export const MenuGenerationPicker = ({
 }: MenuGenerationPickerProps): JSX.Element => {
 	const { t } = useTranslation();
 
-	const sortedGenerations = [...generations].sort(
-		(a, b) => a.startId - b.startId,
-	);
+	const sortedGenerations = [...generations].sort((a, b) => a.startId - b.startId);
 
 	return (
 		<div className="space-y-2">

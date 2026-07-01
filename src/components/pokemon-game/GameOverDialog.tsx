@@ -41,14 +41,8 @@ const getGameOverDialogClassName = (isComplete: boolean): string => {
 
 export const GameOverDialog = (props: GameOverDialogProps): JSX.Element => {
 	const isComplete = props.remainingPokemon.length === 0;
-	const {
-		shareableUrl,
-		isSavingResult,
-		urlCopied,
-		displayTime,
-		onCopyUrl,
-		onShare,
-	} = useGameOverDialogEffects(props);
+	const { shareableUrl, isSavingResult, urlCopied, displayTime, onCopyUrl, onShare } =
+		useGameOverDialogEffects(props);
 
 	return (
 		<Dialog open={props.gameOver} onOpenChange={props.setGameOver}>

@@ -1,9 +1,6 @@
 import { GameOverDialog } from "./GameOverDialog";
 import { PokemonGameDevTools } from "./PokemonGameDevTools";
-import {
-	PokemonGameActiveLayout,
-	PokemonGameMenuLayout,
-} from "./PokemonGameSections";
+import { PokemonGameActiveLayout, PokemonGameMenuLayout } from "./PokemonGameSections";
 import type { usePokemonGameController } from "../../hooks/usePokemonGameController";
 import { formatTimeForRanking } from "../../utils/gameFormatters";
 
@@ -13,9 +10,7 @@ interface PokemonGameLayoutProps {
 	controller: PokemonGameController;
 }
 
-export const PokemonGameLayout = ({
-	controller,
-}: PokemonGameLayoutProps): JSX.Element => {
+export const PokemonGameLayout = ({ controller }: PokemonGameLayoutProps): JSX.Element => {
 	const { gameState, gameSetters } = controller;
 
 	return (

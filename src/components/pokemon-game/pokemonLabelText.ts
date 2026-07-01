@@ -1,9 +1,6 @@
 import type { Pokemon } from "./types";
 
-export const getLocalizedPokemonName = (
-	pokemon: Pokemon,
-	language: string,
-): string => {
+export const getLocalizedPokemonName = (pokemon: Pokemon, language: string): string => {
 	return language === "fr" ? pokemon.frenchName : pokemon.englishName;
 };
 

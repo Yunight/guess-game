@@ -28,11 +28,7 @@ interface GameModeDialogProps {
 	onSelectMode: (isHardMode: boolean) => void;
 }
 
-export const GameModeDialog: FC<GameModeDialogProps> = ({
-	isOpen,
-	onClose,
-	onSelectMode,
-}) => {
+export const GameModeDialog: FC<GameModeDialogProps> = ({ isOpen, onClose, onSelectMode }) => {
 	const { t } = useTranslation();
 
 	return (
@@ -53,9 +49,7 @@ export const GameModeDialog: FC<GameModeDialogProps> = ({
 					{/* Pro Tips Section */}
 					<div className="bg-yellow-50/90 p-4 rounded-xl border-2 border-yellow-400">
 						<div className="flex items-center gap-2 mb-3">
-							<span className="text-yellow-600 font-bold text-lg">
-								{t("proTipsPC")}
-							</span>
+							<span className="text-yellow-600 font-bold text-lg">{t("proTipsPC")}</span>
 							<div className="w-2 h-2 bg-yellow-400 rounded-full animate-pulse" />
 						</div>
 						<div className="space-y-3 text-sm text-gray-700">

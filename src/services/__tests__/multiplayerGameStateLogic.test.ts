@@ -1,5 +1,5 @@
 import { Timestamp } from "firebase/firestore";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it } from "vite-plus/test";
 import {
 	applyCorrectGuessToGameState,
 	buildNextRoundGameState,
@@ -54,9 +54,7 @@ describe("applyCorrectGuessToGameState", () => {
 			roundWinnerId: "host-1",
 			roundPointsEarned: 3,
 		};
-		expect(
-			applyCorrectGuessToGameState(resolvedState, "guest-1", 2),
-		).toBeNull();
+		expect(applyCorrectGuessToGameState(resolvedState, "guest-1", 2)).toBeNull();
 	});
 });
 
@@ -69,13 +67,7 @@ describe("buildNextRoundGameState", () => {
 			roundPointsEarned: 3,
 		};
 		const nextStartedAt = Timestamp.fromDate(new Date("2026-01-02T00:00:00Z"));
-		const result = buildNextRoundGameState(
-			resolvedState,
-			4,
-			[1, 7],
-			20,
-			nextStartedAt,
-		);
+		const result = buildNextRoundGameState(resolvedState, 4, [1, 7], 20, nextStartedAt);
 		expect(result).toEqual({
 			...resolvedState,
 			currentPokemonId: 4,

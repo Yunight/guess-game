@@ -44,11 +44,7 @@ export const ResultsPageContent = ({
 		gameResult.selectedGeneration.endId,
 	);
 
-	const prestigeTheme = getPrestigeTheme(
-		currentRemainingPokemon,
-		totalPokemonInGeneration,
-		t,
-	);
+	const prestigeTheme = getPrestigeTheme(currentRemainingPokemon, totalPokemonInGeneration, t);
 	const IconComponent = prestigeTheme.icon;
 
 	return (
@@ -85,17 +81,11 @@ export const ResultsPageContent = ({
 			>
 				<div className="text-center">
 					<div className="flex justify-center mb-4">
-						<div
-							className={`p-4 rounded-full bg-white/10 ${prestigeTheme.animation}`}
-						>
-							<IconComponent
-								className={`h-12 w-12 ${prestigeTheme.accentColor}`}
-							/>
+						<div className={`p-4 rounded-full bg-white/10 ${prestigeTheme.animation}`}>
+							<IconComponent className={`h-12 w-12 ${prestigeTheme.accentColor}`} />
 						</div>
 					</div>
-					<div
-						className={`text-sm font-medium ${prestigeTheme.accentColor} mb-2`}
-					>
+					<div className={`text-sm font-medium ${prestigeTheme.accentColor} mb-2`}>
 						{prestigeTheme.name}
 					</div>
 					<h1 className={`text-3xl font-bold mb-2 ${prestigeTheme.titleColor}`}>
@@ -113,21 +103,15 @@ export const ResultsPageContent = ({
 
 					<div className="grid grid-cols-2 gap-4 mb-6">
 						<div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 space-y-2">
-							<div
-								className={`flex items-center gap-2 ${prestigeTheme.accentColor}`}
-							>
+							<div className={`flex items-center gap-2 ${prestigeTheme.accentColor}`}>
 								<Trophy className="h-5 w-5" />
 								<p className="text-sm font-medium">{t("score")}</p>
 							</div>
-							<p className={`text-2xl font-bold ${prestigeTheme.titleColor}`}>
-								{gameResult.score}
-							</p>
+							<p className={`text-2xl font-bold ${prestigeTheme.titleColor}`}>{gameResult.score}</p>
 						</div>
 
 						<div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 space-y-2">
-							<div
-								className={`flex items-center gap-2 ${prestigeTheme.accentColor}`}
-							>
+							<div className={`flex items-center gap-2 ${prestigeTheme.accentColor}`}>
 								<Clock className="h-5 w-5" />
 								<p className="text-sm font-medium">{t("time")}</p>
 							</div>
@@ -138,9 +122,7 @@ export const ResultsPageContent = ({
 
 						{gameResult.userRanking && (
 							<div className="col-span-2 bg-white/10 backdrop-blur-sm rounded-xl p-4 space-y-2">
-								<div
-									className={`flex items-center gap-2 ${prestigeTheme.accentColor}`}
-								>
+								<div className={`flex items-center gap-2 ${prestigeTheme.accentColor}`}>
 									<Crown className="h-5 w-5" />
 									<p className="text-sm font-medium">{t("ranking")}</p>
 								</div>
@@ -153,43 +135,25 @@ export const ResultsPageContent = ({
 
 					<div className="grid grid-cols-2 gap-4 mb-6 text-sm">
 						<div className="bg-white/5 rounded-lg p-3">
-							<div className={`font-medium ${prestigeTheme.accentColor}`}>
-								{t("generation")}
-							</div>
-							<div className={prestigeTheme.titleColor}>
-								{gameResult.selectedGeneration.name}
-							</div>
+							<div className={`font-medium ${prestigeTheme.accentColor}`}>{t("generation")}</div>
+							<div className={prestigeTheme.titleColor}>{gameResult.selectedGeneration.name}</div>
 						</div>
 						<div className="bg-white/5 rounded-lg p-3">
-							<div className={`font-medium ${prestigeTheme.accentColor}`}>
-								{t("pokemonLeft")}
-							</div>
-							<div className={prestigeTheme.titleColor}>
-								{currentRemainingPokemon}
-							</div>
+							<div className={`font-medium ${prestigeTheme.accentColor}`}>{t("pokemonLeft")}</div>
+							<div className={prestigeTheme.titleColor}>{currentRemainingPokemon}</div>
 						</div>
 						<div className="bg-white/5 rounded-lg p-3">
-							<div className={`font-medium ${prestigeTheme.accentColor}`}>
-								{t("criticalHits")}
-							</div>
-							<div className={prestigeTheme.titleColor}>
-								{gameResult.criticalHitCount}
-							</div>
+							<div className={`font-medium ${prestigeTheme.accentColor}`}>{t("criticalHits")}</div>
+							<div className={prestigeTheme.titleColor}>{gameResult.criticalHitCount}</div>
 						</div>
 						<div className="bg-white/5 rounded-lg p-3">
-							<div className={`font-medium ${prestigeTheme.accentColor}`}>
-								{t("maxHypeChain")}
-							</div>
-							<div className={prestigeTheme.titleColor}>
-								{gameResult.maxHypeChain}
-							</div>
+							<div className={`font-medium ${prestigeTheme.accentColor}`}>{t("maxHypeChain")}</div>
+							<div className={prestigeTheme.titleColor}>{gameResult.maxHypeChain}</div>
 						</div>
 					</div>
 
 					<div className="mt-4 p-3 bg-white/5 rounded-lg border border-white/10 relative">
-						<div
-							className={`text-sm font-medium mb-2 ${prestigeTheme.accentColor}`}
-						>
+						<div className={`text-sm font-medium mb-2 ${prestigeTheme.accentColor}`}>
 							🔗 {t("shareableLink")}
 						</div>
 						<div className="flex items-center gap-2">

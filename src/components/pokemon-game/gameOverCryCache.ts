@@ -22,9 +22,7 @@ const isPokemonCries = (value: unknown): value is PokemonCries => {
 		return false;
 	}
 
-	return (
-		typeof value.latest === "string" && typeof value.legacy === "string"
-	);
+	return typeof value.latest === "string" && typeof value.legacy === "string";
 };
 
 const isCachedCryEntry = (value: unknown): value is CachedCryEntry => {
@@ -59,10 +57,7 @@ const parseCryCache = (cachedData: string): CryCache | null => {
 	}
 };
 
-const readCacheEntry = (
-	cache: CryCache,
-	pokemonId: number,
-): PokemonCries | null => {
+const readCacheEntry = (cache: CryCache, pokemonId: number): PokemonCries | null => {
 	const entry = cache[String(pokemonId)];
 	if (!entry) {
 		return null;
@@ -75,11 +70,7 @@ const readCacheEntry = (
 	return entry.cries;
 };
 
-const writeCacheEntry = (
-	cache: CryCache,
-	pokemonId: number,
-	cries: PokemonCries,
-): void => {
+const writeCacheEntry = (cache: CryCache, pokemonId: number, cries: PokemonCries): void => {
 	cache[String(pokemonId)] = {
 		timestamp: Date.now(),
 		cries,
@@ -112,9 +103,7 @@ export const shouldSkipCryPlayback = (
 	return pokemonId === lastPlayedId || isMuted;
 };
 
-export const getCachedCryUrl = async (
-	pokemonId: number,
-): Promise<PokemonCries> => {
+export const getCachedCryUrl = async (pokemonId: number): Promise<PokemonCries> => {
 	try {
 		const cachedData = localStorage.getItem(POKEAPI_CACHE_KEY);
 		if (cachedData) {
@@ -129,9 +118,7 @@ export const getCachedCryUrl = async (
 		}
 
 		console.log("🔄 Fetching cry from PokeAPI for Pokemon:", pokemonId);
-		const response = await fetch(
-			`https://pokeapi.co/api/v2/pokemon/${pokemonId}`,
-		);
+		const response = await fetch(`https://pokeapi.co/api/v2/pokemon/${pokemonId}`);
 		if (!response.ok) {
 			throw new Error("Failed to fetch Pokemon cry");
 		}
@@ -142,7 +129,7 @@ export const getCachedCryUrl = async (
 			throw new Error("Invalid Pokemon cry response");
 		}
 
-		const cache = cachedData ? parseCryCache(cachedData) ?? {} : {};
+		const cache = cachedData ? (parseCryCache(cachedData) ?? {}) : {};
 		writeCacheEntry(cache, pokemonId, cries);
 		console.log("💾 Cry URL cached successfully");
 
@@ -164,20 +151,12 @@ export const playCryAudio = async (audioUrl: string): Promise<boolean> => {
 	const cryAudio = new Audio(audioUrl);
 	let hasError = false;
 
-	cryAudio.addEventListener("loadstart", () =>
-		console.log("🎵 Started loading audio"),
-	);
-	cryAudio.addEventListener("canplay", () =>
-		console.log("✅ Audio can start playing"),
-	);
-	cryAudio.addEventListener("loadeddata", () =>
-		console.log("✅ Audio data loaded successfully"),
-	);
+	cryAudio.addEventListener("loadstart", () => console.log("🎵 Started loading audio"));
+	cryAudio.addEventListener("canplay", () => console.log("✅ Audio can start playing"));
+	cryAudio.addEventListener("loadeddata", () => console.log("✅ Audio data loaded successfully"));
 	cryAudio.addEventListener("error", (event) => {
 		hasError = true;
-		const audio = isHtmlAudioElement(event.currentTarget)
-			? event.currentTarget
-			: null;
+		const audio = isHtmlAudioElement(event.currentTarget) ? event.currentTarget : null;
 		console.error("❌ Audio loading error:", {
 			src: audio?.src,
 			networkState: audio?.networkState,

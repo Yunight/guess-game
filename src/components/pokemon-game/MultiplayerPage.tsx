@@ -72,9 +72,7 @@ const MultiplayerPage: FC = () => {
 	if (!room) {
 		return (
 			<div className="min-h-screen flex flex-col items-center justify-center gap-4 bg-gradient-to-br from-blue-100 to-blue-200 p-4">
-				<p className="text-lg text-gray-700">
-					{t(error ?? "multiplayerRoomNotFound")}
-				</p>
+				<p className="text-lg text-gray-700">{t(error ?? "multiplayerRoomNotFound")}</p>
 				<Link to="/">
 					<Button>{t("backToMenu")}</Button>
 				</Link>
@@ -121,13 +119,7 @@ const MultiplayerPage: FC = () => {
 		);
 	}
 
-	return (
-		<MultiplayerActiveGameView
-			room={room}
-			localPlayerId={localPlayerId}
-			isHost={isHost}
-		/>
-	);
+	return <MultiplayerActiveGameView room={room} localPlayerId={localPlayerId} isHost={isHost} />;
 };
 
 export default MultiplayerPage;

@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it } from "vite-plus/test";
 import {
 	buildExpirationDate,
 	countSavesToday,
@@ -116,9 +116,7 @@ describe("buildExpirationDate", () => {
 		const expiration = buildExpirationDate(input, now);
 
 		expect(getResultExpirationDays(input)).toBe(90);
-		const dayDiff = Math.round(
-			(expiration.getTime() - now.getTime()) / (24 * 60 * 60 * 1000),
-		);
+		const dayDiff = Math.round((expiration.getTime() - now.getTime()) / (24 * 60 * 60 * 1000));
 		expect(dayDiff).toBe(90);
 	});
 
@@ -134,8 +132,7 @@ describe("buildExpirationDate", () => {
 		expect(getResultExpirationDays(input)).toBe(30);
 		expect(
 			Math.round(
-				(buildExpirationDate(input, now).getTime() - now.getTime()) /
-					(24 * 60 * 60 * 1000),
+				(buildExpirationDate(input, now).getTime() - now.getTime()) / (24 * 60 * 60 * 1000),
 			),
 		).toBe(30);
 	});
@@ -149,9 +146,7 @@ describe("countSavesToday", () => {
 
 		expect(countSavesToday([todayMorning, yesterday], now.getTime())).toBe(1);
 		expect(isDailyUserLimitReached([todayMorning], 1, now.getTime())).toBe(true);
-		expect(isDailyGlobalLimitReached([todayMorning], 1, now.getTime())).toBe(
-			true,
-		);
+		expect(isDailyGlobalLimitReached([todayMorning], 1, now.getTime())).toBe(true);
 	});
 });
 
@@ -159,9 +154,7 @@ describe("extractTimestampMs", () => {
 	it("extracts timestamps from supported values", () => {
 		const date = new Date("2026-06-30T08:00:00.000Z");
 		expect(extractTimestampMs(date)).toBe(date.getTime());
-		expect(
-			extractTimestampMs({ toDate: (): Date => date }),
-		).toBe(date.getTime());
+		expect(extractTimestampMs({ toDate: (): Date => date })).toBe(date.getTime());
 		expect(extractTimestampMs(date.getTime())).toBe(date.getTime());
 	});
 

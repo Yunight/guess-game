@@ -1,9 +1,6 @@
 import type { GameResult } from "../../services/gameResultsService";
 import type { UseResultsPageResult } from "./useResultsPage";
-import {
-	ResultsPageError,
-	ResultsPageLoading,
-} from "./ResultsPageStates";
+import { ResultsPageError, ResultsPageLoading } from "./ResultsPageStates";
 import { ResultsPageContent } from "./ResultsPageContent";
 
 export const ResultsPageView = ({

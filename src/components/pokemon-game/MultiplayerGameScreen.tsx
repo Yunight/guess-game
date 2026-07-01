@@ -24,8 +24,7 @@ export const MultiplayerGameScreen: FC<MultiplayerGameScreenProps> = ({
 }) => {
 	const { t } = useTranslation();
 
-	const localPlayerWonRound =
-		roundWinnerId !== null && roundWinnerId === localPlayerId;
+	const localPlayerWonRound = roundWinnerId !== null && roundWinnerId === localPlayerId;
 
 	return (
 		<Card className="w-full max-w-md p-1 sm:p-4 relative flex flex-col min-h-0 bg-red-500 rounded-3xl overflow-hidden">

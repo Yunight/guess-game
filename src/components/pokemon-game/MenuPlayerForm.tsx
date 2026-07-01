@@ -26,9 +26,7 @@ export const MenuPlayerForm = ({
 					{!isAuthenticated && (
 						<div className="flex items-center gap-2">
 							<div className="w-6 h-6 bg-blue-500 rounded-full border-4 border-white shadow-md" />
-							<h2 className="text-lg font-semibold text-gray-800">
-								{t("connexion")}
-							</h2>
+							<h2 className="text-lg font-semibold text-gray-800">{t("connexion")}</h2>
 						</div>
 					)}
 					<AuthButtons
@@ -40,10 +38,7 @@ export const MenuPlayerForm = ({
 			</div>
 
 			<div className="space-y-2">
-				<label
-					htmlFor="playerName"
-					className="text-sm font-medium text-gray-700"
-				>
+				<label htmlFor="playerName" className="text-sm font-medium text-gray-700">
 					{t("trainerName")}
 				</label>
 				<Input
@@ -59,9 +54,7 @@ export const MenuPlayerForm = ({
 					readOnly={isAuthenticated}
 					disabled={isAuthenticated}
 				/>
-				{nameError && !isAuthenticated && (
-					<p className="text-red-500 text-sm">{nameError}</p>
-				)}
+				{nameError && !isAuthenticated && <p className="text-red-500 text-sm">{nameError}</p>}
 			</div>
 		</>
 	);

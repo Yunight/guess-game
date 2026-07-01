@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it } from "vite-plus/test";
 import {
 	isPokemonCries,
 	isPokemonSpecies,
@@ -24,9 +24,7 @@ describe("isTyradexPokemon", () => {
 
 	it("rejects invalid payloads", () => {
 		expect(isTyradexPokemon(null)).toBe(false);
-		expect(isTyradexPokemon({ ...validTyradexPokemon, pokedex_id: "25" })).toBe(
-			false,
-		);
+		expect(isTyradexPokemon({ ...validTyradexPokemon, pokedex_id: "25" })).toBe(false);
 		expect(
 			isTyradexPokemon({
 				...validTyradexPokemon,
@@ -38,9 +36,7 @@ describe("isTyradexPokemon", () => {
 
 describe("parseTyradexPokemonList", () => {
 	it("parses a valid list", () => {
-		expect(parseTyradexPokemonList([validTyradexPokemon])).toEqual([
-			validTyradexPokemon,
-		]);
+		expect(parseTyradexPokemonList([validTyradexPokemon])).toEqual([validTyradexPokemon]);
 	});
 
 	it("throws for invalid list payloads", () => {
@@ -59,17 +55,13 @@ describe("parseTyradexPokemon", () => {
 	});
 
 	it("throws for invalid pokemon payloads", () => {
-		expect(() => parseTyradexPokemon(null)).toThrow(
-			"Invalid Tyradex pokemon response",
-		);
+		expect(() => parseTyradexPokemon(null)).toThrow("Invalid Tyradex pokemon response");
 	});
 });
 
 describe("pokeapi validators", () => {
 	it("validates cries and species payloads", () => {
-		expect(
-			isPokemonCries({ latest: "https://a", legacy: "https://b" }),
-		).toBe(true);
+		expect(isPokemonCries({ latest: "https://a", legacy: "https://b" })).toBe(true);
 		expect(
 			isPokemonSpecies({
 				flavor_text_entries: [

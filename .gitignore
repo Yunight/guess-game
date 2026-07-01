@@ -11,6 +11,7 @@ dist/
 build/
 coverage/
 dev-dist/
+.fallow-output.json
 
 # IDE files
 .vscode/

@@ -1,4 +1,4 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test";
 import {
 	getFromStorage,
 	isCachedCryUrl,
@@ -158,9 +158,7 @@ describe("isCachedFlavorText", () => {
 	});
 
 	it("returns false when french is not a string", () => {
-		expect(
-			isCachedFlavorText({ timestamp: 1, french: 1, english: "en" }),
-		).toBe(false);
+		expect(isCachedFlavorText({ timestamp: 1, french: 1, english: "en" })).toBe(false);
 	});
 });
 

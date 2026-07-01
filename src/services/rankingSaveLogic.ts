@@ -17,9 +17,7 @@ type RankingSaveDecision = "skip" | "update" | "create";
 const isRecord = (value: unknown): value is Record<string, unknown> =>
 	typeof value === "object" && value !== null;
 
-const parseExistingRankingData = (
-	data: unknown,
-): ExistingRanking | null => {
+const parseExistingRankingData = (data: unknown): ExistingRanking | null => {
 	if (!isRecord(data)) {
 		return null;
 	}
@@ -78,23 +76,18 @@ export interface RankingPayload {
 	uid: string | null;
 }
 
-const buildRankingPayload = (
-	input: RankingPayloadInput,
-): RankingPayload => ({
+const buildRankingPayload = (input: RankingPayloadInput): RankingPayload => ({
 	name: input.playerName,
 	score: input.score,
 	time: input.totalTimeElapsed,
 	uid: input.uid,
 });
 
-const shouldUpdateBestScore = (
-	newScore: number,
-	bestScore: number,
-): boolean => newScore > bestScore;
+const shouldUpdateBestScore = (newScore: number, bestScore: number): boolean =>
+	newScore > bestScore;
 
-const shouldLookupRankingByUid = (
-	uid: string | null | undefined,
-): uid is string => typeof uid === "string" && uid.length > 0;
+const shouldLookupRankingByUid = (uid: string | null | undefined): uid is string =>
+	typeof uid === "string" && uid.length > 0;
 
 export interface ExistingRankingLookup {
 	existingDocRef: DocumentReference<DocumentData> | null;
@@ -151,10 +144,7 @@ export const lookupExistingRanking = async (
 		return { existingDocRef: null, existingRanking: null };
 	}
 
-	const nameQuery = deps.query(
-		rankingsRef,
-		deps.where("name", "==", playerName),
-	);
+	const nameQuery = deps.query(rankingsRef, deps.where("name", "==", playerName));
 	const nameDocs = await deps.getDocs(nameQuery);
 	if (!nameDocs.empty) {
 		return {

@@ -19,9 +19,7 @@ export class GameResultValidationError extends Error {
 	}
 }
 
-export const validateGameResultInput = (
-	input: GameResultInput,
-): void => {
+export const validateGameResultInput = (input: GameResultInput): void => {
 	if (!input.playerName || input.playerName.trim().length === 0) {
 		throw new GameResultValidationError("Invalid player name");
 	}
@@ -43,14 +41,9 @@ export const isExceptionalScore = (input: GameResultInput): boolean =>
 export const getResultExpirationDays = (input: GameResultInput): number =>
 	isExceptionalScore(input) ? 90 : 30;
 
-export const buildExpirationDate = (
-	input: GameResultInput,
-	now: Date = new Date(),
-): Date => {
+export const buildExpirationDate = (input: GameResultInput, now: Date = new Date()): Date => {
 	const expirationDate = new Date(now);
-	expirationDate.setDate(
-		expirationDate.getDate() + getResultExpirationDays(input),
-	);
+	expirationDate.setDate(expirationDate.getDate() + getResultExpirationDays(input));
 	return expirationDate;
 };
 

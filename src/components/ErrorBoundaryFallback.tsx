@@ -1,8 +1,5 @@
 import type { ErrorInfo } from "react";
-import {
-	getErrorBoundaryTitle,
-	shouldShowMobileNetworkHelp,
-} from "./errorBoundaryFallbackLogic";
+import { getErrorBoundaryTitle, shouldShowMobileNetworkHelp } from "./errorBoundaryFallbackLogic";
 
 interface ErrorBoundaryFallbackProps {
 	error: Error | undefined;
@@ -21,18 +18,13 @@ export const ErrorBoundaryFallback = ({
 	onRefresh,
 	userAgent,
 }: ErrorBoundaryFallbackProps): JSX.Element => {
-	const showMobileNetworkHelp = shouldShowMobileNetworkHelp(
-		userAgent,
-		error?.message,
-	);
+	const showMobileNetworkHelp = shouldShowMobileNetworkHelp(userAgent, error?.message);
 
 	return (
 		<div className="min-h-screen bg-gradient-to-br from-blue-100 to-blue-200 p-4 flex items-center justify-center">
 			<div className="bg-white rounded-lg shadow-lg p-6 max-w-md mx-auto text-center">
 				<div className="text-6xl mb-4">⚠️</div>
-				<h2 className="text-xl font-bold mb-4 text-gray-800">
-					{getErrorBoundaryTitle(userAgent)}
-				</h2>
+				<h2 className="text-xl font-bold mb-4 text-gray-800">{getErrorBoundaryTitle(userAgent)}</h2>
 
 				{showMobileNetworkHelp ? (
 					<div className="space-y-3 text-sm text-gray-600">

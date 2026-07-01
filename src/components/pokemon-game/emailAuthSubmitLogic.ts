@@ -19,10 +19,7 @@ export type EmailAuthSubmitResult =
 	| { status: "error"; errorKey: string };
 
 export interface EmailAuthSubmitDeps {
-	createUser: (
-		email: string,
-		password: string,
-	) => Promise<UserCredential>;
+	createUser: (email: string, password: string) => Promise<UserCredential>;
 	signIn: (email: string, password: string) => Promise<UserCredential>;
 	updateDisplayName: (user: UserCredential["user"], name: string) => Promise<void>;
 	persistPlayerName: (name: string) => void;
@@ -50,10 +47,7 @@ export const executeEmailAuthSubmit = async (
 
 	try {
 		if (input.isSignUp) {
-			const userCredential = await deps.createUser(
-				input.email,
-				input.password,
-			);
+			const userCredential = await deps.createUser(input.email, input.password);
 			await deps.updateDisplayName(userCredential.user, input.trainerName);
 			deps.persistPlayerName(input.trainerName);
 			deps.reloadPage();

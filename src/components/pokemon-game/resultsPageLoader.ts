@@ -32,14 +32,9 @@ export const computeRemainingPokemon = (
 	debugRemainingPokemon: number | null,
 	remainingPokemonLength: number,
 ): number => {
-	return debugRemainingPokemon !== null
-		? debugRemainingPokemon
-		: remainingPokemonLength;
+	return debugRemainingPokemon !== null ? debugRemainingPokemon : remainingPokemonLength;
 };
 
-export const computeTotalPokemonInGeneration = (
-	startId: number,
-	endId: number,
-): number => {
+export const computeTotalPokemonInGeneration = (startId: number, endId: number): number => {
 	return endId - startId + 1;
 };

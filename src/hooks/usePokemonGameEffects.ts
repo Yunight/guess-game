@@ -83,10 +83,7 @@ export const usePokemonGameEffects = ({
 		) {
 			gameSetters.setCurrentPokemonId(null);
 
-			gameSetters.setRemainingPokemon((prev) => [
-				...prev,
-				gameState.currentPokemonId ?? 0,
-			]);
+			gameSetters.setRemainingPokemon((prev) => [...prev, gameState.currentPokemonId ?? 0]);
 		}
 	}, [
 		currentPokemon,
@@ -111,12 +108,7 @@ export const usePokemonGameEffects = ({
 	const isRewardPokemonStateLoading = gameState.rewardPokemon.isLoading;
 
 	useEffect(() => {
-		if (
-			shouldResetRewardOnGameClose(
-				gameState.gameOver,
-				syncedRewardPokemonId !== undefined,
-			)
-		) {
+		if (shouldResetRewardOnGameClose(gameState.gameOver, syncedRewardPokemonId !== undefined)) {
 			resetSlotMachine();
 
 			setRewardPokemonId(null);
@@ -130,11 +122,7 @@ export const usePokemonGameEffects = ({
 		}
 
 		if (
-			shouldSyncRewardPokemon(
-				gameState.gameOver,
-				rewardPokemonData,
-				isSlotMachineRunning,
-			) &&
+			shouldSyncRewardPokemon(gameState.gameOver, rewardPokemonData, isSlotMachineRunning) &&
 			rewardPokemonData &&
 			!isRewardPokemonAlreadySynced(
 				syncedRewardPokemonId,

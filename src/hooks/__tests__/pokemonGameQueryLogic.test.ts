@@ -1,5 +1,5 @@
 import { skipToken } from "@reduxjs/toolkit/query";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it } from "vite-plus/test";
 import { GENERATIONS } from "@/components/pokemon-game/generations";
 import {
 	resolveCurrentPokemonQueryArg,
@@ -21,9 +21,7 @@ const baseGameState = {
 
 describe("resolvePokemonNamesQueryArg", () => {
 	it("returns skipToken when game is inactive", () => {
-		expect(
-			resolvePokemonNamesQueryArg({ ...baseGameState, isGameActive: false }),
-		).toBe(skipToken);
+		expect(resolvePokemonNamesQueryArg({ ...baseGameState, isGameActive: false })).toBe(skipToken);
 	});
 
 	it("returns generation range when game is active", () => {

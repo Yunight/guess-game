@@ -9,9 +9,7 @@ interface MultiplayerPageShellProps {
 	children: ReactNode;
 }
 
-export const MultiplayerPageShell = ({
-	children,
-}: MultiplayerPageShellProps): JSX.Element => {
+export const MultiplayerPageShell = ({ children }: MultiplayerPageShellProps): JSX.Element => {
 	const { t } = useTranslation();
 
 	return (
@@ -25,9 +23,7 @@ export const MultiplayerPageShell = ({
 				</Link>
 				<LanguageToggle />
 			</div>
-			<div className="flex items-center justify-center min-h-screen pt-16">
-				{children}
-			</div>
+			<div className="flex items-center justify-center min-h-screen pt-16">{children}</div>
 		</div>
 	);
 };

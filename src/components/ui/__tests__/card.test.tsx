@@ -1,13 +1,6 @@
 import { render, screen } from "@testing-library/react";
-import { describe, expect, test } from "vitest";
-import {
-	Card,
-	CardContent,
-	CardDescription,
-	CardFooter,
-	CardHeader,
-	CardTitle,
-} from "../card";
+import { describe, expect, test } from "vite-plus/test";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "../card";
 
 describe("Card", () => {
 	test("renders card with content", () => {

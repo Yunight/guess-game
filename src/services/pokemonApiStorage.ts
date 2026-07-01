@@ -65,9 +65,7 @@ export const isCachedData = (value: unknown): value is CachedData => {
 	);
 };
 
-export const isCachedFlavorText = (
-	value: unknown,
-): value is CachedFlavorText => {
+export const isCachedFlavorText = (value: unknown): value is CachedFlavorText => {
 	if (!isRecord(value)) {
 		return false;
 	}
@@ -82,7 +80,5 @@ export const isCachedCryUrl = (value: unknown): value is CachedCryUrl => {
 	if (!isRecord(value)) {
 		return false;
 	}
-	return (
-		typeof value.timestamp === "number" && typeof value.cryUrl === "string"
-	);
+	return typeof value.timestamp === "number" && typeof value.cryUrl === "string";
 };

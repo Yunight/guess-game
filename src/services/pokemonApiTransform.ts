@@ -16,16 +16,14 @@ export const extractFlavorTexts = (
 	const french =
 		frenchEntries.length > 0
 			? normalizeFlavorText(
-					frenchEntries[Math.floor(Math.random() * frenchEntries.length)]
-						.flavor_text,
+					frenchEntries[Math.floor(Math.random() * frenchEntries.length)].flavor_text,
 				)
 			: "";
 
 	const english =
 		englishEntries.length > 0
 			? normalizeFlavorText(
-					englishEntries[Math.floor(Math.random() * englishEntries.length)]
-						.flavor_text,
+					englishEntries[Math.floor(Math.random() * englishEntries.length)].flavor_text,
 				)
 			: "";
 
@@ -86,8 +84,7 @@ export const convertTyradexToPokemon = (
 		englishFlavorText: "",
 		sprites: {
 			front_default: tyradexPokemon.sprites.regular,
-			front_shiny:
-				tyradexPokemon.sprites.shiny || tyradexPokemon.sprites.regular,
+			front_shiny: tyradexPokemon.sprites.shiny || tyradexPokemon.sprites.regular,
 		},
 		isShiny,
 		evolvesFromSpecies: null,
@@ -101,9 +98,7 @@ export const convertTyradexToPokemon = (
 export const formatCryUrl = (cries: { latest: string; legacy: string }): string =>
 	`${cries.latest}|${cries.legacy}`;
 
-export const toApiError = (
-	error: unknown,
-): { status: number; data: unknown } => {
+export const toApiError = (error: unknown): { status: number; data: unknown } => {
 	if (error instanceof Error) {
 		return { status: 500, data: error.message };
 	}

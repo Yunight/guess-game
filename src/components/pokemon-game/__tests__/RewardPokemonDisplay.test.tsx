@@ -1,12 +1,10 @@
-import { describe, expect, it, vi } from "vitest";
+import { describe, expect, it, vi } from "vite-plus/test";
 import { render } from "../../../test/test-utils";
 import { RewardPokemonDisplay } from "../RewardPokemonDisplay";
 import type { Pokemon } from "../types";
 
 vi.mock("../PokemonDisplayFrame", () => ({
-	PokemonDisplayFrame: ({ children }: { children: React.ReactNode }) => (
-		<div>{children}</div>
-	),
+	PokemonDisplayFrame: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
 }));
 
 vi.mock("../RewardPokemonSprite", () => ({

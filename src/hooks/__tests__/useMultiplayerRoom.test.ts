@@ -1,5 +1,5 @@
 import { renderHook, waitFor } from "@testing-library/react";
-import { describe, expect, it, vi } from "vitest";
+import { describe, expect, it, vi } from "vite-plus/test";
 import { useMultiplayerRoom } from "@/hooks/useMultiplayerRoom";
 import type { MultiplayerRoom } from "@/services/multiplayerRoomTypes";
 import type { RoomSnapshotResult } from "@/services/multiplayerRoomService";
@@ -25,10 +25,7 @@ vi.mock("@/services/multiplayerRoomService", () => ({
 	createRoom: vi.fn(),
 	joinRoom: vi.fn(),
 	subscribeToRoom: vi.fn(
-		(
-			_roomId: string,
-			onSnapshotResult: (result: RoomSnapshotResult) => void,
-		) => {
+		(_roomId: string, onSnapshotResult: (result: RoomSnapshotResult) => void) => {
 			snapshotHandler = onSnapshotResult;
 			return vi.fn();
 		},
@@ -37,9 +34,7 @@ vi.mock("@/services/multiplayerRoomService", () => ({
 
 describe("useMultiplayerRoom", () => {
 	it("clears error when room loads after transient not_found snapshot", async () => {
-		const { result } = renderHook(() =>
-			useMultiplayerRoom({ roomId: "abc123" }),
-		);
+		const { result } = renderHook(() => useMultiplayerRoom({ roomId: "abc123" }));
 
 		expect(snapshotHandler).toBeDefined();
 		snapshotHandler?.({ type: "not_found" });

@@ -1,6 +1,6 @@
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { describe, expect, test, vi } from "vitest";
+import { describe, expect, test, vi } from "vite-plus/test";
 import { GuessInput } from "../GuessInput";
 import { createRef } from "react";
 
@@ -32,9 +32,7 @@ describe("GuessInput", () => {
 
 	test("handles guess input", async () => {
 		const handleGuessChange = vi.fn();
-		render(
-			<GuessInput {...defaultProps} handleGuessChange={handleGuessChange} />,
-		);
+		render(<GuessInput {...defaultProps} handleGuessChange={handleGuessChange} />);
 
 		const input = screen.getByRole("textbox");
 		await userEvent.type(input, "pikachu");

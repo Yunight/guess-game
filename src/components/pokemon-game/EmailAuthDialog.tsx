@@ -48,9 +48,7 @@ export const EmailAuthDialog: FC<EmailAuthDialogProps> = ({
 		}
 	};
 
-	const handleTrainerNameChange = async (
-		e: React.ChangeEvent<HTMLInputElement>,
-	): Promise<void> => {
+	const handleTrainerNameChange = async (e: React.ChangeEvent<HTMLInputElement>): Promise<void> => {
 		const newName = e.target.value;
 		setTrainerName(newName);
 
@@ -110,10 +108,8 @@ export const EmailAuthDialog: FC<EmailAuthDialogProps> = ({
 					createUserWithEmailAndPassword(auth, authEmail, authPassword),
 				signIn: (authEmail, authPassword) =>
 					signInWithEmailAndPassword(auth, authEmail, authPassword),
-				updateDisplayName: (user, name) =>
-					updateProfile(user, { displayName: name }),
-				persistPlayerName: (name) =>
-					localStorage.setItem("pokemonGamePlayerName", name),
+				updateDisplayName: (user, name) => updateProfile(user, { displayName: name }),
+				persistPlayerName: (name) => localStorage.setItem("pokemonGamePlayerName", name),
 				reloadPage: () => {
 					window.location.reload();
 				},

@@ -1,5 +1,5 @@
 import { Crown, Gem, Star, Trophy, Zap } from "lucide-react";
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vite-plus/test";
 import { getPrestigeTheme } from "../resultsPageThemes";
 
 const t = (key: string): string => key;
@@ -76,9 +76,7 @@ describe("getPrestigeTheme", () => {
 	it("returns purple theme at 30% remaining", () => {
 		vi.spyOn(Math, "random").mockReturnValue(0);
 		const theme = getPrestigeTheme(45, TOTAL_POKEMON, t);
-		expect(theme.bgGradient).toBe(
-			"from-purple-600 via-violet-600 to-indigo-600",
-		);
+		expect(theme.bgGradient).toBe("from-purple-600 via-violet-600 to-indigo-600");
 		expect(theme.icon).toBe(Star);
 	});
 
@@ -105,26 +103,20 @@ describe("getPrestigeTheme", () => {
 	it("returns emerald theme at 50% remaining", () => {
 		vi.spyOn(Math, "random").mockReturnValue(0);
 		const theme = getPrestigeTheme(75, TOTAL_POKEMON, t);
-		expect(theme.bgGradient).toBe(
-			"from-emerald-600 via-green-600 to-teal-600",
-		);
+		expect(theme.bgGradient).toBe("from-emerald-600 via-green-600 to-teal-600");
 	});
 
 	it("returns orange theme at 60% remaining", () => {
 		vi.spyOn(Math, "random").mockReturnValue(0);
 		const theme = getPrestigeTheme(90, TOTAL_POKEMON, t);
-		expect(theme.bgGradient).toBe(
-			"from-orange-600 via-amber-600 to-yellow-600",
-		);
+		expect(theme.bgGradient).toBe("from-orange-600 via-amber-600 to-yellow-600");
 		expect(theme.icon).toBe(Star);
 	});
 
 	it("returns lime theme at 65% remaining", () => {
 		vi.spyOn(Math, "random").mockReturnValue(0);
 		const theme = getPrestigeTheme(98, TOTAL_POKEMON, t);
-		expect(theme.bgGradient).toBe(
-			"from-lime-600 via-green-600 to-emerald-600",
-		);
+		expect(theme.bgGradient).toBe("from-lime-600 via-green-600 to-emerald-600");
 		expect(theme.icon).toBe(Gem);
 	});
 
@@ -138,9 +130,7 @@ describe("getPrestigeTheme", () => {
 	it("returns violet theme at 75% remaining", () => {
 		vi.spyOn(Math, "random").mockReturnValue(0);
 		const theme = getPrestigeTheme(113, TOTAL_POKEMON, t);
-		expect(theme.bgGradient).toBe(
-			"from-violet-600 via-purple-600 to-fuchsia-600",
-		);
+		expect(theme.bgGradient).toBe("from-violet-600 via-purple-600 to-fuchsia-600");
 	});
 
 	it("returns rose theme at 80% remaining", () => {

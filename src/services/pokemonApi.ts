@@ -8,15 +8,9 @@ import {
 	TYRADEX_BASE_URL,
 	TYRADEX_CACHE_KEY,
 } from "./pokemonApiFetch";
-import {
-	filterPokemonByGeneration,
-	type PokemonNamesQueryArg,
-} from "./pokemonGeneration";
+import { filterPokemonByGeneration, type PokemonNamesQueryArg } from "./pokemonGeneration";
 import { getFromStorage, isCachedData } from "./pokemonApiStorage";
-import {
-	parseTyradexPokemon,
-	type TyradexPokemon,
-} from "./pokemonApiValidators";
+import { parseTyradexPokemon, type TyradexPokemon } from "./pokemonApiValidators";
 
 const CACHE_DURATION = 24 * 60 * 60 * 1000;
 
@@ -61,9 +55,7 @@ export const pokemonApi = createApi({
 					const tyradexData = await fetchTyradexPokemonList();
 
 					const generationPokemon = filterPokemonByGeneration(
-						tyradexData.map((pokemon) =>
-							convertToPokemon(pokemon, maxHypeChain),
-						),
+						tyradexData.map((pokemon) => convertToPokemon(pokemon, maxHypeChain)),
 						arg.startId,
 						arg.endId,
 					);
@@ -83,45 +75,31 @@ export const pokemonApi = createApi({
 			providesTags: ["PokemonList"],
 		}),
 
-		getPokemonById: builder.query<
-			Pokemon,
-			{ id: number; maxHypeChain?: number }
-		>({
+		getPokemonById: builder.query<Pokemon, { id: number; maxHypeChain?: number }>({
 			async queryFn(arg) {
 				try {
 					const { id: pokemonId, maxHypeChain = 0 } = arg;
 					let tyradexPokemon: TyradexPokemon | undefined;
 
 					const cachedData = getFromStorage(TYRADEX_CACHE_KEY);
-					if (
-						isCachedData(cachedData) &&
-						Date.now() - cachedData.timestamp < CACHE_DURATION
-					) {
-						const pokemon = cachedData.tyradexData.find(
-							(p) => p.pokedex_id === pokemonId,
-						);
+					if (isCachedData(cachedData) && Date.now() - cachedData.timestamp < CACHE_DURATION) {
+						const pokemon = cachedData.tyradexData.find((p) => p.pokedex_id === pokemonId);
 						if (pokemon) {
 							tyradexPokemon = pokemon;
 						}
 					}
 
 					if (!tyradexPokemon) {
-						const response = await fetch(
-							`${TYRADEX_BASE_URL}/pokemon/${pokemonId}`,
-							{
-								signal: AbortSignal.timeout(10000),
-							},
-						);
+						const response = await fetch(`${TYRADEX_BASE_URL}/pokemon/${pokemonId}`, {
+							signal: AbortSignal.timeout(10000),
+						});
 						if (!response.ok) {
 							throw new Error("Failed to fetch from Tyradex API");
 						}
 						tyradexPokemon = parseTyradexPokemon(await response.json());
 					}
 
-					const convertedPokemon = convertToPokemon(
-						tyradexPokemon,
-						maxHypeChain,
-					);
+					const convertedPokemon = convertToPokemon(tyradexPokemon, maxHypeChain);
 
 					const [cryUrl, flavorTexts] = await Promise.allSettled([
 						Promise.race([
@@ -133,19 +111,14 @@ export const pokemonApi = createApi({
 						Promise.race([
 							getFlavorText(pokemonId),
 							new Promise<{ french: string; english: string }>((_, reject) =>
-								setTimeout(
-									() => reject(new Error("Flavor text timeout")),
-									5000,
-								),
+								setTimeout(() => reject(new Error("Flavor text timeout")), 5000),
 							),
 						]),
 					]);
 
 					const finalCryUrl = cryUrl.status === "fulfilled" ? cryUrl.value : "";
 					const finalFlavorTexts =
-						flavorTexts.status === "fulfilled"
-							? flavorTexts.value
-							: { french: "", english: "" };
+						flavorTexts.status === "fulfilled" ? flavorTexts.value : { french: "", english: "" };
 
 					return {
 						data: {
@@ -166,5 +139,4 @@ export const pokemonApi = createApi({
 	}),
 });
 
-export const { useGetAllPokemonNamesQuery, useGetPokemonByIdQuery } =
-	pokemonApi;
+export const { useGetAllPokemonNamesQuery, useGetPokemonByIdQuery } = pokemonApi;

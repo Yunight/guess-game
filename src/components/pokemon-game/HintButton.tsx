@@ -25,14 +25,10 @@ export const HintButton: FC<HintButtonProps> = ({
 		if (!currentPokemon) return "";
 
 		const rawHintText =
-			i18n.language === "fr"
-				? currentPokemon.frenchFlavorText
-				: currentPokemon.englishFlavorText;
+			i18n.language === "fr" ? currentPokemon.frenchFlavorText : currentPokemon.englishFlavorText;
 
 		const pokemonName =
-			i18n.language === "fr"
-				? currentPokemon.frenchName
-				: currentPokemon.englishName;
+			i18n.language === "fr" ? currentPokemon.frenchName : currentPokemon.englishName;
 
 		// Create a case-insensitive regular expression to match the Pokemon name
 		const nameRegex = new RegExp(pokemonName, "gi");
@@ -44,10 +40,7 @@ export const HintButton: FC<HintButtonProps> = ({
 		if (!currentPokemon) return "";
 
 		// Use englishName for English, frenchName for French
-		const name =
-			i18n.language === "fr"
-				? currentPokemon.frenchName
-				: currentPokemon.englishName;
+		const name = i18n.language === "fr" ? currentPokemon.frenchName : currentPokemon.englishName;
 		return name.charAt(0);
 	};
 
@@ -68,8 +61,7 @@ export const HintButton: FC<HintButtonProps> = ({
 						<div className="w-1.5 h-1.5 rounded-full bg-yellow-300 animate-pulse" />
 						<div className="w-1.5 h-1.5 rounded-full bg-yellow-300 animate-pulse delay-75" />
 					</div>
-					{t("hint")} (
-					{hintsLeft === Number.POSITIVE_INFINITY ? "∞" : hintsLeft})
+					{t("hint")} ({hintsLeft === Number.POSITIVE_INFINITY ? "∞" : hintsLeft})
 					<div className="absolute right-3 top-1/2 -translate-y-1/2 flex gap-1.5">
 						<div className="w-1.5 h-1.5 rounded-full bg-yellow-300 animate-pulse" />
 						<div className="w-1.5 h-1.5 rounded-full bg-yellow-300 animate-pulse delay-75" />
@@ -92,9 +84,7 @@ export const HintButton: FC<HintButtonProps> = ({
 									<div className="text-base font-bold">
 										{t("firstLetter")} : {getFirstLetter()}
 									</div>
-									<p className="text-center px-4 text-sm">
-										{getFilteredHintText()}
-									</p>
+									<p className="text-center px-4 text-sm">{getFilteredHintText()}</p>
 								</div>
 							</div>
 						)}

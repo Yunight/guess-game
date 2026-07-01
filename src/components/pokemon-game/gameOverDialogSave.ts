@@ -1,7 +1,4 @@
-import {
-	type GameResult,
-	gameResultsService,
-} from "../../services/gameResultsService";
+import { type GameResult, gameResultsService } from "../../services/gameResultsService";
 import type { Pokemon } from "./types";
 
 export interface RewardPokemonState {
@@ -42,19 +39,14 @@ export const shouldInitializeGameSessionId = (
 	shareableUrl: string | null,
 	isSavingResult: boolean,
 ): boolean => {
-	return (
-		gameOver && !gameSessionId && !shareableUrl && !isSavingResult
-	);
+	return gameOver && !gameSessionId && !shareableUrl && !isSavingResult;
 };
 
 export const shouldResetGameOverSaveState = (gameOver: boolean): boolean => {
 	return !gameOver;
 };
 
-export const shouldUpdateFinalTime = (
-	gameOver: boolean,
-	totalTimeElapsed: number,
-): boolean => {
+export const shouldUpdateFinalTime = (gameOver: boolean, totalTimeElapsed: number): boolean => {
 	return gameOver && totalTimeElapsed > 0;
 };
 
@@ -62,17 +54,11 @@ export const createGameSessionId = (): string => {
 	return `game_${Date.now()}_${Math.random().toString(36).slice(2, 11)}`;
 };
 
-const resolveSaveTime = (
-	finalTime: number,
-	totalTimeElapsed: number,
-): number => {
+const resolveSaveTime = (finalTime: number, totalTimeElapsed: number): number => {
 	return finalTime > 0 ? finalTime : totalTimeElapsed;
 };
 
-const hasTimingData = (
-	finalTime: number,
-	totalTimeElapsed: number,
-): boolean => {
+const hasTimingData = (finalTime: number, totalTimeElapsed: number): boolean => {
 	return finalTime > 0 || totalTimeElapsed > 0;
 };
 
@@ -105,11 +91,7 @@ export const shouldAbortSaveAfterDelay = (
 	rewardPokemon: RewardPokemonState,
 	isSlotMachineRunning: boolean,
 ): boolean => {
-	return (
-		!rewardPokemon.pokemon ||
-		rewardPokemon.isLoading ||
-		isSlotMachineRunning
-	);
+	return !rewardPokemon.pokemon || rewardPokemon.isLoading || isSlotMachineRunning;
 };
 
 const buildGameResultPayload = (
@@ -147,9 +129,7 @@ const buildGameResultPayload = (
 	};
 };
 
-export const persistGameResult = async (
-	params: GameResultPayloadParams,
-): Promise<string> => {
+export const persistGameResult = async (params: GameResultPayloadParams): Promise<string> => {
 	const resultData = buildGameResultPayload(params);
 	const resultId = await gameResultsService.saveGameResult(resultData);
 	return gameResultsService.generateShareableUrl(resultId);
@@ -178,9 +158,7 @@ export interface RunGameResultSaveParams {
 	setShareableUrl: (url: string) => void;
 }
 
-export const runGameResultSave = async (
-	params: RunGameResultSaveParams,
-): Promise<void> => {
+export const runGameResultSave = async (params: RunGameResultSaveParams): Promise<void> => {
 	if (!shouldProceedWithGameSave(params.saveContext)) {
 		return;
 	}
@@ -189,12 +167,7 @@ export const runGameResultSave = async (
 		setTimeout(resolve, SAVE_SETTLE_DELAY_MS);
 	});
 
-	if (
-		shouldAbortSaveAfterDelay(
-			params.rewardPokemon,
-			params.isSlotMachineRunning,
-		)
-	) {
+	if (shouldAbortSaveAfterDelay(params.rewardPokemon, params.isSlotMachineRunning)) {
 		return;
 	}
 

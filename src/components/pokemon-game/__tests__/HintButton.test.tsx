@@ -1,6 +1,6 @@
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { describe, expect, test, vi, beforeEach } from "vitest";
+import { describe, expect, test, vi, beforeEach } from "vite-plus/test";
 import { HintButton } from "../HintButton";
 import { Pokemon } from "../types";
 

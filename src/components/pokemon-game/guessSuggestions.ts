@@ -48,9 +48,7 @@ export const buildGuessSuggestions = ({
 				normalizeName,
 			}),
 		)
-		.map((pokemon) =>
-			language === "fr" ? pokemon.frenchName : pokemon.englishName,
-		)
+		.map((pokemon) => (language === "fr" ? pokemon.frenchName : pokemon.englishName))
 		.filter((name): name is string => Boolean(name))
 		.slice(0, 5);
 };

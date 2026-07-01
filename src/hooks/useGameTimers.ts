@@ -101,16 +101,12 @@ export const useGameTimers = (
 			});
 
 			if (!shouldStartGuessTimer(isGameActive, isHardMode)) {
-				console.log(
-					"[useGameTimers] Not starting guess timer - game inactive or not hard mode",
-				);
+				console.log("[useGameTimers] Not starting guess timer - game inactive or not hard mode");
 				return;
 			}
 
 			if (guessTimerRef.current) {
-				console.log(
-					"[useGameTimers] Clearing existing guess timer before starting new one",
-				);
+				console.log("[useGameTimers] Clearing existing guess timer before starting new one");
 				clearGuessTimer();
 			}
 
@@ -127,9 +123,7 @@ export const useGameTimers = (
 				console.log("[useGameTimers] Guess time updated:", timeLeft);
 
 				if (tickResult.isExpired) {
-					console.log(
-						"[useGameTimers] Guess time reached zero, clearing timer",
-					);
+					console.log("[useGameTimers] Guess time reached zero, clearing timer");
 					clearGuessTimer();
 					setGuessTimeLeft(0);
 					callbacks.onGuessTimeEnd?.();
@@ -146,9 +140,7 @@ export const useGameTimers = (
 	);
 
 	const startTotalTimer = useCallback(
-		(
-			setTotalTimeElapsed: (time: number | ((prev: number) => number)) => void,
-		) => {
+		(setTotalTimeElapsed: (time: number | ((prev: number) => number)) => void) => {
 			console.log("[useGameTimers] Attempting to start total timer", {
 				isGameActive,
 				existingTimer: totalTimerRef.current,
@@ -161,9 +153,7 @@ export const useGameTimers = (
 			}
 
 			if (totalTimerRef.current) {
-				console.log(
-					"[useGameTimers] Clearing existing total timer before starting new one",
-				);
+				console.log("[useGameTimers] Clearing existing total timer before starting new one");
 				clearTotalTimer();
 			}
 

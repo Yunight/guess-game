@@ -10,10 +10,7 @@ export const GameScreenHypeOverlay = ({
 	}
 
 	return (
-		<div
-			className="absolute inset-0 z-0 overflow-hidden"
-			data-testid="fire-effects"
-		>
+		<div className="absolute inset-0 z-0 overflow-hidden" data-testid="fire-effects">
 			<div className="absolute inset-0 bg-gradient-to-t from-red-900/90 via-red-800/80 to-red-900/90 opacity-80" />
 			<div className="absolute inset-0 backdrop-blur-[1px] animate-heat-distort" />
 			<div className="absolute inset-x-0 bottom-0 h-full">

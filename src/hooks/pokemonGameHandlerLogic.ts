@@ -2,10 +2,7 @@ import {
 	resolvePoolAfterCorrectAnswer,
 	type CorrectAnswerPoolResult,
 } from "@/components/pokemon-game/gamePool";
-import {
-	calculateEarnedPoints,
-	type ScoringResult,
-} from "@/components/pokemon-game/gameScoring";
+import { calculateEarnedPoints, type ScoringResult } from "@/components/pokemon-game/gameScoring";
 import type { Generation } from "@/components/pokemon-game/generations";
 import { buildGenerationPokemonIds } from "@/components/pokemon-game/generationPool";
 
@@ -175,8 +172,7 @@ export const resolveCorrectAnswerHypeEffect = (
 	return { type: "none" };
 };
 
-export const shouldAwardHintOnCorrectAnswer = (score: number): boolean =>
-	(score + 1) % 5 === 0;
+export const shouldAwardHintOnCorrectAnswer = (score: number): boolean => (score + 1) % 5 === 0;
 
 export interface CorrectAnswerScoringInput {
 	isHardMode: boolean;
@@ -299,9 +295,7 @@ export const applyHypeEffectToSetters = (
 		setters.setConsecutiveFastAnswers(effect.newCount);
 		if (effect.shouldShowHypeTrain) {
 			setters.setShowHypeTrain(true);
-			setters.setMaxHypeChain((prevMax) =>
-				Math.max(prevMax, effect.newCount),
-			);
+			setters.setMaxHypeChain((prevMax) => Math.max(prevMax, effect.newCount));
 		}
 		return;
 	}
@@ -389,10 +383,7 @@ export interface StartGameGenerationSetters {
 	setGuess: (value: string) => void;
 	setSuggestions: (value: string[]) => void;
 	setShowHint: (value: boolean) => void;
-	setRewardPokemon: (value: {
-		pokemon: undefined;
-		isLoading: boolean;
-	}) => void;
+	setRewardPokemon: (value: { pokemon: undefined; isLoading: boolean }) => void;
 	setRemainingPokemon: (value: number[]) => void;
 	setIsGameActive: (value: boolean) => void;
 	setIsRestarting: (value: boolean) => void;
@@ -440,10 +431,7 @@ export interface StartGameSessionDeps {
 	checkNameAvailability: (name: string) => Promise<boolean>;
 	stopAllTimers: () => void;
 	cleanupAllAudio: () => void;
-	applyStartState: (
-		isHardMode: boolean,
-		generation: Generation,
-	) => readonly number[];
+	applyStartState: (isHardMode: boolean, generation: Generation) => readonly number[];
 	startTotalTimer: (setter: (value: number) => void) => void;
 	startGuessTimer: (setter: (value: number) => void) => void;
 	focusInput: () => void;
@@ -495,10 +483,7 @@ export const executeStartGameSession = async (
 		deps.stopAllTimers();
 		deps.cleanupAllAudio();
 
-		const allPokemonIds = deps.applyStartState(
-			input.isHardMode,
-			input.selectedGeneration,
-		);
+		const allPokemonIds = deps.applyStartState(input.isHardMode, input.selectedGeneration);
 
 		setters.setRemainingPokemon([...allPokemonIds]);
 		await deps.delay(100);
@@ -509,8 +494,7 @@ export const executeStartGameSession = async (
 			deps.startGuessTimer(setters.setGuessTimeLeft);
 		}
 
-		const { firstPokemonId, remainingPokemon } =
-			pickFirstPokemonFromPool(allPokemonIds);
+		const { firstPokemonId, remainingPokemon } = pickFirstPokemonFromPool(allPokemonIds);
 
 		if (firstPokemonId === null) {
 			return;
@@ -572,9 +556,7 @@ export interface CorrectAnswerFlowInput {
 	isShiny: boolean;
 }
 
-export interface CorrectAnswerFlowSetters
-	extends HypeEffectSetters,
-		ScoringVisualSetters {
+export interface CorrectAnswerFlowSetters extends HypeEffectSetters, ScoringVisualSetters {
 	setIsCorrect: (value: boolean | null) => void;
 	setRemainingPokemon: (value: number[]) => void;
 	setHintsLeft: (value: number | ((prev: number) => number)) => void;
@@ -684,10 +666,5 @@ export const executeSuggestionSubmission = async (
 	await deps.playWrongSound();
 };
 
-const buildGenerationPokemonPool = (
-	selectedGeneration: Generation,
-): readonly number[] =>
-	buildGenerationPokemonIds(
-		selectedGeneration.startId,
-		selectedGeneration.endId,
-	);
+const buildGenerationPokemonPool = (selectedGeneration: Generation): readonly number[] =>
+	buildGenerationPokemonIds(selectedGeneration.startId, selectedGeneration.endId);

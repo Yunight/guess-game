@@ -1,5 +1,5 @@
 import { Timestamp } from "firebase/firestore";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it } from "vite-plus/test";
 import {
 	calculateRankFromEntries,
 	convertStoredNameToDisplay,
@@ -126,9 +126,7 @@ describe("mapRankingDocuments", () => {
 					name: "Misty",
 					score: 80,
 					time: 100,
-					timestamp: Timestamp.fromDate(
-						new Date("2026-06-30T09:00:00.000Z"),
-					),
+					timestamp: Timestamp.fromDate(new Date("2026-06-30T09:00:00.000Z")),
 					uid: 123,
 				}),
 			},

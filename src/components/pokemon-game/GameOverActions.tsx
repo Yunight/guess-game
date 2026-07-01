@@ -35,9 +35,7 @@ export const GameOverActions = ({
 		<>
 			{shareableUrl && (
 				<div className="mt-4 p-3 bg-white/5 rounded-lg border border-white/10 relative">
-					<div className="text-sm text-yellow-300 font-medium mb-2">
-						🔗 {t("shareableLink")}
-					</div>
+					<div className="text-sm text-yellow-300 font-medium mb-2">🔗 {t("shareableLink")}</div>
 					<div className="flex items-center gap-2">
 						<button
 							type="button"
@@ -68,9 +66,7 @@ export const GameOverActions = ({
 				</div>
 			)}
 
-			<div
-				className={`grid grid-cols-3 gap-3 ${getActionsGridMarginClassName(shareableUrl)}`}
-			>
+			<div className={`grid grid-cols-3 gap-3 ${getActionsGridMarginClassName(shareableUrl)}`}>
 				<Button
 					onClick={onRestart}
 					className={`${getReplayButtonClassName(isComplete)} text-gray-900 border-none shadow-lg hover:shadow-xl transition-all duration-300 font-bold`}

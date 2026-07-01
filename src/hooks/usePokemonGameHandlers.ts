@@ -42,10 +42,7 @@ export interface UsePokemonGameHandlersParams {
 	startTotalTimer: (setter: (value: number) => void) => void;
 	stopAllTimers: () => void;
 	saveRanking: (score: number, time: number) => Promise<void>;
-	runSlotMachineEffect: (
-		finalId: number,
-		setRewardPokemonId: (id: number) => void,
-	) => void;
+	runSlotMachineEffect: (finalId: number, setRewardPokemonId: (id: number) => void) => void;
 	resetSlotMachine: () => void;
 	setRewardPokemonId: (id: number | null) => void;
 }
@@ -119,9 +116,7 @@ export const usePokemonGameHandlers = ({
 			});
 
 			const finalRewardPokemonId = pickRandomPokemonId(
-				buildGenerationPokemonIds(minId, maxId).filter(
-					(id) => id !== gameState.currentPokemonId,
-				),
+				buildGenerationPokemonIds(minId, maxId).filter((id) => id !== gameState.currentPokemonId),
 			);
 
 			if (finalRewardPokemonId === null) {
@@ -211,16 +206,11 @@ export const usePokemonGameHandlers = ({
 				convertToStoredFormat,
 			);
 
-			await executeSuggestionSubmission(
-				submission,
-				suggestion,
-				gameSetters,
-				{
-					delay: (ms) => new Promise((resolve) => setTimeout(resolve, ms)),
-					handleCorrectAnswer,
-					playWrongSound,
-				},
-			);
+			await executeSuggestionSubmission(submission, suggestion, gameSetters, {
+				delay: (ms) => new Promise((resolve) => setTimeout(resolve, ms)),
+				handleCorrectAnswer,
+				playWrongSound,
+			});
 		},
 		[
 			gameState.guessTimeLeft,
@@ -297,11 +287,7 @@ export const usePokemonGameHandlers = ({
 			if (action.type === "navigate") {
 				e.preventDefault();
 				gameSetters.setHighlightedIndex((prevIndex) =>
-					resolveHighlightedIndex(
-						action.direction,
-						prevIndex,
-						gameState.suggestions.length,
-					),
+					resolveHighlightedIndex(action.direction, prevIndex, gameState.suggestions.length),
 				);
 			}
 		},
@@ -394,11 +380,7 @@ export const usePokemonGameHandlers = ({
 					stopAllTimers,
 					cleanupAllAudio,
 					applyStartState: (isHardMode, generation) =>
-						applyStartGameStateToSetters(
-							isHardMode,
-							generation,
-							gameSetters,
-						),
+						applyStartGameStateToSetters(isHardMode, generation, gameSetters),
 					startTotalTimer,
 					startGuessTimer,
 					focusInput: () => inputRef.current?.focus(),

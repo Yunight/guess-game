@@ -33,9 +33,7 @@ export const shouldResetToLoading = (
 	currentPokemonId: number | null,
 	displayedPokemonId: number | undefined,
 ): boolean => {
-	return (
-		newPokemonId !== currentPokemonId && newPokemonId !== displayedPokemonId
-	);
+	return newPokemonId !== currentPokemonId && newPokemonId !== displayedPokemonId;
 };
 
 export const computeNextDisplayState = (
@@ -86,25 +84,11 @@ export const computePokemonDisplayTransition = (
 	}
 
 	if (input.currentPokemon && !input.isPokemonLoading) {
-		if (
-			shouldUpdateRevealedPokemon(
-				displayState,
-				input.currentPokemon.id,
-				displayedPokemon?.id,
-			)
-		) {
+		if (shouldUpdateRevealedPokemon(displayState, input.currentPokemon.id, displayedPokemon?.id)) {
 			displayedPokemon = input.currentPokemon;
 		} else {
-			const nextState = computeNextDisplayState(
-				input.isCorrect,
-				input.guessTimeLeft,
-			);
-			if (
-				shouldResetSoundOnPokemonChange(
-					input.currentPokemon.id,
-					displayedPokemon?.id,
-				)
-			) {
+			const nextState = computeNextDisplayState(input.isCorrect, input.guessTimeLeft);
+			if (shouldResetSoundOnPokemonChange(input.currentPokemon.id, displayedPokemon?.id)) {
 				shouldResetSoundPlayed = true;
 			}
 			displayState = nextState;
@@ -121,10 +105,7 @@ export const computePokemonDisplayTransition = (
 	};
 };
 
-export const getLocalizedPokemonName = (
-	pokemon: Pokemon,
-	language: string,
-): string => {
+export const getLocalizedPokemonName = (pokemon: Pokemon, language: string): string => {
 	return language === "fr" ? pokemon.frenchName : pokemon.englishName;
 };
 

@@ -1,7 +1,5 @@
-export const removePokemonFromPool = (
-	pool: readonly number[],
-	pokemonId: number,
-): number[] => pool.filter((id) => id !== pokemonId);
+export const removePokemonFromPool = (pool: readonly number[], pokemonId: number): number[] =>
+	pool.filter((id) => id !== pokemonId);
 
 export const pickRandomFromPool = (
 	pool: readonly number[],

@@ -32,10 +32,7 @@ export const RewardPokemonDisplay: FC<RewardPokemonDisplayProps> = ({
 	spinningPokemon,
 }) => {
 	const { i18n } = useTranslation();
-	const previousPokemonRef = useRewardPokemonTransition(
-		pokemon,
-		isSlotMachineRunning,
-	);
+	const previousPokemonRef = useRewardPokemonTransition(pokemon, isSlotMachineRunning);
 
 	if (!shouldShowRewardDisplay(pokemon, isLoading, spinningPokemon)) {
 		return null;
@@ -47,10 +44,7 @@ export const RewardPokemonDisplay: FC<RewardPokemonDisplayProps> = ({
 		pokemon,
 	);
 
-	if (
-		currentPokemon &&
-		!isPokemonInGeneration(currentPokemon, selectedGeneration)
-	) {
+	if (currentPokemon && !isPokemonInGeneration(currentPokemon, selectedGeneration)) {
 		console.error("Pokemon not from selected generation:", {
 			pokemonId: currentPokemon.id,
 			generation: selectedGeneration,
@@ -77,9 +71,7 @@ export const RewardPokemonDisplay: FC<RewardPokemonDisplayProps> = ({
 						previousPokemon={previousPokemonRef.current}
 					/>
 				</div>
-				{showLabels && (
-					<RewardPokemonLabels pokemon={pokemon} language={i18n.language} />
-				)}
+				{showLabels && <RewardPokemonLabels pokemon={pokemon} language={i18n.language} />}
 			</div>
 		</PokemonDisplayFrame>
 	);

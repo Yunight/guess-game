@@ -1,19 +1,9 @@
 import type { Pokemon } from "@/components/pokemon-game/types";
-import {
-	advanceRound,
-	resolveTimeout,
-	syncRoundDuration,
-} from "@/services/multiplayerRoomService";
+import { advanceRound, resolveTimeout, syncRoundDuration } from "@/services/multiplayerRoomService";
 import type { MultiplayerGameState, MultiplayerRoom } from "@/services/multiplayerRoomTypes";
 import { useEffect } from "react";
-import {
-	computeGuessTimeLeft,
-	shouldScheduleAdvanceRound,
-} from "./multiplayerGameHandlerLogic";
-import type {
-	MultiplayerGameCoreRefs,
-	MultiplayerGameCoreSetters,
-} from "./useMultiplayerGameCore";
+import { computeGuessTimeLeft, shouldScheduleAdvanceRound } from "./multiplayerGameHandlerLogic";
+import type { MultiplayerGameCoreRefs, MultiplayerGameCoreSetters } from "./useMultiplayerGameCore";
 
 const ROUND_TRANSITION_MS = 1000;
 
@@ -74,9 +64,7 @@ export const useMultiplayerGameEffects = ({
 		}
 		const interval = setInterval(() => {
 			if (gameStartTimeRef.current !== null) {
-				setTotalTimeElapsed(
-					Math.floor((Date.now() - gameStartTimeRef.current) / 1000),
-				);
+				setTotalTimeElapsed(Math.floor((Date.now() - gameStartTimeRef.current) / 1000));
 			}
 		}, 1000);
 		return () => clearInterval(interval);
@@ -99,15 +87,7 @@ export const useMultiplayerGameEffects = ({
 		tick();
 		const interval = setInterval(tick, 200);
 		return () => clearInterval(interval);
-	}, [
-		gameState,
-		room.status,
-		room.id,
-		isHost,
-		localPlayerId,
-		isShiny,
-		setGuessTimeLeft,
-	]);
+	}, [gameState, room.status, room.id, isHost, localPlayerId, isShiny, setGuessTimeLeft]);
 
 	useEffect(() => {
 		if (!gameState?.scores) {
@@ -115,9 +95,7 @@ export const useMultiplayerGameEffects = ({
 		}
 		setOptimisticScores((previous) => {
 			const next: Record<string, number> = { ...previous };
-			for (const [playerId, firestoreScore] of Object.entries(
-				gameState.scores,
-			)) {
+			for (const [playerId, firestoreScore] of Object.entries(gameState.scores)) {
 				const optimisticScore = next[playerId];
 				if (optimisticScore === undefined || firestoreScore >= optimisticScore) {
 					delete next[playerId];
@@ -164,9 +142,7 @@ export const useMultiplayerGameEffects = ({
 			return;
 		}
 		const winnerName =
-			roundWinnerId === room.hostPlayer.id
-				? room.hostPlayer.name
-				: (room.guestPlayer?.name ?? "");
+			roundWinnerId === room.hostPlayer.id ? room.hostPlayer.name : (room.guestPlayer?.name ?? "");
 		setRoundWinnerName(winnerName);
 	}, [
 		gameState,
@@ -184,20 +160,8 @@ export const useMultiplayerGameEffects = ({
 		if (gameState.currentPokemonId !== currentPokemon.id) {
 			return;
 		}
-		void syncRoundDuration(
-			room.id,
-			localPlayerId,
-			gameState.roundNumber,
-			currentPokemon.isShiny,
-		);
-	}, [
-		isHost,
-		gameState,
-		room.status,
-		room.id,
-		localPlayerId,
-		currentPokemon,
-	]);
+		void syncRoundDuration(room.id, localPlayerId, gameState.roundNumber, currentPokemon.isShiny);
+	}, [isHost, gameState, room.status, room.id, localPlayerId, currentPokemon]);
 
 	useEffect(() => {
 		if (!gameState || room.status !== "playing") {

@@ -78,10 +78,7 @@ const capitalizePokemonName = (name: string): string => {
 	return name.charAt(0).toUpperCase() + name.slice(1);
 };
 
-export const getLocalizedPokemonName = (
-	pokemon: Pokemon | undefined,
-	language: string,
-): string => {
+export const getLocalizedPokemonName = (pokemon: Pokemon | undefined, language: string): string => {
 	if (!pokemon) {
 		return "";
 	}
@@ -93,10 +90,7 @@ export const getLocalizedPokemonName = (
 	return capitalizePokemonName(pokemon.englishName);
 };
 
-export const getShinyLabel = (
-	pokemon: Pokemon | undefined,
-	language: string,
-): string => {
+export const getShinyLabel = (pokemon: Pokemon | undefined, language: string): string => {
 	if (!pokemon?.isShiny) {
 		return "";
 	}
@@ -112,10 +106,7 @@ type ClickbaitRuleContext = ClickbaitMessageParams & { genName: string };
 
 type ClickbaitPriorityRule = {
 	matches: (context: ClickbaitRuleContext) => boolean;
-	resolve: (
-		context: ClickbaitRuleContext,
-		t: GameOverTranslationFn,
-	) => string;
+	resolve: (context: ClickbaitRuleContext, t: GameOverTranslationFn) => string;
 };
 
 const CLICKBAIT_PRIORITY_RULES = [
@@ -124,13 +115,11 @@ const CLICKBAIT_PRIORITY_RULES = [
 		resolve: (context, t) => t("shareMsgChampion", { gen: context.genName }),
 	},
 	{
-		matches: (context) =>
-			context.userRanking !== null && context.userRanking <= 3,
+		matches: (context) => context.userRanking !== null && context.userRanking <= 3,
 		resolve: (context, t) => t("shareMsgTop3", { gen: context.genName }),
 	},
 	{
-		matches: (context) =>
-			context.userRanking !== null && context.userRanking <= 10,
+		matches: (context) => context.userRanking !== null && context.userRanking <= 10,
 		resolve: (context, t) => t("shareMsgTop10", { gen: context.genName }),
 	},
 	{
@@ -152,8 +141,7 @@ const CLICKBAIT_PRIORITY_RULES = [
 	},
 	{
 		matches: (context) => context.criticalSuccessCount >= 2,
-		resolve: (context, t) =>
-			t("shareMsgCriticalSuccess", { gen: context.genName }),
+		resolve: (context, t) => t("shareMsgCriticalSuccess", { gen: context.genName }),
 	},
 	{
 		matches: (context) => context.hyperTrainCount >= 3,

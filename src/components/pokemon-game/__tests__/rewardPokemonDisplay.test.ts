@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it } from "vite-plus/test";
 import {
 	getLegendaryBadgeLabel,
 	getLocalizedPokemonName,
@@ -52,22 +52,14 @@ describe("staticPokemonDisplay helpers", () => {
 
 describe("rewardPokemonDisplay helpers", () => {
 	it("checks generation range", () => {
-		expect(isPokemonInGeneration(basePokemon, { startId: 1, endId: 151 })).toBe(
-			true,
-		);
-		expect(isPokemonInGeneration(basePokemon, { startId: 152, endId: 251 })).toBe(
-			false,
-		);
+		expect(isPokemonInGeneration(basePokemon, { startId: 1, endId: 151 })).toBe(true);
+		expect(isPokemonInGeneration(basePokemon, { startId: 152, endId: 251 })).toBe(false);
 	});
 
 	it("resolves current pokemon during slot machine", () => {
 		const spinning = { ...basePokemon, id: 1 };
-		expect(
-			resolveRewardCurrentPokemon(true, spinning, basePokemon),
-		).toEqual(spinning);
-		expect(resolveRewardCurrentPokemon(false, spinning, basePokemon)).toEqual(
-			basePokemon,
-		);
+		expect(resolveRewardCurrentPokemon(true, spinning, basePokemon)).toEqual(spinning);
+		expect(resolveRewardCurrentPokemon(false, spinning, basePokemon)).toEqual(basePokemon);
 	});
 
 	it("determines when to show reward display", () => {

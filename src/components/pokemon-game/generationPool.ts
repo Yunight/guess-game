@@ -1,7 +1,4 @@
-export const buildGenerationPokemonIds = (
-	startId: number,
-	endId: number,
-): number[] =>
+export const buildGenerationPokemonIds = (startId: number, endId: number): number[] =>
 	Array.from({ length: endId - startId + 1 }, (_, index) => startId + index);
 
 export const pickRandomPokemonId = (

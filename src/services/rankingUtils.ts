@@ -9,10 +9,8 @@ export interface RankingEntry {
 export const RANKINGS_DISPLAY_LIMIT = 50;
 export const RANKINGS_CALCULATION_LIMIT = 200;
 
-export const getRankingsCollectionPath = (
-	startId: number,
-	endId: number,
-): string => `rankings_gen${startId}_${endId}`;
+export const getRankingsCollectionPath = (startId: number, endId: number): string =>
+	`rankings_gen${startId}_${endId}`;
 
 export const calculateRankFromEntries = (
 	entries: readonly RankingEntry[],
@@ -43,8 +41,7 @@ export const isBetterRankingScore = (
 	return newTime < existingTime;
 };
 
-export const convertStoredNameToDisplay = (name: string): string =>
-	name.replace(/_/g, " ");
+export const convertStoredNameToDisplay = (name: string): string => name.replace(/_/g, " ");
 
 export const mapRankingDocuments = (
 	docs: ReadonlyArray<{ data: () => DocumentData }>,
@@ -64,8 +61,7 @@ export const mapRankingDocuments = (
 			name: convertStoredNameToDisplay(data.name),
 			score: data.score,
 			time: data.time,
-			timestamp:
-				(data.timestamp as Timestamp)?.toDate() || new Date(data.timestamp),
+			timestamp: (data.timestamp as Timestamp)?.toDate() || new Date(data.timestamp),
 			uid: typeof data.uid === "string" ? data.uid : null,
 		});
 	}
@@ -86,8 +82,6 @@ export const isDuplicateSaveAttempt = (
 
 	const timeSinceLastAttempt = now - lastAttempt.timestamp;
 	return (
-		timeSinceLastAttempt < windowMs &&
-		lastAttempt.score === score &&
-		lastAttempt.time === time
+		timeSinceLastAttempt < windowMs && lastAttempt.score === score && lastAttempt.time === time
 	);
 };

@@ -22,20 +22,16 @@ const SPECIAL_CHARS = {
 
 type SpecialChar = keyof typeof SPECIAL_CHARS;
 
-const isSpecialChar = (char: string): char is SpecialChar =>
-	char in SPECIAL_CHARS;
+const isSpecialChar = (char: string): char is SpecialChar => char in SPECIAL_CHARS;
 
 export const convertToStoredFormat = (name: string): string =>
 	name
 		.trim()
 		.toLowerCase()
-		.replace(/[éèêëàâäîïôöùûüÿñç]/g, (char) =>
-			isSpecialChar(char) ? SPECIAL_CHARS[char] : char,
-		)
+		.replace(/[éèêëàâäîïôöùûüÿñç]/g, (char) => (isSpecialChar(char) ? SPECIAL_CHARS[char] : char))
 		.replace(/\s+/g, "_");
 
-export const convertToDisplayFormat = (name: string): string =>
-	name.replace(/_/g, " ");
+export const convertToDisplayFormat = (name: string): string => name.replace(/_/g, " ");
 
 export const formatDisplayName = (
 	name: string | null | undefined,
@@ -65,10 +61,7 @@ const getRankingsCollectionName = (generation: Generation): string =>
 	`rankings_gen${generation.startId}_${generation.endId}`;
 
 export interface GenerationOccupancyDeps {
-	query: (
-		collectionRef: unknown,
-		...constraints: unknown[]
-	) => unknown;
+	query: (collectionRef: unknown, ...constraints: unknown[]) => unknown;
 	where: (field: string, op: string, value: string) => unknown;
 	getDocs: (queryRef: unknown) => Promise<{ empty: boolean }>;
 	getCollection: (name: string) => unknown;
@@ -101,8 +94,7 @@ const shouldAllowAuthenticatedDisplayName = (
 	name: string,
 ): boolean => displayName === name;
 
-const NAME_ALREADY_USED_ERROR =
-	"Ce nom est déjà utilisé. Veuillez en choisir un autre.";
+const NAME_ALREADY_USED_ERROR = "Ce nom est déjà utilisé. Veuillez en choisir un autre.";
 
 export const NAME_CHECK_ERROR = "Erreur lors de la vérification du nom";
 
@@ -148,10 +140,7 @@ export const resolveNameAvailabilityCheck = (
 		return { available: true, errorMessage: null, shouldClearStorage: false };
 	}
 
-	const validation = validateNameAcrossGenerations(
-		generationOccupied,
-		isAuthenticated,
-	);
+	const validation = validateNameAcrossGenerations(generationOccupied, isAuthenticated);
 
 	return {
 		available: validation.available,
@@ -214,12 +203,7 @@ export const performNameAvailabilityCheck = async (
 		return { available: true, errorMessage: null, shouldClearStorage: false };
 	}
 
-	const generationOccupied = await fetchGenerationOccupancy(
-		generations,
-		storedName,
-		uid,
-		deps,
-	);
+	const generationOccupied = await fetchGenerationOccupancy(generations, storedName, uid, deps);
 
 	return resolveNameAvailabilityCheck(
 		storedName,

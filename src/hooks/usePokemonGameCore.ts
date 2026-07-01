@@ -12,9 +12,7 @@ export const usePokemonGameCore = () => {
 	const suggestionsRef = useRef<HTMLDivElement>(null);
 	const savedName = localStorage.getItem("pokemonGamePlayerName");
 	const [rewardPokemonId, setRewardPokemonId] = useState<number | null>(null);
-	const { state: gameState, setters: gameSetters } = useGameState(
-		GENERATIONS[0],
-	);
+	const { state: gameState, setters: gameSetters } = useGameState(GENERATIONS[0]);
 
 	const slotMachine = useSlotMachine(gameState.selectedGeneration);
 	const player = usePlayerName({ GENERATIONS });

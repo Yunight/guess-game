@@ -23,12 +23,8 @@ export const MultiplayerGameOver: FC<MultiplayerGameOverProps> = ({
 
 	const localScore = room.gameState?.scores[localPlayerId] ?? 0;
 	const opponentPlayerId =
-		room.hostPlayer.id === localPlayerId
-			? room.guestPlayer?.id
-			: room.hostPlayer.id;
-	const opponentScore = opponentPlayerId
-		? (room.gameState?.scores[opponentPlayerId] ?? 0)
-		: 0;
+		room.hostPlayer.id === localPlayerId ? room.guestPlayer?.id : room.hostPlayer.id;
+	const opponentScore = opponentPlayerId ? (room.gameState?.scores[opponentPlayerId] ?? 0) : 0;
 
 	const isWinner = room.winnerId === localPlayerId;
 	const isDraw = room.winnerId === null;
@@ -56,10 +52,7 @@ export const MultiplayerGameOver: FC<MultiplayerGameOverProps> = ({
 					</div>
 				</div>
 
-				<Button
-					className="w-full h-12 text-lg font-bold"
-					onClick={() => navigate("/")}
-				>
+				<Button className="w-full h-12 text-lg font-bold" onClick={() => navigate("/")}>
 					{t("backToMenu")}
 				</Button>
 			</div>

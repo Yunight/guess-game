@@ -20,19 +20,13 @@ const runRewardCryTimeout = (
 		void playPokemonCry(pokemonId);
 	}, REWARD_CRY_PLAYBACK_DELAY_MS);
 
-export const useGameOverCryEffect = (
-	params: GameOverCryEffectParams,
-): void => {
+export const useGameOverCryEffect = (params: GameOverCryEffectParams): void => {
 	const { gameOver, rewardPokemon, isSlotMachineRunning, isMuted } = params;
 	const [lastPlayedId, setLastPlayedId] = useState<number | null>(null);
 
 	const playPokemonCry = useCallback(
 		async (pokemonId: number): Promise<void> => {
-			const newLastPlayedId = await executeRewardCryPlayback(
-				pokemonId,
-				lastPlayedId,
-				isMuted,
-			);
+			const newLastPlayedId = await executeRewardCryPlayback(pokemonId, lastPlayedId, isMuted);
 			if (newLastPlayedId !== null) {
 				setLastPlayedId(newLastPlayedId);
 			}

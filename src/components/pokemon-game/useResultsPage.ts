@@ -1,15 +1,8 @@
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useParams } from "react-router-dom";
-import {
-	type GameResult,
-	gameResultsService,
-} from "../../services/gameResultsService";
-import {
-	copyTextToClipboard,
-	createFallbackCopyHandler,
-	shareOrCopyUrl,
-} from "./resultsPageCopy";
+import { type GameResult, gameResultsService } from "../../services/gameResultsService";
+import { copyTextToClipboard, createFallbackCopyHandler, shareOrCopyUrl } from "./resultsPageCopy";
 import { loadGameResult } from "./resultsPageLoader";
 import { buildShareText } from "./resultsPageShare";
 
@@ -33,15 +26,11 @@ export const useResultsPage = (): UseResultsPageResult => {
 	const [error, setError] = useState<string | null>(null);
 	const [urlCopied, setUrlCopied] = useState(false);
 	const [debugMode] = useState(import.meta.env.DEV);
-	const [debugRemainingPokemon, setDebugRemainingPokemon] = useState<
-		number | null
-	>(null);
+	const [debugRemainingPokemon, setDebugRemainingPokemon] = useState<number | null>(null);
 
 	useEffect(() => {
 		const fetchResult = async (): Promise<void> => {
-			const outcome = await loadGameResult(resultId, (id) =>
-				gameResultsService.getGameResult(id),
-			);
+			const outcome = await loadGameResult(resultId, (id) => gameResultsService.getGameResult(id));
 
 			if (outcome.status === "missingId") {
 				setError("No result ID provided");

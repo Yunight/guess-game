@@ -10,13 +10,8 @@ export const resolveMultiplayerRoundScoring = (
 	nowMs: number = Timestamp.now().toMillis(),
 ): ReturnType<typeof calculateEarnedPoints> => {
 	const roundDurationSeconds = gameState.roundDurationSeconds;
-	const resolvedIsShiny =
-		isShiny || roundDurationSeconds === getInitialGuessTime(true);
-	const guessTimeLeft = computeGuessTimeLeft(
-		gameState.roundStartedAt,
-		roundDurationSeconds,
-		nowMs,
-	);
+	const resolvedIsShiny = isShiny || roundDurationSeconds === getInitialGuessTime(true);
+	const guessTimeLeft = computeGuessTimeLeft(gameState.roundStartedAt, roundDurationSeconds, nowMs);
 
 	return calculateEarnedPoints({
 		isHardMode: true,
@@ -32,5 +27,4 @@ export const resolveMultiplayerRoundPoints = (
 	gameState: MultiplayerGameState,
 	isShiny: boolean,
 	nowMs: number = Timestamp.now().toMillis(),
-): number =>
-	resolveMultiplayerRoundScoring(gameState, isShiny, nowMs).earnedPoints;
+): number => resolveMultiplayerRoundScoring(gameState, isShiny, nowMs).earnedPoints;

@@ -60,15 +60,18 @@ export const usePlayerName = ({ GENERATIONS }: UsePlayerNameProps) => {
 		[GENERATIONS],
 	);
 
-	const debouncedCheckName = useCallback((name: string): void => {
-		if (debounceTimeoutRef.current) {
-			clearTimeout(debounceTimeoutRef.current);
-		}
-		debounceTimeoutRef.current = setTimeout(() => {
-			void checkNameAvailability(name);
-			debounceTimeoutRef.current = undefined;
-		}, 500);
-	}, [checkNameAvailability]);
+	const debouncedCheckName = useCallback(
+		(name: string): void => {
+			if (debounceTimeoutRef.current) {
+				clearTimeout(debounceTimeoutRef.current);
+			}
+			debounceTimeoutRef.current = setTimeout(() => {
+				void checkNameAvailability(name);
+				debounceTimeoutRef.current = undefined;
+			}, 500);
+		},
+		[checkNameAvailability],
+	);
 
 	const handlePlayerNameChange = useCallback(
 		(e: React.ChangeEvent<HTMLInputElement>): void => {

@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from "vitest";
+import { describe, expect, it, vi } from "vite-plus/test";
 import {
 	fetchGenerationOccupancy,
 	resolveAuthStatePlayerName,
@@ -8,9 +8,7 @@ import {
 
 describe("resolveNameAvailabilityCheck", () => {
 	it("clears storage for empty names", () => {
-		expect(
-			resolveNameAvailabilityCheck("", " ", null, [], false),
-		).toEqual({
+		expect(resolveNameAvailabilityCheck("", " ", null, [], false)).toEqual({
 			available: false,
 			errorMessage: null,
 			shouldClearStorage: true,
@@ -18,9 +16,7 @@ describe("resolveNameAvailabilityCheck", () => {
 	});
 
 	it("allows authenticated display names", () => {
-		expect(
-			resolveNameAvailabilityCheck("ash", "Ash", "Ash", [], false),
-		).toEqual({
+		expect(resolveNameAvailabilityCheck("ash", "Ash", "Ash", [], false)).toEqual({
 			available: true,
 			errorMessage: null,
 			shouldClearStorage: false,
@@ -31,10 +27,7 @@ describe("resolveNameAvailabilityCheck", () => {
 describe("resolveAuthStatePlayerName", () => {
 	it("formats authenticated user names", () => {
 		expect(
-			resolveAuthStatePlayerName(
-				{ displayName: "Ash Ketchum", email: "ash@example.com" },
-				null,
-			),
+			resolveAuthStatePlayerName({ displayName: "Ash Ketchum", email: "ash@example.com" }, null),
 		).toEqual({
 			playerName: "Ash Ketchum",
 			isAuthName: true,

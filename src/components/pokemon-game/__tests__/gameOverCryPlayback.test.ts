@@ -1,4 +1,4 @@
-import { describe, expect, it, vi, beforeEach, afterEach } from "vitest";
+import { describe, expect, it, vi, beforeEach, afterEach } from "vite-plus/test";
 import {
 	executeRewardCryPlayback,
 	getRewardCryPokemonId,
@@ -55,15 +55,11 @@ describe("shouldScheduleRewardCry", () => {
 	});
 
 	it("returns false when slot machine is running", () => {
-		expect(
-			shouldScheduleRewardCry({ ...baseInput, isSlotMachineRunning: true }),
-		).toBe(false);
+		expect(shouldScheduleRewardCry({ ...baseInput, isSlotMachineRunning: true })).toBe(false);
 	});
 
 	it("returns false when muted or loading", () => {
-		expect(shouldScheduleRewardCry({ ...baseInput, isMuted: true })).toBe(
-			false,
-		);
+		expect(shouldScheduleRewardCry({ ...baseInput, isMuted: true })).toBe(false);
 		expect(
 			shouldScheduleRewardCry({
 				...baseInput,

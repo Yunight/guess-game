@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it } from "vite-plus/test";
 import {
 	computeNextDisplayState,
 	computePokemonDisplayTransition,
@@ -139,12 +139,9 @@ describe("computePokemonDisplayTransition", () => {
 
 describe("getLocalizedPokemonName", () => {
 	it("returns french name for fr language", () => {
-		expect(
-			getLocalizedPokemonName(
-				{ ...basePokemon, frenchName: "Pikachu FR" },
-				"fr",
-			),
-		).toBe("Pikachu FR");
+		expect(getLocalizedPokemonName({ ...basePokemon, frenchName: "Pikachu FR" }, "fr")).toBe(
+			"Pikachu FR",
+		);
 	});
 
 	it("returns english name for other languages", () => {

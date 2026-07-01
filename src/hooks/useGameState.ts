@@ -83,14 +83,8 @@ export const useGameState = (
 		setGameOver,
 		setIsRestarting,
 	} = progress.setters;
-	const {
-		setGuess,
-		setIsCorrect,
-		setShowHint,
-		setHintsLeft,
-		setSuggestions,
-		setHighlightedIndex,
-	} = input.setters;
+	const { setGuess, setIsCorrect, setShowHint, setHintsLeft, setSuggestions, setHighlightedIndex } =
+		input.setters;
 	const {
 		setShowCriticalSuccess,
 		setShowCriticalHit,
@@ -104,10 +98,8 @@ export const useGameState = (
 		setUserRanking,
 	} = feedback.setters;
 	const { setGuessTimeLeft, setTotalTimeElapsed } = timer.setters;
-	const { setPlayerName, setNameError, setIsCheckingName, setIsAuthName } =
-		player.setters;
-	const { setCurrentPokemonId, setCurrentPokemon, setRewardPokemon } =
-		pokemon.setters;
+	const { setPlayerName, setNameError, setIsCheckingName, setIsAuthName } = player.setters;
+	const { setCurrentPokemonId, setCurrentPokemon, setRewardPokemon } = pokemon.setters;
 	const { setIsMuted } = settings.setters;
 
 	const setters = useMemo(

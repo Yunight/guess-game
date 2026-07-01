@@ -2,9 +2,7 @@ interface GameOverFireworksProps {
 	generationName: string;
 }
 
-export const GameOverFireworks = ({
-	generationName,
-}: GameOverFireworksProps): JSX.Element => {
+export const GameOverFireworks = ({ generationName }: GameOverFireworksProps): JSX.Element => {
 	return (
 		<>
 			<div className="absolute inset-[-150%] animate-spin-slow">

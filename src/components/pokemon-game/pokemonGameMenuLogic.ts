@@ -13,7 +13,5 @@ export const resolveCanStartGame = (input: {
 		return true;
 	}
 
-	return Boolean(
-		input.playerName && !input.nameError && !input.isCheckingName,
-	);
+	return Boolean(input.playerName && !input.nameError && !input.isCheckingName);
 };

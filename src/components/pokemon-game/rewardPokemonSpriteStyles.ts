@@ -13,9 +13,7 @@ export const getRewardSpriteStyle = (
 	};
 };
 
-export const getRewardSpriteContainerClassName = (
-	isSlotMachineRunning: boolean,
-): string => {
+export const getRewardSpriteContainerClassName = (isSlotMachineRunning: boolean): string => {
 	return `
 		relative flex items-center justify-center
 		${isSlotMachineRunning ? "animate-slide-up" : "animate-bounce-in"}
@@ -23,9 +21,6 @@ export const getRewardSpriteContainerClassName = (
 	`;
 };
 
-export const getRewardLocalizedName = (
-	pokemon: Pokemon,
-	language: string,
-): string => {
+export const getRewardLocalizedName = (pokemon: Pokemon, language: string): string => {
 	return language === "fr" ? pokemon.frenchName : pokemon.englishName;
 };

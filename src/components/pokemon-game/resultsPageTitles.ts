@@ -22,12 +22,8 @@ const TITLE_TIERS = [
 	{ maxPercent: Number.POSITIVE_INFINITY, tiers: ["starter"] as const },
 ] as const;
 
-const resolveTitleTier = (
-	percentageRemaining: number,
-): (typeof TITLE_TIERS)[number] => {
-	const tier = TITLE_TIERS.find(
-		(entry) => percentageRemaining <= entry.maxPercent,
-	);
+const resolveTitleTier = (percentageRemaining: number): (typeof TITLE_TIERS)[number] => {
+	const tier = TITLE_TIERS.find((entry) => percentageRemaining <= entry.maxPercent);
 	if (tier) {
 		return tier;
 	}

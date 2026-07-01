@@ -69,34 +69,22 @@ export const MultiplayerLobby: FC<MultiplayerLobbyProps> = ({
 
 			<div className="bg-white/95 rounded-xl p-4 space-y-4">
 				<div className="text-center">
-					<p className="text-xs text-gray-500 uppercase tracking-wide">
-						{t("roomId")}
-					</p>
+					<p className="text-xs text-gray-500 uppercase tracking-wide">{t("roomId")}</p>
 					<p className="text-2xl font-mono font-bold text-gray-800">{room.id}</p>
 				</div>
 
 				<div className="flex gap-2">
-					<Input
-						readOnly
-						value={shareUrl}
-						className="text-sm bg-gray-50"
-					/>
+					<Input readOnly value={shareUrl} className="text-sm bg-gray-50" />
 					<Button
 						type="button"
 						variant="outline"
 						onClick={() => void handleCopyLink()}
 						className="shrink-0"
 					>
-						{copied ? (
-							<Check className="w-4 h-4" />
-						) : (
-							<Copy className="w-4 h-4" />
-						)}
+						{copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
 					</Button>
 				</div>
-				{copied && (
-					<p className="text-sm text-green-600 text-center">{t("linkCopied")}</p>
-				)}
+				{copied && <p className="text-sm text-green-600 text-center">{t("linkCopied")}</p>}
 
 				<div className="border-t pt-4">
 					<p className="text-sm text-gray-500 mb-2">{t("pokemonGeneration")}</p>
@@ -123,9 +111,7 @@ export const MultiplayerLobby: FC<MultiplayerLobbyProps> = ({
 						<div>
 							<p className="text-xs text-purple-600">{t("guest")}</p>
 							{room.guestPlayer ? (
-								<p className="font-bold text-gray-800">
-									{room.guestPlayer.name}
-								</p>
+								<p className="font-bold text-gray-800">{room.guestPlayer.name}</p>
 							) : (
 								<p className="text-gray-400 italic">{t("waitingForGuest")}</p>
 							)}
@@ -140,9 +126,7 @@ export const MultiplayerLobby: FC<MultiplayerLobbyProps> = ({
 
 				{!isJoined && !room.guestPlayer && (
 					<div className="space-y-2 border-t pt-4">
-						<p className="text-sm font-medium text-gray-700">
-							{t("joinRoom")}
-						</p>
+						<p className="text-sm font-medium text-gray-700">{t("joinRoom")}</p>
 						<Input
 							value={joinName}
 							onChange={(e) => setJoinName(e.target.value)}
@@ -153,9 +137,7 @@ export const MultiplayerLobby: FC<MultiplayerLobbyProps> = ({
 								}
 							}}
 						/>
-						{joinError && (
-							<p className="text-sm text-red-500">{t(joinError)}</p>
-						)}
+						{joinError && <p className="text-sm text-red-500">{t(joinError)}</p>}
 						<Button
 							className="w-full"
 							onClick={handleJoinClick}
@@ -168,9 +150,7 @@ export const MultiplayerLobby: FC<MultiplayerLobbyProps> = ({
 
 				{isHost && (
 					<div className="border-t pt-4 space-y-2">
-						{startError && (
-							<p className="text-sm text-red-500">{t(startError)}</p>
-						)}
+						{startError && <p className="text-sm text-red-500">{t(startError)}</p>}
 						<Button
 							className="w-full h-14 text-lg font-bold bg-gradient-to-r from-red-500 to-red-600"
 							onClick={() => void onStart()}
@@ -179,9 +159,7 @@ export const MultiplayerLobby: FC<MultiplayerLobbyProps> = ({
 							{t("startMultiGame")}
 						</Button>
 						{!room.guestPlayer && (
-							<p className="text-xs text-center text-gray-500">
-								{t("shareLinkToStart")}
-							</p>
+							<p className="text-xs text-center text-gray-500">{t("shareLinkToStart")}</p>
 						)}
 					</div>
 				)}

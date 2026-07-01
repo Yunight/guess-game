@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it } from "vite-plus/test";
 import {
 	extractFirebaseErrorCode,
 	getAuthDialogSubtitleKey,
@@ -10,9 +10,9 @@ import {
 
 describe("extractFirebaseErrorCode", () => {
 	it("extracts error code from firebase message", () => {
-		expect(
-			extractFirebaseErrorCode("Firebase: Error (auth/wrong-password)."),
-		).toBe("auth/wrong-password");
+		expect(extractFirebaseErrorCode("Firebase: Error (auth/wrong-password).")).toBe(
+			"auth/wrong-password",
+		);
 	});
 
 	it("returns default when no code found", () => {

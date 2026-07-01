@@ -13,9 +13,7 @@ export const GENERATIONS = [
 export type Generation = (typeof GENERATIONS)[number];
 
 export const getGenerationI18nKey = (startId: number): string => {
-	const index = GENERATIONS.findIndex(
-		(generation) => generation.startId === startId,
-	);
+	const index = GENERATIONS.findIndex((generation) => generation.startId === startId);
 	if (index < 0) {
 		return "gen9";
 	}

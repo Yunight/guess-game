@@ -1,7 +1,4 @@
-import {
-	extractFlavorTexts,
-	formatCryUrl,
-} from "./pokemonApiTransform";
+import { extractFlavorTexts, formatCryUrl } from "./pokemonApiTransform";
 import {
 	getFromStorage,
 	isCachedCryUrl,
@@ -36,10 +33,7 @@ export const getCryUrl = async (id: number): Promise<string> => {
 	const cacheKey = `${CRY_URL_CACHE_KEY}_${id}`;
 	const cached = getFromStorage(cacheKey);
 
-	if (
-		isCachedCryUrl(cached) &&
-		Date.now() - cached.timestamp < CACHE_DURATION
-	) {
+	if (isCachedCryUrl(cached) && Date.now() - cached.timestamp < CACHE_DURATION) {
 		return cached.cryUrl;
 	}
 
@@ -63,23 +57,16 @@ export const getCryUrl = async (id: number): Promise<string> => {
 	}
 };
 
-export const getFlavorText = async (
-	id: number,
-): Promise<{ french: string; english: string }> => {
+export const getFlavorText = async (id: number): Promise<{ french: string; english: string }> => {
 	const cacheKey = `${FLAVOR_TEXT_CACHE_KEY}_${id}`;
 	const cached = getFromStorage(cacheKey);
 
-	if (
-		isCachedFlavorText(cached) &&
-		Date.now() - cached.timestamp < CACHE_DURATION
-	) {
+	if (isCachedFlavorText(cached) && Date.now() - cached.timestamp < CACHE_DURATION) {
 		return { french: cached.french, english: cached.english };
 	}
 
 	try {
-		const response = await fetch(
-			`https://pokeapi.co/api/v2/pokemon-species/${id}`,
-		);
+		const response = await fetch(`https://pokeapi.co/api/v2/pokemon-species/${id}`);
 		if (!response.ok) throw new Error("Failed to fetch Pokemon flavor text");
 
 		const data: unknown = await response.json();
@@ -101,10 +88,7 @@ export const getFlavorText = async (
 export const fetchTyradexPokemonList = async (): Promise<TyradexPokemon[]> => {
 	const cachedData = getFromStorage(TYRADEX_CACHE_KEY);
 
-	if (
-		isCachedData(cachedData) &&
-		Date.now() - cachedData.timestamp < CACHE_DURATION
-	) {
+	if (isCachedData(cachedData) && Date.now() - cachedData.timestamp < CACHE_DURATION) {
 		return cachedData.tyradexData;
 	}
 

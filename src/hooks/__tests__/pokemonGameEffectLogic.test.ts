@@ -1,5 +1,5 @@
 import type { Pokemon } from "@/components/pokemon-game/types";
-import { describe, expect, it, vi } from "vitest";
+import { describe, expect, it, vi } from "vite-plus/test";
 import {
 	applyGameTimerSync,
 	shouldApplyHypeTrainBonus,
@@ -41,9 +41,7 @@ describe("shouldResetTimersWhenInactive", () => {
 	});
 
 	it("returns false when inactive with default timers", () => {
-		expect(
-			shouldResetTimersWhenInactive(false, Number.POSITIVE_INFINITY, 0),
-		).toBe(false);
+		expect(shouldResetTimersWhenInactive(false, Number.POSITIVE_INFINITY, 0)).toBe(false);
 	});
 });
 
@@ -55,23 +53,17 @@ describe("shouldStartTotalTimer", () => {
 
 describe("shouldStartGuessTimer", () => {
 	it("returns true in hard mode with infinite guess time", () => {
-		expect(
-			shouldStartGuessTimer(true, true, Number.POSITIVE_INFINITY),
-		).toBe(true);
+		expect(shouldStartGuessTimer(true, true, Number.POSITIVE_INFINITY)).toBe(true);
 	});
 });
 
 describe("shouldRecoverInvalidPokemon", () => {
 	it("returns true when pokemon data is incomplete", () => {
-		expect(
-			shouldRecoverInvalidPokemon(true, false, 25, 10, incompletePokemon),
-		).toBe(true);
+		expect(shouldRecoverInvalidPokemon(true, false, 25, 10, incompletePokemon)).toBe(true);
 	});
 
 	it("returns false when pokemon data is complete", () => {
-		expect(
-			shouldRecoverInvalidPokemon(true, false, 25, 10, completePokemon),
-		).toBe(false);
+		expect(shouldRecoverInvalidPokemon(true, false, 25, 10, completePokemon)).toBe(false);
 	});
 });
 
@@ -83,15 +75,11 @@ describe("shouldSyncRewardPokemon", () => {
 
 describe("isRewardPokemonAlreadySynced", () => {
 	it("returns true when reward pokemon matches loaded data", () => {
-		expect(
-			isRewardPokemonAlreadySynced(completePokemon.id, false, completePokemon),
-		).toBe(true);
+		expect(isRewardPokemonAlreadySynced(completePokemon.id, false, completePokemon)).toBe(true);
 	});
 
 	it("returns false when reward pokemon is still loading", () => {
-		expect(
-			isRewardPokemonAlreadySynced(completePokemon.id, true, completePokemon),
-		).toBe(false);
+		expect(isRewardPokemonAlreadySynced(completePokemon.id, true, completePokemon)).toBe(false);
 	});
 });
 

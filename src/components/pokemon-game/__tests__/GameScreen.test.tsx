@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi, beforeEach } from "vite-plus/test";
 import { render, screen, fireEvent } from "../../../test/test-utils";
 import { GameScreen } from "../GameScreen";
 import { Pokemon } from "../types";
@@ -11,10 +11,7 @@ window.HTMLMediaElement.prototype.pause = vi.fn();
 
 // Mock UI components
 vi.mock("@/components/ui/card", () => ({
-	Card: ({
-		children,
-		className,
-	}: { children: React.ReactNode; className?: string }) => (
+	Card: ({ children, className }: { children: React.ReactNode; className?: string }) => (
 		<div className={className}>{children}</div>
 	),
 }));
@@ -33,12 +30,7 @@ vi.mock("@/components/ui/button", () => ({
 		"data-testid"?: string;
 		disabled?: boolean;
 	}) => (
-		<button
-			onClick={onClick}
-			className={className}
-			data-testid={testId}
-			disabled={disabled}
-		>
+		<button onClick={onClick} className={className} data-testid={testId} disabled={disabled}>
 			{children}
 		</button>
 	),
@@ -95,18 +87,10 @@ vi.mock("../GuessInput", () => ({
 		handleSuggestionClick: (suggestion: string) => void;
 	}) => (
 		<div>
-			<input
-				type="text"
-				value={guess}
-				onChange={handleGuessChange}
-				onKeyDown={handleKeyDown}
-			/>
+			<input type="text" value={guess} onChange={handleGuessChange} onKeyDown={handleKeyDown} />
 			<div>
 				{suggestions.map((suggestion: string) => (
-					<div
-						key={suggestion}
-						onClick={() => handleSuggestionClick(suggestion)}
-					>
+					<div key={suggestion} onClick={() => handleSuggestionClick(suggestion)}>
 						{suggestion}
 					</div>
 				))}
@@ -116,10 +100,7 @@ vi.mock("../GuessInput", () => ({
 }));
 
 vi.mock("../HintButton", () => ({
-	HintButton: ({
-		hintsLeft,
-		useHint,
-	}: { hintsLeft: number; useHint: () => void }) => (
+	HintButton: ({ hintsLeft, useHint }: { hintsLeft: number; useHint: () => void }) => (
 		<button onClick={useHint} disabled={hintsLeft === 0}>
 			Hint ({hintsLeft})
 		</button>
@@ -140,8 +121,7 @@ const mockPokemon: Pokemon = {
 		"Quand il est en colère, il libère instantanément l'énergie emmagasinée dans les poches de ses joues.",
 	englishFlavorText:
 		"When it is angered, it immediately releases the energy stored in the pouches in its cheeks.",
-	sprite:
-		"https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/25.png",
+	sprite: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/25.png",
 	shinySprite:
 		"https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/shiny/25.png",
 	isShiny: false,
@@ -276,13 +256,7 @@ describe("GameScreen", () => {
 	});
 
 	it("shows loading state", () => {
-		render(
-			<GameScreen
-				{...mockProps}
-				isPokemonLoading={true}
-				currentPokemon={undefined}
-			/>,
-		);
+		render(<GameScreen {...mockProps} isPokemonLoading={true} currentPokemon={undefined} />);
 		expect(screen.getByText("???")).toBeInTheDocument();
 	});
 
@@ -428,9 +402,7 @@ describe("GameScreen", () => {
 
 	describe("game mode specific behavior", () => {
 		it("shows quit button only in non-hard mode", () => {
-			const { rerender } = render(
-				<GameScreen {...mockProps} isHardMode={false} />,
-			);
+			const { rerender } = render(<GameScreen {...mockProps} isHardMode={false} />);
 			expect(screen.getByText("Quitter")).toBeInTheDocument();
 
 			rerender(<GameScreen {...mockProps} isHardMode={true} />);

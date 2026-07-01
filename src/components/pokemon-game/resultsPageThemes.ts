@@ -288,12 +288,8 @@ const PRESTIGE_THEME_TIERS = [
 	theme: PrestigeThemeTier;
 }>;
 
-const resolvePrestigeThemeTier = (
-	percentageRemaining: number,
-): PrestigeThemeTier => {
-	const tier = PRESTIGE_THEME_TIERS.find(
-		(entry) => percentageRemaining <= entry.maxPercent,
-	);
+const resolvePrestigeThemeTier = (percentageRemaining: number): PrestigeThemeTier => {
+	const tier = PRESTIGE_THEME_TIERS.find((entry) => percentageRemaining <= entry.maxPercent);
 	if (tier) {
 		return tier.theme;
 	}

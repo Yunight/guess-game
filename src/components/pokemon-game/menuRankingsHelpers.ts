@@ -4,10 +4,7 @@ import type { Rankings } from "./types";
 export const getRankingKey = (player: Rankings, index: number): string =>
 	`${player.uid || player.name}-${player.score}-${player.timestamp.getTime()}-${index}`;
 
-export const isCurrentRankingPlayer = (
-	player: Rankings,
-	playerName: string,
-): boolean => {
+export const isCurrentRankingPlayer = (player: Rankings, playerName: string): boolean => {
 	if (auth.currentUser) {
 		return player.uid === auth.currentUser.uid;
 	}

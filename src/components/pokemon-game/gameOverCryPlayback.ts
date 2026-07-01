@@ -12,14 +12,9 @@ export const executeRewardCryPlayback = async (
 ): Promise<number | null> => {
 	if (shouldSkipCryPlayback(pokemonId, lastPlayedId, isMuted)) {
 		if (pokemonId === lastPlayedId) {
-			console.log(
-				"⏭️ Skip playing cry - same Pokémon as last time:",
-				lastPlayedId,
-			);
+			console.log("⏭️ Skip playing cry - same Pokémon as last time:", lastPlayedId);
 		} else {
-			console.log(
-				"🔇 Audio is muted, setting last played ID without playing",
-			);
+			console.log("🔇 Audio is muted, setting last played ID without playing");
 		}
 		return pokemonId;
 	}
@@ -63,9 +58,7 @@ export interface RewardCryScheduleInput {
 	rewardPokemon: { pokemon?: { id: number }; isLoading: boolean };
 }
 
-export const shouldScheduleRewardCry = (
-	input: RewardCryScheduleInput,
-): boolean => {
+export const shouldScheduleRewardCry = (input: RewardCryScheduleInput): boolean => {
 	if (input.isSlotMachineRunning) {
 		return false;
 	}
@@ -78,9 +71,7 @@ export const shouldScheduleRewardCry = (
 	);
 };
 
-export const getRewardCryPokemonId = (
-	pokemon: { id: number } | undefined,
-): number | null => {
+export const getRewardCryPokemonId = (pokemon: { id: number } | undefined): number | null => {
 	if (!pokemon) {
 		return null;
 	}

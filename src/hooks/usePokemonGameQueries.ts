@@ -1,9 +1,6 @@
 import type { Pokemon } from "@/components/pokemon-game/types";
 import { useEffect } from "react";
-import {
-	useGetAllPokemonNamesQuery,
-	useGetPokemonByIdQuery,
-} from "@/services/pokemonApi";
+import { useGetAllPokemonNamesQuery, useGetPokemonByIdQuery } from "@/services/pokemonApi";
 import {
 	resolveCurrentPokemonQueryArg,
 	resolvePokemonNamesQueryArg,
@@ -58,16 +55,15 @@ export const usePokemonGameQueries = ({
 		},
 	);
 
-	const { data: currentPokemon, isLoading: isPokemonLoading } =
-		useGetPokemonByIdQuery(resolveCurrentPokemonQueryArg(gameState), {
-			skip: shouldSkipCurrentPokemonQuery(
-				gameState.currentPokemonId,
-				gameState.isGameActive,
-			),
+	const { data: currentPokemon, isLoading: isPokemonLoading } = useGetPokemonByIdQuery(
+		resolveCurrentPokemonQueryArg(gameState),
+		{
+			skip: shouldSkipCurrentPokemonQuery(gameState.currentPokemonId, gameState.isGameActive),
 			refetchOnMountOrArgChange: false,
 			refetchOnFocus: false,
 			refetchOnReconnect: false,
-		});
+		},
+	);
 
 	useEffect(() => {
 		syncCurrentPokemonToState(
@@ -75,33 +71,19 @@ export const usePokemonGameQueries = ({
 			gameState.currentPokemon?.id,
 			gameSetters.setCurrentPokemon,
 		);
-	}, [
-		currentPokemon,
-		gameState.currentPokemon?.id,
-		gameSetters.setCurrentPokemon,
-	]);
+	}, [currentPokemon, gameState.currentPokemon?.id, gameSetters.setCurrentPokemon]);
 
-	const { data: rewardPokemonData, isLoading: isRewardPokemonLoading } =
-		useGetPokemonByIdQuery(
-			resolveRewardPokemonQueryArg(rewardPokemonId, gameState.maxHypeChain),
-			{
-				skip: shouldSkipRewardPokemonQuery(
-					rewardPokemonId,
-					gameState.gameOver,
-				),
-			},
-		);
+	const { data: rewardPokemonData, isLoading: isRewardPokemonLoading } = useGetPokemonByIdQuery(
+		resolveRewardPokemonQueryArg(rewardPokemonId, gameState.maxHypeChain),
+		{
+			skip: shouldSkipRewardPokemonQuery(rewardPokemonId, gameState.gameOver),
+		},
+	);
 
 	const { data: spinningPokemonData } = useGetPokemonByIdQuery(
-		resolveSpinningPokemonQueryArg(
-			spinningPokemonId,
-			gameState.maxHypeChain,
-		),
+		resolveSpinningPokemonQueryArg(spinningPokemonId, gameState.maxHypeChain),
 		{
-			skip: shouldSkipSpinningPokemonQuery(
-				spinningPokemonId,
-				isSlotMachineRunning,
-			),
+			skip: shouldSkipSpinningPokemonQuery(spinningPokemonId, isSlotMachineRunning),
 		},
 	);
 

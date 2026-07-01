@@ -7,11 +7,10 @@ import { GameScreenTopBar } from "./GameScreenTopBar";
 import type { GameScreenPlayAreaProps } from "./gameScreenTypes";
 import { ScoreIncrease } from "./ScoreIncrease";
 
-interface GameScreenProps
-	extends Omit<
-		GameScreenPlayAreaProps,
-		"criticalSuccessLabel" | "criticalHitLabel" | "hypeTrainLabel"
-	> {
+interface GameScreenProps extends Omit<
+	GameScreenPlayAreaProps,
+	"criticalSuccessLabel" | "criticalHitLabel" | "hypeTrainLabel"
+> {
 	setIsMuted: (value: boolean) => void;
 	totalTimeElapsed: number;
 	onQuit: () => void;

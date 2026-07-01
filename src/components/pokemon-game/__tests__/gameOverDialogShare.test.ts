@@ -1,4 +1,4 @@
-import { describe, expect, it, vi, beforeEach, afterEach } from "vitest";
+import { describe, expect, it, vi, beforeEach, afterEach } from "vite-plus/test";
 import type { Pokemon } from "../types";
 import {
 	buildShareText,
@@ -57,9 +57,7 @@ describe("getShareUrl", () => {
 	});
 
 	it("returns default url when shareable url is null", () => {
-		expect(getShareUrl(null)).toBe(
-			"https://pokemon-guesser-game.vercel.app/",
-		);
+		expect(getShareUrl(null)).toBe("https://pokemon-guesser-game.vercel.app/");
 	});
 });
 
@@ -144,9 +142,7 @@ describe("copyTextToClipboard", () => {
 	});
 
 	it("falls back to execCommand when clipboard API fails", async () => {
-		vi.mocked(navigator.clipboard.writeText).mockRejectedValue(
-			new Error("denied"),
-		);
+		vi.mocked(navigator.clipboard.writeText).mockRejectedValue(new Error("denied"));
 		document.execCommand = vi.fn().mockReturnValue(true);
 
 		const result = await copyTextToClipboard("https://example.com");

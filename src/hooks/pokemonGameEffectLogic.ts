@@ -8,23 +8,17 @@ export const shouldResetTimersWhenInactive = (
 	guessTimeLeft: number,
 	totalTimeElapsed: number,
 ): boolean => {
-	return (
-		!isGameActive &&
-		(guessTimeLeft !== Number.POSITIVE_INFINITY || totalTimeElapsed !== 0)
-	);
+	return !isGameActive && (guessTimeLeft !== Number.POSITIVE_INFINITY || totalTimeElapsed !== 0);
 };
 
-export const shouldStartTotalTimer = (
-	isGameActive: boolean,
-	totalTimeElapsed: number,
-): boolean => isGameActive && totalTimeElapsed === 0;
+export const shouldStartTotalTimer = (isGameActive: boolean, totalTimeElapsed: number): boolean =>
+	isGameActive && totalTimeElapsed === 0;
 
 export const shouldStartGuessTimer = (
 	isGameActive: boolean,
 	isHardMode: boolean,
 	guessTimeLeft: number,
-): boolean =>
-	isGameActive && isHardMode && guessTimeLeft === Number.POSITIVE_INFINITY;
+): boolean => isGameActive && isHardMode && guessTimeLeft === Number.POSITIVE_INFINITY;
 
 export interface GameTimerSyncInput {
 	isGameActive: boolean;
@@ -46,11 +40,7 @@ export const applyGameTimerSync = (
 	stopAllTimers: () => void,
 ): (() => void) | undefined => {
 	if (
-		shouldResetTimersWhenInactive(
-			input.isGameActive,
-			input.guessTimeLeft,
-			input.totalTimeElapsed,
-		)
+		shouldResetTimersWhenInactive(input.isGameActive, input.guessTimeLeft, input.totalTimeElapsed)
 	) {
 		stopAllTimers();
 
@@ -73,13 +63,7 @@ export const applyGameTimerSync = (
 		startTotalTimer(setters.setTotalTimeElapsed);
 	}
 
-	if (
-		shouldStartGuessTimer(
-			input.isGameActive,
-			input.isHardMode,
-			input.guessTimeLeft,
-		)
-	) {
+	if (shouldStartGuessTimer(input.isGameActive, input.isHardMode, input.guessTimeLeft)) {
 		startGuessTimer(setters.setGuessTimeLeft);
 	}
 
@@ -132,10 +116,7 @@ export const shouldTriggerGameOver = (
 	gameOver: boolean,
 	guessTimeLeft: number,
 	remainingPokemonLength: number,
-): boolean =>
-	isGameActive &&
-	!gameOver &&
-	(guessTimeLeft <= 0 || remainingPokemonLength === 0);
+): boolean => isGameActive && !gameOver && (guessTimeLeft <= 0 || remainingPokemonLength === 0);
 
 export const shouldApplyHypeTrainBonus = (
 	isHardMode: boolean,

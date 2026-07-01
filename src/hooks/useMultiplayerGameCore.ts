@@ -1,4 +1,11 @@
-import { useEffect, useRef, useState, type Dispatch, type RefObject, type SetStateAction } from "react";
+import {
+	useEffect,
+	useRef,
+	useState,
+	type Dispatch,
+	type RefObject,
+	type SetStateAction,
+} from "react";
 import { useGameAudio } from "./useGameAudio";
 
 export interface MultiplayerGameCoreState {
@@ -59,9 +66,7 @@ export const useMultiplayerGameCore = (): UseMultiplayerGameCoreResult => {
 	const inputRef = useRef<HTMLInputElement>(null);
 	const suggestionsRef = useRef<HTMLDivElement>(null);
 	const advanceTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-	const submitErrorTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(
-		null,
-	);
+	const submitErrorTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 	const lastProcessedRoundRef = useRef<number>(0);
 	const advanceScheduledForRoundRef = useRef<number>(0);
 	const gameStartTimeRef = useRef<number | null>(null);
@@ -70,9 +75,7 @@ export const useMultiplayerGameCore = (): UseMultiplayerGameCoreResult => {
 	const [suggestions, setSuggestions] = useState<string[]>([]);
 	const [highlightedIndex, setHighlightedIndex] = useState(-1);
 	const [isCorrect, setIsCorrect] = useState<boolean | null>(null);
-	const [isMuted, setIsMuted] = useState(
-		() => localStorage.getItem("pokemonGameMuted") === "true",
-	);
+	const [isMuted, setIsMuted] = useState(() => localStorage.getItem("pokemonGameMuted") === "true");
 	const [guessTimeLeft, setGuessTimeLeft] = useState(15);
 	const [totalTimeElapsed, setTotalTimeElapsed] = useState(0);
 	const [showCriticalSuccess, setShowCriticalSuccess] = useState(false);
@@ -81,17 +84,10 @@ export const useMultiplayerGameCore = (): UseMultiplayerGameCoreResult => {
 	const [isStartingGame, setIsStartingGame] = useState(false);
 	const [startGameError, setStartGameError] = useState<string | null>(null);
 	const [roundWinnerName, setRoundWinnerName] = useState<string | null>(null);
-	const [optimisticScores, setOptimisticScores] = useState<
-		Record<string, number>
-	>({});
+	const [optimisticScores, setOptimisticScores] = useState<Record<string, number>>({});
 	const [submitError, setSubmitError] = useState<string | null>(null);
 
-	const { playCorrectSound, playWrongSound } = useGameAudio(
-		isMuted,
-		false,
-		true,
-		guessTimeLeft,
-	);
+	const { playCorrectSound, playWrongSound } = useGameAudio(isMuted, false, true, guessTimeLeft);
 
 	useEffect(() => {
 		localStorage.setItem("pokemonGameMuted", String(isMuted));

@@ -34,8 +34,7 @@ export interface UseGameOverDialogEffectsResult {
 export const useGameOverDialogEffects = (
 	params: UseGameOverDialogEffectsParams,
 ): UseGameOverDialogEffectsResult => {
-	const { shareableUrl, isSavingResult, displayTime } =
-		useGameOverSaveEffect(params);
+	const { shareableUrl, isSavingResult, displayTime } = useGameOverSaveEffect(params);
 
 	useGameOverCryEffect(params);
 

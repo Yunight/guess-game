@@ -17,10 +17,7 @@ export interface ScoringResult {
 export const calculateEarnedPoints = (context: ScoringContext): ScoringResult => {
 	const random = context.random ?? Math.random;
 	const maxTime = context.roundDurationSeconds ?? 15;
-	const guessTimeLeft = Math.min(
-		maxTime,
-		Math.max(0, context.guessTimeLeft),
-	);
+	const guessTimeLeft = Math.min(maxTime, Math.max(0, context.guessTimeLeft));
 
 	if (!context.isHardMode) {
 		return {

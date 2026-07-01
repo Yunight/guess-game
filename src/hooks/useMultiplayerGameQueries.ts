@@ -1,10 +1,7 @@
 import type { Pokemon } from "@/components/pokemon-game/types";
 import { resolveDisplayScore } from "@/services/multiplayerGameStateLogic";
 import type { MultiplayerRoom } from "@/services/multiplayerRoomTypes";
-import {
-	useGetAllPokemonNamesQuery,
-	useGetPokemonByIdQuery,
-} from "@/services/pokemonApi";
+import { useGetAllPokemonNamesQuery, useGetPokemonByIdQuery } from "@/services/pokemonApi";
 
 interface UseMultiplayerGameQueriesParams {
 	room: MultiplayerRoom;
@@ -53,28 +50,21 @@ export const useMultiplayerGameQueries = ({
 		},
 	);
 
-	const { data: currentPokemon, isFetching: isPokemonLoading } =
-		useGetPokemonByIdQuery(
-			{ id: currentPokemonId },
-			{
-				skip: !currentPokemonId || room.status !== "playing",
-			},
-		);
+	const { data: currentPokemon, isFetching: isPokemonLoading } = useGetPokemonByIdQuery(
+		{ id: currentPokemonId },
+		{
+			skip: !currentPokemonId || room.status !== "playing",
+		},
+	);
 
 	const isShiny = currentPokemon?.isShiny ?? false;
 
 	const localPlayerName =
-		room.hostPlayer.id === localPlayerId
-			? room.hostPlayer.name
-			: (room.guestPlayer?.name ?? "");
+		room.hostPlayer.id === localPlayerId ? room.hostPlayer.name : (room.guestPlayer?.name ?? "");
 	const opponentName =
-		room.hostPlayer.id === localPlayerId
-			? (room.guestPlayer?.name ?? "")
-			: room.hostPlayer.name;
+		room.hostPlayer.id === localPlayerId ? (room.guestPlayer?.name ?? "") : room.hostPlayer.name;
 	const opponentPlayerId =
-		room.hostPlayer.id === localPlayerId
-			? room.guestPlayer?.id
-			: room.hostPlayer.id;
+		room.hostPlayer.id === localPlayerId ? room.guestPlayer?.id : room.hostPlayer.id;
 
 	const hostName = room.hostPlayer.name;
 	const guestName = room.guestPlayer?.name ?? "";
@@ -89,11 +79,8 @@ export const useMultiplayerGameQueries = ({
 		return resolveDisplayScore(firestoreScore, optimisticScores[playerId]);
 	};
 
-	const totalCount =
-		room.selectedGeneration.endId - room.selectedGeneration.startId + 1;
-	const remainingCount = gameState
-		? gameState.remainingPokemon.length + 1
-		: totalCount;
+	const totalCount = room.selectedGeneration.endId - room.selectedGeneration.startId + 1;
+	const remainingCount = gameState ? gameState.remainingPokemon.length + 1 : totalCount;
 
 	return {
 		apiPokemonNames,

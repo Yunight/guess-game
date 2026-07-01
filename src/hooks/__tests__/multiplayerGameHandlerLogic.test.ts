@@ -1,5 +1,5 @@
 import { Timestamp } from "firebase/firestore";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it } from "vite-plus/test";
 import {
 	computeGuessTimeLeft,
 	shouldScheduleAdvanceRound,
@@ -24,7 +24,8 @@ describe("computeGuessTimeLeft", () => {
 	});
 });
 
-describe("shouldScheduleAdvanceRound", () => {	it("returns true when round is resolved and not yet advanced", () => {
+describe("shouldScheduleAdvanceRound", () => {
+	it("returns true when round is resolved and not yet advanced", () => {
 		expect(shouldScheduleAdvanceRound(0, 1, true)).toBe(true);
 		expect(shouldScheduleAdvanceRound(2, 3, true)).toBe(true);
 	});

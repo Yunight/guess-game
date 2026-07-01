@@ -1,14 +1,12 @@
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { describe, expect, test, vi } from "vitest";
+import { describe, expect, test, vi } from "vite-plus/test";
 import { Button } from "../button";
 
 describe("Button", () => {
 	test("renders button with text", () => {
 		render(<Button>Click me</Button>);
-		expect(
-			screen.getByRole("button", { name: "Click me" }),
-		).toBeInTheDocument();
+		expect(screen.getByRole("button", { name: "Click me" })).toBeInTheDocument();
 	});
 
 	test("handles click events", async () => {
@@ -26,9 +24,7 @@ describe("Button", () => {
 
 	test("renders button with custom className", () => {
 		render(<Button className="custom-class">Click me</Button>);
-		expect(screen.getByRole("button", { name: "Click me" })).toHaveClass(
-			"custom-class",
-		);
+		expect(screen.getByRole("button", { name: "Click me" })).toHaveClass("custom-class");
 	});
 
 	test("renders button with variant", () => {
@@ -52,8 +48,6 @@ describe("Button", () => {
 			</Button>,
 		);
 		expect(screen.getByTestId("test-icon")).toBeInTheDocument();
-		expect(
-			screen.getByRole("button", { name: /click me/i }),
-		).toBeInTheDocument();
+		expect(screen.getByRole("button", { name: /click me/i })).toBeInTheDocument();
 	});
 });

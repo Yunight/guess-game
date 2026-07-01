@@ -34,10 +34,7 @@ export const EmailAuthForm = ({
 	return (
 		<form onSubmit={onSubmit} className="space-y-4">
 			<div>
-				<label
-					htmlFor="email"
-					className="block text-sm font-medium mb-1 text-gray-800"
-				>
+				<label htmlFor="email" className="block text-sm font-medium mb-1 text-gray-800">
 					{t("email")}
 				</label>
 				<Input
@@ -53,10 +50,7 @@ export const EmailAuthForm = ({
 
 			{isSignUp && (
 				<div>
-					<label
-						htmlFor="trainerName"
-						className="block text-sm font-medium mb-1 text-gray-800"
-					>
+					<label htmlFor="trainerName" className="block text-sm font-medium mb-1 text-gray-800">
 						{t("trainerName")}
 					</label>
 					<Input
@@ -72,10 +66,7 @@ export const EmailAuthForm = ({
 			)}
 
 			<div>
-				<label
-					htmlFor="password"
-					className="block text-sm font-medium mb-1 text-gray-800"
-				>
+				<label htmlFor="password" className="block text-sm font-medium mb-1 text-gray-800">
 					{t("password")}
 				</label>
 				<Input

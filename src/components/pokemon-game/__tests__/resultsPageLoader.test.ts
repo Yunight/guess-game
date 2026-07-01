@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from "vitest";
+import { describe, expect, it, vi } from "vite-plus/test";
 import type { GameResult } from "@/services/gameResultsService";
 import {
 	computeRemainingPokemon,
@@ -26,9 +26,7 @@ const mockGameResult = {
 
 describe("loadGameResult", () => {
 	it("returns missingId when resultId is undefined", async () => {
-		await expect(
-			loadGameResult(undefined, vi.fn()),
-		).resolves.toEqual({ status: "missingId" });
+		await expect(loadGameResult(undefined, vi.fn())).resolves.toEqual({ status: "missingId" });
 	});
 
 	it("returns success when result is found", async () => {

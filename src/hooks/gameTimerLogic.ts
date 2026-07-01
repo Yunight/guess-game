@@ -28,9 +28,7 @@ export interface VisibilityChangeResult {
 	accurateElapsed: number;
 }
 
-export const resolveVisibilityChange = (
-	input: VisibilityChangeInput,
-): VisibilityChangeResult => {
+export const resolveVisibilityChange = (input: VisibilityChangeInput): VisibilityChangeResult => {
 	if (input.isHidden) {
 		return {
 			pausedTime: input.pausedTime,
@@ -49,32 +47,22 @@ export const resolveVisibilityChange = (
 		};
 	}
 
-	const pauseDuration = Math.floor(
-		(input.now - input.lastVisibilityChange) / 1000,
-	);
+	const pauseDuration = Math.floor((input.now - input.lastVisibilityChange) / 1000);
 	const pausedTime = input.pausedTime + pauseDuration;
-	const accurateElapsed = calculateElapsedTime(
-		input.startTime,
-		pausedTime,
-		input.now,
-	);
+	const accurateElapsed = calculateElapsedTime(input.startTime, pausedTime, input.now);
 
 	return {
 		pausedTime,
 		lastVisibilityChange: input.now,
-		shouldUpdateTotal:
-			input.isGameActive && input.hasTotalTimer && !input.isHidden,
+		shouldUpdateTotal: input.isGameActive && input.hasTotalTimer && !input.isHidden,
 		accurateElapsed,
 	};
 };
 
-export const getInitialGuessTime = (isShiny: boolean | undefined): number =>
-	isShiny ? 10 : 15;
+export const getInitialGuessTime = (isShiny: boolean | undefined): number => (isShiny ? 10 : 15);
 
-export const shouldStartGuessTimer = (
-	isGameActive: boolean,
-	isHardMode: boolean,
-): boolean => isGameActive && isHardMode;
+export const shouldStartGuessTimer = (isGameActive: boolean, isHardMode: boolean): boolean =>
+	isGameActive && isHardMode;
 
 export interface GuessTimerTickResult {
 	timeLeft: number;

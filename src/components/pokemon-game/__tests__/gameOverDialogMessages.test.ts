@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it } from "vite-plus/test";
 import type { Pokemon } from "../types";
 import {
 	formatGameOverTime,
@@ -48,15 +48,11 @@ const baseClickbaitParams = {
 
 describe("getGenerationName", () => {
 	it("returns english generation label", () => {
-		expect(getGenerationName({ name: "Generation 3" }, "en")).toBe(
-			"Generation 3",
-		);
+		expect(getGenerationName({ name: "Generation 3" }, "en")).toBe("Generation 3");
 	});
 
 	it("returns french generation label", () => {
-		expect(getGenerationName({ name: "Generation 3" }, "fr")).toBe(
-			"3ère Génération",
-		);
+		expect(getGenerationName({ name: "Generation 3" }, "fr")).toBe("3ère Génération");
 	});
 
 	it("defaults to generation 1 when no number is present", () => {
@@ -81,21 +77,15 @@ describe("getLocalizedPokemonName", () => {
 	});
 
 	it("returns capitalized english name", () => {
-		expect(
-			getLocalizedPokemonName(
-				{ ...basePokemon, englishName: "pikachu" },
-				"en",
-			),
-		).toBe("Pikachu");
+		expect(getLocalizedPokemonName({ ...basePokemon, englishName: "pikachu" }, "en")).toBe(
+			"Pikachu",
+		);
 	});
 
 	it("returns capitalized french name", () => {
-		expect(
-			getLocalizedPokemonName(
-				{ ...basePokemon, frenchName: "pikachu" },
-				"fr",
-			),
-		).toBe("Pikachu");
+		expect(getLocalizedPokemonName({ ...basePokemon, frenchName: "pikachu" }, "fr")).toBe(
+			"Pikachu",
+		);
 	});
 });
 
@@ -105,15 +95,11 @@ describe("getShinyLabel", () => {
 	});
 
 	it("returns english shiny label", () => {
-		expect(getShinyLabel({ ...basePokemon, isShiny: true }, "en")).toBe(
-			"✨ SHINY ✨",
-		);
+		expect(getShinyLabel({ ...basePokemon, isShiny: true }, "en")).toBe("✨ SHINY ✨");
 	});
 
 	it("returns french shiny label", () => {
-		expect(getShinyLabel({ ...basePokemon, isShiny: true }, "fr")).toBe(
-			"✨ CHROMATIQUE ✨",
-		);
+		expect(getShinyLabel({ ...basePokemon, isShiny: true }, "fr")).toBe("✨ CHROMATIQUE ✨");
 	});
 });
 
@@ -244,8 +230,6 @@ describe("getClickbaitMessage", () => {
 	});
 
 	it("returns default message when no special conditions match", () => {
-		expect(getClickbaitMessage(baseClickbaitParams)).toBe(
-			'shareMsgDefault:{"gen":"Generation 1"}',
-		);
+		expect(getClickbaitMessage(baseClickbaitParams)).toBe('shareMsgDefault:{"gen":"Generation 1"}');
 	});
 });

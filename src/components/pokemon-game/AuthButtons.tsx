@@ -106,9 +106,7 @@ export const AuthButtons: FC<AuthButtonsProps> = ({
 	return (
 		<>
 			{authError && (
-				<p className="text-sm text-red-600 bg-red-50 rounded-md px-2 py-1">
-					{authError}
-				</p>
+				<p className="text-sm text-red-600 bg-red-50 rounded-md px-2 py-1">{authError}</p>
 			)}
 			<div className="flex gap-2">
 				<Button

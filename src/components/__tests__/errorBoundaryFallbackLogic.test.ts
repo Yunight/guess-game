@@ -1,8 +1,5 @@
-import { describe, expect, it } from "vitest";
-import {
-	getErrorBoundaryTitle,
-	shouldShowMobileNetworkHelp,
-} from "../errorBoundaryFallbackLogic";
+import { describe, expect, it } from "vite-plus/test";
+import { getErrorBoundaryTitle, shouldShowMobileNetworkHelp } from "../errorBoundaryFallbackLogic";
 
 describe("errorBoundaryFallbackLogic", () => {
 	it("detects mobile network help scenarios", () => {
@@ -15,10 +12,8 @@ describe("errorBoundaryFallbackLogic", () => {
 	});
 
 	it("returns mobile title for phone user agents", () => {
-		expect(
-			getErrorBoundaryTitle(
-				"Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X)",
-			),
-		).toBe("Mobile Loading Error");
+		expect(getErrorBoundaryTitle("Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X)")).toBe(
+			"Mobile Loading Error",
+		);
 	});
 });

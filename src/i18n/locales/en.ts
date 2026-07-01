@@ -107,68 +107,48 @@ export const en = {
 	understood: "Got it!",
 
 	// Share Messages
-	shareMsg2500:
-		"🌈 ARCEUS TIER! 2500+ points in {{gen}}! You've transcended mortality! 🌌",
-	shareMsg2250:
-		"🎇 ULTRA BEAST! 2250+ points in {{gen}}! Breaking dimensional records! ⚡",
-	shareMsg2000:
-		"👑 MYTHICAL! Over 2000 points in {{gen}}! You're beyond legendary! 🌟",
+	shareMsg2500: "🌈 ARCEUS TIER! 2500+ points in {{gen}}! You've transcended mortality! 🌌",
+	shareMsg2250: "🎇 ULTRA BEAST! 2250+ points in {{gen}}! Breaking dimensional records! ⚡",
+	shareMsg2000: "👑 MYTHICAL! Over 2000 points in {{gen}}! You're beyond legendary! 🌟",
 	shareMsgAllPokemon:
 		"⭐️ LEGENDARY ACHIEVEMENT! ⭐️\n\n🏆 I've found ALL Pokémon from {{gen}}!\n\n✨ Who dares to take on this challenge? ✨",
 	shareMsg1800: "🔮 CELESTIAL! 1800+ points in {{gen}}! Touching the stars! ✨",
-	shareMsg1600:
-		"⚔️ CHAMPION MASTER! 1600+ points in {{gen}}! Unrivaled power! 🏆",
-	shareMsg1500:
-		"🌠 ULTRA MASTER! 1500+ points in {{gen}}! Absolutely mind-blowing! 🔥",
-	shareMsg1400:
-		"🎪 ELITE FOUR! 1400+ points in {{gen}}! Top-tier performance! 💫",
+	shareMsg1600: "⚔️ CHAMPION MASTER! 1600+ points in {{gen}}! Unrivaled power! 🏆",
+	shareMsg1500: "🌠 ULTRA MASTER! 1500+ points in {{gen}}! Absolutely mind-blowing! 🔥",
+	shareMsg1400: "🎪 ELITE FOUR! 1400+ points in {{gen}}! Top-tier performance! 💫",
 	shareMsg1300: "🌠 DYNAMAX! 1300+ points in {{gen}}! Growing stronger! 💥",
-	shareMsg1200:
-		"⚡ GIGANTAMAX! 1200+ points in {{gen}}! Massive achievement! 🌈",
+	shareMsg1200: "⚡ GIGANTAMAX! 1200+ points in {{gen}}! Massive achievement! 🌈",
 	shareMsg1100: "🎭 MEGA EVOLUTION! 1100+ points in {{gen}}! Beyond limits! 💪",
-	shareMsg1000:
-		"🌟 LEGENDARY! Over 1000 points in {{gen}}! Absolutely phenomenal! 🏆",
+	shareMsg1000: "🌟 LEGENDARY! Over 1000 points in {{gen}}! Absolutely phenomenal! 🏆",
 	shareMsg900: "🎨 SHINY HUNTER! 900+ points in {{gen}}! Rare performance! ✨",
 	shareMsg800: "🎖️ GYM LEADER! 800+ points in {{gen}}! Badge of honor! 🎖️",
-	shareMsg750:
-		"✨ MASTERCLASS! 750+ points in {{gen}}! Elite trainer status! 💫",
+	shareMsg750: "✨ MASTERCLASS! 750+ points in {{gen}}! Elite trainer status! 💫",
 	shareMsg700: "🌺 ALOLAN FORM! 700+ points in {{gen}}! Exotic excellence! 🌴",
 	shareMsg600: "🎭 GALARIAN STAR! 600+ points in {{gen}}! Regional champion!",
-	shareMsg500:
-		"🎯 INCREDIBLE! Over 500 points in {{gen}}! A true Pokémon Master! ⭐",
+	shareMsg500: "🎯 INCREDIBLE! Over 500 points in {{gen}}! A true Pokémon Master! ⭐",
 	shareMsg450: "🎪 FRONTIER BRAIN! 450+ points in {{gen}}! Battle expert! 🔥",
 	shareMsg400: "🚀 AMAZING! 400+ points in {{gen}}! Soaring to new heights! 🌟",
 	shareMsg350: "🎨 CONTEST STAR! 350+ points in {{gen}}! Spectacular show! 🎭",
-	shareMsg300:
-		"💫 FANTASTIC! 300+ points in {{gen}}! Your skills are shining! ✨",
-	shareMsg250:
-		"🎪 ACE TRAINER! 250+ points in {{gen}}! Rising through ranks! 💪",
+	shareMsg300: "💫 FANTASTIC! 300+ points in {{gen}}! Your skills are shining! ✨",
+	shareMsg250: "🎪 ACE TRAINER! 250+ points in {{gen}}! Rising through ranks! 💪",
 	shareMsg200: "⚡ AWESOME! 200+ points in {{gen}}! Getting stronger! ��",
 	shareMsg150: "🌟 COOL TRAINER! 150+ points in {{gen}}! Making progress!",
 	shareMsg100: "🌟 GREAT! 100+ points in {{gen}}! On the way to greatness! ⭐",
 	shareMsg75: "🎪 RISING STAR! 75+ points in {{gen}}! Keep climbing! 🌟",
-	shareMsg50:
-		"✨ NICE! 50+ points in {{gen}}! The beginning of a great adventure! 🌟",
+	shareMsg50: "✨ NICE! 50+ points in {{gen}}! The beginning of a great adventure! 🌟",
 	shareMsgChampion:
 		"👑 CHAMPION! New record on Pokemon Guesser in {{gen}}! Who dares to challenge me? 🏆",
-	shareMsgTop3:
-		"🥇 World Top 3 on Pokemon Guesser in {{gen}}! Try to beat me! 🔥",
-	shareMsgTop10:
-		"🎖️ Top 10 on Pokemon Guesser in {{gen}}! The competition is fierce! 💪",
+	shareMsgTop3: "🥇 World Top 3 on Pokemon Guesser in {{gen}}! Try to beat me! 🔥",
+	shareMsgTop10: "🎖️ Top 10 on Pokemon Guesser in {{gen}}! The competition is fierce! 💪",
 	shareMsgHypeLegend:
 		"🚂 LEGENDARY! {{count}} ultra-fast answers in a row in {{gen}}! A true speedrunner! 🔥",
-	shareMsgHype:
-		"🚂 HOT STREAK! {{count}} quick answers in a row in {{gen}}! 🔥",
-	shareMsgCriticalHit:
-		"⚡ Critical hits expert in {{gen}}! Luck or skill? Come test yourself!",
-	shareMsgCriticalSuccess:
-		"⏱️ Timing master in {{gen}}! Last-second answers! 🎭",
-	shareMsgHypeTrain:
-		"🚄 The Hype Train was unstoppable in {{gen}}! What a performance! 🔥",
+	shareMsgHype: "🚂 HOT STREAK! {{count}} quick answers in a row in {{gen}}! 🔥",
+	shareMsgCriticalHit: "⚡ Critical hits expert in {{gen}}! Luck or skill? Come test yourself!",
+	shareMsgCriticalSuccess: "⏱️ Timing master in {{gen}}! Last-second answers! 🎭",
+	shareMsgHypeTrain: "🚄 The Hype Train was unstoppable in {{gen}}! What a performance! 🔥",
 	shareMsgLegendary: "✨ I am a LEGENDARY Pokémon in {{gen}}: {{pokemon}}! 🌟",
 	shareMsgMythical: "🌈 I am a MYTHICAL Pokémon in {{gen}}: {{pokemon}}! ✨",
-	shareMsgDefault:
-		"🎮 New challenge on Pokemon Guesser in {{gen}}! Come test your knowledge! ✨",
+	shareMsgDefault: "🎮 New challenge on Pokemon Guesser in {{gen}}! Come test your knowledge! ✨",
 
 	// Generations
 	gen1: "1st Generation",
@@ -277,21 +257,9 @@ export const en = {
 			"Cave Explorer",
 			"Fisherman",
 		],
-		intermediate: [
-			"Intermediate Trainer",
-			"Bug Catcher",
-			"Picnicker",
-			"Hiker",
-			"Schoolkid",
-		],
+		intermediate: ["Intermediate Trainer", "Bug Catcher", "Picnicker", "Hiker", "Schoolkid"],
 		novice: ["Novice Trainer", "Youngster", "Lass", "Camper", "Rising Star"],
-		beginner: [
-			"Rookie Trainer",
-			"Trainer",
-			"Pokémon Fan",
-			"New Trainer",
-			"Aspiring Trainer",
-		],
+		beginner: ["Rookie Trainer", "Trainer", "Pokémon Fan", "New Trainer", "Aspiring Trainer"],
 		initiate: [
 			"Pokémon Initiate",
 			"Fresh Trainer",
@@ -306,13 +274,7 @@ export const en = {
 			"Route Walker",
 			"Nature Observer",
 		],
-		cadet: [
-			"Trainer Cadet",
-			"Pokémon Scout",
-			"Adventure Seeker",
-			"Discovery Maker",
-			"Path Finder",
-		],
+		cadet: ["Trainer Cadet", "Pokémon Scout", "Adventure Seeker", "Discovery Maker", "Path Finder"],
 		student: [
 			"Pokémon Student",
 			"Knowledge Seeker",
@@ -334,13 +296,7 @@ export const en = {
 			"First Steps",
 			"Journey Starter",
 		],
-		starter: [
-			"Pokémon Starter",
-			"New Explorer",
-			"Fresh Face",
-			"First Timer",
-			"Adventure Beginner",
-		],
+		starter: ["Pokémon Starter", "New Explorer", "Fresh Face", "First Timer", "Adventure Beginner"],
 	},
 
 	// Shareable Results

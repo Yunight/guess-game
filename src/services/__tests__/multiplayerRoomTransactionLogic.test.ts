@@ -1,5 +1,5 @@
 import { Timestamp } from "firebase/firestore";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it } from "vite-plus/test";
 import {
 	applyPoolProgressionInTransaction,
 	resolveWinnerId,
@@ -52,9 +52,7 @@ const captureTransaction = (): {
 
 describe("resolveWinnerId", () => {
 	it("returns host when host leads", () => {
-		expect(resolveWinnerId({ "host-1": 5, "guest-1": 2 }, "host-1", "guest-1")).toBe(
-			"host-1",
-		);
+		expect(resolveWinnerId({ "host-1": 5, "guest-1": 2 }, "host-1", "guest-1")).toBe("host-1");
 	});
 
 	it("returns null on tie", () => {
@@ -70,13 +68,7 @@ describe("applyPoolProgressionInTransaction", () => {
 		});
 		const { writer, updates } = captureTransaction();
 
-		applyPoolProgressionInTransaction(
-			writer,
-			"room-ref",
-			room,
-			false,
-			mockTimestamp,
-		);
+		applyPoolProgressionInTransaction(writer, "room-ref", room, false, mockTimestamp);
 
 		expect(updates).toEqual([
 			{
@@ -94,13 +86,7 @@ describe("applyPoolProgressionInTransaction", () => {
 		});
 		const { writer, updates } = captureTransaction();
 
-		applyPoolProgressionInTransaction(
-			writer,
-			"room-ref",
-			room,
-			false,
-			mockTimestamp,
-		);
+		applyPoolProgressionInTransaction(writer, "room-ref", room, false, mockTimestamp);
 
 		expect(updates).toHaveLength(1);
 		const gameStateUpdate = updates[0]?.gameState;

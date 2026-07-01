@@ -18,9 +18,7 @@ export const ResultsPageDebugPanel = ({
 			<h3 className="text-lg font-bold mb-2">Debug: Prestige Levels</h3>
 			<div className="grid grid-cols-5 gap-2 text-xs">
 				{DEBUG_PERCENTAGES.map((percentage) => {
-					const pokemonCount = Math.round(
-						(percentage / 100) * totalPokemonInGeneration,
-					);
+					const pokemonCount = Math.round((percentage / 100) * totalPokemonInGeneration);
 
 					return (
 						<button

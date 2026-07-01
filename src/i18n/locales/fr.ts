@@ -71,8 +71,7 @@ export const fr = {
 	pressEnter: "Appuyez sur Entrée pour valider directement la réponse",
 	pressRight: "Appuyez sur Flèche droite pour utiliser un indice",
 	useArrows: "Utilisez les flèches haut/bas pour naviguer entre les réponses",
-	autoFocus:
-		"Le focus revient automatiquement sur le champ de saisie après validation",
+	autoFocus: "Le focus revient automatiquement sur le champ de saisie après validation",
 	chillMode: "Mode Chill",
 	tryHardMode: "Mode Try Hard",
 	hintsAvailable: "Indices disponibles",
@@ -112,78 +111,47 @@ export const fr = {
 		"🌈 NIVEAU ARCEUS! Plus de 2500 points en {{gen}}! Tu as transcendé la mortalité! 🌌",
 	shareMsg2250:
 		"🎇 ULTRA-CHIMÈRE! Plus de 2250 points en {{gen}}! Tu brises les records dimensionnels! ⚡",
-	shareMsg2000:
-		"👑 MYTHIQUE! Plus de 2000 points en {{gen}}! Au-delà du légendaire! 🌟",
+	shareMsg2000: "👑 MYTHIQUE! Plus de 2000 points en {{gen}}! Au-delà du légendaire! 🌟",
 	shareMsgAllPokemon:
 		"⭐️ RÉUSSITE LÉGENDAIRE! ⭐️\n\n🏆 J'ai trouvé TOUS les Pokémon de la {{gen}}!\n\n✨ Qui osera relever le défi? ✨",
-	shareMsg1800:
-		"🔮 CÉLESTE! Plus de 1800 points en {{gen}}! Tu touches les étoiles! ✨",
-	shareMsg1600:
-		"⚔️ MAÎTRE CHAMPION! Plus de 1600 points en {{gen}}! Puissance inégalée! 🏆",
-	shareMsg1500:
-		"🌠 ULTRA MAÎTRE! Plus de 1500 points en {{gen}}! Absolument époustouflant! 🔥",
-	shareMsg1400:
-		"🎪 CONSEIL 4! Plus de 1400 points en {{gen}}! Performance de haut niveau! 💫",
-	shareMsg1300:
-		"🌋 DYNAMAX! Plus de 1300 points en {{gen}}! Toujours plus fort! 💥",
-	shareMsg1200:
-		"⚡ GIGAMAX! Plus de 1200 points en {{gen}}! Réussite massive! 🌈",
-	shareMsg1100:
-		"🎭 MÉGA-ÉVOLUTION! Plus de 1100 points en {{gen}}! Au-delà des limites! 💪",
-	shareMsg1000:
-		"🌟 LÉGENDAIRE! Plus de 1000 points en {{gen}}! Absolument phénoménal! 🏆",
-	shareMsg900:
-		"🎨 CHASSEUR DE SHINY! Plus de 900 points en {{gen}}! Performance rare! ✨",
-	shareMsg800:
-		"🎪 CHAMPION D'ARÈNE! Plus de 800 points en {{gen}}! Badge d'honneur! 🎖️",
-	shareMsg750:
-		"✨ MASTERCLASS! Plus de 750 points en {{gen}}! Statut de dresseur d'élite! 💫",
-	shareMsg700:
-		"🌺 FORME D'ALOLA! Plus de 700 points en {{gen}}! Excellence exotique! 🌴",
-	shareMsg600:
-		"🎭 STAR DE GALAR! Plus de 600 points en {{gen}}! Champion régional! 👑",
-	shareMsg500:
-		"🎯 INCROYABLE! Plus de 500 points en {{gen}}! Un vrai Maître Pokémon! ⭐",
+	shareMsg1800: "🔮 CÉLESTE! Plus de 1800 points en {{gen}}! Tu touches les étoiles! ✨",
+	shareMsg1600: "⚔️ MAÎTRE CHAMPION! Plus de 1600 points en {{gen}}! Puissance inégalée! 🏆",
+	shareMsg1500: "🌠 ULTRA MAÎTRE! Plus de 1500 points en {{gen}}! Absolument époustouflant! 🔥",
+	shareMsg1400: "🎪 CONSEIL 4! Plus de 1400 points en {{gen}}! Performance de haut niveau! 💫",
+	shareMsg1300: "🌋 DYNAMAX! Plus de 1300 points en {{gen}}! Toujours plus fort! 💥",
+	shareMsg1200: "⚡ GIGAMAX! Plus de 1200 points en {{gen}}! Réussite massive! 🌈",
+	shareMsg1100: "🎭 MÉGA-ÉVOLUTION! Plus de 1100 points en {{gen}}! Au-delà des limites! 💪",
+	shareMsg1000: "🌟 LÉGENDAIRE! Plus de 1000 points en {{gen}}! Absolument phénoménal! 🏆",
+	shareMsg900: "🎨 CHASSEUR DE SHINY! Plus de 900 points en {{gen}}! Performance rare! ✨",
+	shareMsg800: "🎪 CHAMPION D'ARÈNE! Plus de 800 points en {{gen}}! Badge d'honneur! 🎖️",
+	shareMsg750: "✨ MASTERCLASS! Plus de 750 points en {{gen}}! Statut de dresseur d'élite! 💫",
+	shareMsg700: "🌺 FORME D'ALOLA! Plus de 700 points en {{gen}}! Excellence exotique! 🌴",
+	shareMsg600: "🎭 STAR DE GALAR! Plus de 600 points en {{gen}}! Champion régional! 👑",
+	shareMsg500: "🎯 INCROYABLE! Plus de 500 points en {{gen}}! Un vrai Maître Pokémon! ⭐",
 	shareMsg450:
 		"🎪 CERVEAU DE LA ZONE DE COMBAT! Plus de 450 points en {{gen}}! Expert en combat! 🔥",
-	shareMsg400:
-		"🚀 FANTASTIQUE! Plus de 400 points en {{gen}}! Tu atteins les sommets! 🌟",
-	shareMsg350:
-		"🎨 STAR DES CONCOURS! Plus de 350 points en {{gen}}! Spectacle spectaculaire! 🎭",
-	shareMsg300:
-		"💫 EXCELLENT! Plus de 300 points en {{gen}}! Tes compétences brillent! ✨",
-	shareMsg250:
-		"🎪 AS DRESSEUR! Plus de 250 points en {{gen}}! Tu montes en grade! 💪",
-	shareMsg200:
-		"⚡ GÉNIAL! Plus de 200 points en {{gen}}! Tu deviens plus fort! 💫",
-	shareMsg150:
-		"🎮 SUPER DRESSEUR! Plus de 150 points en {{gen}}! En progression! 🎯",
-	shareMsg100:
-		"🌟 SUPER! Plus de 100 points en {{gen}}! En route vers la grandeur! ⭐",
-	shareMsg75:
-		"🎪 ÉTOILE MONTANTE! Plus de 75 points en {{gen}}! Continue de grimper! 🌟",
-	shareMsg50:
-		"✨ BRAVO! Plus de 50 points en {{gen}}! Le début d'une grande aventure! 🌟",
+	shareMsg400: "🚀 FANTASTIQUE! Plus de 400 points en {{gen}}! Tu atteins les sommets! 🌟",
+	shareMsg350: "🎨 STAR DES CONCOURS! Plus de 350 points en {{gen}}! Spectacle spectaculaire! 🎭",
+	shareMsg300: "💫 EXCELLENT! Plus de 300 points en {{gen}}! Tes compétences brillent! ✨",
+	shareMsg250: "🎪 AS DRESSEUR! Plus de 250 points en {{gen}}! Tu montes en grade! 💪",
+	shareMsg200: "⚡ GÉNIAL! Plus de 200 points en {{gen}}! Tu deviens plus fort! 💫",
+	shareMsg150: "🎮 SUPER DRESSEUR! Plus de 150 points en {{gen}}! En progression! 🎯",
+	shareMsg100: "🌟 SUPER! Plus de 100 points en {{gen}}! En route vers la grandeur! ⭐",
+	shareMsg75: "🎪 ÉTOILE MONTANTE! Plus de 75 points en {{gen}}! Continue de grimper! 🌟",
+	shareMsg50: "✨ BRAVO! Plus de 50 points en {{gen}}! Le début d'une grande aventure! 🌟",
 	shareMsgChampion:
 		"👑 CHAMPION! Nouveau record sur Pokemon Guesser en {{gen}}! Qui osera me défier? 🏆",
-	shareMsgTop3:
-		"🥇 Top 3 mondial sur Pokemon Guesser en {{gen}}! Viens essayer de me battre! 🔥",
-	shareMsgTop10:
-		"🎖️ Top 10 sur Pokemon Guesser en {{gen}}! La compétition est rude! 💪",
+	shareMsgTop3: "🥇 Top 3 mondial sur Pokemon Guesser en {{gen}}! Viens essayer de me battre! 🔥",
+	shareMsgTop10: "🎖️ Top 10 sur Pokemon Guesser en {{gen}}! La compétition est rude! 💪",
 	shareMsgHypeLegend:
 		"🚂 LÉGENDAIRE! {{count}} réponses ultra rapides d'affilée en {{gen}}! Un vrai speedrunner! ⚡",
-	shareMsgHype:
-		"🚂 HOT STREAK! {{count}} réponses rapides d'affilée en {{gen}}! 🔥",
+	shareMsgHype: "🚂 HOT STREAK! {{count}} réponses rapides d'affilée en {{gen}}! 🔥",
 	shareMsgCriticalHit:
 		"⚡ Expert des coups critiques en {{gen}}! La chance ou le talent? Viens tester! 🎯",
-	shareMsgCriticalSuccess:
-		"⏱️ Maître du timing en {{gen}}! Des réponses à la dernière seconde! 🎭",
-	shareMsgHypeTrain:
-		"🚄 Le Hype Train était incontrlable en {{gen}}! Quelle performance! 🔥",
-	shareMsgLegendary:
-		"✨ Je suis un Pokémon LÉGENDAIRE en {{gen}}: {{pokemon}}! 🌟",
-	shareMsgMythical:
-		"🌈 Je suis un Pokémon MYTHIQUE en {{gen}}: {{pokemon}}! ✨",
+	shareMsgCriticalSuccess: "⏱️ Maître du timing en {{gen}}! Des réponses à la dernière seconde! 🎭",
+	shareMsgHypeTrain: "🚄 Le Hype Train était incontrlable en {{gen}}! Quelle performance! 🔥",
+	shareMsgLegendary: "✨ Je suis un Pokémon LÉGENDAIRE en {{gen}}: {{pokemon}}! 🌟",
+	shareMsgMythical: "🌈 Je suis un Pokémon MYTHIQUE en {{gen}}: {{pokemon}}! ✨",
 	shareMsgDefault:
 		"🎮 Nouveau challenge sur Pokemon Guesser en {{gen}}! Viens tester tes connaissances! ✨",
 
@@ -209,8 +177,7 @@ export const fr = {
 	passwordResetEmailSent: "Email de réinitialisation envoyé",
 	startYourJourney: "Commencez votre aventure de Dresseur Pokémon !",
 	welcomeBack: "Bon retour parmi nous, Dresseur Pokémon !",
-	enterEmailForReset:
-		"Entrez votre email pour recevoir un lien de réinitialisation",
+	enterEmailForReset: "Entrez votre email pour recevoir un lien de réinitialisation",
 	sendResetLink: "Envoyer le lien",
 	backToSignIn: "Retour à la connexion",
 	rankingFetchError: "Impossible de charger le classement.",
@@ -226,8 +193,7 @@ export const fr = {
 		"auth/user-disabled": "Ce compte a été désactivé",
 		"auth/user-not-found": "Aucun compte ne correspond à cette adresse email",
 		"auth/wrong-password": "Mot de passe incorrect",
-		"auth/too-many-requests":
-			"Trop de tentatives de connexion. Veuillez réessayer plus tard",
+		"auth/too-many-requests": "Trop de tentatives de connexion. Veuillez réessayer plus tard",
 		"auth/default": "Une erreur est survenue. Veuillez réessayer",
 	},
 
@@ -296,20 +262,8 @@ export const fr = {
 			"Explorateur de Grotte",
 			"Pêcheur",
 		],
-		intermediate: [
-			"Dresseur Intermédiaire",
-			"Attrape-Insecte",
-			"Campeur",
-			"Montagnard",
-			"Écolier",
-		],
-		novice: [
-			"Dresseur Novice",
-			"Gamin",
-			"Fillette",
-			"Campeur",
-			"Étoile Montante",
-		],
+		intermediate: ["Dresseur Intermédiaire", "Attrape-Insecte", "Campeur", "Montagnard", "Écolier"],
+		novice: ["Dresseur Novice", "Gamin", "Fillette", "Campeur", "Étoile Montante"],
 		beginner: [
 			"Dresseur Débutant",
 			"Dresseur",

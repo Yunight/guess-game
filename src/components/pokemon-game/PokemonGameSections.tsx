@@ -2,10 +2,7 @@ import { GENERATIONS } from "./generations";
 import { MenuScreen } from "./MenuScreen";
 import { resolveCanStartGame } from "./pokemonGameMenuLogic";
 import { GameScreen } from "./GameScreen";
-import {
-	formatRankingDate,
-	formatTimeForRanking,
-} from "../../utils/gameFormatters";
+import { formatRankingDate, formatTimeForRanking } from "../../utils/gameFormatters";
 import type { usePokemonGameController } from "../../hooks/usePokemonGameController";
 import { useCallback, useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -25,12 +22,8 @@ export const PokemonGameActiveLayout = ({
 
 	return (
 		<GameScreen
-			currentPokemon={
-				gameState.isRestarting ? undefined : gameState.currentPokemon
-			}
-			isPokemonLoading={
-				gameState.isRestarting || controller.isPokemonLoading
-			}
+			currentPokemon={gameState.isRestarting ? undefined : gameState.currentPokemon}
+			isPokemonLoading={gameState.isRestarting || controller.isPokemonLoading}
 			isCorrect={gameState.isCorrect}
 			score={gameState.score}
 			bestScore={controller.bestScore}
@@ -59,11 +52,7 @@ export const PokemonGameActiveLayout = ({
 			consecutiveFastAnswers={gameState.consecutiveFastAnswers}
 			pointsEarned={gameState.pointsEarned}
 			remainingCount={gameState.remainingPokemon.length}
-			totalCount={
-				gameState.selectedGeneration.endId -
-				gameState.selectedGeneration.startId +
-				1
-			}
+			totalCount={gameState.selectedGeneration.endId - gameState.selectedGeneration.startId + 1}
 		/>
 	);
 };
@@ -72,9 +61,7 @@ interface PokemonGameMenuLayoutProps {
 	controller: Controller;
 }
 
-export const PokemonGameMenuLayout = ({
-	controller,
-}: PokemonGameMenuLayoutProps): JSX.Element => {
+export const PokemonGameMenuLayout = ({ controller }: PokemonGameMenuLayoutProps): JSX.Element => {
 	const { gameState, gameSetters } = controller;
 	const navigate = useNavigate();
 	const [isCreatingMultiRoom, setIsCreatingMultiRoom] = useState(false);
@@ -85,10 +72,7 @@ export const PokemonGameMenuLayout = ({
 		setIsCreatingMultiRoom(true);
 		try {
 			const playerName = controller.playerName.trim();
-			const roomId = await createRoom(
-				playerName,
-				gameState.selectedGeneration,
-			);
+			const roomId = await createRoom(playerName, gameState.selectedGeneration);
 			createRoomPlayerId(roomId);
 			navigate(`/multi/${roomId}`);
 		} catch (error: unknown) {

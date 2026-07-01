@@ -49,18 +49,14 @@ export interface GameResult {
 	expiresAt?: Timestamp;
 }
 
-const mapQueryTimestamps = async (
-	recentQuery: Query,
-): Promise<number[]> => {
+const mapQueryTimestamps = async (recentQuery: Query): Promise<number[]> => {
 	const snapshot: QuerySnapshot = await getDocs(recentQuery);
 	return snapshot.docs
 		.map((docSnap) => extractTimestampMs(docSnap.data().createdAt))
 		.filter((timestamp): timestamp is number => timestamp !== null);
 };
 
-const getRecentSaveTimestamps = async (
-	playerName: string,
-): Promise<number[]> => {
+const getRecentSaveTimestamps = async (playerName: string): Promise<number[]> => {
 	const recentQuery = query(
 		collection(db, "gameResults"),
 		where("playerName", "==", playerName),
@@ -79,9 +75,7 @@ const getGlobalSaveTimestampsToday = async (): Promise<number[]> => {
 };
 
 export const gameResultsService = {
-	async saveGameResult(
-		resultData: Omit<GameResult, "id" | "createdAt">,
-	): Promise<string> {
+	async saveGameResult(resultData: Omit<GameResult, "id" | "createdAt">): Promise<string> {
 		try {
 			validateGameResultInput({
 				playerName: resultData.playerName,
@@ -90,9 +84,7 @@ export const gameResultsService = {
 				userRanking: resultData.userRanking,
 			});
 
-			const userTimestamps = await getRecentSaveTimestamps(
-				resultData.playerName,
-			);
+			const userTimestamps = await getRecentSaveTimestamps(resultData.playerName);
 			if (isDailyUserLimitReached(userTimestamps)) {
 				throw new GameResultValidationError("Daily user save limit exceeded");
 			}
@@ -107,9 +99,7 @@ export const gameResultsService = {
 			const resultId = doc(collection(db, "gameResults")).id;
 
 			const existingDoc = await getDoc(doc(db, "gameResults", resultId));
-			const resolvedId = existingDoc.exists()
-				? `${resultId}_${timestamp}_${randomPart}`
-				: resultId;
+			const resolvedId = existingDoc.exists() ? `${resultId}_${timestamp}_${randomPart}` : resultId;
 
 			const expirationDate = buildExpirationDate({
 				playerName: resultData.playerName,
@@ -248,4 +238,3 @@ export const gameResultsService = {
 		return `${baseUrl}/results/${resultId}?t=${timestamp}`;
 	},
 };
-

@@ -3,9 +3,7 @@ import { GameStats } from "./GameStats";
 import { HintButton } from "./HintButton";
 import type { GameScreenPlayAreaProps } from "./gameScreenTypes";
 
-export const GameScreenControlsSection = (
-	props: GameScreenPlayAreaProps,
-): JSX.Element => (
+export const GameScreenControlsSection = (props: GameScreenPlayAreaProps): JSX.Element => (
 	<>
 		<GameStats
 			score={props.score}

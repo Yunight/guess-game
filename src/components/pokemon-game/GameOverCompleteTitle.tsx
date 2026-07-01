@@ -7,9 +7,7 @@ interface GameOverCompleteTitleProps {
 	language: string;
 }
 
-export const GameOverCompleteTitle = ({
-	language,
-}: GameOverCompleteTitleProps): JSX.Element => (
+export const GameOverCompleteTitle = ({ language }: GameOverCompleteTitleProps): JSX.Element => (
 	<div className="space-y-2">
 		<div className="text-3xl font-extrabold text-yellow-100 animate-pulse">
 			{getLegendaryMasterTitle(language)}

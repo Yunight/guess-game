@@ -27,10 +27,8 @@ export const compareGuessSuggestionPokemon = (
 		return 1;
 	}
 
-	const aExactMatch =
-		aNameFr === normalizedValue || aNameEn === normalizedValue;
-	const bExactMatch =
-		bNameFr === normalizedValue || bNameEn === normalizedValue;
+	const aExactMatch = aNameFr === normalizedValue || aNameEn === normalizedValue;
+	const bExactMatch = bNameFr === normalizedValue || bNameEn === normalizedValue;
 
 	if (aExactMatch && !bExactMatch) {
 		return -1;

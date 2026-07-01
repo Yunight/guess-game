@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from "vitest";
+import { describe, expect, it, vi } from "vite-plus/test";
 import {
 	applyHypeEffectToSetters,
 	buildStartGameState,
@@ -22,15 +22,11 @@ describe("isSuggestionCorrect", () => {
 	const identity = (name: string): string => name.toLowerCase();
 
 	it("matches normalized french and english names", () => {
-		expect(
-			isSuggestionCorrect("Pikachu", "pikachu", "Pikachu", "Pikachu", identity),
-		).toBe(true);
+		expect(isSuggestionCorrect("Pikachu", "pikachu", "Pikachu", "Pikachu", identity)).toBe(true);
 	});
 
 	it("rejects incorrect suggestions", () => {
-		expect(
-			isSuggestionCorrect("Raichu", "raichu", "Pikachu", "Pikachu", identity),
-		).toBe(false);
+		expect(isSuggestionCorrect("Raichu", "raichu", "Pikachu", "Pikachu", identity)).toBe(false);
 	});
 });
 
@@ -58,21 +54,21 @@ describe("resolveSuggestionSubmission", () => {
 
 describe("resolveKeyDownAction", () => {
 	it("uses hint on arrow right when hints remain", () => {
-		expect(
-			resolveKeyDownAction("ArrowRight", 1, true, [], -1, ""),
-		).toEqual({ type: "use_hint" });
+		expect(resolveKeyDownAction("ArrowRight", 1, true, [], -1, "")).toEqual({ type: "use_hint" });
 	});
 
 	it("submits highlighted suggestion on enter", () => {
-		expect(
-			resolveKeyDownAction("Enter", 0, true, ["Pikachu", "Raichu"], 1, ""),
-		).toEqual({ type: "submit", suggestion: "Raichu" });
+		expect(resolveKeyDownAction("Enter", 0, true, ["Pikachu", "Raichu"], 1, "")).toEqual({
+			type: "submit",
+			suggestion: "Raichu",
+		});
 	});
 
 	it("navigates suggestions with arrow keys", () => {
-		expect(
-			resolveKeyDownAction("ArrowDown", 0, true, ["A", "B"], 0, ""),
-		).toEqual({ type: "navigate", direction: "down" });
+		expect(resolveKeyDownAction("ArrowDown", 0, true, ["A", "B"], 0, "")).toEqual({
+			type: "navigate",
+			direction: "down",
+		});
 	});
 });
 
@@ -102,9 +98,7 @@ describe("resolveGuessChangeHighlightedIndex", () => {
 
 describe("resolveCorrectAnswerHypeEffect", () => {
 	it("increments fast answers in hard mode with enough time", () => {
-		expect(
-			resolveCorrectAnswerHypeEffect(true, 12, false, 2),
-		).toEqual({
+		expect(resolveCorrectAnswerHypeEffect(true, 12, false, 2)).toEqual({
 			type: "increment_fast_answers",
 			newCount: 3,
 			shouldShowHypeTrain: true,
@@ -112,9 +106,7 @@ describe("resolveCorrectAnswerHypeEffect", () => {
 	});
 
 	it("breaks hype train when time runs low", () => {
-		expect(
-			resolveCorrectAnswerHypeEffect(true, 8, true, 4),
-		).toEqual({
+		expect(resolveCorrectAnswerHypeEffect(true, 8, true, 4)).toEqual({
 			type: "break_hype_train",
 			bonusScore: 4,
 		});
@@ -189,9 +181,9 @@ describe("pickFirstPokemonFromPool", () => {
 
 describe("resolveCorrectAnswerOutcome", () => {
 	it("returns game complete when pool is exhausted", () => {
-		expect(
-			resolveCorrectAnswerOutcome({ type: "game_complete" }),
-		).toEqual({ type: "game_complete" });
+		expect(resolveCorrectAnswerOutcome({ type: "game_complete" })).toEqual({
+			type: "game_complete",
+		});
 	});
 
 	it("returns next pokemon when pool continues", () => {

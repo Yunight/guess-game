@@ -1,4 +1,4 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test";
 import {
 	getCachedCryUrl,
 	playCryAudio,
@@ -19,9 +19,7 @@ describe("resolveCryAudioUrl", () => {
 	});
 
 	it("falls back to legacy cry url", () => {
-		expect(
-			resolveCryAudioUrl({ latest: "", legacy: validCries.legacy }),
-		).toBe(validCries.legacy);
+		expect(resolveCryAudioUrl({ latest: "", legacy: validCries.legacy })).toBe(validCries.legacy);
 	});
 });
 
@@ -75,9 +73,7 @@ describe("getCachedCryUrl", () => {
 
 		const cached = localStorage.getItem(POKEAPI_CACHE_KEY);
 		expect(cached).toContain(validCries.latest);
-		expect(fetch).toHaveBeenCalledWith(
-			"https://pokeapi.co/api/v2/pokemon/25",
-		);
+		expect(fetch).toHaveBeenCalledWith("https://pokeapi.co/api/v2/pokemon/25");
 	});
 
 	it("ignores expired cache entries and refetches", async () => {
@@ -125,9 +121,7 @@ describe("getCachedCryUrl", () => {
 			ok: false,
 		} as Response);
 
-		await expect(getCachedCryUrl(25)).rejects.toThrow(
-			"Failed to fetch Pokemon cry",
-		);
+		await expect(getCachedCryUrl(25)).rejects.toThrow("Failed to fetch Pokemon cry");
 	});
 
 	it("throws when response has invalid cries", async () => {
@@ -136,17 +130,13 @@ describe("getCachedCryUrl", () => {
 			json: async (): Promise<unknown> => ({ cries: { latest: 1 } }),
 		} as Response);
 
-		await expect(getCachedCryUrl(25)).rejects.toThrow(
-			"Invalid Pokemon cry response",
-		);
+		await expect(getCachedCryUrl(25)).rejects.toThrow("Invalid Pokemon cry response");
 	});
 
 	it("wraps non-error throws", async () => {
 		vi.mocked(fetch).mockRejectedValue("network down");
 
-		await expect(getCachedCryUrl(25)).rejects.toThrow(
-			"Error fetching cry URL",
-		);
+		await expect(getCachedCryUrl(25)).rejects.toThrow("Error fetching cry URL");
 	});
 });
 
@@ -178,14 +168,12 @@ describe("playCryAudio", () => {
 		});
 
 		class ErrorMockCryAudio {
-			public addEventListener = vi.fn(
-				(event: string, handler: (event: Event) => void) => {
-					if (!listeners[event]) {
-						listeners[event] = [];
-					}
-					listeners[event].push(handler);
-				},
-			);
+			public addEventListener = vi.fn((event: string, handler: (event: Event) => void) => {
+				if (!listeners[event]) {
+					listeners[event] = [];
+				}
+				listeners[event].push(handler);
+			});
 
 			public play = vi.fn().mockImplementation(async () => {
 				const errorEvent = new Event("error");

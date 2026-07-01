@@ -11,21 +11,13 @@ export interface BuildShareTextParams {
 	shareUrl: string;
 }
 
-const getGenerationDisplayName = (
-	generationName: string,
-	language: string,
-): string => {
+const getGenerationDisplayName = (generationName: string, language: string): string => {
 	const genNumber = generationName.match(/\d+/)?.[0] || "1";
-	return language === "fr"
-		? `${genNumber}ère Génération`
-		: `Generation ${genNumber}`;
+	return language === "fr" ? `${genNumber}ère Génération` : `Generation ${genNumber}`;
 };
 
 export const buildShareText = (params: BuildShareTextParams): string => {
-	const genName = getGenerationDisplayName(
-		params.generationName,
-		params.language,
-	);
+	const genName = getGenerationDisplayName(params.generationName, params.language);
 
 	return `${params.t("checkOutResult")}
 

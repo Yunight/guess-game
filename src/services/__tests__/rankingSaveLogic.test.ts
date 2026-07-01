@@ -1,8 +1,5 @@
-import { describe, expect, it, vi } from "vitest";
-import {
-	executeRankingSave,
-	lookupExistingRanking,
-} from "../rankingSaveLogic";
+import { describe, expect, it, vi } from "vite-plus/test";
+import { executeRankingSave, lookupExistingRanking } from "../rankingSaveLogic";
 
 const createMockDeps = () => {
 	const docs = [{ ref: { id: "doc-1" }, data: () => ({ score: 10, time: 100 }) }];
@@ -21,12 +18,7 @@ describe("lookupExistingRanking", () => {
 		const deps = createMockDeps();
 		const rankingsRef = { id: "rankings" };
 
-		const result = await lookupExistingRanking(
-			rankingsRef as never,
-			"Ash",
-			"uid-1",
-			deps,
-		);
+		const result = await lookupExistingRanking(rankingsRef as never, "Ash", "uid-1", deps);
 
 		expect(result.existingRanking).toEqual({ score: 10, time: 100 });
 		expect(deps.where).toHaveBeenCalledWith("uid", "==", "uid-1");

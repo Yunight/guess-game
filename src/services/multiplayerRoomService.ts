@@ -1,7 +1,5 @@
 import { buildGenerationPokemonIds } from "@/components/pokemon-game/generationPool";
-import {
-	pickRandomFromPool,
-} from "@/components/pokemon-game/gamePool";
+import { pickRandomFromPool } from "@/components/pokemon-game/gamePool";
 import { getInitialGuessTime } from "@/hooks/gameTimerLogic";
 import {
 	Timestamp,
@@ -18,10 +16,7 @@ import {
 } from "firebase/firestore";
 import { auth, db } from "../firebase";
 import { createRoomPlayerId, generateRoomId } from "./multiplayerPlayerId";
-import {
-	applyCorrectGuessToGameState,
-	normalizeScores,
-} from "./multiplayerGameStateLogic";
+import { applyCorrectGuessToGameState, normalizeScores } from "./multiplayerGameStateLogic";
 import {
 	applyPoolProgressionInTransaction,
 	resolveWinnerId,
@@ -50,11 +45,7 @@ const normalizePlayer = (value: unknown): MultiplayerPlayer | null => {
 	if (typeof value.id !== "string" || typeof value.name !== "string") {
 		return null;
 	}
-	if (
-		value.uid !== null &&
-		value.uid !== undefined &&
-		typeof value.uid !== "string"
-	) {
+	if (value.uid !== null && value.uid !== undefined && typeof value.uid !== "string") {
 		return null;
 	}
 	return {
@@ -95,11 +86,7 @@ const isValidGameState = (value: unknown): value is MultiplayerGameState => {
 		return false;
 	}
 	const roundWinnerId = value.roundWinnerId;
-	if (
-		roundWinnerId !== null &&
-		roundWinnerId !== undefined &&
-		typeof roundWinnerId !== "string"
-	) {
+	if (roundWinnerId !== null && roundWinnerId !== undefined && typeof roundWinnerId !== "string") {
 		return false;
 	}
 	if (!value.remainingPokemon.every((id) => typeof id === "number")) {
@@ -134,10 +121,7 @@ const parseGameState = (value: unknown): MultiplayerGameState | undefined => {
 const isValidRoomStatus = (value: unknown): value is RoomStatus =>
 	value === "waiting" || value === "playing" || value === "finished";
 
-export const parseMultiplayerRoom = (
-	roomId: string,
-	data: unknown,
-): MultiplayerRoom | null => {
+export const parseMultiplayerRoom = (roomId: string, data: unknown): MultiplayerRoom | null => {
 	if (!isRecord(data)) {
 		return null;
 	}
@@ -147,9 +131,7 @@ export const parseMultiplayerRoom = (
 		!hostPlayer ||
 		!isValidGeneration(data.selectedGeneration) ||
 		data.isHardMode !== true ||
-		(data.winnerId !== null &&
-			data.winnerId !== undefined &&
-			typeof data.winnerId !== "string") ||
+		(data.winnerId !== null && data.winnerId !== undefined && typeof data.winnerId !== "string") ||
 		!isValidTimestamp(data.createdAt) ||
 		!isValidTimestamp(data.expiresAt)
 	) {
@@ -163,8 +145,7 @@ export const parseMultiplayerRoom = (
 		}
 		guestPlayer = parsedGuest;
 	}
-	const gameState =
-		data.gameState !== undefined ? parseGameState(data.gameState) : undefined;
+	const gameState = data.gameState !== undefined ? parseGameState(data.gameState) : undefined;
 	if (data.gameState !== undefined && !gameState) {
 		return null;
 	}
@@ -213,12 +194,9 @@ const buildInitialScores = (
 	[guestPlayerId]: 0,
 });
 
-const getRoomDocumentRef = (roomId: string): DocumentReference =>
-	doc(db, COLLECTION, roomId);
+const getRoomDocumentRef = (roomId: string): DocumentReference => doc(db, COLLECTION, roomId);
 
-const loadRoomDocument = async (
-	roomId: string,
-): Promise<MultiplayerRoom | null> => {
+const loadRoomDocument = async (roomId: string): Promise<MultiplayerRoom | null> => {
 	const roomSnap = await getDoc(getRoomDocumentRef(roomId));
 	if (!roomSnap.exists()) {
 		return null;
@@ -238,14 +216,8 @@ const loadRoomInTransaction = async (
 	return parseMultiplayerRoom(roomId, roomSnap.data());
 };
 
-const toPlayingRoom = (
-	room: MultiplayerRoom,
-): PlayingMultiplayerRoom | null => {
-	if (
-		room.status !== "playing" ||
-		!room.gameState ||
-		!room.guestPlayer
-	) {
+const toPlayingRoom = (room: MultiplayerRoom): PlayingMultiplayerRoom | null => {
+	if (room.status !== "playing" || !room.gameState || !room.guestPlayer) {
 		return null;
 	}
 	return {
@@ -277,10 +249,7 @@ export const createRoom = async (
 	return roomId;
 };
 
-export const joinRoom = async (
-	roomId: string,
-	playerName: string,
-): Promise<void> => {
+export const joinRoom = async (roomId: string, playerName: string): Promise<void> => {
 	const playerId = createRoomPlayerId(roomId);
 	const uid = auth.currentUser?.uid ?? null;
 	const roomRef = doc(db, COLLECTION, roomId);
@@ -320,9 +289,7 @@ export const subscribeToRoom = (
 	onSnapshot(
 		doc(db, COLLECTION, roomId),
 		(snapshot) => {
-			onSnapshotResult(
-				resolveRoomSnapshot(roomId, snapshot.exists(), snapshot.data()),
-			);
+			onSnapshotResult(resolveRoomSnapshot(roomId, snapshot.exists(), snapshot.data()));
 		},
 		(error) => {
 			if (error instanceof Error) {
@@ -411,11 +378,7 @@ export const submitCorrectGuess = async (
 			Timestamp.now().toMillis(),
 		);
 
-		const updatedGameState = applyCorrectGuessToGameState(
-			room.gameState,
-			playerId,
-			pointsEarned,
-		);
+		const updatedGameState = applyCorrectGuessToGameState(room.gameState, playerId, pointsEarned);
 		if (!updatedGameState) {
 			return { type: "already_resolved" };
 		}
@@ -432,16 +395,10 @@ export const submitCorrectGuess = async (
 	});
 };
 
-const isRoomPlayer = (
-	room: MultiplayerRoom,
-	playerId: string,
-): boolean =>
-	room.hostPlayer.id === playerId ||
-	room.guestPlayer?.id === playerId;
+const isRoomPlayer = (room: MultiplayerRoom, playerId: string): boolean =>
+	room.hostPlayer.id === playerId || room.guestPlayer?.id === playerId;
 
-type PoolProgressionResolution =
-	| { type: "skip" }
-	| { type: "apply"; room: PlayingMultiplayerRoom };
+type PoolProgressionResolution = { type: "skip" } | { type: "apply"; room: PlayingMultiplayerRoom };
 
 const runPoolProgressionTransaction = async (
 	roomId: string,
@@ -530,10 +487,7 @@ export const resolveTimeout = async (
 	);
 };
 
-export const transferHost = async (
-	roomId: string,
-	leavingHostId: string,
-): Promise<void> => {
+export const transferHost = async (roomId: string, leavingHostId: string): Promise<void> => {
 	const room = await loadRoomDocument(roomId);
 	if (!room || room.hostPlayer.id !== leavingHostId || !room.guestPlayer) {
 		return;

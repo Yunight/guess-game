@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi, afterEach } from "vitest";
+import { beforeEach, describe, expect, it, vi, afterEach } from "vite-plus/test";
 import type { Pokemon } from "../types";
 import {
 	createGameSessionId,
@@ -17,10 +17,8 @@ const mockGenerateShareableUrl = vi.fn();
 
 vi.mock("../../../services/gameResultsService", () => ({
 	gameResultsService: {
-		saveGameResult: (...args: unknown[]): Promise<string> =>
-			mockSaveGameResult(...args),
-		generateShareableUrl: (...args: unknown[]): string =>
-			mockGenerateShareableUrl(...args),
+		saveGameResult: (...args: unknown[]): Promise<string> => mockSaveGameResult(...args),
+		generateShareableUrl: (...args: unknown[]): string => mockGenerateShareableUrl(...args),
 	},
 }));
 
@@ -66,9 +64,7 @@ describe("shouldInitializeGameSessionId", () => {
 	});
 
 	it("returns false when session already exists", () => {
-		expect(shouldInitializeGameSessionId(true, "game_1", null, false)).toBe(
-			false,
-		);
+		expect(shouldInitializeGameSessionId(true, "game_1", null, false)).toBe(false);
 	});
 });
 
@@ -98,9 +94,7 @@ describe("shouldScheduleGameSave", () => {
 	});
 
 	it("returns false when game is not over", () => {
-		expect(shouldScheduleGameSave({ ...readyContext, gameOver: false })).toBe(
-			false,
-		);
+		expect(shouldScheduleGameSave({ ...readyContext, gameOver: false })).toBe(false);
 	});
 
 	it("returns false when shareable url already exists", () => {
@@ -159,39 +153,25 @@ describe("shouldProceedWithGameSave", () => {
 
 describe("shouldAbortSaveAfterDelay", () => {
 	it("returns true when reward pokemon is missing", () => {
-		expect(
-			shouldAbortSaveAfterDelay(
-				{ pokemon: undefined, isLoading: false },
-				false,
-			),
-		).toBe(true);
+		expect(shouldAbortSaveAfterDelay({ pokemon: undefined, isLoading: false }, false)).toBe(true);
 	});
 
 	it("returns true when reward pokemon is still loading", () => {
-		expect(
-			shouldAbortSaveAfterDelay(
-				{ pokemon: rewardPokemon, isLoading: true },
-				false,
-			),
-		).toBe(true);
+		expect(shouldAbortSaveAfterDelay({ pokemon: rewardPokemon, isLoading: true }, false)).toBe(
+			true,
+		);
 	});
 
 	it("returns true when slot machine is running", () => {
-		expect(
-			shouldAbortSaveAfterDelay(
-				{ pokemon: rewardPokemon, isLoading: false },
-				true,
-			),
-		).toBe(true);
+		expect(shouldAbortSaveAfterDelay({ pokemon: rewardPokemon, isLoading: false }, true)).toBe(
+			true,
+		);
 	});
 
 	it("returns false when save can proceed", () => {
-		expect(
-			shouldAbortSaveAfterDelay(
-				{ pokemon: rewardPokemon, isLoading: false },
-				false,
-			),
-		).toBe(false);
+		expect(shouldAbortSaveAfterDelay({ pokemon: rewardPokemon, isLoading: false }, false)).toBe(
+			false,
+		);
 	});
 });
 
@@ -200,9 +180,7 @@ describe("persistGameResult", () => {
 		mockSaveGameResult.mockReset();
 		mockGenerateShareableUrl.mockReset();
 		mockSaveGameResult.mockResolvedValue("result-id");
-		mockGenerateShareableUrl.mockReturnValue(
-			"https://example.com/results/result-id?t=123",
-		);
+		mockGenerateShareableUrl.mockReturnValue("https://example.com/results/result-id?t=123");
 	});
 
 	it("persists game result and returns shareable url", async () => {
@@ -263,9 +241,7 @@ describe("runGameResultSave", () => {
 	beforeEach(() => {
 		vi.useFakeTimers();
 		mockSaveGameResult.mockResolvedValue("result-id");
-		mockGenerateShareableUrl.mockReturnValue(
-			"https://example.com/results/result-id",
-		);
+		mockGenerateShareableUrl.mockReturnValue("https://example.com/results/result-id");
 	});
 
 	afterEach(() => {
@@ -300,8 +276,6 @@ describe("runGameResultSave", () => {
 		await promise;
 
 		expect(setIsSavingResult).toHaveBeenCalledWith(true);
-		expect(setShareableUrl).toHaveBeenCalledWith(
-			"https://example.com/results/result-id",
-		);
+		expect(setShareableUrl).toHaveBeenCalledWith("https://example.com/results/result-id");
 	});
 });

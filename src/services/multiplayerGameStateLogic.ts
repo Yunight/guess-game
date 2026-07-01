@@ -1,9 +1,7 @@
 import type { Timestamp } from "firebase/firestore";
 import type { MultiplayerGameState } from "./multiplayerRoomTypes";
 
-export const normalizeScores = (
-	scores: Record<string, unknown>,
-): Record<string, number> => {
+export const normalizeScores = (scores: Record<string, unknown>): Record<string, number> => {
 	const normalized: Record<string, number> = {};
 	for (const [playerId, score] of Object.entries(scores)) {
 		if (typeof score === "number" && Number.isFinite(score)) {

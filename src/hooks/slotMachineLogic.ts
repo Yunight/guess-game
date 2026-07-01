@@ -36,10 +36,7 @@ export const pickSpinDisplayId = (
 	let randomIndex = Math.floor(random() * (rewards.length - 1));
 	let attempts = 1;
 
-	while (
-		rewards[randomIndex] === lastDisplayedId &&
-		attempts < maxAttempts
-	) {
+	while (rewards[randomIndex] === lastDisplayedId && attempts < maxAttempts) {
 		randomIndex = Math.floor(random() * (rewards.length - 1));
 		attempts++;
 	}

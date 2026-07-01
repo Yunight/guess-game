@@ -7,10 +7,7 @@ interface ScrollableDialogProps {
 	className?: string;
 }
 
-export const ScrollableDialog: FC<ScrollableDialogProps> = ({
-	children,
-	className,
-}) => {
+export const ScrollableDialog: FC<ScrollableDialogProps> = ({ children, className }) => {
 	return (
 		<DialogContent
 			className={cn(

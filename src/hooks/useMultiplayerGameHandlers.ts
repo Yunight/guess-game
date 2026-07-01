@@ -5,11 +5,7 @@ import {
 	resolveSuggestionSubmission,
 } from "@/hooks/pokemonGameHandlerLogic";
 import { convertToStoredFormat } from "@/hooks/playerNameUtils";
-import {
-	startGame,
-	submitCorrectGuess,
-	transferHost,
-} from "@/services/multiplayerRoomService";
+import { startGame, submitCorrectGuess, transferHost } from "@/services/multiplayerRoomService";
 import { resolveMultiplayerRoundScoring } from "@/services/multiplayerRoundScoring";
 import type { MultiplayerGameState, MultiplayerRoom } from "@/services/multiplayerRoomTypes";
 import { useCallback, type KeyboardEvent, type RefObject } from "react";
@@ -98,10 +94,7 @@ export const useMultiplayerGameHandlers = ({
 			}
 
 			const submission = resolveSuggestionSubmission(
-				computeGuessTimeLeft(
-					gameState.roundStartedAt,
-					gameState.roundDurationSeconds,
-				),
+				computeGuessTimeLeft(gameState.roundStartedAt, gameState.roundDurationSeconds),
 				isPokemonLoading,
 				suggestion,
 				currentPokemon?.frenchName,
@@ -123,11 +116,7 @@ export const useMultiplayerGameHandlers = ({
 			const scoring = resolveMultiplayerRoundScoring(gameState, isShiny);
 
 			try {
-				const result = await submitCorrectGuess(
-					room.id,
-					localPlayerId,
-					isShiny,
-				);
+				const result = await submitCorrectGuess(room.id, localPlayerId, isShiny);
 
 				if (result.type === "won_round") {
 					setOptimisticScores((previous) => ({
@@ -193,9 +182,7 @@ export const useMultiplayerGameHandlers = ({
 				normalizeName: convertToStoredFormat,
 			});
 			setSuggestions(nextSuggestions);
-			setHighlightedIndex(
-				resolveGuessChangeHighlightedIndex(value.length, nextSuggestions.length),
-			);
+			setHighlightedIndex(resolveGuessChangeHighlightedIndex(value.length, nextSuggestions.length));
 		},
 		[
 			apiPokemonNames,
@@ -233,9 +220,7 @@ export const useMultiplayerGameHandlers = ({
 			if (e.key === "ArrowDown") {
 				e.preventDefault();
 				setHighlightedIndex((prev) =>
-					state.suggestions.length === 0
-						? -1
-						: Math.min(prev + 1, state.suggestions.length - 1),
+					state.suggestions.length === 0 ? -1 : Math.min(prev + 1, state.suggestions.length - 1),
 				);
 			}
 			if (e.key === "ArrowUp") {
@@ -243,13 +228,7 @@ export const useMultiplayerGameHandlers = ({
 				setHighlightedIndex((prev) => Math.max(prev - 1, -1));
 			}
 		},
-		[
-			state.suggestions,
-			state.highlightedIndex,
-			state.guess,
-			submitGuess,
-			setHighlightedIndex,
-		],
+		[state.suggestions, state.highlightedIndex, state.guess, submitGuess, setHighlightedIndex],
 	);
 
 	const handleQuit = useCallback((): void => {

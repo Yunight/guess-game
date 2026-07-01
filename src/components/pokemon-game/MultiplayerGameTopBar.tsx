@@ -40,9 +40,7 @@ export const MultiplayerGameTopBar: FC<MultiplayerGameTopBarProps> = ({
 				</Button>
 
 				<div className="flex flex-col items-center min-w-0">
-					<p className="text-xs text-blue-200 uppercase tracking-wide">
-						{t("roundTimer")}
-					</p>
+					<p className="text-xs text-blue-200 uppercase tracking-wide">{t("roundTimer")}</p>
 					<p
 						className={`text-2xl font-bold font-mono ${
 							guessTimeLeft <= 5 ? "text-red-400" : "text-white"
@@ -67,11 +65,7 @@ export const MultiplayerGameTopBar: FC<MultiplayerGameTopBarProps> = ({
 						onClick={onToggleMute}
 						className="text-white hover:bg-white/10"
 					>
-						{isMuted ? (
-							<VolumeX className="h-5 w-5" />
-						) : (
-							<Volume2 className="h-5 w-5" />
-						)}
+						{isMuted ? <VolumeX className="h-5 w-5" /> : <Volume2 className="h-5 w-5" />}
 					</Button>
 				</div>
 			</div>

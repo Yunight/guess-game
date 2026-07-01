@@ -1,8 +1,5 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import {
-	clearPokemonCryCache,
-	playPokemonCry,
-} from "../pokemonCryPlayer";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test";
+import { clearPokemonCryCache, playPokemonCry } from "../pokemonCryPlayer";
 import type { Pokemon } from "../types";
 
 const basePokemon: Pokemon = {

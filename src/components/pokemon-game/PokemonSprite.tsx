@@ -31,7 +31,7 @@ export const PokemonSprite = ({
 		? `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/shiny/${pokemonId}.png`
 		: `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${pokemonId}.png`;
 
-	const fallbackSprite = "/pokeball.png";
+	const fallbackSprite = "/pokeball.svg";
 
 	const spriteUrl = homeError ? regularSpriteUrl : homeArtworkUrl;
 
@@ -72,12 +72,7 @@ export const PokemonSprite = ({
 	const showSilhouette = isLoaded && !isRevealed;
 
 	return (
-		<div
-			className={cn(
-				"relative w-32 h-32 flex items-center justify-center",
-				className,
-			)}
-		>
+		<div className={cn("relative w-32 h-32 flex items-center justify-center", className)}>
 			<img
 				src={spriteUrl}
 				alt=""

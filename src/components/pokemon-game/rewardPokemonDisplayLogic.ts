@@ -5,10 +5,7 @@ export interface GenerationRange {
 	endId: number;
 }
 
-export const isPokemonInGeneration = (
-	pokemon: Pokemon,
-	generation: GenerationRange,
-): boolean => {
+export const isPokemonInGeneration = (pokemon: Pokemon, generation: GenerationRange): boolean => {
 	return pokemon.id >= generation.startId && pokemon.id <= generation.endId;
 };
 
@@ -33,7 +30,5 @@ export const shouldShowRewardLabels = (
 	isSlotMachineRunning: boolean,
 	previousPokemon: Pokemon | undefined,
 ): pokemon is Pokemon => {
-	return Boolean(
-		pokemon && !isSlotMachineRunning && pokemon === previousPokemon,
-	);
+	return Boolean(pokemon && !isSlotMachineRunning && pokemon === previousPokemon);
 };

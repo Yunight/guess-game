@@ -10,9 +10,7 @@ import { Analytics } from "@vercel/analytics/react";
 
 const PokemonGame = lazy(() => import("./components/pokemon-game/PokemonGame"));
 const ResultsPage = lazy(() => import("./components/pokemon-game/ResultsPage"));
-const MultiplayerPage = lazy(
-	() => import("./components/pokemon-game/MultiplayerPage"),
-);
+const MultiplayerPage = lazy(() => import("./components/pokemon-game/MultiplayerPage"));
 
 function App() {
 	return (

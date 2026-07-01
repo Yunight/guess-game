@@ -93,10 +93,7 @@ const openTwitterShare = (shareText: string): void => {
 	window.open(twitterUrl, "_blank");
 };
 
-export const shareGameResult = async (
-	shareText: string,
-	urlToShare: string,
-): Promise<void> => {
+export const shareGameResult = async (shareText: string, urlToShare: string): Promise<void> => {
 	try {
 		if (navigator.share) {
 			await navigator.share({

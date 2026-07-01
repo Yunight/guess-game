@@ -26,5 +26,4 @@ export const createRoomPlayerId = (roomId: string): string => {
 	return playerId;
 };
 
-export const generateRoomId = (): string =>
-	crypto.randomUUID().replace(/-/g, "").slice(0, 8);
+export const generateRoomId = (): string => crypto.randomUUID().replace(/-/g, "").slice(0, 8);

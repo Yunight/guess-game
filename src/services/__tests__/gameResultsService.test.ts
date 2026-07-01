@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
 import { GameResultValidationError } from "../gameResultsValidation";
 
 const mockGetDocs = vi.fn();
@@ -91,24 +91,22 @@ describe("gameResultsService.saveGameResult", () => {
 			})),
 		});
 
-		await expect(
-			gameResultsService.saveGameResult(baseResultData),
-		).rejects.toThrow("Daily user save limit exceeded");
+		await expect(gameResultsService.saveGameResult(baseResultData)).rejects.toThrow(
+			"Daily user save limit exceeded",
+		);
 	});
 
 	it("throws when daily global save limit is reached", async () => {
 		const today = Date.now();
-		mockGetDocs
-			.mockResolvedValueOnce({ docs: [] })
-			.mockResolvedValueOnce({
-				docs: Array.from({ length: 1000 }, () => ({
-					data: () => ({ createdAt: today }),
-				})),
-			});
+		mockGetDocs.mockResolvedValueOnce({ docs: [] }).mockResolvedValueOnce({
+			docs: Array.from({ length: 1000 }, () => ({
+				data: () => ({ createdAt: today }),
+			})),
+		});
 
-		await expect(
-			gameResultsService.saveGameResult(baseResultData),
-		).rejects.toThrow("Daily global save limit exceeded");
+		await expect(gameResultsService.saveGameResult(baseResultData)).rejects.toThrow(
+			"Daily global save limit exceeded",
+		);
 	});
 
 	it("uses a unique id when generated id already exists", async () => {
@@ -226,10 +224,7 @@ describe("gameResultsService.getPopularResults", () => {
 
 	it("returns popular shared results", async () => {
 		mockGetDocs.mockResolvedValue({
-			docs: [
-				{ data: () => ({ id: "a", score: 1000 }) },
-				{ data: () => ({ id: "b", score: 900 }) },
-			],
+			docs: [{ data: () => ({ id: "a", score: 1000 }) }, { data: () => ({ id: "b", score: 900 }) }],
 		});
 
 		await expect(gameResultsService.getPopularResults(2)).resolves.toEqual([
@@ -251,9 +246,7 @@ describe("gameResultsService.generateShareableUrl", () => {
 
 		const url = gameResultsService.generateShareableUrl("abc123");
 
-		expect(url.startsWith("https://guess.example/results/abc123?t=")).toBe(
-			true,
-		);
+		expect(url.startsWith("https://guess.example/results/abc123?t=")).toBe(true);
 
 		vi.unstubAllGlobals();
 	});

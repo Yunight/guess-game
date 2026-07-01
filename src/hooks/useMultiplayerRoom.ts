@@ -23,10 +23,7 @@ interface UseMultiplayerRoomResult {
 	isJoined: boolean;
 	localPlayerName: string | null;
 	opponentName: string | null;
-	createMultiplayerRoom: (
-		playerName: string,
-		generation: MultiplayerGeneration,
-	) => Promise<string>;
+	createMultiplayerRoom: (playerName: string, generation: MultiplayerGeneration) => Promise<string>;
 	joinMultiplayerRoom: (playerName: string) => Promise<void>;
 }
 
@@ -55,40 +52,24 @@ export const useMultiplayerRoom = ({
 				return;
 			}
 			setRoom(null);
-			setError(
-				result.type === "not_found"
-					? "multiplayerRoomNotFound"
-					: "multiplayerRoomInvalid",
-			);
+			setError(result.type === "not_found" ? "multiplayerRoomNotFound" : "multiplayerRoomInvalid");
 		};
 
-		const unsubscribe = subscribeToRoom(
-			roomId,
-			handleSnapshot,
-			(subscriptionError) => {
-				setError(subscriptionError.message);
-				setIsLoading(false);
-			},
-		);
+		const unsubscribe = subscribeToRoom(roomId, handleSnapshot, (subscriptionError) => {
+			setError(subscriptionError.message);
+			setIsLoading(false);
+		});
 
 		return unsubscribe;
 	}, [roomId]);
 
 	const isHost = useMemo(
-		() =>
-			Boolean(
-				room && localPlayerId && room.hostPlayer.id === localPlayerId,
-			),
+		() => Boolean(room && localPlayerId && room.hostPlayer.id === localPlayerId),
 		[room, localPlayerId],
 	);
 
 	const isGuest = useMemo(
-		() =>
-			Boolean(
-				room &&
-					localPlayerId &&
-					room.guestPlayer?.id === localPlayerId,
-			),
+		() => Boolean(room && localPlayerId && room.guestPlayer?.id === localPlayerId),
 		[room, localPlayerId],
 	);
 
@@ -121,10 +102,8 @@ export const useMultiplayerRoom = ({
 	}, [room, localPlayerId]);
 
 	const createMultiplayerRoom = useCallback(
-		async (
-			playerName: string,
-			generation: MultiplayerGeneration,
-		): Promise<string> => createRoom(playerName, generation),
+		async (playerName: string, generation: MultiplayerGeneration): Promise<string> =>
+			createRoom(playerName, generation),
 		[],
 	);
 

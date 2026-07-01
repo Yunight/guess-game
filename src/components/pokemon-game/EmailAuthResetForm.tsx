@@ -28,10 +28,7 @@ export const EmailAuthResetForm = ({
 			className="space-y-4"
 		>
 			<div>
-				<label
-					htmlFor="email"
-					className="block text-sm font-medium mb-1 text-gray-800"
-				>
+				<label htmlFor="email" className="block text-sm font-medium mb-1 text-gray-800">
 					{t("email")}
 				</label>
 				<Input

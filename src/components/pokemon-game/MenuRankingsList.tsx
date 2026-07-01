@@ -41,9 +41,7 @@ const MenuRankingRow = ({
 						`}
 					>
 						<div className="absolute inset-0 rounded-full bg-white/20 animate-pulse-slow" />
-						<span className="relative text-white font-bold text-base z-10">
-							{index + 1}
-						</span>
+						<span className="relative text-white font-bold text-base z-10">{index + 1}</span>
 					</div>
 				) : (
 					<span className="text-gray-600 text-sm font-medium">#{index + 1}</span>
@@ -52,9 +50,7 @@ const MenuRankingRow = ({
 			<div className="col-span-3 sm:col-span-4 truncate text-gray-800 text-sm sm:text-base pl-1 sm:pl-0">
 				{isCurrentUser ? (
 					<div className="flex items-center gap-2">
-						<span className="text-blue-600 font-bold truncate">
-							★ {rankingPlayer.name}
-						</span>
+						<span className="text-blue-600 font-bold truncate">★ {rankingPlayer.name}</span>
 						<div className="w-2.5 h-2.5 bg-yellow-400 rounded-full animate-ping shrink-0" />
 					</div>
 				) : (

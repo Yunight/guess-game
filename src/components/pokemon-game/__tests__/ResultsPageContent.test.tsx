@@ -1,5 +1,5 @@
 import type { ComponentProps } from "react";
-import { describe, expect, it, vi } from "vitest";
+import { describe, expect, it, vi } from "vite-plus/test";
 import { MemoryRouter } from "react-router-dom";
 import { fireEvent, render, screen } from "../../../test/test-utils";
 import type { GameResult } from "@/services/gameResultsService";
@@ -15,8 +15,7 @@ vi.mock("../ResultsPageDebugPanel", () => ({
 
 vi.mock("../../../services/gameResultsService", () => ({
 	gameResultsService: {
-		generateShareableUrl: (id: string): string =>
-			`https://example.com/results/${id}`,
+		generateShareableUrl: (id: string): string => `https://example.com/results/${id}`,
 	},
 }));
 
@@ -76,9 +75,7 @@ describe("ResultsPageContent", () => {
 			handleShare: vi.fn(),
 		});
 
-		fireEvent.click(
-			screen.getByText("https://example.com/results/result-1"),
-		);
+		fireEvent.click(screen.getByText("https://example.com/results/result-1"));
 		expect(copyUrl).toHaveBeenCalled();
 	});
 

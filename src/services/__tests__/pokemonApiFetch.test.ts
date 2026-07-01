@@ -1,4 +1,4 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test";
 import {
 	CACHE_DURATION,
 	CRY_URL_CACHE_KEY,
@@ -69,9 +69,7 @@ describe("getCryUrl", () => {
 		const result = await getCryUrl(25);
 
 		expect(result).toBe("https://latest|https://legacy");
-		expect(mockFetch).toHaveBeenCalledWith(
-			"https://pokeapi.co/api/v2/pokemon/25",
-		);
+		expect(mockFetch).toHaveBeenCalledWith("https://pokeapi.co/api/v2/pokemon/25");
 
 		const cacheKey = `${CRY_URL_CACHE_KEY}_25`;
 		const cached = JSON.parse(localStorage.getItem(cacheKey) ?? "");
@@ -167,9 +165,7 @@ describe("getFlavorText", () => {
 		const result = await getFlavorText(25);
 
 		expect(result).toEqual({ french: "Français", english: "English" });
-		expect(mockFetch).toHaveBeenCalledWith(
-			"https://pokeapi.co/api/v2/pokemon-species/25",
-		);
+		expect(mockFetch).toHaveBeenCalledWith("https://pokeapi.co/api/v2/pokemon-species/25");
 
 		const cacheKey = `${FLAVOR_TEXT_CACHE_KEY}_25`;
 		const cached = JSON.parse(localStorage.getItem(cacheKey) ?? "");
@@ -231,9 +227,7 @@ describe("fetchTyradexPokemonList", () => {
 	it("throws when tyradex fetch fails", async () => {
 		mockFetch.mockResolvedValue(createJsonResponse({}, false));
 
-		await expect(fetchTyradexPokemonList()).rejects.toThrow(
-			"Failed to fetch from Tyradex API",
-		);
+		await expect(fetchTyradexPokemonList()).rejects.toThrow("Failed to fetch from Tyradex API");
 	});
 
 	it("refetches when cache is expired", async () => {

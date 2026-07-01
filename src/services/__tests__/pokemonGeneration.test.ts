@@ -1,9 +1,6 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it } from "vite-plus/test";
 import type { Pokemon } from "@/components/pokemon-game/types";
-import {
-	filterPokemonByGeneration,
-	getPokemonNamesCacheKey,
-} from "../pokemonGeneration";
+import { filterPokemonByGeneration, getPokemonNamesCacheKey } from "../pokemonGeneration";
 
 const pokemonList: Pokemon[] = [
 	{ id: 1, frenchName: "A", englishName: "A" },
@@ -22,8 +19,6 @@ describe("filterPokemonByGeneration", () => {
 
 describe("getPokemonNamesCacheKey", () => {
 	it("builds a stable cache key", () => {
-		expect(
-			getPokemonNamesCacheKey({ startId: 1, endId: 151, maxHypeChain: 2 }),
-		).toBe("1_151_2");
+		expect(getPokemonNamesCacheKey({ startId: 1, endId: 151, maxHypeChain: 2 })).toBe("1_151_2");
 	});
 });

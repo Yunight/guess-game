@@ -36,8 +36,7 @@ export const useGameProgressState = (
 	const [bestTime, setBestTime] = useState(0);
 	const [isGameActive, setIsGameActive] = useState(false);
 	const [isHardMode, setIsHardMode] = useState(false);
-	const [selectedGeneration, setSelectedGeneration] =
-		useState<Generation>(initialGeneration);
+	const [selectedGeneration, setSelectedGeneration] = useState<Generation>(initialGeneration);
 	const [remainingPokemon, setRemainingPokemon] = useState<number[]>([]);
 	const [gameOver, setGameOver] = useState(false);
 	const [isRestarting, setIsRestarting] = useState(false);
@@ -200,9 +199,7 @@ export const useGameTimerState = (): {
 	state: GameTimerState;
 	setters: GameTimerSetters;
 } => {
-	const [guessTimeLeft, setGuessTimeLeft] = useState<number>(
-		Number.POSITIVE_INFINITY,
-	);
+	const [guessTimeLeft, setGuessTimeLeft] = useState<number>(Number.POSITIVE_INFINITY);
 	const [totalTimeElapsed, setTotalTimeElapsed] = useState<number>(0);
 
 	return {
@@ -262,9 +259,7 @@ export const useGamePokemonState = (): {
 	setters: GamePokemonSetters;
 } => {
 	const [currentPokemonId, setCurrentPokemonId] = useState<number | null>(null);
-	const [currentPokemon, setCurrentPokemon] = useState<Pokemon | undefined>(
-		undefined,
-	);
+	const [currentPokemon, setCurrentPokemon] = useState<Pokemon | undefined>(undefined);
 	const [rewardPokemon, setRewardPokemon] = useState<RewardPokemonState>({
 		pokemon: undefined,
 		isLoading: true,

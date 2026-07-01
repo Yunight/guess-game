@@ -53,9 +53,7 @@ export const LanguageToggle: FC = () => {
 					<div className="flex-1 bg-[#ED2939]"></div>
 				</div>
 			)}
-			<span className="sr-only">
-				{isFrench ? "Switch to English" : "Passer en Français"}
-			</span>
+			<span className="sr-only">{isFrench ? "Switch to English" : "Passer en Français"}</span>
 		</Button>
 	);
 };

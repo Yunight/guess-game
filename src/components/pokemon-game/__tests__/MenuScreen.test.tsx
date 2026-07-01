@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from "vitest";
+import { describe, expect, it, vi } from "vite-plus/test";
 import { fireEvent, render, screen } from "../../../test/test-utils";
 import { GENERATIONS } from "../generations";
 import { MenuScreen } from "../MenuScreen";
