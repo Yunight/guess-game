@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import { Button } from "@/components/ui/button";
 import { Volume2, VolumeX } from "lucide-react";
 import type { Pokemon } from "./types";
@@ -24,7 +25,7 @@ export const GameScreenTopBar = ({
 	onQuit,
 	pointsEarned,
 	ScoreIncrease,
-}: GameScreenTopBarProps): JSX.Element => (
+}: GameScreenTopBarProps): ReactNode => (
 	<>
 		<div className="absolute top-4 left-4 flex gap-2 z-10">
 			<div className="w-3 h-3 rounded-full bg-gray-700" />

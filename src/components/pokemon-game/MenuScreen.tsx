@@ -1,5 +1,5 @@
 import { HelpCircle, Volume2, VolumeX } from "lucide-react";
-import { type FC, useState } from "react";
+import { type FC, useState, type ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 import { GameModeDialog } from "@/components/pokemon-game/GameModeDialog";
 import { Button } from "@/components/ui/button";
@@ -11,7 +11,7 @@ import { MenuPlayerForm, type MenuPlayerFormProps } from "./MenuPlayerForm";
 import { MenuRankingsList } from "./MenuRankingsList";
 import type { Rankings } from "./types";
 
-const GitHubIcon = ({ className }: { className?: string }): JSX.Element => (
+const GitHubIcon = ({ className }: { className?: string }): ReactNode => (
 	<svg
 		xmlns="http://www.w3.org/2000/svg"
 		viewBox="0 0 24 24"
@@ -23,7 +23,7 @@ const GitHubIcon = ({ className }: { className?: string }): JSX.Element => (
 	</svg>
 );
 
-const XIcon = ({ className }: { className?: string }): JSX.Element => (
+const XIcon = ({ className }: { className?: string }): ReactNode => (
 	<svg
 		xmlns="http://www.w3.org/2000/svg"
 		viewBox="0 0 24 24"

@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import { PokemonSprite } from "./PokemonSprite";
 import {
 	getLocalizedPokemonName,
@@ -12,7 +13,7 @@ interface PokemonDisplayContentProps {
 	language: string;
 }
 
-const RevealRingEffects = ({ isShiny }: { isShiny: boolean }): JSX.Element => {
+const RevealRingEffects = ({ isShiny }: { isShiny: boolean }): ReactNode => {
 	const primaryBorder = isShiny ? "border-yellow-400/50" : "border-blue-400/30";
 	const secondaryBorder = isShiny ? "border-yellow-400/40" : "border-blue-400/20";
 
@@ -30,7 +31,7 @@ const RevealRingEffects = ({ isShiny }: { isShiny: boolean }): JSX.Element => {
 			/>
 			<div
 				className="absolute w-2 h-2 bg-yellow-300 rounded-full animate-ping"
-				style={{ top: "70%", left: "80%", animationDuration: "1.2s" }}
+				style={{ top: "70%", left: "80%", animationDuration: "0.9s" }}
 			/>
 			<div
 				className="absolute w-2 h-2 bg-yellow-300 rounded-full animate-ping"
@@ -40,7 +41,7 @@ const RevealRingEffects = ({ isShiny }: { isShiny: boolean }): JSX.Element => {
 				<>
 					<div
 						className="absolute w-3 h-3 bg-yellow-300 rounded-full animate-ping"
-						style={{ top: "30%", left: "20%", animationDuration: "1.3s" }}
+						style={{ top: "30%", left: "20%", animationDuration: "0.9s" }}
 					/>
 					<div
 						className="absolute w-3 h-3 bg-yellow-300 rounded-full animate-ping"
@@ -48,7 +49,7 @@ const RevealRingEffects = ({ isShiny }: { isShiny: boolean }): JSX.Element => {
 					/>
 					<div
 						className="absolute w-3 h-3 bg-yellow-300 rounded-full animate-ping"
-						style={{ top: "45%", left: "40%", animationDuration: "1.1s" }}
+						style={{ top: "45%", left: "40%", animationDuration: "0.9s" }}
 					/>
 				</>
 			)}
@@ -60,7 +61,7 @@ export const PokemonDisplayContent = ({
 	displayedPokemon,
 	displayState,
 	language,
-}: PokemonDisplayContentProps): JSX.Element => {
+}: PokemonDisplayContentProps): ReactNode => {
 	const localizedName = getLocalizedPokemonName(displayedPokemon, language);
 	const isRevealed = displayState === "revealed";
 	const isReady = displayState === "ready";
@@ -103,7 +104,7 @@ export const PokemonDisplayContent = ({
 	);
 };
 
-export const PokemonDisplayLoading = (): JSX.Element => (
+export const PokemonDisplayLoading = (): ReactNode => (
 	<div className="pokeball-loading">
 		<div className="outer-circle" />
 		<div className="middle-line" />

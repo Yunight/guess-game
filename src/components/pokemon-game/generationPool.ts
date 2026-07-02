@@ -20,13 +20,15 @@ export const generateRewardCandidates = (
 	random: () => number = Math.random,
 ): number[] => {
 	const rewards: number[] = [];
+	const rewardIds = new Set<number>();
 	const maxAttempts = (endId - startId + 1) * count * 2;
 	let attempts = 0;
 
 	while (rewards.length < count && attempts < maxAttempts) {
 		attempts += 1;
 		const randomId = Math.floor(random() * (endId - startId + 1)) + startId;
-		if (!rewards.includes(randomId) && randomId !== finalPokemonId) {
+		if (!rewardIds.has(randomId) && randomId !== finalPokemonId) {
+			rewardIds.add(randomId);
 			rewards.push(randomId);
 		}
 	}

@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import { Dialog } from "@/components/ui/dialog";
 import { ScrollableDialog } from "@/components/ui/scrollable-dialog";
 import { useGameOverDialogEffects } from "@/hooks/useGameOverDialogEffects";
@@ -39,57 +40,63 @@ const getGameOverDialogClassName = (isComplete: boolean): string => {
 	return `sm:max-w-md ${gradient} border-none text-white`;
 };
 
-export const GameOverDialog = (props: GameOverDialogProps): JSX.Element => {
+const GameOverDialogContent = (props: GameOverDialogProps): ReactNode => {
 	const isComplete = props.remainingPokemon.length === 0;
 	const { shareableUrl, isSavingResult, urlCopied, displayTime, onCopyUrl, onShare } =
 		useGameOverDialogEffects(props);
 
 	return (
-		<Dialog open={props.gameOver} onOpenChange={props.setGameOver}>
-			<ScrollableDialog className={getGameOverDialogClassName(isComplete)}>
-				<div className="absolute inset-0 bg-[url('/pokeball-pattern.png')] opacity-5 bg-repeat" />
-				<div className="relative">
-					<GameOverDialogHeader
-						isComplete={isComplete}
-						playerName={props.playerName}
+		<ScrollableDialog className={getGameOverDialogClassName(isComplete)}>
+			<div className="absolute inset-0 bg-[url('/pokeball-pattern.png')] opacity-5 bg-repeat" />
+			<div className="relative">
+				<GameOverDialogHeader
+					isComplete={isComplete}
+					playerName={props.playerName}
+					selectedGeneration={props.selectedGeneration}
+				/>
+
+				<div className="mt-6 space-y-6">
+					<RewardPokemonDisplay
+						pokemon={props.rewardPokemon.pokemon}
+						isLoading={props.rewardPokemon.isLoading}
 						selectedGeneration={props.selectedGeneration}
+						isSlotMachineRunning={props.isSlotMachineRunning}
+						spinningPokemon={props.spinningPokemon}
 					/>
 
-					<div className="mt-6 space-y-6">
-						<RewardPokemonDisplay
-							pokemon={props.rewardPokemon.pokemon}
-							isLoading={props.rewardPokemon.isLoading}
-							selectedGeneration={props.selectedGeneration}
-							isSlotMachineRunning={props.isSlotMachineRunning}
-							spinningPokemon={props.spinningPokemon}
-						/>
-
-						<GameOverStats
-							score={props.score}
-							bestScore={props.bestScore}
-							displayTime={displayTime}
-							bestTime={props.bestTime}
-							userRanking={props.userRanking}
-							bestRanking={props.bestRanking}
-							criticalHitCount={props.criticalHitCount}
-							criticalSuccessCount={props.criticalSuccessCount}
-							hyperTrainCount={props.hyperTrainCount}
-							maxHypeChain={props.maxHypeChain}
-						/>
-					</div>
-
-					<GameOverActions
-						shareableUrl={shareableUrl}
-						urlCopied={urlCopied}
-						isSavingResult={isSavingResult}
-						isComplete={isComplete}
-						onCopyUrl={onCopyUrl}
-						onRestart={props.handleRestart}
-						onShare={onShare}
-						onBackToMenu={props.handleBackToMenu}
+					<GameOverStats
+						score={props.score}
+						bestScore={props.bestScore}
+						displayTime={displayTime}
+						bestTime={props.bestTime}
+						userRanking={props.userRanking}
+						bestRanking={props.bestRanking}
+						criticalHitCount={props.criticalHitCount}
+						criticalSuccessCount={props.criticalSuccessCount}
+						hyperTrainCount={props.hyperTrainCount}
+						maxHypeChain={props.maxHypeChain}
 					/>
 				</div>
-			</ScrollableDialog>
+
+				<GameOverActions
+					shareableUrl={shareableUrl}
+					urlCopied={urlCopied}
+					isSavingResult={isSavingResult}
+					isComplete={isComplete}
+					onCopyUrl={onCopyUrl}
+					onRestart={props.handleRestart}
+					onShare={onShare}
+					onBackToMenu={props.handleBackToMenu}
+				/>
+			</div>
+		</ScrollableDialog>
+	);
+};
+
+export const GameOverDialog = (props: GameOverDialogProps): ReactNode => {
+	return (
+		<Dialog open={props.gameOver} onOpenChange={props.setGameOver}>
+			{props.gameOver ? <GameOverDialogContent {...props} /> : null}
 		</Dialog>
 	);
 };

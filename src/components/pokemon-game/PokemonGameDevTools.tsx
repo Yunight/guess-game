@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 export interface PokemonGameDevToolsProps {
 	onGameOver: () => void;
 	onCompleteGeneration: () => void;
@@ -6,7 +7,7 @@ export interface PokemonGameDevToolsProps {
 export const PokemonGameDevTools = ({
 	onGameOver,
 	onCompleteGeneration,
-}: PokemonGameDevToolsProps): JSX.Element | null => {
+}: PokemonGameDevToolsProps): ReactNode | null => {
 	if (!import.meta.env.DEV) {
 		return null;
 	}

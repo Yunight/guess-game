@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import { Crown, Sparkles, Star } from "lucide-react";
 
 import {
@@ -20,7 +21,7 @@ export const RewardPokemonLabels = ({
 	pokemon,
 
 	language,
-}: RewardPokemonLabelsProps): JSX.Element => {
+}: RewardPokemonLabelsProps): ReactNode => {
 	const localizedName = getLocalizedPokemonName(pokemon, language);
 
 	return (

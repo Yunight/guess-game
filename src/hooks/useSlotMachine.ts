@@ -79,11 +79,9 @@ export const useSlotMachine = (selectedGeneration: Generation): UseSlotMachineRe
 
 	useEffect(() => {
 		return () => {
-			if (slotMachineTimerRef.current) {
-				clearTimeout(slotMachineTimerRef.current);
-			}
+			resetSlotMachine();
 		};
-	}, []);
+	}, [resetSlotMachine]);
 
 	return {
 		isSlotMachineRunning,

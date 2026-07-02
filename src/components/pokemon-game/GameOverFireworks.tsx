@@ -1,8 +1,9 @@
+import type { ReactNode } from "react";
 interface GameOverFireworksProps {
 	generationName: string;
 }
 
-export const GameOverFireworks = ({ generationName }: GameOverFireworksProps): JSX.Element => {
+export const GameOverFireworks = ({ generationName }: GameOverFireworksProps): ReactNode => {
 	return (
 		<>
 			<div className="absolute inset-[-150%] animate-spin-slow">
@@ -15,7 +16,7 @@ export const GameOverFireworks = ({ generationName }: GameOverFireworksProps): J
 							left: "50%",
 							transform: `rotate(${i * 30}deg)`,
 							transformOrigin: "0 0",
-							animation: "firework 2s ease-in-out infinite",
+							animation: "firework 1s ease-in-out infinite",
 							animationDelay: `${i * 0.2}s`,
 						}}
 					/>
@@ -31,7 +32,7 @@ export const GameOverFireworks = ({ generationName }: GameOverFireworksProps): J
 							left: "50%",
 							transform: `rotate(${i * 45 + 22.5}deg)`,
 							transformOrigin: "0 0",
-							animation: "firework 3s ease-in-out infinite",
+							animation: "firework 1s ease-in-out infinite",
 							animationDelay: `${i * 0.3}s`,
 						}}
 					/>
@@ -47,7 +48,7 @@ export const GameOverFireworks = ({ generationName }: GameOverFireworksProps): J
 							left: "50%",
 							transform: `rotate(${i * 60}deg)`,
 							transformOrigin: "0 0",
-							animation: "firework 1.5s ease-in-out infinite",
+							animation: "firework 1s ease-in-out infinite",
 							animationDelay: `${i * 0.4}s`,
 						}}
 					/>

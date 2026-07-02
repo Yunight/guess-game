@@ -1,5 +1,6 @@
 import { type RefObject, useEffect } from "react";
 import type { Pokemon } from "@/components/pokemon-game/types";
+import { writeMutedPreference } from "@/utils/gamePreferencesStorage";
 import {
 	isRewardPokemonAlreadySynced,
 	shouldApplyHypeTrainBonus,
@@ -95,7 +96,7 @@ export const usePokemonGameEffects = ({
 	]);
 
 	useEffect(() => {
-		localStorage.setItem("pokemonGameMuted", JSON.stringify(gameState.isMuted));
+		writeMutedPreference(gameState.isMuted);
 	}, [gameState.isMuted]);
 
 	useEffect(() => {

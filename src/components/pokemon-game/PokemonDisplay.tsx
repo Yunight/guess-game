@@ -1,9 +1,9 @@
-import { type FC, useEffect, useRef, useState } from "react";
+import { type FC, useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { PokemonDisplayFrame } from "./PokemonDisplayFrame";
 import { PokemonDisplayContent, PokemonDisplayLoading } from "./PokemonDisplayContent";
-import { computePokemonDisplayTransition } from "./pokemonDisplayState";
 import { clearPokemonCryCache, playPokemonCry } from "./pokemonCryPlayer";
+import { usePokemonDisplayTransition } from "@/hooks/usePokemonDisplayTransition";
 import type { Pokemon } from "./types";
 
 interface PokemonDisplayProps {
@@ -28,38 +28,20 @@ export const PokemonDisplay: FC<PokemonDisplayProps> = ({
 	showProgressCounter = true,
 }) => {
 	const { i18n } = useTranslation();
-	const [displayState, setDisplayState] = useState<"loading" | "ready" | "revealed">("loading");
-	const [displayedPokemon, setDisplayedPokemon] = useState<Pokemon | undefined>();
 	const audioRef = useRef<HTMLAudioElement | null>(null);
 	const soundPlayedRef = useRef(false);
 	const currentPokemonIdRef = useRef<number | null>(0);
 
-	useEffect(() => {
-		const transition = computePokemonDisplayTransition({
-			currentPokemon,
-			isPokemonLoading,
-			isCorrect,
-			guessTimeLeft,
-			displayState,
-			displayedPokemon,
-			currentPokemonId: currentPokemonIdRef.current,
-		});
+	const { displayState, displayedPokemon } = usePokemonDisplayTransition({
+		currentPokemon,
+		isPokemonLoading,
+		isCorrect,
+		guessTimeLeft,
+		audioRef,
+		soundPlayedRef,
+	});
 
-		if (transition.shouldClearAudio && audioRef.current) {
-			audioRef.current.pause();
-			audioRef.current.currentTime = 0;
-			audioRef.current.remove();
-			audioRef.current = null;
-		}
-
-		if (transition.shouldResetSoundPlayed) {
-			soundPlayedRef.current = false;
-		}
-
-		currentPokemonIdRef.current = transition.currentPokemonId;
-		setDisplayState(transition.displayState);
-		setDisplayedPokemon(transition.displayedPokemon);
-	}, [currentPokemon, isPokemonLoading, isCorrect, displayState, displayedPokemon, guessTimeLeft]);
+	currentPokemonIdRef.current = displayedPokemon?.id ?? currentPokemon?.id ?? null;
 
 	useEffect(() => {
 		if (

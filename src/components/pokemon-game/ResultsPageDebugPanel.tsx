@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 const DEBUG_PERCENTAGES = [
 	0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 60, 65, 70, 75, 80, 85, 90, 95,
 ] as const;
@@ -12,7 +13,7 @@ export const ResultsPageDebugPanel = ({
 	totalPokemonInGeneration,
 	debugRemainingPokemon,
 	setDebugRemainingPokemon,
-}: ResultsPageDebugPanelProps): JSX.Element => {
+}: ResultsPageDebugPanelProps): ReactNode => {
 	return (
 		<div className="absolute top-4 left-4 bg-black/80 p-4 rounded-lg text-white z-50">
 			<h3 className="text-lg font-bold mb-2">Debug: Prestige Levels</h3>

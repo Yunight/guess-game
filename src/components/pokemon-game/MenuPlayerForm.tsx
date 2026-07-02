@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import { Input } from "@/components/ui/input";
 import { useTranslation } from "react-i18next";
 import { auth } from "../../firebase";
@@ -15,7 +16,7 @@ export const MenuPlayerForm = ({
 	nameError,
 	onPlayerNameChange,
 	checkNameAvailability,
-}: MenuPlayerFormProps): JSX.Element => {
+}: MenuPlayerFormProps): ReactNode => {
 	const { t } = useTranslation();
 	const isAuthenticated = Boolean(auth.currentUser);
 

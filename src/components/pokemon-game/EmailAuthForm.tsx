@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useTranslation } from "react-i18next";
@@ -28,7 +29,7 @@ export const EmailAuthForm = ({
 	onSubmit,
 	onForgotPassword,
 	onToggleMode,
-}: EmailAuthFormProps): JSX.Element => {
+}: EmailAuthFormProps): ReactNode => {
 	const { t } = useTranslation();
 
 	return (

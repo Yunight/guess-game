@@ -19,6 +19,7 @@ import { createRoomPlayerId, generateRoomId } from "./multiplayerPlayerId";
 import { applyCorrectGuessToGameState, normalizeScores } from "./multiplayerGameStateLogic";
 import {
 	applyPoolProgressionInTransaction,
+	isPlayingMultiplayerRoom,
 	resolveWinnerId,
 	type PlayingMultiplayerRoom,
 } from "./multiplayerRoomTransactionLogic";
@@ -30,6 +31,12 @@ import type {
 	RoomStatus,
 	SubmitGuessResult,
 } from "./multiplayerRoomTypes";
+import {
+	canStartGame,
+	isRoomPlayer,
+	MAX_MULTIPLAYER_PLAYERS,
+	MIN_MULTIPLAYER_PLAYERS,
+} from "./multiplayerRoomUtils";
 import { resolveMultiplayerRoundPoints } from "./multiplayerRoundScoring";
 
 const COLLECTION = "multiplayerRooms";
@@ -53,6 +60,44 @@ const normalizePlayer = (value: unknown): MultiplayerPlayer | null => {
 		name: value.name,
 		uid: value.uid ?? null,
 	};
+};
+
+const normalizePlayers = (value: unknown): MultiplayerPlayer[] | null => {
+	if (!Array.isArray(value)) {
+		return null;
+	}
+	const players: MultiplayerPlayer[] = [];
+	for (const entry of value) {
+		const player = normalizePlayer(entry);
+		if (!player) {
+			return null;
+		}
+		players.push(player);
+	}
+	return players;
+};
+
+const parseLegacyPlayers = (data: Record<string, unknown>): MultiplayerPlayer[] | null => {
+	const hostPlayer = normalizePlayer(data.hostPlayer);
+	if (!hostPlayer) {
+		return null;
+	}
+	const players = [hostPlayer];
+	if (data.guestPlayer !== undefined) {
+		const guestPlayer = normalizePlayer(data.guestPlayer);
+		if (!guestPlayer) {
+			return null;
+		}
+		players.push(guestPlayer);
+	}
+	return players;
+};
+
+const resolveRoomPlayers = (data: Record<string, unknown>): MultiplayerPlayer[] | null => {
+	if (data.players !== undefined) {
+		return normalizePlayers(data.players);
+	}
+	return parseLegacyPlayers(data);
 };
 
 const isValidGeneration = (value: unknown): value is MultiplayerGeneration => {
@@ -121,14 +166,35 @@ const parseGameState = (value: unknown): MultiplayerGameState | undefined => {
 const isValidRoomStatus = (value: unknown): value is RoomStatus =>
 	value === "waiting" || value === "playing" || value === "finished";
 
+const resolveHostPlayerId = (
+	data: Record<string, unknown>,
+	players: MultiplayerPlayer[],
+): string | null => {
+	if (typeof data.hostPlayerId === "string") {
+		return data.hostPlayerId;
+	}
+	const hostPlayer = normalizePlayer(data.hostPlayer);
+	if (hostPlayer) {
+		return hostPlayer.id;
+	}
+	const firstPlayer = players[0];
+	if (!firstPlayer) {
+		return null;
+	}
+	return firstPlayer.id;
+};
+
 export const parseMultiplayerRoom = (roomId: string, data: unknown): MultiplayerRoom | null => {
 	if (!isRecord(data)) {
 		return null;
 	}
-	const hostPlayer = normalizePlayer(data.hostPlayer);
+	const players = resolveRoomPlayers(data);
+	const hostPlayerId = players ? resolveHostPlayerId(data, players) : null;
 	if (
+		!players ||
+		players.length === 0 ||
+		!hostPlayerId ||
 		!isValidRoomStatus(data.status) ||
-		!hostPlayer ||
 		!isValidGeneration(data.selectedGeneration) ||
 		data.isHardMode !== true ||
 		(data.winnerId !== null && data.winnerId !== undefined && typeof data.winnerId !== "string") ||
@@ -137,14 +203,6 @@ export const parseMultiplayerRoom = (roomId: string, data: unknown): Multiplayer
 	) {
 		return null;
 	}
-	let guestPlayer: MultiplayerPlayer | undefined;
-	if (data.guestPlayer !== undefined) {
-		const parsedGuest = normalizePlayer(data.guestPlayer);
-		if (!parsedGuest) {
-			return null;
-		}
-		guestPlayer = parsedGuest;
-	}
 	const gameState = data.gameState !== undefined ? parseGameState(data.gameState) : undefined;
 	if (data.gameState !== undefined && !gameState) {
 		return null;
@@ -152,8 +210,8 @@ export const parseMultiplayerRoom = (roomId: string, data: unknown): Multiplayer
 	return {
 		id: roomId,
 		status: data.status,
-		hostPlayer,
-		guestPlayer,
+		players,
+		hostPlayerId,
 		selectedGeneration: data.selectedGeneration,
 		isHardMode: true,
 		gameState,
@@ -186,13 +244,8 @@ export const resolveRoomSnapshot = (
 	return { type: "success", room };
 };
 
-const buildInitialScores = (
-	hostPlayerId: string,
-	guestPlayerId: string,
-): Record<string, number> => ({
-	[hostPlayerId]: 0,
-	[guestPlayerId]: 0,
-});
+const buildInitialScores = (playerIds: readonly string[]): Record<string, number> =>
+	Object.fromEntries(playerIds.map((playerId) => [playerId, 0]));
 
 const getRoomDocumentRef = (roomId: string): DocumentReference => doc(db, COLLECTION, roomId);
 
@@ -217,15 +270,10 @@ const loadRoomInTransaction = async (
 };
 
 const toPlayingRoom = (room: MultiplayerRoom): PlayingMultiplayerRoom | null => {
-	if (room.status !== "playing" || !room.gameState || !room.guestPlayer) {
+	if (!isPlayingMultiplayerRoom(room)) {
 		return null;
 	}
-	return {
-		...room,
-		status: "playing",
-		gameState: room.gameState,
-		guestPlayer: room.guestPlayer,
-	};
+	return room;
 };
 
 export const createRoom = async (
@@ -236,10 +284,12 @@ export const createRoom = async (
 	const playerId = createRoomPlayerId(roomId);
 	const uid = auth.currentUser?.uid ?? null;
 	const expiresAt = Timestamp.fromDate(new Date(Date.now() + ROOM_TTL_MS));
+	const hostPlayer = { id: playerId, name: playerName.trim(), uid };
 
 	await setDoc(doc(db, COLLECTION, roomId), {
 		status: "waiting",
-		hostPlayer: { id: playerId, name: playerName.trim(), uid },
+		players: [hostPlayer],
+		hostPlayerId: playerId,
 		selectedGeneration,
 		isHardMode: true,
 		winnerId: null,
@@ -266,17 +316,14 @@ export const joinRoom = async (roomId: string, playerName: string): Promise<void
 		if (room.status !== "waiting") {
 			throw new Error("room_not_waiting");
 		}
-		if (room.hostPlayer.id === playerId) {
+		if (room.players.some((player) => player.id === playerId)) {
 			return;
 		}
-		if (room.guestPlayer?.id === playerId) {
-			return;
-		}
-		if (room.guestPlayer) {
+		if (room.players.length >= MAX_MULTIPLAYER_PLAYERS) {
 			throw new Error("room_full");
 		}
 		transaction.update(roomRef, {
-			guestPlayer: { id: playerId, name: playerName.trim(), uid },
+			players: [...room.players, { id: playerId, name: playerName.trim(), uid }],
 		});
 	});
 };
@@ -311,11 +358,11 @@ export const startGame = async (
 		throw new Error("room_not_found");
 	}
 	const room = parseMultiplayerRoom(roomId, roomSnap.data());
-	if (!room || room.hostPlayer.id !== hostPlayerId) {
+	if (!room || room.hostPlayerId !== hostPlayerId) {
 		throw new Error("not_host");
 	}
-	if (!room.guestPlayer) {
-		throw new Error("guest_missing");
+	if (!canStartGame(room)) {
+		throw new Error("not_enough_players");
 	}
 	if (room.status !== "waiting") {
 		throw new Error("room_not_waiting");
@@ -332,13 +379,14 @@ export const startGame = async (
 
 	const remainingPokemon = pool.filter((id) => id !== firstPokemonId);
 	const roundDurationSeconds = getInitialGuessTime(isShiny);
+	const playerIds = room.players.map((player) => player.id);
 
 	const gameState: Omit<MultiplayerGameState, "roundStartedAt"> & {
 		roundStartedAt: ReturnType<typeof serverTimestamp>;
 	} = {
 		currentPokemonId: firstPokemonId,
 		remainingPokemon,
-		scores: buildInitialScores(room.hostPlayer.id, room.guestPlayer.id),
+		scores: buildInitialScores(playerIds),
 		roundStartedAt: serverTimestamp(),
 		roundDurationSeconds,
 		roundResolved: false,
@@ -394,9 +442,6 @@ export const submitCorrectGuess = async (
 		};
 	});
 };
-
-const isRoomPlayer = (room: MultiplayerRoom, playerId: string): boolean =>
-	room.hostPlayer.id === playerId || room.guestPlayer?.id === playerId;
 
 type PoolProgressionResolution = { type: "skip" } | { type: "apply"; room: PlayingMultiplayerRoom };
 
@@ -466,10 +511,10 @@ export const resolveTimeout = async (
 		roomId,
 		(room) => {
 			if (
-				room.hostPlayer.id !== hostPlayerId ||
+				room.hostPlayerId !== hostPlayerId ||
 				room.status !== "playing" ||
 				!room.gameState ||
-				!room.guestPlayer ||
+				room.players.length < MIN_MULTIPLAYER_PLAYERS ||
 				room.gameState.roundResolved
 			) {
 				return { type: "skip" };
@@ -489,19 +534,16 @@ export const resolveTimeout = async (
 
 export const transferHost = async (roomId: string, leavingHostId: string): Promise<void> => {
 	const room = await loadRoomDocument(roomId);
-	if (!room || room.hostPlayer.id !== leavingHostId || !room.guestPlayer) {
+	if (!room || room.hostPlayerId !== leavingHostId) {
 		return;
 	}
 
 	const roomRef = getRoomDocumentRef(roomId);
 	if (room.status === "playing") {
+		const playerIds = room.players.map((player) => player.id);
 		await updateDoc(roomRef, {
 			status: "finished",
-			winnerId: resolveWinnerId(
-				room.gameState?.scores ?? {},
-				room.hostPlayer.id,
-				room.guestPlayer.id,
-			),
+			winnerId: resolveWinnerId(room.gameState?.scores ?? {}, playerIds),
 		});
 		return;
 	}
@@ -520,7 +562,7 @@ export const syncRoundDuration = async (
 	const room = await loadRoomDocument(roomId);
 	if (
 		!room ||
-		room.hostPlayer.id !== hostPlayerId ||
+		room.hostPlayerId !== hostPlayerId ||
 		room.status !== "playing" ||
 		!room.gameState
 	) {

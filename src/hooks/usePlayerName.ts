@@ -31,6 +31,28 @@ export const usePlayerName = ({ GENERATIONS }: UsePlayerNameProps) => {
 	const [isCheckingName, setIsCheckingName] = useState(false);
 	const [isAuthName, setIsAuthName] = useState(false);
 	const debounceTimeoutRef = useRef<NodeJS.Timeout | undefined>(undefined);
+	const persistedNameRef = useRef<string | null>(null);
+
+	const syncPlayerNameFromAuth = useCallback((user: User | null): void => {
+		const savedName = localStorage.getItem("pokemonGamePlayerName");
+		const authState = resolveAuthStatePlayerName(user, savedName);
+
+		if (authState.playerName) {
+			setPlayerName(authState.playerName);
+			setIsAuthName(authState.isAuthName);
+			setNameError(null);
+			setIsCheckingName(false);
+			if (authState.shouldPersist) {
+				localStorage.setItem("pokemonGamePlayerName", authState.playerName);
+				persistedNameRef.current = authState.playerName;
+			} else {
+				persistedNameRef.current = savedName;
+			}
+			return;
+		}
+
+		setIsAuthName(false);
+	}, []);
 
 	const checkNameAvailability = useCallback(
 		async (name: string): Promise<boolean> => {
@@ -85,8 +107,17 @@ export const usePlayerName = ({ GENERATIONS }: UsePlayerNameProps) => {
 			if (!exactName.trim()) {
 				setNameError(null);
 				setIsAuthName(false);
+				persistedNameRef.current = null;
 				localStorage.removeItem("pokemonGamePlayerName");
 				return;
+			}
+
+			if (exactName === persistedNameRef.current) {
+				setIsAuthName(true);
+			} else {
+				setIsAuthName(false);
+				localStorage.setItem("pokemonGamePlayerName", exactName);
+				persistedNameRef.current = exactName;
 			}
 
 			debouncedCheckName(exactName);
@@ -95,46 +126,10 @@ export const usePlayerName = ({ GENERATIONS }: UsePlayerNameProps) => {
 	);
 
 	useEffect(() => {
-		const unsubscribe = auth.onAuthStateChanged((user: User | null) => {
-			const savedName = localStorage.getItem("pokemonGamePlayerName");
-			const authState = resolveAuthStatePlayerName(user, savedName);
-
-			if (authState.playerName) {
-				setPlayerName(authState.playerName);
-				setIsAuthName(authState.isAuthName);
-				setNameError(null);
-				setIsCheckingName(false);
-				if (authState.shouldPersist) {
-					localStorage.setItem("pokemonGamePlayerName", authState.playerName);
-				}
-			}
-		});
-
+		syncPlayerNameFromAuth(auth.currentUser);
+		const unsubscribe = auth.onAuthStateChanged(syncPlayerNameFromAuth);
 		return () => unsubscribe();
-	}, []);
-
-	useEffect(() => {
-		const savedName = localStorage.getItem("pokemonGamePlayerName");
-		if (savedName && !auth.currentUser) {
-			setPlayerName(savedName);
-			setNameError(null);
-			setIsAuthName(false);
-		}
-	}, []);
-
-	useEffect(() => {
-		const savedName = localStorage.getItem("pokemonGamePlayerName");
-		if (playerName) {
-			if (playerName === savedName) {
-				setIsAuthName(true);
-			}
-			if (playerName !== savedName) {
-				localStorage.setItem("pokemonGamePlayerName", playerName);
-			}
-		} else {
-			setIsAuthName(false);
-		}
-	}, [playerName]);
+	}, [syncPlayerNameFromAuth]);
 
 	return {
 		playerName,

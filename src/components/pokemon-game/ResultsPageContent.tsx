@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Check, Clock, Copy, Crown, Home, Share2, Trophy } from "lucide-react";
@@ -11,6 +12,7 @@ import {
 } from "./resultsPageLoader";
 import { getPrestigeTheme } from "./resultsPageThemes";
 import { ResultsPageDebugPanel } from "./ResultsPageDebugPanel";
+import { ResultsPageParticles } from "./ResultsPageParticles";
 import { StaticPokemonDisplay } from "./StaticPokemonDisplay";
 
 interface ResultsPageContentProps {
@@ -31,7 +33,7 @@ export const ResultsPageContent = ({
 	setDebugRemainingPokemon,
 	copyUrl,
 	handleShare,
-}: ResultsPageContentProps): JSX.Element => {
+}: ResultsPageContentProps): ReactNode => {
 	const { t } = useTranslation();
 
 	const currentRemainingPokemon = computeRemainingPokemon(
@@ -51,22 +53,7 @@ export const ResultsPageContent = ({
 		<div
 			className={`min-h-screen bg-gradient-to-br ${prestigeTheme.bgGradient} flex items-center justify-center p-4 relative overflow-hidden`}
 		>
-			{prestigeTheme.particles && (
-				<div className="absolute inset-0 overflow-hidden pointer-events-none">
-					{[...Array(20)].map((_, i) => (
-						<div
-							key={`particle-${gameResult.id}-${i}`}
-							className="absolute w-2 h-2 bg-white/30 rounded-full animate-ping"
-							style={{
-								left: `${Math.random() * 100}%`,
-								top: `${Math.random() * 100}%`,
-								animationDelay: `${Math.random() * 2}s`,
-								animationDuration: `${2 + Math.random() * 2}s`,
-							}}
-						/>
-					))}
-				</div>
-			)}
+			{prestigeTheme.particles && <ResultsPageParticles resultId={gameResult.id} />}
 
 			{debugMode && (
 				<ResultsPageDebugPanel

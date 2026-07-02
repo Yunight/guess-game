@@ -1,4 +1,4 @@
-import type { ErrorInfo } from "react";
+import type { ErrorInfo, ReactNode } from "react";
 import { getErrorBoundaryTitle, shouldShowMobileNetworkHelp } from "./errorBoundaryFallbackLogic";
 
 interface ErrorBoundaryFallbackProps {
@@ -17,7 +17,7 @@ export const ErrorBoundaryFallback = ({
 	onRetry,
 	onRefresh,
 	userAgent,
-}: ErrorBoundaryFallbackProps): JSX.Element => {
+}: ErrorBoundaryFallbackProps): ReactNode => {
 	const showMobileNetworkHelp = shouldShowMobileNetworkHelp(userAgent, error?.message);
 
 	return (

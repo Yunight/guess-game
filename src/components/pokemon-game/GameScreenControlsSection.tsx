@@ -1,9 +1,10 @@
+import type { ReactNode } from "react";
 import { GameScreenInputArea } from "./GameScreenInputArea";
 import { GameStats } from "./GameStats";
 import { HintButton } from "./HintButton";
 import type { GameScreenPlayAreaProps } from "./gameScreenTypes";
 
-export const GameScreenControlsSection = (props: GameScreenPlayAreaProps): JSX.Element => (
+export const GameScreenControlsSection = (props: GameScreenPlayAreaProps): ReactNode => (
 	<>
 		<GameStats
 			score={props.score}

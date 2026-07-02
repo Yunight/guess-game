@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import { GameOverDialog } from "./GameOverDialog";
 import { PokemonGameDevTools } from "./PokemonGameDevTools";
 import { PokemonGameActiveLayout, PokemonGameMenuLayout } from "./PokemonGameSections";
@@ -10,7 +11,7 @@ interface PokemonGameLayoutProps {
 	controller: PokemonGameController;
 }
 
-export const PokemonGameLayout = ({ controller }: PokemonGameLayoutProps): JSX.Element => {
+export const PokemonGameLayout = ({ controller }: PokemonGameLayoutProps): ReactNode => {
 	const { gameState, gameSetters } = controller;
 
 	return (

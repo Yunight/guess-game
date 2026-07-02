@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Home } from "lucide-react";
@@ -8,7 +9,7 @@ interface ResultsPageErrorProps {
 	error: string | null;
 }
 
-export const ResultsPageError = ({ error }: ResultsPageErrorProps): JSX.Element => {
+export const ResultsPageError = ({ error }: ResultsPageErrorProps): ReactNode => {
 	const { t } = useTranslation();
 
 	return (
@@ -27,7 +28,7 @@ export const ResultsPageError = ({ error }: ResultsPageErrorProps): JSX.Element 
 	);
 };
 
-export const ResultsPageLoading = (): JSX.Element => {
+export const ResultsPageLoading = (): ReactNode => {
 	const { t } = useTranslation();
 
 	return (

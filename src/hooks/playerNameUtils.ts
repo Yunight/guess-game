@@ -73,18 +73,18 @@ export const fetchGenerationOccupancy = async (
 	uid: string | undefined,
 	deps: GenerationOccupancyDeps,
 ): Promise<boolean[]> => {
-	const generationOccupied: boolean[] = [];
-
-	for (const gen of generations) {
-		const collectionName = getRankingsCollectionName(gen);
-		const rankingsRef = deps.getCollection(collectionName);
-		const q = deps.query(
-			rankingsRef,
-			uid ? deps.where("uid", "==", uid) : deps.where("name", "==", storedName),
-		);
-		const querySnapshot = await deps.getDocs(q);
-		generationOccupied.push(!querySnapshot.empty);
-	}
+	const generationOccupied = await Promise.all(
+		generations.map(async (gen) => {
+			const collectionName = getRankingsCollectionName(gen);
+			const rankingsRef = deps.getCollection(collectionName);
+			const q = deps.query(
+				rankingsRef,
+				uid ? deps.where("uid", "==", uid) : deps.where("name", "==", storedName),
+			);
+			const querySnapshot = await deps.getDocs(q);
+			return !querySnapshot.empty;
+		}),
+	);
 
 	return generationOccupied;
 };

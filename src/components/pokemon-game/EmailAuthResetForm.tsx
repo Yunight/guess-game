@@ -1,3 +1,4 @@
+import type { FormEvent, ReactNode } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useTranslation } from "react-i18next";
@@ -6,7 +7,7 @@ interface EmailAuthResetFormProps {
 	email: string;
 	isLoading: boolean;
 	onEmailChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
-	onSubmit: () => void;
+	onSubmit: (e: FormEvent) => void;
 	onBackToSignIn: () => void;
 }
 
@@ -16,17 +17,11 @@ export const EmailAuthResetForm = ({
 	onEmailChange,
 	onSubmit,
 	onBackToSignIn,
-}: EmailAuthResetFormProps): JSX.Element => {
+}: EmailAuthResetFormProps): ReactNode => {
 	const { t } = useTranslation();
 
 	return (
-		<form
-			onSubmit={(e) => {
-				e.preventDefault();
-				onSubmit();
-			}}
-			className="space-y-4"
-		>
+		<form className="space-y-4" onSubmit={onSubmit}>
 			<div>
 				<label htmlFor="email" className="block text-sm font-medium mb-1 text-gray-800">
 					{t("email")}

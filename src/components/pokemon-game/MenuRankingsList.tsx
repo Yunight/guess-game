@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 import {
 	getRankingKey,
@@ -21,7 +22,7 @@ const MenuRankingRow = ({
 	playerName,
 	formatTimeForRanking,
 	formatDate,
-}: MenuRankingRowProps): JSX.Element => {
+}: MenuRankingRowProps): ReactNode => {
 	const isTop = isTopRanking(index);
 	const isCurrentUser = isCurrentRankingPlayer(rankingPlayer, playerName);
 
@@ -84,7 +85,7 @@ export const MenuRankingsList = ({
 	playerName,
 	formatTimeForRanking,
 	formatDate,
-}: MenuRankingsListProps): JSX.Element => {
+}: MenuRankingsListProps): ReactNode => {
 	const { t } = useTranslation();
 
 	return (

@@ -4,6 +4,8 @@ import react from "@vitejs/plugin-react";
 import { defineConfig } from "vite-plus";
 
 const manualChunkGroups = {
+	"firebase-auth-vendor": ["firebase/auth"],
+	"firebase-core-vendor": ["firebase/app", "firebase/firestore"],
 	"react-vendor": ["react", "react-dom"],
 	"redux-vendor": ["react-redux", "@reduxjs/toolkit"],
 	"i18n-vendor": ["i18next", "react-i18next", "i18next-browser-languagedetector"],
@@ -19,8 +21,9 @@ const manualChunkGroups = {
 } as const satisfies Record<string, readonly string[]>;
 
 const resolveManualChunk = (moduleId: string): string | undefined => {
+	const normalizedId = moduleId.replace(/\\/g, "/");
 	for (const [chunkName, packages] of Object.entries(manualChunkGroups)) {
-		if (packages.some((pkg) => moduleId.includes(`node_modules/${pkg}/`))) {
+		if (packages.some((pkg) => normalizedId.includes(`node_modules/${pkg}/`))) {
 			return chunkName;
 		}
 	}

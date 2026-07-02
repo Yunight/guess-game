@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import { DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useTranslation } from "react-i18next";
 import { GameOverFireworks } from "./GameOverFireworks";
@@ -13,7 +14,7 @@ export const GameOverDialogHeader = ({
 	isComplete,
 	playerName,
 	selectedGeneration,
-}: GameOverDialogHeaderProps): JSX.Element => {
+}: GameOverDialogHeaderProps): ReactNode => {
 	const { t, i18n } = useTranslation();
 
 	return (

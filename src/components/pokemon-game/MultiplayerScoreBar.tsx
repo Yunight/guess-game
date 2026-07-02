@@ -1,6 +1,24 @@
-import type { FC } from "react";
+import type { ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 import { ScoreIncrease } from "./ScoreIncrease";
+
+interface LocalPlayerBadgeProps {
+	isLocal: boolean;
+}
+
+const LocalPlayerBadge = ({ isLocal }: LocalPlayerBadgeProps): ReactNode => {
+	const { t } = useTranslation();
+
+	if (!isLocal) {
+		return null;
+	}
+
+	return (
+		<span className="ml-1 text-[10px] font-semibold uppercase text-yellow-300 bg-yellow-500/20 px-1.5 py-0.5 rounded">
+			{t("you")}
+		</span>
+	);
+};
 
 interface MultiplayerScoreBarProps {
 	hostName: string;
@@ -18,7 +36,7 @@ interface MultiplayerScoreBarProps {
 	totalCount: number;
 }
 
-export const MultiplayerScoreBar: FC<MultiplayerScoreBarProps> = ({
+export const MultiplayerScoreBar = ({
 	hostName,
 	guestName,
 	hostScore,
@@ -32,20 +50,13 @@ export const MultiplayerScoreBar: FC<MultiplayerScoreBarProps> = ({
 	submitError,
 	remainingCount,
 	totalCount,
-}) => {
+}: MultiplayerScoreBarProps): ReactNode => {
 	const { t } = useTranslation();
 
 	const hostIsLocal = hostPlayerId === localPlayerId;
 	const guestIsLocal = !hostIsLocal;
 	const hostWonRound = roundWinnerName !== null && roundWinnerName === hostName;
 	const guestWonRound = roundWinnerName !== null && roundWinnerName === guestName;
-
-	const renderPlayerBadge = (isLocal: boolean): JSX.Element | null =>
-		isLocal ? (
-			<span className="ml-1 text-[10px] font-semibold uppercase text-yellow-300 bg-yellow-500/20 px-1.5 py-0.5 rounded">
-				{t("you")}
-			</span>
-		) : null;
 
 	return (
 		<div className="mx-2 bg-gradient-to-b from-gray-900 to-gray-800 rounded-b-lg p-4 shadow-lg border-t-2 border-blue-500/30 space-y-3">
@@ -59,7 +70,7 @@ export const MultiplayerScoreBar: FC<MultiplayerScoreBarProps> = ({
 				>
 					<p className="text-xs text-blue-200 mb-1 truncate flex items-center justify-center">
 						<span className="truncate">{hostName}</span>
-						{renderPlayerBadge(hostIsLocal)}
+						<LocalPlayerBadge isLocal={hostIsLocal} />
 					</p>
 					<p className="text-2xl font-bold text-white font-mono">{hostScore}</p>
 				</div>
@@ -72,7 +83,7 @@ export const MultiplayerScoreBar: FC<MultiplayerScoreBarProps> = ({
 				>
 					<p className="text-xs text-purple-200 mb-1 truncate flex items-center justify-center">
 						<span className="truncate">{guestName}</span>
-						{renderPlayerBadge(guestIsLocal)}
+						<LocalPlayerBadge isLocal={guestIsLocal} />
 					</p>
 					<p className="text-2xl font-bold text-white font-mono">{guestScore}</p>
 				</div>

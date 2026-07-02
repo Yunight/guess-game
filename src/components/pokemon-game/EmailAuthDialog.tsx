@@ -5,12 +5,16 @@ import {
 	updateProfile,
 } from "firebase/auth";
 import { X } from "lucide-react";
-import type { FC } from "react";
-import { useState } from "react";
+import type { FC, FormEvent } from "react";
+import { useReducer } from "react";
 import { useTranslation } from "react-i18next";
 import { auth } from "../../firebase";
 import { EmailAuthForm } from "./EmailAuthForm";
 import { EmailAuthResetForm } from "./EmailAuthResetForm";
+import {
+	emailAuthDialogReducer,
+	initialEmailAuthDialogState,
+} from "./emailAuthDialogReducer";
 import {
 	extractFirebaseErrorCode,
 	getAuthDialogSubtitleKey,
@@ -32,68 +36,73 @@ export const EmailAuthDialog: FC<EmailAuthDialogProps> = ({
 	checkNameAvailability,
 }) => {
 	const { t } = useTranslation();
-	const [email, setEmail] = useState("");
-	const [password, setPassword] = useState("");
-	const [trainerName, setTrainerName] = useState("");
-	const [isSignUp, setIsSignUp] = useState(false);
-	const [isResetMode, setIsResetMode] = useState(false);
-	const [error, setError] = useState<string | null>(null);
-	const [isLoading, setIsLoading] = useState(false);
-	const [successMessage, setSuccessMessage] = useState<string | null>(null);
+	const [state, dispatch] = useReducer(emailAuthDialogReducer, initialEmailAuthDialogState);
+	const {
+		email,
+		password,
+		trainerName,
+		isSignUp,
+		isResetMode,
+		error,
+		isLoading,
+		successMessage,
+	} = state;
 
 	const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
-		setEmail(e.target.value);
-		if (shouldClearEmailError(error)) {
-			setError(null);
-		}
+		dispatch({
+			type: "email_changed",
+			email: e.target.value,
+			clearError: shouldClearEmailError(error),
+		});
 	};
 
 	const handleTrainerNameChange = async (e: React.ChangeEvent<HTMLInputElement>): Promise<void> => {
 		const newName = e.target.value;
-		setTrainerName(newName);
+		dispatch({ type: "trainer_name_changed", trainerName: newName });
 
 		if (!newName.trim()) {
-			setError(null);
+			dispatch({ type: "set_error", error: null });
 			return;
 		}
 
 		const isAvailable = await checkNameAvailability(newName);
 		if (!isAvailable) {
-			setError(t("trainerNameTaken"));
+			dispatch({ type: "set_error", error: t("trainerNameTaken") });
 		} else {
-			setError(null);
+			dispatch({ type: "set_error", error: null });
 		}
 	};
 
 	const handleForgotPassword = async (): Promise<void> => {
 		const validation = validateForgotPassword({ email });
 		if (validation.action === "abort") {
-			setError(t(validation.reason));
+			dispatch({ type: "set_error", error: t(validation.reason) });
 			return;
 		}
 
-		setIsLoading(true);
-		setError(null);
-		setSuccessMessage(null);
+		dispatch({ type: "forgot_password_started" });
 
 		try {
 			await sendPasswordResetEmail(auth, email);
-			setSuccessMessage(t("passwordResetEmailSent"));
+			dispatch({ type: "forgot_password_succeeded", message: t("passwordResetEmailSent") });
 		} catch (caughtError: unknown) {
 			if (caughtError instanceof Error) {
 				const errorCode = extractFirebaseErrorCode(caughtError.message);
-				setError(t(`firebaseErrors.${errorCode}`));
+				dispatch({ type: "forgot_password_failed", error: t(`firebaseErrors.${errorCode}`) });
 			}
 		} finally {
-			setIsLoading(false);
+			dispatch({ type: "forgot_password_finished" });
 		}
 	};
 
-	const handleSubmit = async (e: React.FormEvent): Promise<void> => {
+	const handleResetFormSubmit = (e: FormEvent): void => {
 		e.preventDefault();
-		setIsLoading(true);
-		setError(null);
-		setSuccessMessage(null);
+		void handleForgotPassword();
+	};
+
+	const handleSubmit = async (e: FormEvent): Promise<void> => {
+		e.preventDefault();
+		dispatch({ type: "submit_started" });
 
 		const result = await executeEmailAuthSubmit(
 			{
@@ -119,25 +128,12 @@ export const EmailAuthDialog: FC<EmailAuthDialogProps> = ({
 		);
 
 		if (result.status === "validation_failed" || result.status === "error") {
-			setError(result.errorKey);
+			dispatch({ type: "submit_failed", error: result.errorKey });
 		} else {
 			onClose();
 		}
 
-		setIsLoading(false);
-	};
-
-	const toggleMode = (): void => {
-		setIsSignUp(!isSignUp);
-		setError(null);
-		setSuccessMessage(null);
-		setIsResetMode(false);
-	};
-
-	const handleResetModeToggle = (): void => {
-		setIsResetMode(!isResetMode);
-		setError(null);
-		setSuccessMessage(null);
+		dispatch({ type: "submit_finished" });
 	};
 
 	if (!isOpen) return null;
@@ -179,8 +175,8 @@ export const EmailAuthDialog: FC<EmailAuthDialogProps> = ({
 						email={email}
 						isLoading={isLoading}
 						onEmailChange={handleEmailChange}
-						onSubmit={handleForgotPassword}
-						onBackToSignIn={handleResetModeToggle}
+						onSubmit={handleResetFormSubmit}
+						onBackToSignIn={() => dispatch({ type: "toggle_reset_mode" })}
 					/>
 				) : (
 					<EmailAuthForm
@@ -190,11 +186,13 @@ export const EmailAuthDialog: FC<EmailAuthDialogProps> = ({
 						isSignUp={isSignUp}
 						isLoading={isLoading}
 						onEmailChange={handleEmailChange}
-						onPasswordChange={(e) => setPassword(e.target.value)}
+						onPasswordChange={(e) =>
+							dispatch({ type: "password_changed", password: e.target.value })
+						}
 						onTrainerNameChange={handleTrainerNameChange}
 						onSubmit={handleSubmit}
-						onForgotPassword={handleResetModeToggle}
-						onToggleMode={toggleMode}
+						onForgotPassword={() => dispatch({ type: "toggle_reset_mode" })}
+						onToggleMode={() => dispatch({ type: "toggle_mode" })}
 					/>
 				)}
 			</div>

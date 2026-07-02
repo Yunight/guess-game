@@ -9,7 +9,7 @@ interface MultiplayerPageShellProps {
 	children: ReactNode;
 }
 
-export const MultiplayerPageShell = ({ children }: MultiplayerPageShellProps): JSX.Element => {
+export const MultiplayerPageShell = ({ children }: MultiplayerPageShellProps): ReactNode => {
 	const { t } = useTranslation();
 
 	return (

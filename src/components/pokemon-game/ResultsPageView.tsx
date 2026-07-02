@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import type { GameResult } from "../../services/gameResultsService";
 import type { UseResultsPageResult } from "./useResultsPage";
 import { ResultsPageError, ResultsPageLoading } from "./ResultsPageStates";
@@ -13,7 +14,7 @@ export const ResultsPageView = ({
 	setDebugRemainingPokemon,
 	copyUrl,
 	handleShare,
-}: UseResultsPageResult): JSX.Element => {
+}: UseResultsPageResult): ReactNode => {
 	if (loading) {
 		return <ResultsPageLoading />;
 	}

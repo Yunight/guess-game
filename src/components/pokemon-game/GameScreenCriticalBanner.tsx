@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 interface GameScreenCriticalBannerProps {
 	showCriticalSuccess: boolean;
 	showCriticalHit: boolean;
@@ -14,7 +15,7 @@ export const GameScreenCriticalBanner = ({
 	criticalSuccessLabel,
 	criticalHitLabel,
 	hypeTrainLabel,
-}: GameScreenCriticalBannerProps): JSX.Element | null => {
+}: GameScreenCriticalBannerProps): ReactNode | null => {
 	if (!showCriticalSuccess && !showCriticalHit && !showHypeTrain) {
 		return null;
 	}

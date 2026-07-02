@@ -141,15 +141,13 @@ export const useMultiplayerGameEffects = ({
 			setRoundWinnerName(null);
 			return;
 		}
-		const winnerName =
-			roundWinnerId === room.hostPlayer.id ? room.hostPlayer.name : (room.guestPlayer?.name ?? "");
-		setRoundWinnerName(winnerName);
+		const winner = room.players.find((player) => player.id === roundWinnerId);
+		setRoundWinnerName(winner?.name ?? null);
 	}, [
 		gameState,
 		roundWinnerId,
 		room.status,
-		room.hostPlayer,
-		room.guestPlayer,
+		room.players,
 		setRoundWinnerName,
 	]);
 

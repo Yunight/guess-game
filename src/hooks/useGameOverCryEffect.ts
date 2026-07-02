@@ -26,19 +26,18 @@ export const useGameOverCryEffect = (params: GameOverCryEffectParams): void => {
 
 	const playPokemonCry = useCallback(
 		async (pokemonId: number): Promise<void> => {
-			const newLastPlayedId = await executeRewardCryPlayback(pokemonId, lastPlayedId, isMuted);
+			const effectiveLastPlayedId = isSlotMachineRunning ? null : lastPlayedId;
+			const newLastPlayedId = await executeRewardCryPlayback(
+				pokemonId,
+				effectiveLastPlayedId,
+				isMuted,
+			);
 			if (newLastPlayedId !== null) {
 				setLastPlayedId(newLastPlayedId);
 			}
 		},
-		[lastPlayedId, isMuted],
+		[lastPlayedId, isMuted, isSlotMachineRunning],
 	);
-
-	useEffect(() => {
-		if (isSlotMachineRunning) {
-			setLastPlayedId(null);
-		}
-	}, [isSlotMachineRunning]);
 
 	useEffect(() => {
 		if (
@@ -62,8 +61,7 @@ export const useGameOverCryEffect = (params: GameOverCryEffectParams): void => {
 	}, [
 		gameOver,
 		isMuted,
-		rewardPokemon.pokemon,
-		rewardPokemon.isLoading,
+		rewardPokemon,
 		isSlotMachineRunning,
 		playPokemonCry,
 	]);

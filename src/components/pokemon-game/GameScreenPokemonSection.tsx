@@ -1,8 +1,9 @@
+import type { ReactNode } from "react";
 import { GameScreenCriticalBanner } from "./GameScreenCriticalBanner";
 import { PokemonDisplay } from "./PokemonDisplay";
 import type { GameScreenPlayAreaProps } from "./gameScreenTypes";
 
-export const GameScreenPokemonSection = (props: GameScreenPlayAreaProps): JSX.Element => (
+export const GameScreenPokemonSection = (props: GameScreenPlayAreaProps): ReactNode => (
 	<div className="relative">
 		<PokemonDisplay
 			currentPokemon={props.currentPokemon}

@@ -6,8 +6,13 @@ import {
 	subscribeToRoom,
 	type RoomSnapshotResult,
 } from "@/services/multiplayerRoomService";
-import type { MultiplayerGeneration } from "@/services/multiplayerRoomTypes";
-import type { MultiplayerRoom } from "@/services/multiplayerRoomTypes";
+import type { MultiplayerGeneration, MultiplayerRoom } from "@/services/multiplayerRoomTypes";
+import {
+	canStartGame,
+	getPlayerById,
+	isRoomFull,
+	isRoomPlayer,
+} from "@/services/multiplayerRoomUtils";
 
 interface UseMultiplayerRoomParams {
 	roomId: string | undefined;
@@ -19,87 +24,86 @@ interface UseMultiplayerRoomResult {
 	error: string | null;
 	localPlayerId: string | null;
 	isHost: boolean;
-	isGuest: boolean;
 	isJoined: boolean;
 	localPlayerName: string | null;
-	opponentName: string | null;
+	playerCount: number;
+	canStart: boolean;
+	isRoomFull: boolean;
 	createMultiplayerRoom: (playerName: string, generation: MultiplayerGeneration) => Promise<string>;
 	joinMultiplayerRoom: (playerName: string) => Promise<void>;
+}
+
+interface RoomSubscriptionState {
+	roomId: string;
+	room: MultiplayerRoom | null;
+	isLoading: boolean;
+	error: string | null;
 }
 
 export const useMultiplayerRoom = ({
 	roomId,
 }: UseMultiplayerRoomParams): UseMultiplayerRoomResult => {
-	const [room, setRoom] = useState<MultiplayerRoom | null>(null);
-	const [isLoading, setIsLoading] = useState(true);
-	const [error, setError] = useState<string | null>(null);
+	const [subscriptionState, setSubscriptionState] = useState<RoomSubscriptionState | null>(null);
 
 	const localPlayerId = roomId ? getStoredRoomPlayerId(roomId) : null;
 
+	const isCurrentRoomSubscription = subscriptionState?.roomId === roomId;
+
 	useEffect(() => {
 		if (!roomId) {
-			setRoom(null);
-			setIsLoading(false);
 			return;
 		}
 
-		setIsLoading(true);
 		const handleSnapshot = (result: RoomSnapshotResult): void => {
-			setIsLoading(false);
-			if (result.type === "success") {
-				setRoom(result.room);
-				setError(null);
-				return;
-			}
-			setRoom(null);
-			setError(result.type === "not_found" ? "multiplayerRoomNotFound" : "multiplayerRoomInvalid");
+			setSubscriptionState({
+				roomId,
+				isLoading: false,
+				room: result.type === "success" ? result.room : null,
+				error:
+					result.type === "success"
+						? null
+						: result.type === "not_found"
+							? "multiplayerRoomNotFound"
+							: "multiplayerRoomInvalid",
+			});
 		};
 
 		const unsubscribe = subscribeToRoom(roomId, handleSnapshot, (subscriptionError) => {
-			setError(subscriptionError.message);
-			setIsLoading(false);
+			setSubscriptionState({
+				roomId,
+				isLoading: false,
+				room: null,
+				error: subscriptionError.message,
+			});
 		});
 
 		return unsubscribe;
 	}, [roomId]);
 
+	const room = roomId && isCurrentRoomSubscription ? subscriptionState.room : null;
+	const isLoading = Boolean(roomId && (!isCurrentRoomSubscription || subscriptionState.isLoading));
+	const error = roomId && isCurrentRoomSubscription ? subscriptionState.error : null;
+
 	const isHost = useMemo(
-		() => Boolean(room && localPlayerId && room.hostPlayer.id === localPlayerId),
+		() => Boolean(room && localPlayerId && room.hostPlayerId === localPlayerId),
 		[room, localPlayerId],
 	);
 
-	const isGuest = useMemo(
-		() => Boolean(room && localPlayerId && room.guestPlayer?.id === localPlayerId),
+	const isJoined = useMemo(
+		() => Boolean(room && localPlayerId && isRoomPlayer(room, localPlayerId)),
 		[room, localPlayerId],
 	);
-
-	const isJoined = isHost || isGuest;
 
 	const localPlayerName = useMemo((): string | null => {
 		if (!room || !localPlayerId) {
 			return null;
 		}
-		if (room.hostPlayer.id === localPlayerId) {
-			return room.hostPlayer.name;
-		}
-		if (room.guestPlayer?.id === localPlayerId) {
-			return room.guestPlayer.name;
-		}
-		return null;
+		return getPlayerById(room, localPlayerId)?.name ?? null;
 	}, [room, localPlayerId]);
 
-	const opponentName = useMemo((): string | null => {
-		if (!room || !localPlayerId) {
-			return null;
-		}
-		if (room.hostPlayer.id === localPlayerId) {
-			return room.guestPlayer?.name ?? null;
-		}
-		if (room.guestPlayer?.id === localPlayerId) {
-			return room.hostPlayer.name;
-		}
-		return null;
-	}, [room, localPlayerId]);
+	const playerCount = room?.players.length ?? 0;
+	const canStart = room ? canStartGame(room) : false;
+	const roomIsFull = room ? isRoomFull(room) : false;
 
 	const createMultiplayerRoom = useCallback(
 		async (playerName: string, generation: MultiplayerGeneration): Promise<string> =>
@@ -123,10 +127,11 @@ export const useMultiplayerRoom = ({
 		error,
 		localPlayerId,
 		isHost,
-		isGuest,
 		isJoined,
 		localPlayerName,
-		opponentName,
+		playerCount,
+		canStart,
+		isRoomFull: roomIsFull,
 		createMultiplayerRoom,
 		joinMultiplayerRoom,
 	};

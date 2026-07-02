@@ -91,6 +91,21 @@ export interface PlayPokemonCryParams {
 	soundPlayedRef: MutableRefObject<boolean>;
 }
 
+const loadFirstAvailableAudio = async (urls: readonly string[]): Promise<HTMLAudioElement | null> => {
+	if (urls.length === 0) {
+		return null;
+	}
+
+	const loadedAudios = await Promise.all(urls.map((url) => preloadAudio(url)));
+	for (const audio of loadedAudios) {
+		if (audio) {
+			return audio;
+		}
+	}
+
+	return null;
+};
+
 export const playPokemonCry = async ({
 	pokemon,
 	isMuted,
@@ -121,12 +136,7 @@ export const playPokemonCry = async ({
 			audio = await preloadAudio(showdownUrl);
 		} else {
 			const urls = pokemon.cryUrl.split("|");
-			for (const url of urls) {
-				audio = await preloadAudio(url);
-				if (audio) {
-					break;
-				}
-			}
+			audio = await loadFirstAvailableAudio(urls);
 		}
 
 		if (audio && pokemon.id === currentPokemonIdRef.current) {

@@ -201,14 +201,10 @@ export const gameResultsService = {
 			);
 
 			const querySnapshot = await getDocs(expiredQuery);
-			let deletedCount = 0;
 
-			for (const docSnap of querySnapshot.docs) {
-				await deleteDoc(docSnap.ref);
-				deletedCount++;
-			}
+			await Promise.all(querySnapshot.docs.map((docSnap) => deleteDoc(docSnap.ref)));
 
-			return deletedCount;
+			return querySnapshot.docs.length;
 		} catch (error) {
 			console.error("Error cleaning up expired results:", error);
 			return 0;

@@ -29,8 +29,8 @@ export interface MultiplayerGameState {
 export interface MultiplayerRoom {
 	id: string;
 	status: RoomStatus;
-	hostPlayer: MultiplayerPlayer;
-	guestPlayer?: MultiplayerPlayer;
+	players: MultiplayerPlayer[];
+	hostPlayerId: string;
 	selectedGeneration: MultiplayerGeneration;
 	isHardMode: true;
 	gameState?: MultiplayerGameState;

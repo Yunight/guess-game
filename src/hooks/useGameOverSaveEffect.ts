@@ -3,9 +3,6 @@ import {
 	createGameSessionId,
 	runGameResultSave,
 	shouldScheduleGameSave,
-	shouldInitializeGameSessionId,
-	shouldResetGameOverSaveState,
-	shouldUpdateFinalTime,
 } from "@/components/pokemon-game/gameOverDialogSave";
 import type { GameOverDialogProps } from "@/components/pokemon-game/GameOverDialog";
 import { useEffect, useState } from "react";
@@ -39,7 +36,7 @@ interface SaveContext {
 	isSavingResult: boolean;
 	rewardPokemon: GameOverSaveEffectParams["rewardPokemon"];
 	isSlotMachineRunning: boolean;
-	gameSessionId: string | null;
+	gameSessionId: string;
 	finalTime: number;
 	totalTimeElapsed: number;
 }
@@ -74,33 +71,12 @@ export const useGameOverSaveEffect = (
 		maxHypeChain,
 	} = params;
 
-	const [finalTime, setFinalTime] = useState(0);
 	const [shareableUrl, setShareableUrl] = useState<string | null>(null);
 	const [isSavingResult, setIsSavingResult] = useState(false);
-	const [gameSessionId, setGameSessionId] = useState<string | null>(null);
+	const [gameSessionId] = useState(createGameSessionId);
 
+	const finalTime = gameOver && totalTimeElapsed > 0 ? totalTimeElapsed : 0;
 	const displayTime = finalTime > 0 ? finalTime : totalTimeElapsed;
-
-	useEffect(() => {
-		if (shouldResetGameOverSaveState(gameOver)) {
-			setShareableUrl(null);
-			setIsSavingResult(false);
-			setFinalTime(0);
-			setGameSessionId(null);
-		}
-	}, [gameOver]);
-
-	useEffect(() => {
-		if (shouldInitializeGameSessionId(gameOver, gameSessionId, shareableUrl, isSavingResult)) {
-			setGameSessionId(createGameSessionId());
-		}
-	}, [gameOver, gameSessionId, shareableUrl, isSavingResult]);
-
-	useEffect(() => {
-		if (shouldUpdateFinalTime(gameOver, totalTimeElapsed)) {
-			setFinalTime(totalTimeElapsed);
-		}
-	}, [gameOver, totalTimeElapsed]);
 
 	useEffect(() => {
 		const saveContext = buildSaveContext({
@@ -114,7 +90,7 @@ export const useGameOverSaveEffect = (
 			totalTimeElapsed,
 		});
 
-		if (!shouldScheduleGameSave(saveContext) || !gameSessionId) {
+		if (!shouldScheduleGameSave(saveContext)) {
 			return;
 		}
 
@@ -160,12 +136,6 @@ export const useGameOverSaveEffect = (
 		hyperTrainCount,
 		maxHypeChain,
 	]);
-
-	useEffect(() => {
-		if (shareableUrl) {
-			setIsSavingResult(false);
-		}
-	}, [shareableUrl]);
 
 	return { shareableUrl, isSavingResult, displayTime };
 };

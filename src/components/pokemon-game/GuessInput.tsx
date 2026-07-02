@@ -64,19 +64,12 @@ export const GuessInput: FC<GuessInputProps> = ({
 					className="absolute bottom-full left-0 right-0 mb-1 bg-white rounded-lg shadow-lg overflow-hidden z-50 border-2 border-gray-200"
 				>
 					{suggestions.map((suggestion, index) => (
-						<div
+						<button
 							key={suggestion}
+							type="button"
 							onClick={() => handleSuggestionClick(suggestion)}
-							onKeyDown={(e) => {
-								if (e.key === "Enter" || e.key === " ") {
-									e.preventDefault();
-									handleSuggestionClick(suggestion);
-								}
-							}}
-							tabIndex={0}
-							role="button"
 							style={{ fontSize: "1.1rem", lineHeight: "1.75rem" }}
-							className={`px-4 py-2.5 cursor-pointer flex items-center gap-3 hover:bg-gray-100 text-gray-700
+							className={`w-full text-left px-4 py-2.5 cursor-pointer flex items-center gap-3 hover:bg-gray-100 text-gray-700
                 ${index === highlightedIndex ? "bg-gray-100 font-medium" : ""}`}
 						>
 							{/* Pokeball icon */}
@@ -101,7 +94,7 @@ export const GuessInput: FC<GuessInputProps> = ({
 								)}
 							</div>
 							{suggestion}
-						</div>
+						</button>
 					))}
 				</div>
 			)}

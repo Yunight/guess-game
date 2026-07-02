@@ -1,5 +1,5 @@
 import { cn } from "@/lib/utils";
-import { useEffect, useState } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 
 interface PokemonSpriteProps {
 	pokemonId: number;
@@ -18,10 +18,10 @@ export const PokemonSprite = ({
 	className,
 	isRevealed = true,
 	isShiny = false,
-}: PokemonSpriteProps): JSX.Element => {
-	const [homeError, setHomeError] = useState(false);
-	const [regularError, setRegularError] = useState(false);
-	const [isLoaded, setIsLoaded] = useState(false);
+}: PokemonSpriteProps): ReactNode => {
+	const [homeFailedUrl, setHomeFailedUrl] = useState<string | null>(null);
+	const [regularFailedUrl, setRegularFailedUrl] = useState<string | null>(null);
+	const [loadedUrl, setLoadedUrl] = useState<string | null>(null);
 
 	const homeArtworkUrl = isShiny
 		? `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/home/shiny/${pokemonId}.png`
@@ -33,15 +33,10 @@ export const PokemonSprite = ({
 
 	const fallbackSprite = "/pokeball.svg";
 
+	const homeError = homeFailedUrl === homeArtworkUrl;
+	const regularError = regularFailedUrl === regularSpriteUrl;
 	const spriteUrl = homeError ? regularSpriteUrl : homeArtworkUrl;
-
-	useEffect(() => {
-		void pokemonId;
-		void isShiny;
-		setHomeError(false);
-		setRegularError(false);
-		setIsLoaded(isImageCached(spriteUrl));
-	}, [pokemonId, isShiny, spriteUrl]);
+	const isLoaded = loadedUrl === spriteUrl || isImageCached(spriteUrl);
 
 	useEffect(() => {
 		const preloadImage = async (url: string): Promise<void> => {
@@ -92,17 +87,19 @@ export const PokemonSprite = ({
 							: "none",
 				}}
 				onLoad={(e) => {
-					setIsLoaded(true);
+					setLoadedUrl(spriteUrl);
 					imageCache.set(spriteUrl, e.currentTarget);
 				}}
 				onError={(e) => {
 					if (!homeError) {
-						setHomeError(true);
-						setIsLoaded(isImageCached(regularSpriteUrl));
+						setHomeFailedUrl(homeArtworkUrl);
 						e.currentTarget.src = regularSpriteUrl;
+						if (isImageCached(regularSpriteUrl)) {
+							setLoadedUrl(regularSpriteUrl);
+						}
 					} else if (!regularError) {
-						setRegularError(true);
-						setIsLoaded(true);
+						setRegularFailedUrl(regularSpriteUrl);
+						setLoadedUrl(fallbackSprite);
 						e.currentTarget.src = fallbackSprite;
 					}
 				}}

@@ -1,6 +1,7 @@
+import type { ReactNode } from "react";
 import { GuessInput, type GuessInputProps } from "./GuessInput";
 
-export const GameScreenInputArea = (props: GuessInputProps): JSX.Element => (
+export const GameScreenInputArea = (props: GuessInputProps): ReactNode => (
 	<div className="flex items-center gap-4 mx-2 mt-4">
 		<div className="w-12 h-12 bg-gray-800 rounded-full relative shadow-inner">
 			<div className="absolute left-1/2 top-0 -translate-x-1/2 h-full w-4 bg-gray-800">

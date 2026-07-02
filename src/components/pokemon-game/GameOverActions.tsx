@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import { Button } from "@/components/ui/button";
 import { Check, Copy, Home, RefreshCcw, Share2 } from "lucide-react";
 import { useTranslation } from "react-i18next";
@@ -28,7 +29,7 @@ export const GameOverActions = ({
 	onRestart,
 	onShare,
 	onBackToMenu,
-}: GameOverActionsProps): JSX.Element => {
+}: GameOverActionsProps): ReactNode => {
 	const { t } = useTranslation();
 
 	return (

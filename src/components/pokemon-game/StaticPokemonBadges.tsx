@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import { Crown, Sparkles, Star } from "lucide-react";
 import {
 	getLegendaryBadgeLabel,
@@ -11,10 +12,7 @@ interface StaticPokemonBadgesProps {
 	language: string;
 }
 
-export const StaticPokemonBadges = ({
-	pokemon,
-	language,
-}: StaticPokemonBadgesProps): JSX.Element => (
+export const StaticPokemonBadges = ({ pokemon, language }: StaticPokemonBadgesProps): ReactNode => (
 	<div className="flex flex-wrap justify-center gap-2">
 		{pokemon.isShiny && (
 			<div className="flex items-center justify-center gap-2 bg-yellow-500 text-black px-4 py-2 rounded-full font-bold text-sm shadow-lg">

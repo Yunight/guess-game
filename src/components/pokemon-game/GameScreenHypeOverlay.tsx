@@ -1,10 +1,11 @@
+import type { ReactNode } from "react";
 interface GameScreenHypeOverlayProps {
 	showHypeTrain: boolean;
 }
 
 export const GameScreenHypeOverlay = ({
 	showHypeTrain,
-}: GameScreenHypeOverlayProps): JSX.Element | null => {
+}: GameScreenHypeOverlayProps): ReactNode | null => {
 	if (!showHypeTrain) {
 		return null;
 	}

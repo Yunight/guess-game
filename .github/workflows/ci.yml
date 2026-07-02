@@ -31,4 +31,4 @@ jobs:
         run: bun run coverage
 
       - name: Fallow audit
-        run: bunx fallow audit --coverage coverage/coverage-final.json --quiet
+        run: bun run fallow:audit

@@ -11,7 +11,7 @@ export const PokemonDisplayFrame = ({
 	children,
 	className,
 	contentClassName,
-}: PokemonDisplayFrameProps): JSX.Element => (
+}: PokemonDisplayFrameProps): ReactNode => (
 	<div
 		className={cn(
 			"relative bg-gradient-to-br from-blue-100 to-blue-200 overflow-hidden",

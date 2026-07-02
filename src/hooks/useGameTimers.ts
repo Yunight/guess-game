@@ -24,9 +24,9 @@ export const useGameTimers = (
 
 	const startTimeRef = useRef<number | null>(null);
 	const pausedTimeRef = useRef<number>(0);
-	const lastVisibilityChangeRef = useRef<number>(Date.now());
+	const lastVisibilityChangeRef = useRef<number | null>(null);
 
-	const clearGuessTimer = useCallback(() => {
+	const clearGuessTimer = useCallback((): void => {
 		if (guessTimerRef.current) {
 			console.log("[useGameTimers] Clearing guess timer", {
 				timerId: guessTimerRef.current,
@@ -56,7 +56,7 @@ export const useGameTimers = (
 			const result = resolveVisibilityChange({
 				isHidden: document.hidden,
 				now,
-				lastVisibilityChange: lastVisibilityChangeRef.current,
+				lastVisibilityChange: lastVisibilityChangeRef.current ?? now,
 				startTime: startTimeRef.current,
 				pausedTime: pausedTimeRef.current,
 				isGameActive,

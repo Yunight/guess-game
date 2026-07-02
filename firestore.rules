@@ -2,26 +2,63 @@ rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
+    function isValidGameResultData(data) {
+      return data.playerName is string
+        && data.playerName.size() > 0
+        && data.playerName.size() <= 50
+        && data.score is number
+        && data.score >= 0
+        && data.score <= 10000
+        && data.totalTimeElapsed is number
+        && data.totalTimeElapsed >= 0
+        && data.selectedGeneration is map
+        && data.remainingPokemon is list
+        && data.criticalHitCount is number
+        && data.criticalSuccessCount is number
+        && data.hyperTrainCount is number
+        && data.maxHypeChain is number
+        && (data.userRanking == null || data.userRanking is int);
+    }
+
+    function isReadableGameResult(data) {
+      return isValidGameResultData(data)
+        && (!('expiresAt' in data) || data.expiresAt > request.time);
+    }
+
+    function isNewGameResult(data) {
+      return isValidGameResultData(data)
+        && data.id is string
+        && data.viewCount == 0
+        && data.isShared == false;
+    }
+
     match /multiplayerRooms/{roomId} {
-      allow read: if true;
+      allow get: if resource.data.status in ['waiting', 'playing', 'finished'];
+      allow list: if false;
 
       allow create: if request.resource.data.status == 'waiting'
         && request.resource.data.isHardMode == true
-        && request.resource.data.hostPlayer is map
-        && request.resource.data.hostPlayer.id is string
-        && request.resource.data.hostPlayer.name is string
+        && request.resource.data.players is list
+        && request.resource.data.players.size() == 1
+        && request.resource.data.hostPlayerId is string
+        && request.resource.data.hostPlayerId == request.resource.data.players[0].id
+        && request.resource.data.players[0] is map
+        && request.resource.data.players[0].id is string
+        && request.resource.data.players[0].name is string
         && request.resource.data.selectedGeneration is map;
 
       allow update: if resource.data.status == 'waiting'
         && request.resource.data.status == 'waiting'
-        && !('guestPlayer' in resource.data)
-        && request.resource.data.guestPlayer is map
+        && request.resource.data.players is list
+        && request.resource.data.players.size() <= 4
+        && request.resource.data.players.size() == resource.data.players.size() + 1
         && request.resource.data.diff(resource.data).affectedKeys()
-            .hasOnly(['guestPlayer']);
+            .hasOnly(['players']);
 
       allow update: if resource.data.status == 'waiting'
         && request.resource.data.status == 'playing'
-        && resource.data.hostPlayer.id == request.resource.data.hostPlayer.id
+        && resource.data.players.size() >= 2
+        && resource.data.hostPlayerId == request.resource.data.hostPlayerId
         && request.resource.data.gameState is map;
 
       allow update: if resource.data.status == 'playing'
@@ -31,11 +68,61 @@ service cloud.firestore {
     }
 
     match /gameResults/{resultId} {
-      allow read, write: if true;
+      allow get: if isReadableGameResult(resource.data);
+      allow list: if isValidGameResultData(resource.data);
+
+      allow create: if isNewGameResult(request.resource.data)
+        && request.resource.data.id == resultId;
+
+      allow update: if isValidGameResultData(resource.data)
+        && request.resource.data.viewCount == resource.data.viewCount + 1
+        && request.resource.data.viewCount <= 10000
+        && resource.data.viewCount < 10000
+        && request.resource.data.isShared == true
+        && request.resource.data.diff(resource.data).affectedKeys()
+            .hasOnly(['viewCount', 'isShared']);
+
+      allow delete: if resource.data.expiresAt is timestamp
+        && resource.data.expiresAt <= request.time;
+    }
+
+    function isValidRankingData(data) {
+      return data.name is string
+        && data.name.size() > 0
+        && data.name.size() <= 50
+        && data.score is number
+        && data.score >= 0
+        && data.score <= 10000
+        && data.time is number
+        && data.time >= 0
+        && (data.uid == null || data.uid is string);
+    }
+
+    function canCreateRanking(data) {
+      return isValidRankingData(data)
+        && (data.uid == null
+          || (request.auth != null && request.auth.uid == data.uid));
+    }
+
+    function canUpdateRanking(data) {
+      return isValidRankingData(data)
+        && data.name == resource.data.name
+        && data.uid == resource.data.uid
+        && (resource.data.uid == null
+          || (request.auth != null && request.auth.uid == resource.data.uid));
     }
 
     match /{collection}/{document} {
-      allow read, write: if collection.matches('rankings_.*');
+      allow get, list: if collection.matches('rankings_.*')
+        && isValidRankingData(resource.data);
+
+      allow create: if collection.matches('rankings_.*')
+        && canCreateRanking(request.resource.data);
+
+      allow update: if collection.matches('rankings_.*')
+        && canUpdateRanking(request.resource.data);
+
+      allow delete: if false;
     }
   }
 }

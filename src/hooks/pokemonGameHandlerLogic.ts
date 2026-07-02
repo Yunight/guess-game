@@ -655,13 +655,13 @@ export const executeSuggestionSubmission = async (
 	setters.setGuess(suggestion);
 	setters.setSuggestions([]);
 
-	await deps.delay(50);
-
 	if (submission.type === "correct") {
+		await deps.delay(50);
 		await deps.handleCorrectAnswer();
 		return;
 	}
 
+	await deps.delay(50);
 	setters.setIsCorrect(false);
 	await deps.playWrongSound();
 };

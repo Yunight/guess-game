@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import { Clock, Crown, Trophy } from "lucide-react";
 
 import { useTranslation } from "react-i18next";
@@ -48,7 +49,7 @@ export const GameOverStats = ({
 	hyperTrainCount,
 
 	maxHypeChain,
-}: GameOverStatsProps): JSX.Element => {
+}: GameOverStatsProps): ReactNode => {
 	const { t } = useTranslation();
 
 	const showRanking = shouldShowRankingSection(userRanking, bestRanking);

@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import { Button } from "@/components/ui/button";
 import { useTranslation } from "react-i18next";
 import type { Generation } from "./generations";
@@ -13,10 +14,10 @@ export const MenuGenerationPicker = ({
 	selectedGeneration,
 	generations,
 	onGenerationSelect,
-}: MenuGenerationPickerProps): JSX.Element => {
+}: MenuGenerationPickerProps): ReactNode => {
 	const { t } = useTranslation();
 
-	const sortedGenerations = [...generations].sort((a, b) => a.startId - b.startId);
+	const sortedGenerations = generations.toSorted((a, b) => a.startId - b.startId);
 
 	return (
 		<div className="space-y-2">

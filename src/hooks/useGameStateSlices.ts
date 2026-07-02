@@ -1,6 +1,7 @@
 import type { Generation } from "@/components/pokemon-game/generations";
 import type { Pokemon } from "@/components/pokemon-game/types";
 import { useState } from "react";
+import { readMutedPreference } from "@/utils/gamePreferencesStorage";
 
 const MAX_HINTS = 10;
 
@@ -283,10 +284,7 @@ export const useGameSettingsState = (): {
 	state: GameSettingsState;
 	setters: GameSettingsSetters;
 } => {
-	const [isMuted, setIsMuted] = useState(() => {
-		const savedMute = localStorage.getItem("pokemonGameMuted");
-		return savedMute ? JSON.parse(savedMute) : false;
-	});
+	const [isMuted, setIsMuted] = useState(() => readMutedPreference());
 
 	return {
 		state: { isMuted },

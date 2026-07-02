@@ -2,16 +2,12 @@ import { resolvePoolAfterCorrectAnswer } from "@/components/pokemon-game/gamePoo
 import { getInitialGuessTime } from "@/hooks/gameTimerLogic";
 import type { Timestamp } from "firebase/firestore";
 import { buildNextRoundGameState } from "./multiplayerGameStateLogic";
-import type {
-	MultiplayerGameState,
-	MultiplayerPlayer,
-	MultiplayerRoom,
-} from "./multiplayerRoomTypes";
+import type { MultiplayerGameState, MultiplayerRoom } from "./multiplayerRoomTypes";
+import { MIN_MULTIPLAYER_PLAYERS } from "./multiplayerRoomUtils";
 
 export type PlayingMultiplayerRoom = MultiplayerRoom & {
 	status: "playing";
 	gameState: MultiplayerGameState;
-	guestPlayer: MultiplayerPlayer;
 };
 
 export interface RoomTransactionWriter {
@@ -20,18 +16,26 @@ export interface RoomTransactionWriter {
 
 export const resolveWinnerId = (
 	scores: Record<string, number>,
-	hostPlayerId: string,
-	guestPlayerId: string,
+	playerIds: readonly string[],
 ): string | null => {
-	const hostScore = scores[hostPlayerId] ?? 0;
-	const guestScore = scores[guestPlayerId] ?? 0;
-	if (hostScore > guestScore) {
-		return hostPlayerId;
+	if (playerIds.length === 0) {
+		return null;
 	}
-	if (guestScore > hostScore) {
-		return guestPlayerId;
+
+	const ranked = playerIds.map((id) => ({
+		id,
+		score: scores[id] ?? 0,
+	}));
+	const maxScore = Math.max(...ranked.map((entry) => entry.score));
+	const leaders = ranked.filter((entry) => entry.score === maxScore);
+	if (leaders.length !== 1) {
+		return null;
 	}
-	return null;
+	const leader = leaders[0];
+	if (!leader) {
+		return null;
+	}
+	return leader.id;
 };
 
 export const applyPoolProgressionInTransaction = (
@@ -46,10 +50,12 @@ export const applyPoolProgressionInTransaction = (
 		room.gameState.currentPokemonId,
 	);
 
+	const playerIds = room.players.map((player) => player.id);
+
 	if (poolResult.type === "game_complete") {
 		transaction.update(roomRef, {
 			status: "finished",
-			winnerId: resolveWinnerId(room.gameState.scores, room.hostPlayer.id, room.guestPlayer.id),
+			winnerId: resolveWinnerId(room.gameState.scores, playerIds),
 		});
 		return;
 	}
@@ -66,3 +72,10 @@ export const applyPoolProgressionInTransaction = (
 		),
 	});
 };
+
+export const isPlayingMultiplayerRoom = (
+	room: MultiplayerRoom,
+): room is PlayingMultiplayerRoom =>
+	room.status === "playing" &&
+	Boolean(room.gameState) &&
+	room.players.length >= MIN_MULTIPLAYER_PLAYERS;

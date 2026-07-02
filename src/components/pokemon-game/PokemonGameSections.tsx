@@ -4,7 +4,7 @@ import { resolveCanStartGame } from "./pokemonGameMenuLogic";
 import { GameScreen } from "./GameScreen";
 import { formatRankingDate, formatTimeForRanking } from "../../utils/gameFormatters";
 import type { usePokemonGameController } from "../../hooks/usePokemonGameController";
-import { useCallback, useState } from "react";
+import { useCallback, useState, type ReactNode } from "react";
 import { useNavigate } from "react-router-dom";
 import { createRoom } from "@/services/multiplayerRoomService";
 import { createRoomPlayerId } from "@/services/multiplayerPlayerId";
@@ -17,7 +17,7 @@ interface PokemonGameActiveLayoutProps {
 
 export const PokemonGameActiveLayout = ({
 	controller,
-}: PokemonGameActiveLayoutProps): JSX.Element => {
+}: PokemonGameActiveLayoutProps): ReactNode => {
 	const { gameState, gameSetters } = controller;
 
 	return (
@@ -61,7 +61,7 @@ interface PokemonGameMenuLayoutProps {
 	controller: Controller;
 }
 
-export const PokemonGameMenuLayout = ({ controller }: PokemonGameMenuLayoutProps): JSX.Element => {
+export const PokemonGameMenuLayout = ({ controller }: PokemonGameMenuLayoutProps): ReactNode => {
 	const { gameState, gameSetters } = controller;
 	const navigate = useNavigate();
 	const [isCreatingMultiRoom, setIsCreatingMultiRoom] = useState(false);

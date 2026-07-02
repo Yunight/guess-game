@@ -163,16 +163,23 @@ export const runGameResultSave = async (params: RunGameResultSaveParams): Promis
 		return;
 	}
 
-	await new Promise<void>((resolve) => {
-		setTimeout(resolve, SAVE_SETTLE_DELAY_MS);
-	});
-
 	if (shouldAbortSaveAfterDelay(params.rewardPokemon, params.isSlotMachineRunning)) {
 		return;
 	}
 
 	const pokemon = params.rewardPokemon.pokemon;
 	if (!pokemon) {
+		return;
+	}
+
+	await new Promise<void>((resolve) => {
+		setTimeout(resolve, SAVE_SETTLE_DELAY_MS);
+	});
+
+	if (
+		!shouldProceedWithGameSave(params.saveContext) ||
+		shouldAbortSaveAfterDelay(params.rewardPokemon, params.isSlotMachineRunning)
+	) {
 		return;
 	}
 
@@ -194,6 +201,7 @@ export const runGameResultSave = async (params: RunGameResultSaveParams): Promis
 			gameSessionId: params.gameSessionId,
 		});
 		params.setShareableUrl(url);
+		params.setIsSavingResult(false);
 	} catch (error) {
 		console.error("❌ Failed to save game result:", error);
 		params.setIsSavingResult(false);

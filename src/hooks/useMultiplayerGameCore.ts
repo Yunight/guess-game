@@ -7,6 +7,7 @@ import {
 	type SetStateAction,
 } from "react";
 import { useGameAudio } from "./useGameAudio";
+import { readMutedPreference, writeMutedPreference } from "@/utils/gamePreferencesStorage";
 
 export interface MultiplayerGameCoreState {
 	guess: string;
@@ -75,7 +76,7 @@ export const useMultiplayerGameCore = (): UseMultiplayerGameCoreResult => {
 	const [suggestions, setSuggestions] = useState<string[]>([]);
 	const [highlightedIndex, setHighlightedIndex] = useState(-1);
 	const [isCorrect, setIsCorrect] = useState<boolean | null>(null);
-	const [isMuted, setIsMuted] = useState(() => localStorage.getItem("pokemonGameMuted") === "true");
+	const [isMuted, setIsMuted] = useState(() => readMutedPreference());
 	const [guessTimeLeft, setGuessTimeLeft] = useState(15);
 	const [totalTimeElapsed, setTotalTimeElapsed] = useState(0);
 	const [showCriticalSuccess, setShowCriticalSuccess] = useState(false);
@@ -90,7 +91,7 @@ export const useMultiplayerGameCore = (): UseMultiplayerGameCoreResult => {
 	const { playCorrectSound, playWrongSound } = useGameAudio(isMuted, false, true, guessTimeLeft);
 
 	useEffect(() => {
-		localStorage.setItem("pokemonGameMuted", String(isMuted));
+		writeMutedPreference(isMuted);
 	}, [isMuted]);
 
 	return {
