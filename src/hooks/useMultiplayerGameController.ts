@@ -96,6 +96,11 @@ export const useMultiplayerGameController = ({
 		submitErrorTimeoutRef: core.refs.submitErrorTimeoutRef,
 	});
 
+	const roundWinnerName =
+		queries.gameState?.roundWinnerId == null
+			? null
+			: room.players.find((player) => player.id === queries.gameState?.roundWinnerId)?.name ?? null;
+
 	return {
 		guess: core.state.guess,
 		suggestions: core.state.suggestions,
@@ -116,7 +121,7 @@ export const useMultiplayerGameController = ({
 		opponentName: queries.opponentName,
 		roundNumber: queries.roundNumber,
 		submitError: core.state.submitError,
-		roundWinnerName: core.state.roundWinnerName,
+		roundWinnerName,
 		roundPointsEarned: queries.roundPointsEarned,
 		isPokemonLoading: queries.isPokemonLoading,
 		currentPokemon: queries.currentPokemon,

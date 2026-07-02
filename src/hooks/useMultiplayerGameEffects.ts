@@ -33,7 +33,6 @@ export const useMultiplayerGameEffects = ({
 	const {
 		setGuessTimeLeft,
 		setTotalTimeElapsed,
-		setOptimisticScores,
 		setGuess,
 		setSuggestions,
 		setHighlightedIndex,
@@ -41,11 +40,9 @@ export const useMultiplayerGameEffects = ({
 		setShowCriticalSuccess,
 		setShowCriticalHit,
 		setPointsEarned,
-		setRoundWinnerName,
 	} = setters;
 
 	const {
-		inputRef,
 		advanceTimeoutRef,
 		lastProcessedRoundRef,
 		advanceScheduledForRoundRef,
@@ -90,22 +87,6 @@ export const useMultiplayerGameEffects = ({
 	}, [gameState, room.status, room.id, isHost, localPlayerId, isShiny, setGuessTimeLeft]);
 
 	useEffect(() => {
-		if (!gameState?.scores) {
-			return;
-		}
-		setOptimisticScores((previous) => {
-			const next: Record<string, number> = { ...previous };
-			for (const [playerId, firestoreScore] of Object.entries(gameState.scores)) {
-				const optimisticScore = next[playerId];
-				if (optimisticScore === undefined || firestoreScore >= optimisticScore) {
-					delete next[playerId];
-				}
-			}
-			return next;
-		});
-	}, [gameState?.scores, setOptimisticScores]);
-
-	useEffect(() => {
 		if (room.status !== "playing") {
 			return;
 		}
@@ -117,7 +98,6 @@ export const useMultiplayerGameEffects = ({
 		setShowCriticalSuccess(false);
 		setShowCriticalHit(false);
 		setPointsEarned(0);
-		setRoundWinnerName(null);
 	}, [
 		roundNumber,
 		room.status,
@@ -128,27 +108,6 @@ export const useMultiplayerGameEffects = ({
 		setShowCriticalSuccess,
 		setShowCriticalHit,
 		setPointsEarned,
-		setRoundWinnerName,
-	]);
-
-	const roundWinnerId = gameState?.roundWinnerId ?? null;
-
-	useEffect(() => {
-		if (!gameState || room.status !== "playing") {
-			return;
-		}
-		if (!roundWinnerId) {
-			setRoundWinnerName(null);
-			return;
-		}
-		const winner = room.players.find((player) => player.id === roundWinnerId);
-		setRoundWinnerName(winner?.name ?? null);
-	}, [
-		gameState,
-		roundWinnerId,
-		room.status,
-		room.players,
-		setRoundWinnerName,
 	]);
 
 	useEffect(() => {
@@ -225,10 +184,4 @@ export const useMultiplayerGameEffects = ({
 		advanceScheduledForRoundRef,
 	]);
 
-	useEffect(() => {
-		if (room.status === "playing") {
-			void roundNumber;
-			inputRef.current?.focus();
-		}
-	}, [room.status, roundNumber, inputRef]);
 };

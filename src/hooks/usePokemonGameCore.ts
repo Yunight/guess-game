@@ -10,6 +10,7 @@ import { useSlotMachine } from "./useSlotMachine";
 export const usePokemonGameCore = () => {
 	const inputRef = useRef<HTMLInputElement>(null);
 	const suggestionsRef = useRef<HTMLDivElement>(null);
+	const onGuessTimeEndRef = useRef<(() => void) | null>(null);
 	const savedName = localStorage.getItem("pokemonGamePlayerName");
 	const [rewardPokemonId, setRewardPokemonId] = useState<number | null>(null);
 	const { state: gameState, setters: gameSetters } = useGameState(GENERATIONS[0]);
@@ -19,7 +20,6 @@ export const usePokemonGameCore = () => {
 	const rankingsState = useRankings({
 		selectedGeneration: gameState.selectedGeneration,
 		playerName: player.playerName,
-		isGameActive: gameState.isGameActive,
 	});
 
 	const audio = useGameAudio(
@@ -32,6 +32,7 @@ export const usePokemonGameCore = () => {
 	const handleWrongAnswer = useCallback((): void => {
 		gameSetters.setIsCorrect(false);
 		void audio.playWrongSound();
+		onGuessTimeEndRef.current?.();
 	}, [gameSetters, audio.playWrongSound]);
 
 	const timers = useGameTimers(
@@ -49,6 +50,7 @@ export const usePokemonGameCore = () => {
 	return {
 		inputRef,
 		suggestionsRef,
+		onGuessTimeEndRef,
 		savedName,
 		gameState,
 		gameSetters,

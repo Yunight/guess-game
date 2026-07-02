@@ -34,6 +34,7 @@ export const GuessInput: FC<GuessInputProps> = ({
 			<div className={`relative ${isCorrect === false ? "animate-shake" : ""}`}>
 				<Input
 					ref={inputRef}
+					autoFocus
 					type="text"
 					value={guess}
 					onChange={handleGuessChange}

@@ -110,6 +110,3 @@ export const buildGameScreenViewProps = (
 	controlsSection: input.controlsSection,
 });
 
-export type GameScreenControlsSectionProps = GameScreenPlayAreaProps;
-
-export type GameScreenInputRef = RefObject<HTMLInputElement>;

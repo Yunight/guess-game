@@ -30,10 +30,9 @@ import {
 interface UseRankingsProps {
 	selectedGeneration: Generation;
 	playerName: string;
-	isGameActive: boolean;
 }
 
-export const useRankings = ({ selectedGeneration, playerName, isGameActive }: UseRankingsProps) => {
+export const useRankings = ({ selectedGeneration, playerName }: UseRankingsProps) => {
 	const [rankings, setRankings] = useState<Rankings[]>([]);
 	const [bestScore, setBestScore] = useState(0);
 	const [bestTime, setBestTime] = useState(0);
@@ -173,10 +172,8 @@ export const useRankings = ({ selectedGeneration, playerName, isGameActive }: Us
 	);
 
 	useEffect(() => {
-		if (!isGameActive) {
-			void fetchRankings();
-		}
-	}, [isGameActive, fetchRankings]);
+		void fetchRankings();
+	}, [fetchRankings]);
 
 	return {
 		rankings,

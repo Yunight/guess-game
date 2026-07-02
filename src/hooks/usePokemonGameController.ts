@@ -42,22 +42,25 @@ export const usePokemonGameController = () => {
 		setRewardPokemonId: core.setRewardPokemonId,
 	});
 
+	core.onGuessTimeEndRef.current = () => {
+		if (!core.gameState.gameOver && core.gameState.isGameActive) {
+			void handlers.handleGameOver();
+		}
+	};
+
 	usePokemonGameEffects({
 		gameState: core.gameState,
 		gameSetters: core.gameSetters,
 		inputRef: core.inputRef,
-		suggestionsRef: core.suggestionsRef,
-		currentPokemon: queries.currentPokemon,
-		isPokemonLoading: queries.isPokemonLoading,
-		setRewardPokemonId: core.setRewardPokemonId,
-		rewardPokemonData: queries.rewardPokemonData,
-		isSlotMachineRunning: core.slotMachine.isSlotMachineRunning,
-		resetSlotMachine: core.slotMachine.resetSlotMachine,
-		handleGameOver: handlers.handleGameOver,
 		startGuessTimer: core.timers.startGuessTimer,
 		startTotalTimer: core.timers.startTotalTimer,
 		stopAllTimers: core.timers.stopAllTimers,
 	});
+
+	const rewardPokemon = {
+		pokemon: queries.rewardPokemonData ?? undefined,
+		isLoading: queries.isRewardPokemonLoading || core.slotMachine.isSlotMachineRunning,
+	};
 
 	const handleDevCompleteGeneration = useCallback((): void => {
 		core.gameSetters.setRemainingPokemon([]);
@@ -74,6 +77,7 @@ export const usePokemonGameController = () => {
 		savedName: core.savedName,
 		gameState: core.gameState,
 		gameSetters: core.gameSetters,
+		rewardPokemon,
 		isSlotMachineRunning: core.slotMachine.isSlotMachineRunning,
 		spinningPokemonData: queries.spinningPokemonData,
 		playerName: core.player.playerName,

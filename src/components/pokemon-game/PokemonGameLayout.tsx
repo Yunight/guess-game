@@ -38,10 +38,7 @@ export const PokemonGameLayout = ({ controller }: PokemonGameLayoutProps): React
 				bestRanking={controller.bestRanking}
 				totalTimeElapsed={gameState.totalTimeElapsed}
 				formatTimeForRanking={formatTimeForRanking}
-				rewardPokemon={{
-					pokemon: gameState.rewardPokemon.pokemon,
-					isLoading: gameState.rewardPokemon.isLoading,
-				}}
+				rewardPokemon={controller.rewardPokemon}
 				remainingPokemon={gameState.remainingPokemon}
 				handleRestart={controller.handleRestart}
 				handleBackToMenu={controller.handleBackToMenu}

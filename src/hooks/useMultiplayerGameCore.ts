@@ -22,7 +22,6 @@ export interface MultiplayerGameCoreState {
 	pointsEarned: number;
 	isStartingGame: boolean;
 	startGameError: string | null;
-	roundWinnerName: string | null;
 	optimisticScores: Record<string, number>;
 	submitError: string | null;
 }
@@ -40,7 +39,6 @@ export interface MultiplayerGameCoreSetters {
 	setPointsEarned: (value: number) => void;
 	setIsStartingGame: (value: boolean) => void;
 	setStartGameError: (value: string | null) => void;
-	setRoundWinnerName: (value: string | null) => void;
 	setOptimisticScores: Dispatch<SetStateAction<Record<string, number>>>;
 	setSubmitError: (value: string | null) => void;
 }
@@ -84,7 +82,6 @@ export const useMultiplayerGameCore = (): UseMultiplayerGameCoreResult => {
 	const [pointsEarned, setPointsEarned] = useState(0);
 	const [isStartingGame, setIsStartingGame] = useState(false);
 	const [startGameError, setStartGameError] = useState<string | null>(null);
-	const [roundWinnerName, setRoundWinnerName] = useState<string | null>(null);
 	const [optimisticScores, setOptimisticScores] = useState<Record<string, number>>({});
 	const [submitError, setSubmitError] = useState<string | null>(null);
 
@@ -108,7 +105,6 @@ export const useMultiplayerGameCore = (): UseMultiplayerGameCoreResult => {
 			pointsEarned,
 			isStartingGame,
 			startGameError,
-			roundWinnerName,
 			optimisticScores,
 			submitError,
 		},
@@ -125,7 +121,6 @@ export const useMultiplayerGameCore = (): UseMultiplayerGameCoreResult => {
 			setPointsEarned,
 			setIsStartingGame,
 			setStartGameError,
-			setRoundWinnerName,
 			setOptimisticScores,
 			setSubmitError,
 		},
