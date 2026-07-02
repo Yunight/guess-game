@@ -47,16 +47,21 @@ describe("PokemonDisplay", () => {
 		vi.clearAllMocks();
 	});
 
+	const baseProps = {
+		guessTimeLeft: 10,
+		remainingCount: 5,
+		totalCount: 10,
+		progressCounterState: "visible" as const,
+	};
+
 	it("renders loading state when Pokemon is loading", () => {
 		render(
 			<PokemonDisplay
 				currentPokemon={undefined}
-				isPokemonLoading={true}
-				isCorrect={null}
-				isMuted={false}
-				guessTimeLeft={10}
-				remainingCount={5}
-				totalCount={10}
+				loadingState="loading"
+				answerState="unknown"
+				audioState="unmuted"
+				{...baseProps}
 			/>,
 		);
 
@@ -68,12 +73,10 @@ describe("PokemonDisplay", () => {
 		render(
 			<PokemonDisplay
 				currentPokemon={mockPokemon}
-				isPokemonLoading={false}
-				isCorrect={null}
-				isMuted={false}
-				guessTimeLeft={10}
-				remainingCount={5}
-				totalCount={10}
+				loadingState="ready"
+				answerState="unknown"
+				audioState="unmuted"
+				{...baseProps}
 			/>,
 		);
 
@@ -89,12 +92,13 @@ describe("PokemonDisplay", () => {
 		render(
 			<PokemonDisplay
 				currentPokemon={mockPokemon}
-				isPokemonLoading={false}
-				isCorrect={true}
-				isMuted={false}
+				loadingState="ready"
+				answerState="correct"
+				audioState="unmuted"
 				guessTimeLeft={0}
 				remainingCount={5}
 				totalCount={10}
+				progressCounterState="visible"
 			/>,
 		);
 
@@ -108,12 +112,10 @@ describe("PokemonDisplay", () => {
 		render(
 			<PokemonDisplay
 				currentPokemon={shinyPokemon}
-				isPokemonLoading={false}
-				isCorrect={null}
-				isMuted={false}
-				guessTimeLeft={10}
-				remainingCount={5}
-				totalCount={10}
+				loadingState="ready"
+				answerState="unknown"
+				audioState="unmuted"
+				{...baseProps}
 			/>,
 		);
 
@@ -126,12 +128,10 @@ describe("PokemonDisplay", () => {
 		render(
 			<PokemonDisplay
 				currentPokemon={mockPokemon}
-				isPokemonLoading={false}
-				isCorrect={null}
-				isMuted={true}
-				guessTimeLeft={10}
-				remainingCount={5}
-				totalCount={10}
+				loadingState="ready"
+				answerState="unknown"
+				audioState="muted"
+				{...baseProps}
 			/>,
 		);
 

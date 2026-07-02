@@ -172,16 +172,16 @@ export const runGameResultSave = async (params: RunGameResultSaveParams): Promis
 		return;
 	}
 
-	await new Promise<void>((resolve) => {
-		setTimeout(resolve, SAVE_SETTLE_DELAY_MS);
-	});
-
 	if (
 		!shouldProceedWithGameSave(params.saveContext) ||
 		shouldAbortSaveAfterDelay(params.rewardPokemon, params.isSlotMachineRunning)
 	) {
 		return;
 	}
+
+	await new Promise<void>((resolve) => {
+		setTimeout(resolve, SAVE_SETTLE_DELAY_MS);
+	});
 
 	params.setIsSavingResult(true);
 	try {

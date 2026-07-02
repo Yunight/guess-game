@@ -8,29 +8,33 @@ import type { Pokemon } from "./types";
 
 interface PokemonDisplayProps {
 	currentPokemon: Pokemon | undefined;
-	isPokemonLoading: boolean;
-	isCorrect: boolean | null;
-	isMuted: boolean;
+	loadingState: "loading" | "ready";
+	answerState: "unknown" | "correct" | "incorrect";
+	audioState: "muted" | "unmuted";
 	guessTimeLeft: number;
 	remainingCount: number;
 	totalCount: number;
-	showProgressCounter?: boolean;
+	progressCounterState?: "visible" | "hidden";
 }
 
 export const PokemonDisplay: FC<PokemonDisplayProps> = ({
 	currentPokemon,
-	isPokemonLoading,
-	isCorrect,
-	isMuted,
+	loadingState,
+	answerState,
+	audioState,
 	guessTimeLeft,
 	remainingCount,
 	totalCount,
-	showProgressCounter = true,
+	progressCounterState = "visible",
 }) => {
 	const { i18n } = useTranslation();
 	const audioRef = useRef<HTMLAudioElement | null>(null);
 	const soundPlayedRef = useRef(false);
 	const currentPokemonIdRef = useRef<number | null>(0);
+	const isPokemonLoading = loadingState === "loading";
+	const isCorrect = answerState === "unknown" ? null : answerState === "correct";
+	const isMuted = audioState === "muted";
+	const showProgressCounter = progressCounterState === "visible";
 
 	const { displayState, displayedPokemon } = usePokemonDisplayTransition({
 		currentPokemon,

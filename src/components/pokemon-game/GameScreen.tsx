@@ -38,12 +38,45 @@ export const GameScreen: FC<GameScreenProps> = (props) => {
 			/>
 
 			<GameScreenPlayArea
-				{...props}
-				criticalSuccessLabel={t("criticalSuccess")}
-				criticalHitLabel={t("criticalHit")}
-				hypeTrainLabel={t("hypeTrain", {
-					count: props.consecutiveFastAnswers,
-				})}
+				pokemonSectionProps={{
+					pokemonDisplayProps: {
+						currentPokemon: props.currentPokemon,
+						loadingState: props.isPokemonLoading ? "loading" : "ready",
+						answerState:
+							props.isCorrect === null
+								? "unknown"
+								: props.isCorrect
+									? "correct"
+									: "incorrect",
+						audioState: props.isMuted ? "muted" : "unmuted",
+						guessTimeLeft: props.guessTimeLeft,
+						remainingCount: props.remainingCount,
+						totalCount: props.totalCount,
+						progressCounterState: props.showProgressCounter === false ? "hidden" : "visible",
+					},
+					banner: {
+						type: props.showCriticalSuccess
+							? "critical_success"
+							: props.showCriticalHit
+								? "critical_hit"
+								: props.showHypeTrain
+									? "hype_train"
+									: "none",
+						criticalSuccessLabel: t("criticalSuccess"),
+						criticalHitLabel: t("criticalHit"),
+						hypeTrainLabel: t("hypeTrain", {
+							count: props.consecutiveFastAnswers,
+						}),
+					},
+				}}
+				controlsSectionProps={{
+					...props,
+					criticalSuccessLabel: t("criticalSuccess"),
+					criticalHitLabel: t("criticalHit"),
+					hypeTrainLabel: t("hypeTrain", {
+						count: props.consecutiveFastAnswers,
+					}),
+				}}
 			/>
 		</Card>
 	);

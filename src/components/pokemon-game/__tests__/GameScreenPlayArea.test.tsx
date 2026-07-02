@@ -76,7 +76,29 @@ const baseProps = {
 
 describe("GameScreenPlayArea", () => {
 	it("renders pokemon, stats, and input sections", () => {
-		render(<GameScreenPlayArea {...baseProps} />);
+		render(
+			<GameScreenPlayArea
+				pokemonSectionProps={{
+					pokemonDisplayProps: {
+						currentPokemon: baseProps.currentPokemon,
+						loadingState: "ready",
+						answerState: "unknown",
+						audioState: "unmuted",
+						guessTimeLeft: baseProps.guessTimeLeft,
+						remainingCount: baseProps.remainingCount,
+						totalCount: baseProps.totalCount,
+						progressCounterState: "visible",
+					},
+					banner: {
+						type: "none",
+						criticalSuccessLabel: baseProps.criticalSuccessLabel,
+						criticalHitLabel: baseProps.criticalHitLabel,
+						hypeTrainLabel: baseProps.hypeTrainLabel,
+					},
+				}}
+				controlsSectionProps={baseProps}
+			/>,
+		);
 
 		expect(screen.getByTestId("pokemon-display")).toBeInTheDocument();
 		expect(screen.getByTestId("game-stats")).toBeInTheDocument();

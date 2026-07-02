@@ -9,30 +9,34 @@ import { useTranslation } from "react-i18next";
 
 interface MultiplayerLobbyProps {
 	room: MultiplayerRoom;
-	isHost: boolean;
-	isJoined: boolean;
+	playerRole: "host" | "guest";
+	joinState: "joined" | "not_joined";
 	localPlayerName: string | null;
 	onJoin: (playerName: string) => Promise<void>;
 	onStart: () => Promise<void>;
-	isStarting: boolean;
+	startState: "idle" | "starting";
 	startError: string | null;
 	joinError: string | null;
-	isJoining: boolean;
+	joinRequestState: "idle" | "joining";
 }
 
 export const MultiplayerLobby: FC<MultiplayerLobbyProps> = ({
 	room,
-	isHost,
-	isJoined,
+	playerRole,
+	joinState,
 	localPlayerName,
 	onJoin,
 	onStart,
-	isStarting,
+	startState,
 	startError,
 	joinError,
-	isJoining,
+	joinRequestState,
 }) => {
 	const { t } = useTranslation();
+	const isHost = playerRole === "host";
+	const isJoined = joinState === "joined";
+	const isStarting = startState === "starting";
+	const isJoining = joinRequestState === "joining";
 	const [joinName, setJoinName] = useState(
 		() => localStorage.getItem("pokemonGamePlayerName") ?? "",
 	);

@@ -1,4 +1,4 @@
-import type { FormEvent, ReactNode } from "react";
+import type { KeyboardEvent, ReactNode } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useTranslation } from "react-i18next";
@@ -20,8 +20,14 @@ export const EmailAuthResetForm = ({
 }: EmailAuthResetFormProps): ReactNode => {
 	const { t } = useTranslation();
 
+	const handleEmailKeyDown = (event: KeyboardEvent<HTMLInputElement>): void => {
+		if (event.key === "Enter" && !isLoading) {
+			onSubmit();
+		}
+	};
+
 	return (
-		<form className="space-y-4" onSubmit={onSubmit}>
+		<div className="space-y-4">
 			<div>
 				<label htmlFor="email" className="block text-sm font-medium mb-1 text-gray-800">
 					{t("email")}
@@ -31,13 +37,15 @@ export const EmailAuthResetForm = ({
 					type="email"
 					value={email}
 					onChange={onEmailChange}
+					onKeyDown={handleEmailKeyDown}
 					required
 					className="w-full border-2 border-red-200 focus:border-red-500 rounded-lg"
 					placeholder={t("emailPlaceholder")}
 				/>
 			</div>
 			<Button
-				type="submit"
+				type="button"
+				onClick={onSubmit}
 				className="w-full bg-red-600 hover:bg-red-700 text-white font-semibold py-2 px-4 rounded-lg shadow-md transform hover:scale-105 transition-transform duration-200"
 				disabled={isLoading}
 			>
@@ -53,6 +61,6 @@ export const EmailAuthResetForm = ({
 					{t("backToSignIn")}
 				</button>
 			</div>
-		</form>
+		</div>
 	);
 };

@@ -55,35 +55,31 @@ export const MultiplayerGameScreen: FC<MultiplayerGameScreenProps> = ({
 				/>
 
 				<GameScreenPokemonSection
-					currentPokemon={controller.currentPokemon as Pokemon | undefined}
-					isPokemonLoading={controller.isPokemonLoading}
-					isCorrect={controller.isCorrect}
-					isMuted={controller.isMuted}
-					guessTimeLeft={controller.guessTimeLeft}
-					remainingCount={controller.remainingCount}
-					totalCount={controller.totalCount}
-					showProgressCounter={false}
-					score={controller.localScore}
-					bestScore={0}
-					hintsLeft={0}
-					guess={controller.guess}
-					handleGuessChange={controller.handleGuessChange}
-					handleKeyDown={controller.handleKeyDown}
-					suggestions={controller.suggestions}
-					handleSuggestionClick={controller.handleSuggestionClick}
-					highlightedIndex={controller.highlightedIndex}
-					showHint={false}
-					useHint={() => undefined}
-					inputRef={controller.inputRef}
-					suggestionsRef={controller.suggestionsRef}
-					formatTime={formatTimeForRanking}
-					showCriticalSuccess={controller.showCriticalSuccess}
-					showCriticalHit={controller.showCriticalHit}
-					showHypeTrain={false}
-					consecutiveFastAnswers={0}
-					criticalSuccessLabel={t("criticalSuccess")}
-					criticalHitLabel={t("criticalHit")}
-					hypeTrainLabel=""
+					pokemonDisplayProps={{
+						currentPokemon: controller.currentPokemon as Pokemon | undefined,
+						loadingState: controller.isPokemonLoading ? "loading" : "ready",
+						answerState:
+							controller.isCorrect === null
+								? "unknown"
+								: controller.isCorrect
+									? "correct"
+									: "incorrect",
+						audioState: controller.isMuted ? "muted" : "unmuted",
+						guessTimeLeft: controller.guessTimeLeft,
+						remainingCount: controller.remainingCount,
+						totalCount: controller.totalCount,
+						progressCounterState: "hidden",
+					}}
+					banner={{
+						type: controller.showCriticalSuccess
+							? "critical_success"
+							: controller.showCriticalHit
+								? "critical_hit"
+								: "none",
+						criticalSuccessLabel: t("criticalSuccess"),
+						criticalHitLabel: t("criticalHit"),
+						hypeTrainLabel: "",
+					}}
 				/>
 
 				<GameScreenInputArea
