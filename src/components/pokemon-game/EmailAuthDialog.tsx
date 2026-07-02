@@ -95,8 +95,7 @@ export const EmailAuthDialog: FC<EmailAuthDialogProps> = ({
 		}
 	};
 
-	const handleResetFormSubmit = (e: FormEvent): void => {
-		e.preventDefault();
+	const handleResetFormSubmit = (): void => {
 		void handleForgotPassword();
 	};
 

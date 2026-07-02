@@ -7,7 +7,7 @@ interface EmailAuthResetFormProps {
 	email: string;
 	isLoading: boolean;
 	onEmailChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
-	onSubmit: (e: FormEvent) => void;
+	onSubmit: () => void;
 	onBackToSignIn: () => void;
 }
 

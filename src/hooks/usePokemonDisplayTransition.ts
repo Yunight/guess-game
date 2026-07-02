@@ -3,7 +3,7 @@ import {
 	type PokemonDisplayState,
 } from "@/components/pokemon-game/pokemonDisplayState";
 import type { Pokemon } from "@/components/pokemon-game/types";
-import { useLayoutEffect, useRef, useState, type MutableRefObject } from "react";
+import { useLayoutEffect, useState, type MutableRefObject } from "react";
 
 interface DisplaySnapshot {
 	displayState: PokemonDisplayState;
@@ -45,7 +45,6 @@ export const usePokemonDisplayTransition = ({
 	soundPlayedRef,
 }: UsePokemonDisplayTransitionParams): UsePokemonDisplayTransitionResult => {
 	const [snapshot, setSnapshot] = useState<DisplaySnapshot>(initialDisplaySnapshot);
-	const handledSideEffectsKeyRef = useRef<string>("");
 
 	const transition = computePokemonDisplayTransition({
 		currentPokemon,
@@ -68,18 +67,6 @@ export const usePokemonDisplayTransition = ({
 	}
 
 	useLayoutEffect(() => {
-		const sideEffectsKey = [
-			transition.shouldClearAudio,
-			transition.shouldResetSoundPlayed,
-			transition.currentPokemonId,
-		].join(":");
-
-		if (handledSideEffectsKeyRef.current === sideEffectsKey) {
-			return;
-		}
-
-		handledSideEffectsKeyRef.current = sideEffectsKey;
-
 		if (transition.shouldClearAudio && audioRef.current) {
 			audioRef.current.pause();
 			audioRef.current.currentTime = 0;
