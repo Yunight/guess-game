@@ -1,7 +1,7 @@
 import { useState, useCallback, useEffect, useRef } from "react";
 import { auth } from "../firebase";
 import type { User } from "firebase/auth";
-import { collection, getDocs, query, where } from "firebase/firestore";
+import { collection, doc, getDoc, getDocs, query, where } from "firebase/firestore";
 import { db } from "../firebase";
 import type { Generation } from "@/components/pokemon-game/generations";
 import {
@@ -19,6 +19,8 @@ interface UsePlayerNameProps {
 }
 
 const firestoreDeps = {
+	doc,
+	getDoc,
 	query,
 	where,
 	getDocs,

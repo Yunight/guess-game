@@ -117,10 +117,12 @@ service cloud.firestore {
         && isValidRankingData(resource.data);
 
       allow create: if collection.matches('rankings_.*')
-        && canCreateRanking(request.resource.data);
+        && canCreateRanking(request.resource.data)
+        && (request.resource.data.uid == null || document == request.auth.uid);
 
       allow update: if collection.matches('rankings_.*')
-        && canUpdateRanking(request.resource.data);
+        && canUpdateRanking(request.resource.data)
+        && (resource.data.uid == null || document == request.auth.uid);
 
       allow delete: if false;
     }

@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from "vite-plus/test";
 import { render, screen, fireEvent } from "../../../test/test-utils";
 import { GameScreen } from "../GameScreen";
+import { buildGameScreenViewProps } from "../gameScreenViewProps";
 import { Pokemon } from "../types";
 import { createRef } from "react";
 
@@ -134,7 +135,7 @@ const mockPokemon: Pokemon = {
 };
 
 // Mock props
-const mockProps = {
+const baseMockProps = {
 	currentPokemon: mockPokemon,
 	isPokemonLoading: false,
 	isCorrect: null,
@@ -169,13 +170,49 @@ const mockProps = {
 	totalCount: 10,
 };
 
+const createGameScreenView = (
+	overrides: Partial<typeof baseMockProps> = {},
+) => {
+	const props = { ...baseMockProps, ...overrides };
+	return buildGameScreenViewProps({
+		currentPokemon: props.currentPokemon,
+		isPokemonLoading: props.isPokemonLoading,
+		isCorrect: props.isCorrect,
+		isMuted: props.isMuted,
+		setIsMuted: props.setIsMuted,
+		isHardMode: props.isHardMode,
+		showCriticalSuccess: props.showCriticalSuccess,
+		showCriticalHit: props.showCriticalHit,
+		showHypeTrain: props.showHypeTrain,
+		consecutiveFastAnswers: props.consecutiveFastAnswers,
+		totalTimeElapsed: props.totalTimeElapsed,
+		formatTime: props.formatTime,
+		onQuit: props.onQuit,
+		pointsEarned: props.pointsEarned,
+		guessTimeLeft: props.guessTimeLeft,
+		remainingCount: props.remainingCount,
+		totalCount: props.totalCount,
+		criticalSuccessLabel: "criticalSuccess",
+		criticalHitLabel: "criticalHit",
+		hypeTrainLabel: "hypeTrain",
+		controlsSection: {
+			...props,
+			criticalSuccessLabel: "criticalSuccess",
+			criticalHitLabel: "criticalHit",
+			hypeTrainLabel: "hypeTrain",
+		},
+	});
+};
+
+const mockProps = baseMockProps;
+
 describe("GameScreen", () => {
 	beforeEach(() => {
 		vi.clearAllMocks();
 	});
 
 	it("renders basic game elements", () => {
-		render(<GameScreen {...mockProps} />);
+		render(<GameScreen {...createGameScreenView()} />);
 
 		// Check for Pokemon display
 		expect(screen.getByAltText("Pikachu")).toBeInTheDocument();
@@ -188,12 +225,12 @@ describe("GameScreen", () => {
 	});
 
 	it("hides quit button in hard mode", () => {
-		render(<GameScreen {...mockProps} isHardMode={true} />);
+		render(<GameScreen {...createGameScreenView({ isHardMode: true })} />);
 		expect(screen.queryByText("Quitter")).not.toBeInTheDocument();
 	});
 
 	it("toggles mute when clicking sound button", () => {
-		render(<GameScreen {...mockProps} />);
+		render(<GameScreen {...createGameScreenView()} />);
 
 		const soundButton = screen.getByTestId("volume-toggle-button");
 		fireEvent.click(soundButton);
@@ -202,7 +239,7 @@ describe("GameScreen", () => {
 	});
 
 	it("handles guess input", () => {
-		render(<GameScreen {...mockProps} />);
+		render(<GameScreen {...createGameScreenView()} />);
 
 		const input = screen.getByRole("textbox");
 		fireEvent.change(input, { target: { value: "pika" } });
@@ -211,7 +248,7 @@ describe("GameScreen", () => {
 	});
 
 	it("handles key down events", () => {
-		render(<GameScreen {...mockProps} />);
+		render(<GameScreen {...createGameScreenView()} />);
 
 		const input = screen.getByRole("textbox");
 		fireEvent.keyDown(input, { key: "Enter" });
@@ -220,48 +257,55 @@ describe("GameScreen", () => {
 	});
 
 	it("displays correct score and best score", () => {
-		render(<GameScreen {...mockProps} score={100} bestScore={200} />);
+		render(<GameScreen {...createGameScreenView({ score: 100, bestScore: 200 })} />);
 		expect(screen.getByText("100")).toBeInTheDocument();
 		expect(screen.getByText("200")).toBeInTheDocument();
 	});
 
 	it("shows points earned animation", () => {
-		render(<GameScreen {...mockProps} pointsEarned={5} />);
+		render(<GameScreen {...createGameScreenView({ pointsEarned: 5 })} />);
 		expect(screen.getByText("+5")).toBeInTheDocument();
 	});
 
 	it("displays remaining Pokemon count", () => {
-		render(<GameScreen {...mockProps} remainingCount={3} totalCount={10} />);
+		render(<GameScreen {...createGameScreenView({ remainingCount: 3, totalCount: 10 })} />);
 		expect(screen.getByTestId("pokemon-count")).toHaveTextContent("3/10");
 	});
 
 	it("handles quit button click", () => {
-		render(<GameScreen {...mockProps} />);
+		render(<GameScreen {...createGameScreenView()} />);
 		const quitButton = screen.getByText("Quitter");
 		fireEvent.click(quitButton);
 		expect(mockProps.onQuit).toHaveBeenCalled();
 	});
 
 	it("shows hint button when hints are available", () => {
-		render(<GameScreen {...mockProps} hintsLeft={2} />);
+		render(<GameScreen {...createGameScreenView({ hintsLeft: 2 })} />);
 		const hintButton = screen.getByText(/Hint/i);
 		fireEvent.click(hintButton);
 		expect(mockProps.useHint).toHaveBeenCalled();
 	});
 
 	it("disables hint button when no hints left", () => {
-		render(<GameScreen {...mockProps} hintsLeft={0} />);
+		render(<GameScreen {...createGameScreenView({ hintsLeft: 0 })} />);
 		const hintButton = screen.getByText(/Hint/i);
 		expect(hintButton).toBeDisabled();
 	});
 
 	it("shows loading state", () => {
-		render(<GameScreen {...mockProps} isPokemonLoading={true} currentPokemon={undefined} />);
+		render(
+			<GameScreen
+				{...createGameScreenView({
+					isPokemonLoading: true,
+					currentPokemon: undefined,
+				})}
+			/>,
+		);
 		expect(screen.getByText("???")).toBeInTheDocument();
 	});
 
 	it("handles suggestion clicks", () => {
-		render(<GameScreen {...mockProps} suggestions={["Pikachu", "Raichu"]} />);
+		render(<GameScreen {...createGameScreenView({ suggestions: ["Pikachu", "Raichu"] })} />);
 		const suggestion = screen.getByText("Pikachu");
 		fireEvent.click(suggestion);
 		expect(mockProps.handleSuggestionClick).toHaveBeenCalledWith("Pikachu");
@@ -269,12 +313,12 @@ describe("GameScreen", () => {
 
 	describe("visual effects", () => {
 		it("renders fire effects when hype train is active", () => {
-			render(<GameScreen {...mockProps} showHypeTrain={true} />);
+			render(<GameScreen {...createGameScreenView({ showHypeTrain: true })} />);
 			expect(screen.getByTestId("fire-effects")).toBeInTheDocument();
 		});
 
 		it("does not render fire effects when hype train is inactive", () => {
-			render(<GameScreen {...mockProps} showHypeTrain={false} />);
+			render(<GameScreen {...createGameScreenView({ showHypeTrain: false })} />);
 			expect(screen.queryByTestId("fire-effects")).not.toBeInTheDocument();
 		});
 	});
@@ -283,10 +327,11 @@ describe("GameScreen", () => {
 		it("shows critical success message with highest priority", () => {
 			render(
 				<GameScreen
-					{...mockProps}
-					showCriticalSuccess={true}
-					showCriticalHit={true}
-					showHypeTrain={true}
+					{...createGameScreenView({
+						showCriticalSuccess: true,
+						showCriticalHit: true,
+						showHypeTrain: true,
+					})}
 				/>,
 			);
 			expect(screen.getByText("criticalSuccess")).toBeInTheDocument();
@@ -297,10 +342,11 @@ describe("GameScreen", () => {
 		it("shows critical hit message with medium priority", () => {
 			render(
 				<GameScreen
-					{...mockProps}
-					showCriticalSuccess={false}
-					showCriticalHit={true}
-					showHypeTrain={true}
+					{...createGameScreenView({
+						showCriticalSuccess: false,
+						showCriticalHit: true,
+						showHypeTrain: true,
+					})}
 				/>,
 			);
 			expect(screen.queryByText("criticalSuccess")).not.toBeInTheDocument();
@@ -311,11 +357,12 @@ describe("GameScreen", () => {
 		it("shows hype train message with lowest priority", () => {
 			render(
 				<GameScreen
-					{...mockProps}
-					showCriticalSuccess={false}
-					showCriticalHit={false}
-					showHypeTrain={true}
-					consecutiveFastAnswers={5}
+					{...createGameScreenView({
+						showCriticalSuccess: false,
+						showCriticalHit: false,
+						showHypeTrain: true,
+						consecutiveFastAnswers: 5,
+					})}
 				/>,
 			);
 			expect(screen.queryByText("criticalSuccess")).not.toBeInTheDocument();
@@ -326,35 +373,35 @@ describe("GameScreen", () => {
 
 	describe("mute functionality", () => {
 		it("shows muted icon when sound is muted", () => {
-			render(<GameScreen {...mockProps} isMuted={true} />);
+			render(<GameScreen {...createGameScreenView({ isMuted: true })} />);
 			expect(screen.getByTestId("volume-x-icon")).toBeInTheDocument();
 		});
 
 		it("shows unmuted icon when sound is not muted", () => {
-			render(<GameScreen {...mockProps} isMuted={false} />);
+			render(<GameScreen {...createGameScreenView({ isMuted: false })} />);
 			expect(screen.getByTestId("volume-2-icon")).toBeInTheDocument();
 		});
 	});
 
 	describe("game state interactions", () => {
 		it("formats time correctly", () => {
-			render(<GameScreen {...mockProps} totalTimeElapsed={65} />);
+			render(<GameScreen {...createGameScreenView({ totalTimeElapsed: 65 })} />);
 			expect(screen.getByText("1:05")).toBeInTheDocument();
 		});
 
 		it("formats pokemon number with leading zeros", () => {
 			const pokemonWithLowId = { ...mockPokemon, id: 5 };
-			render(<GameScreen {...mockProps} currentPokemon={pokemonWithLowId} />);
+			render(<GameScreen {...createGameScreenView({ currentPokemon: pokemonWithLowId })} />);
 			expect(screen.getByText("#005")).toBeInTheDocument();
 		});
 
 		it("handles undefined pokemon gracefully", () => {
-			render(<GameScreen {...mockProps} currentPokemon={undefined} />);
+			render(<GameScreen {...createGameScreenView({ currentPokemon: undefined })} />);
 			expect(screen.getByText("???")).toBeInTheDocument();
 		});
 
 		it("shows correct remaining count", () => {
-			render(<GameScreen {...mockProps} remainingCount={8} totalCount={10} />);
+			render(<GameScreen {...createGameScreenView({ remainingCount: 8, totalCount: 10 })} />);
 			expect(screen.getByTestId("pokemon-count")).toHaveTextContent("8/10");
 		});
 	});
@@ -363,9 +410,10 @@ describe("GameScreen", () => {
 		it("shows multiple suggestions", () => {
 			render(
 				<GameScreen
-					{...mockProps}
-					suggestions={["Pikachu", "Raichu", "Pichu"]}
-					highlightedIndex={1}
+					{...createGameScreenView({
+						suggestions: ["Pikachu", "Raichu", "Pichu"],
+						highlightedIndex: 1,
+					})}
 				/>,
 			);
 			expect(screen.getByText("Pikachu")).toBeInTheDocument();
@@ -374,7 +422,7 @@ describe("GameScreen", () => {
 		});
 
 		it("handles empty suggestions list", () => {
-			render(<GameScreen {...mockProps} suggestions={[]} />);
+			render(<GameScreen {...createGameScreenView({ suggestions: [] })} />);
 			const input = screen.getByRole("textbox");
 			expect(input).toBeInTheDocument();
 		});
@@ -382,18 +430,18 @@ describe("GameScreen", () => {
 
 	describe("hint system", () => {
 		it("shows infinite hints in non-hard mode", () => {
-			render(<GameScreen {...mockProps} hintsLeft={Infinity} />);
+			render(<GameScreen {...createGameScreenView({ hintsLeft: Infinity })} />);
 			expect(screen.getByText("Hint (Infinity)")).toBeInTheDocument();
 		});
 
 		it("shows hint button as enabled when hints are available", () => {
-			render(<GameScreen {...mockProps} hintsLeft={3} />);
+			render(<GameScreen {...createGameScreenView({ hintsLeft: 3 })} />);
 			const hintButton = screen.getByText(/Hint/i);
 			expect(hintButton).not.toBeDisabled();
 		});
 
 		it("handles hint usage", () => {
-			render(<GameScreen {...mockProps} hintsLeft={2} showHint={true} />);
+			render(<GameScreen {...createGameScreenView({ hintsLeft: 2, showHint: true })} />);
 			const hintButton = screen.getByText(/Hint/i);
 			fireEvent.click(hintButton);
 			expect(mockProps.useHint).toHaveBeenCalled();
@@ -402,15 +450,15 @@ describe("GameScreen", () => {
 
 	describe("game mode specific behavior", () => {
 		it("shows quit button only in non-hard mode", () => {
-			const { rerender } = render(<GameScreen {...mockProps} isHardMode={false} />);
+			const { rerender } = render(<GameScreen {...createGameScreenView({ isHardMode: false })} />);
 			expect(screen.getByText("Quitter")).toBeInTheDocument();
 
-			rerender(<GameScreen {...mockProps} isHardMode={true} />);
+			rerender(<GameScreen {...createGameScreenView({ isHardMode: true })} />);
 			expect(screen.queryByText("Quitter")).not.toBeInTheDocument();
 		});
 
 		it("handles quit button click", () => {
-			render(<GameScreen {...mockProps} isHardMode={false} />);
+			render(<GameScreen {...createGameScreenView({ isHardMode: false })} />);
 			const quitButton = screen.getByText("Quitter");
 			fireEvent.click(quitButton);
 			expect(mockProps.onQuit).toHaveBeenCalled();
@@ -419,13 +467,13 @@ describe("GameScreen", () => {
 
 	describe("input handling", () => {
 		it("updates input value on change", () => {
-			render(<GameScreen {...mockProps} guess="pika" />);
+			render(<GameScreen {...createGameScreenView({ guess: "pika" })} />);
 			const input = screen.getByRole("textbox") as HTMLInputElement;
 			expect(input.value).toBe("pika");
 		});
 
 		it("handles key navigation", () => {
-			render(<GameScreen {...mockProps} />);
+			render(<GameScreen {...createGameScreenView()} />);
 			const input = screen.getByRole("textbox");
 			fireEvent.keyDown(input, { key: "ArrowDown" });
 			fireEvent.keyDown(input, { key: "ArrowUp" });

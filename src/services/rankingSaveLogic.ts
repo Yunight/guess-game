@@ -95,6 +95,13 @@ export interface ExistingRankingLookup {
 }
 
 export interface RankingFirestoreDeps {
+	doc: (
+		collectionRef: CollectionReference<DocumentData>,
+		docId: string,
+	) => DocumentReference<DocumentData>;
+	getDoc: (
+		docRef: DocumentReference<DocumentData>,
+	) => Promise<{ exists: () => boolean; data: () => unknown; ref: DocumentReference<DocumentData> }>;
 	query: (
 		collectionRef: CollectionReference<DocumentData>,
 		...constraints: unknown[]
@@ -105,6 +112,10 @@ export interface RankingFirestoreDeps {
 		collectionRef: CollectionReference<DocumentData>,
 		data: RankingPayload & { timestamp: unknown },
 	) => Promise<unknown>;
+	setDoc: (
+		docRef: DocumentReference<DocumentData>,
+		data: RankingPayload & { timestamp: unknown },
+	) => Promise<void>;
 	updateDoc: (
 		docRef: DocumentReference<DocumentData>,
 		data: RankingPayload & { timestamp: unknown },
@@ -133,12 +144,12 @@ export const lookupExistingRanking = async (
 	deps: RankingFirestoreDeps,
 ): Promise<ExistingRankingLookup> => {
 	if (shouldLookupRankingByUid(uid)) {
-		const userQuery = deps.query(rankingsRef, deps.where("uid", "==", uid));
-		const userDocs = await deps.getDocs(userQuery);
-		if (!userDocs.empty) {
+		const existingDocRef = deps.doc(rankingsRef, uid);
+		const rankingDoc = await deps.getDoc(existingDocRef);
+		if (rankingDoc.exists()) {
 			return {
-				existingDocRef: userDocs.docs[0]?.ref ?? null,
-				existingRanking: extractExistingRankingFromDocs(userDocs.docs),
+				existingDocRef: rankingDoc.ref,
+				existingRanking: parseExistingRankingData(rankingDoc.data()),
 			};
 		}
 		return { existingDocRef: null, existingRanking: null };
@@ -192,6 +203,8 @@ export const executeRankingSave = async (
 
 		if (saveDecision === "update" && existingDocRef) {
 			await deps.updateDoc(existingDocRef, rankingData);
+		} else if (shouldLookupRankingByUid(input.uid)) {
+			await deps.setDoc(deps.doc(rankingsRef, input.uid), rankingData);
 		} else {
 			await deps.addDoc(rankingsRef, rankingData);
 		}

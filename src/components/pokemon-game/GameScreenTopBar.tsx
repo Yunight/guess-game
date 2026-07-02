@@ -7,9 +7,9 @@ interface GameScreenTopBarProps {
 	currentPokemon: Pokemon | undefined;
 	totalTimeElapsed: number;
 	formatTime: (seconds: number) => string;
-	isMuted: boolean;
+	audioState: "muted" | "unmuted";
 	setIsMuted: (value: boolean) => void;
-	isHardMode: boolean;
+	difficultyMode: "hard" | "normal";
 	onQuit: () => void;
 	pointsEarned: number;
 	ScoreIncrease: React.ComponentType<{ points: number }>;
@@ -19,13 +19,16 @@ export const GameScreenTopBar = ({
 	currentPokemon,
 	totalTimeElapsed,
 	formatTime,
-	isMuted,
+	audioState,
 	setIsMuted,
-	isHardMode,
+	difficultyMode,
 	onQuit,
 	pointsEarned,
 	ScoreIncrease,
-}: GameScreenTopBarProps): ReactNode => (
+}: GameScreenTopBarProps): ReactNode => {
+	const isMuted = audioState === "muted";
+
+	return (
 	<>
 		<div className="absolute top-4 left-4 flex gap-2 z-10">
 			<div className="w-3 h-3 rounded-full bg-gray-700" />
@@ -35,7 +38,7 @@ export const GameScreenTopBar = ({
 
 		<div className="absolute top-2 left-24 w-10 h-10 rounded-full bg-blue-400 border-4 border-white z-10" />
 
-		{!isHardMode && (
+		{difficultyMode === "normal" && (
 			<Button
 				variant="ghost"
 				onClick={onQuit}
@@ -71,4 +74,5 @@ export const GameScreenTopBar = ({
 			</Button>
 		</div>
 	</>
-);
+	);
+};

@@ -2,9 +2,11 @@ import { GENERATIONS } from "./generations";
 import { MenuScreen } from "./MenuScreen";
 import { resolveCanStartGame } from "./pokemonGameMenuLogic";
 import { GameScreen } from "./GameScreen";
+import { buildGameScreenViewProps } from "./gameScreenViewProps";
 import { formatRankingDate, formatTimeForRanking } from "../../utils/gameFormatters";
 import type { usePokemonGameController } from "../../hooks/usePokemonGameController";
 import { useCallback, useState, type ReactNode } from "react";
+import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import { createRoom } from "@/services/multiplayerRoomService";
 import { createRoomPlayerId } from "@/services/multiplayerPlayerId";
@@ -18,41 +20,69 @@ interface PokemonGameActiveLayoutProps {
 export const PokemonGameActiveLayout = ({
 	controller,
 }: PokemonGameActiveLayoutProps): ReactNode => {
+	const { t } = useTranslation();
 	const { gameState, gameSetters } = controller;
+	const criticalSuccessLabel = t("criticalSuccess");
+	const criticalHitLabel = t("criticalHit");
+	const hypeTrainLabel = t("hypeTrain", {
+		count: gameState.consecutiveFastAnswers,
+	});
 
 	return (
 		<GameScreen
-			currentPokemon={gameState.isRestarting ? undefined : gameState.currentPokemon}
-			isPokemonLoading={gameState.isRestarting || controller.isPokemonLoading}
-			isCorrect={gameState.isCorrect}
-			score={gameState.score}
-			bestScore={controller.bestScore}
-			bestTime={controller.bestTime}
-			guessTimeLeft={gameState.guessTimeLeft}
-			hintsLeft={gameState.hintsLeft}
-			guess={gameState.guess}
-			handleGuessChange={controller.handleGuessChange}
-			handleKeyDown={controller.handleKeyDown}
-			suggestions={gameState.suggestions}
-			handleSuggestionClick={controller.handleSuggestionClick}
-			highlightedIndex={gameState.highlightedIndex}
-			showHint={gameState.showHint}
-			useHint={controller.useHint}
-			inputRef={controller.inputRef}
-			suggestionsRef={controller.suggestionsRef}
-			formatTime={formatTimeForRanking}
-			isMuted={gameState.isMuted}
-			setIsMuted={gameSetters.setIsMuted}
-			totalTimeElapsed={gameState.totalTimeElapsed}
-			onQuit={controller.handleQuit}
-			isHardMode={gameState.isHardMode}
-			showCriticalSuccess={gameState.showCriticalSuccess}
-			showCriticalHit={gameState.showCriticalHit}
-			showHypeTrain={gameState.showHypeTrain}
-			consecutiveFastAnswers={gameState.consecutiveFastAnswers}
-			pointsEarned={gameState.pointsEarned}
-			remainingCount={gameState.remainingPokemon.length}
-			totalCount={gameState.selectedGeneration.endId - gameState.selectedGeneration.startId + 1}
+			{...buildGameScreenViewProps({
+				currentPokemon: gameState.isRestarting ? undefined : gameState.currentPokemon,
+				isPokemonLoading: gameState.isRestarting || controller.isPokemonLoading,
+				isCorrect: gameState.isCorrect,
+				isMuted: gameState.isMuted,
+				setIsMuted: gameSetters.setIsMuted,
+				isHardMode: gameState.isHardMode,
+				showCriticalSuccess: gameState.showCriticalSuccess,
+				showCriticalHit: gameState.showCriticalHit,
+				showHypeTrain: gameState.showHypeTrain,
+				consecutiveFastAnswers: gameState.consecutiveFastAnswers,
+				totalTimeElapsed: gameState.totalTimeElapsed,
+				formatTime: formatTimeForRanking,
+				onQuit: controller.handleQuit,
+				pointsEarned: gameState.pointsEarned,
+				guessTimeLeft: gameState.guessTimeLeft,
+				remainingCount: gameState.remainingPokemon.length,
+				totalCount: gameState.selectedGeneration.endId - gameState.selectedGeneration.startId + 1,
+				criticalSuccessLabel,
+				criticalHitLabel,
+				hypeTrainLabel,
+				controlsSection: {
+					currentPokemon: gameState.isRestarting ? undefined : gameState.currentPokemon,
+					isPokemonLoading: gameState.isRestarting || controller.isPokemonLoading,
+					isCorrect: gameState.isCorrect,
+					score: gameState.score,
+					bestScore: controller.bestScore,
+					bestTime: controller.bestTime,
+					guessTimeLeft: gameState.guessTimeLeft,
+					hintsLeft: gameState.hintsLeft,
+					guess: gameState.guess,
+					handleGuessChange: controller.handleGuessChange,
+					handleKeyDown: controller.handleKeyDown,
+					suggestions: gameState.suggestions,
+					handleSuggestionClick: controller.handleSuggestionClick,
+					highlightedIndex: gameState.highlightedIndex,
+					showHint: gameState.showHint,
+					useHint: controller.useHint,
+					inputRef: controller.inputRef,
+					suggestionsRef: controller.suggestionsRef,
+					formatTime: formatTimeForRanking,
+					isMuted: gameState.isMuted,
+					remainingCount: gameState.remainingPokemon.length,
+					totalCount: gameState.selectedGeneration.endId - gameState.selectedGeneration.startId + 1,
+					showCriticalSuccess: gameState.showCriticalSuccess,
+					showCriticalHit: gameState.showCriticalHit,
+					showHypeTrain: gameState.showHypeTrain,
+					consecutiveFastAnswers: gameState.consecutiveFastAnswers,
+					criticalSuccessLabel,
+					criticalHitLabel,
+					hypeTrainLabel,
+				},
+			})}
 		/>
 	);
 };

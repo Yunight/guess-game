@@ -61,6 +61,8 @@ const getRankingsCollectionName = (generation: Generation): string =>
 	`rankings_gen${generation.startId}_${generation.endId}`;
 
 export interface GenerationOccupancyDeps {
+	doc: (collectionRef: unknown, docId: string) => unknown;
+	getDoc: (docRef: unknown) => Promise<{ exists: () => boolean }>;
 	query: (collectionRef: unknown, ...constraints: unknown[]) => unknown;
 	where: (field: string, op: string, value: string) => unknown;
 	getDocs: (queryRef: unknown) => Promise<{ empty: boolean }>;
@@ -77,10 +79,13 @@ export const fetchGenerationOccupancy = async (
 		generations.map(async (gen) => {
 			const collectionName = getRankingsCollectionName(gen);
 			const rankingsRef = deps.getCollection(collectionName);
-			const q = deps.query(
-				rankingsRef,
-				uid ? deps.where("uid", "==", uid) : deps.where("name", "==", storedName),
-			);
+			if (uid) {
+				const rankingDocRef = deps.doc(rankingsRef, uid);
+				const rankingDoc = await deps.getDoc(rankingDocRef);
+				return rankingDoc.exists();
+			}
+
+			const q = deps.query(rankingsRef, deps.where("name", "==", storedName));
 			const querySnapshot = await deps.getDocs(q);
 			return !querySnapshot.empty;
 		}),

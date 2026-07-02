@@ -6,6 +6,8 @@ import {
 	applyNameAvailabilityCheckResult,
 } from "../playerNameUtils";
 
+const existingDocRef = { id: "rankings-doc" };
+
 describe("resolveNameAvailabilityCheck", () => {
 	it("clears storage for empty names", () => {
 		expect(resolveNameAvailabilityCheck("", " ", null, [], false)).toEqual({
@@ -59,6 +61,8 @@ describe("fetchGenerationOccupancy", () => {
 			"ash",
 			undefined,
 			{
+				doc: vi.fn().mockReturnValue(existingDocRef),
+				getDoc: vi.fn(),
 				query: vi.fn(),
 				where: vi.fn(),
 				getDocs,
@@ -67,6 +71,33 @@ describe("fetchGenerationOccupancy", () => {
 		);
 
 		expect(result).toEqual([false, true]);
+	});
+
+	it("checks authenticated occupancy by uid document id", async () => {
+		const getDoc = vi
+			.fn()
+			.mockResolvedValueOnce({ exists: () => true })
+			.mockResolvedValueOnce({ exists: () => false });
+
+		const result = await fetchGenerationOccupancy(
+			[
+				{ name: "Gen 1", startId: 1, endId: 151 },
+				{ name: "Gen 2", startId: 152, endId: 251 },
+			],
+			"ash",
+			"uid-1",
+			{
+				doc: vi.fn().mockReturnValue(existingDocRef),
+				getDoc,
+				query: vi.fn(),
+				where: vi.fn(),
+				getDocs: vi.fn(),
+				getCollection: vi.fn().mockReturnValue({ id: "rankings" }),
+			},
+		);
+
+		expect(result).toEqual([true, false]);
+		expect(getDoc).toHaveBeenCalledTimes(2);
 	});
 });
 

@@ -1,12 +1,12 @@
 import type { ReactNode } from "react";
 interface GameScreenHypeOverlayProps {
-	showHypeTrain: boolean;
+	overlayState: "active" | "inactive";
 }
 
 export const GameScreenHypeOverlay = ({
-	showHypeTrain,
+	overlayState,
 }: GameScreenHypeOverlayProps): ReactNode | null => {
-	if (!showHypeTrain) {
+	if (overlayState === "inactive") {
 		return null;
 	}
 
