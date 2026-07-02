@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 import { PokemonDisplayFrame } from "./PokemonDisplayFrame";
 import { PokemonDisplayContent, PokemonDisplayLoading } from "./PokemonDisplayContent";
 import { clearPokemonCryCache, playPokemonCry } from "./pokemonCryPlayer";
+import { logCryDebug } from "./cryDebug";
 import { usePokemonDisplayTransition } from "@/hooks/usePokemonDisplayTransition";
 import type { Pokemon } from "./types";
 
@@ -31,6 +32,7 @@ export const PokemonDisplay: FC<PokemonDisplayProps> = ({
 	const audioRef = useRef<HTMLAudioElement | null>(null);
 	const soundPlayedRef = useRef(false);
 	const currentPokemonIdRef = useRef<number | null>(0);
+	const lastDisplayedPokemonIdRef = useRef<number | null>(null);
 	const isPokemonLoading = loadingState === "loading";
 	const isCorrect = answerState === "unknown" ? null : answerState === "correct";
 	const isMuted = audioState === "muted";
@@ -48,16 +50,43 @@ export const PokemonDisplay: FC<PokemonDisplayProps> = ({
 	currentPokemonIdRef.current = displayedPokemon?.id ?? currentPokemon?.id ?? null;
 
 	useEffect(() => {
+		const nextDisplayedId = displayedPokemon?.id ?? null;
 		if (
-			!displayedPokemon?.cryUrl ||
+			nextDisplayedId !== null &&
+			lastDisplayedPokemonIdRef.current !== null &&
+			nextDisplayedId !== lastDisplayedPokemonIdRef.current
+		) {
+			soundPlayedRef.current = false;
+			logCryDebug("Forced soundPlayed reset on displayed pokemon change", {
+				fromDisplayedPokemonId: lastDisplayedPokemonIdRef.current,
+				toDisplayedPokemonId: nextDisplayedId,
+			});
+		}
+		lastDisplayedPokemonIdRef.current = nextDisplayedId;
+	}, [displayedPokemon?.id]);
+
+	useEffect(() => {
+		const guardState = {
+			displayedPokemonId: displayedPokemon?.id ?? null,
+			currentPokemonIdRef: currentPokemonIdRef.current,
+			isMuted,
+			soundPlayed: soundPlayedRef.current,
+			displayState,
+		};
+		logCryDebug("PokemonDisplay effect evaluated", guardState);
+
+		if (
+			!displayedPokemon ||
 			isMuted ||
 			soundPlayedRef.current ||
 			displayState !== "ready" ||
 			displayedPokemon.id !== currentPokemonIdRef.current
 		) {
+			logCryDebug("PokemonDisplay cry skipped by guard", guardState);
 			return;
 		}
 
+		logCryDebug("PokemonDisplay triggering cry playback", guardState);
 		void playPokemonCry({
 			pokemon: displayedPokemon,
 			isMuted,
@@ -91,7 +120,7 @@ export const PokemonDisplay: FC<PokemonDisplayProps> = ({
 				</div>
 			)}
 			<PokemonDisplayFrame
-				className="rounded-lg flex items-center justify-center p-2 aspect-[4/3] mb-2 shadow-inner"
+				className="rounded-lg flex items-center justify-center p-2 aspect-4/3 mb-2 shadow-inner"
 				contentClassName="w-full h-full flex items-center justify-center"
 			>
 				{!hasSprite ? (

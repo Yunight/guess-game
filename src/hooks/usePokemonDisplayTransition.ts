@@ -2,6 +2,7 @@ import {
 	computePokemonDisplayTransition,
 	type PokemonDisplayState,
 } from "@/components/pokemon-game/pokemonDisplayState";
+import { logCryDebug } from "@/components/pokemon-game/cryDebug";
 import type { Pokemon } from "@/components/pokemon-game/types";
 import { useLayoutEffect, useState, type MutableRefObject } from "react";
 
@@ -62,12 +63,30 @@ export const usePokemonDisplayTransition = ({
 		currentPokemonId: transition.currentPokemonId,
 	};
 
+	logCryDebug("Display transition computed", {
+		currentPokemonId: currentPokemon?.id ?? null,
+		isPokemonLoading,
+		isCorrect,
+		guessTimeLeft,
+		fromState: snapshot.displayState,
+		fromDisplayedPokemonId: snapshot.displayedPokemon?.id ?? null,
+		fromCurrentPokemonId: snapshot.currentPokemonId,
+		toState: nextSnapshot.displayState,
+		toDisplayedPokemonId: nextSnapshot.displayedPokemon?.id ?? null,
+		toCurrentPokemonId: nextSnapshot.currentPokemonId,
+		shouldClearAudio: transition.shouldClearAudio,
+		shouldResetSoundPlayed: transition.shouldResetSoundPlayed,
+	});
+
 	if (!isSameDisplaySnapshot(snapshot, nextSnapshot)) {
 		setSnapshot(nextSnapshot);
 	}
 
 	useLayoutEffect(() => {
 		if (transition.shouldClearAudio && audioRef.current) {
+			logCryDebug("Clearing current cry audio element", {
+				transitionCurrentPokemonId: transition.currentPokemonId,
+			});
 			audioRef.current.pause();
 			audioRef.current.currentTime = 0;
 			audioRef.current.remove();
@@ -75,6 +94,9 @@ export const usePokemonDisplayTransition = ({
 		}
 
 		if (transition.shouldResetSoundPlayed) {
+			logCryDebug("Resetting soundPlayedRef", {
+				transitionCurrentPokemonId: transition.currentPokemonId,
+			});
 			soundPlayedRef.current = false;
 		}
 	}, [

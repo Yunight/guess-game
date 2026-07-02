@@ -1,8 +1,14 @@
 import { describe, it, expect, vi, beforeEach } from "vite-plus/test";
-import { fireEvent } from "@testing-library/react";
+import { fireEvent, waitFor } from "@testing-library/react";
 import { render, screen } from "../../../test/test-utils";
 import { PokemonDisplay } from "../PokemonDisplay";
 import { Pokemon } from "../types";
+
+const mockPlayPokemonCry = vi.fn().mockResolvedValue(undefined);
+vi.mock("../pokemonCryPlayer", () => ({
+	playPokemonCry: (...args: unknown[]) => mockPlayPokemonCry(...args),
+	clearPokemonCryCache: vi.fn(),
+}));
 
 // Mock Pokemon data
 const mockPokemon: Pokemon = {
@@ -136,5 +142,22 @@ describe("PokemonDisplay", () => {
 		);
 
 		expect(global.Audio).not.toHaveBeenCalled();
+	});
+
+	it("attempts cry playback when ready even if cryUrl is empty", async () => {
+		const pokemonWithoutCry = { ...mockPokemon, cryUrl: "" };
+		render(
+			<PokemonDisplay
+				currentPokemon={pokemonWithoutCry}
+				loadingState="ready"
+				answerState="unknown"
+				audioState="unmuted"
+				{...baseProps}
+			/>,
+		);
+
+		await waitFor(() => {
+			expect(mockPlayPokemonCry).toHaveBeenCalledTimes(1);
+		});
 	});
 });
